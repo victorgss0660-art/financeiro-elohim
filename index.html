@@ -1,185 +1,719 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Financeiro Elohim</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      margin:0;
-      font-family:Arial;
-      background:#0b0b0b;
-      color:white;
-      display:flex;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0b0b;
+      color: #fff;
+      display: flex;
+      min-height: 100vh;
     }
 
     .sidebar {
-      width:220px;
-      background:#111;
-      height:100vh;
-      padding:20px;
+      width: 240px;
+      background: #111;
+      padding: 24px 18px;
+      border-right: 1px solid #222;
     }
 
-    .sidebar h2 {
-      color:red;
+    .logo {
+      font-size: 30px;
+      font-weight: bold;
+      color: #e10600;
+      margin-bottom: 8px;
     }
 
-    .menu div {
-      margin:15px 0;
-      cursor:pointer;
+    .subtitle {
+      color: #bbb;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+
+    .menu-item {
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      background: #181818;
+      border-radius: 10px;
+      color: #fff;
+      border: 1px solid #222;
     }
 
     .main {
-      flex:1;
-      padding:20px;
+      flex: 1;
+      padding: 24px;
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 30px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+      align-items: center;
+    }
+
+    .top-actions input,
+    .top-actions select,
+    .top-actions button {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #161616;
+      color: #fff;
+    }
+
+    .top-actions button {
+      background: #d10000;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .top-actions button:hover {
+      background: #b80000;
     }
 
     .cards {
-      display:flex;
-      gap:20px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     .card {
-      background:#151515;
-      padding:20px;
-      border-radius:10px;
-      flex:1;
+      background: #151515;
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid #232323;
     }
 
-    canvas {
-      margin-top:20px;
-      background:white;
-      border-radius:10px;
+    .card-title {
+      color: #bbb;
+      font-size: 14px;
+      margin-bottom: 10px;
     }
 
-    input {
-      margin-top:20px;
+    .card-value {
+      font-size: 28px;
+      font-weight: bold;
     }
 
+    .grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: #151515;
+      border: 1px solid #232323;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-size: 20px;
+    }
+
+    .chart-wrap {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      min-height: 360px;
+    }
+
+    .status-box {
+      background: #151515;
+      border: 1px solid #232323;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .status-line {
+      margin-bottom: 10px;
+      color: #ddd;
+    }
+
+    .table-wrap {
+      background: #151515;
+      border: 1px solid #232323;
+      border-radius: 14px;
+      padding: 18px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #fff;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #2a2a2a;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      color: #bbb;
+    }
+
+    .success {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .danger {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    .muted {
+      color: #999;
+    }
+
+    .message {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    @media (max-width: 1100px) {
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
-
 <body>
+  <aside class="sidebar">
+    <div class="logo">ELOHIM</div>
+    <div class="subtitle">Usinagem e Caldeiraria</div>
 
-<div class="sidebar">
-  <h2>ELOHIM</h2>
+    <div class="menu-item">Dashboard</div>
+    <div class="menu-item">Resumo Anual</div>
+    <div class="menu-item">Faturamento</div>
+    <div class="menu-item">Metas</div>
+    <div class="menu-item">Importar Planilha</div>
+  </aside>
 
-  <div class="menu">
-    <div>Dashboard</div>
-    <div>Resumo</div>
-    <div>Metas</div>
-    <div>Importar</div>
-  </div>
-</div>
+  <main class="main">
+    <h1>Dashboard Financeiro</h1>
 
-<div class="main">
+    <div class="top-actions">
+      <input type="file" id="fileInput" accept=".xlsx,.xls" />
+      <select id="mesSelect">
+        <option>Janeiro</option>
+        <option>Fevereiro</option>
+        <option>Março</option>
+        <option>Abril</option>
+        <option>Maio</option>
+        <option>Junho</option>
+        <option>Julho</option>
+        <option>Agosto</option>
+        <option>Setembro</option>
+        <option>Outubro</option>
+        <option>Novembro</option>
+        <option>Dezembro</option>
+      </select>
+      <select id="anoSelect">
+        <option>2024</option>
+        <option>2025</option>
+        <option selected>2026</option>
+        <option>2027</option>
+      </select>
+      <input type="number" id="faturamentoInput" placeholder="Faturamento do mês" />
+      <button id="btnSalvarFaturamento">Salvar faturamento</button>
+      <button id="btnCarregar">Carregar dados do mês</button>
+    </div>
 
-  <h1>Dashboard Financeiro</h1>
+    <div class="message" id="mensagem"></div>
 
-  <div class="cards">
-    <div class="card">Faturamento: R$ <span id="fat">0</span></div>
-    <div class="card">Gastos: R$ <span id="gastos">0</span></div>
-    <div class="card">Saldo: R$ <span id="saldo">0</span></div>
-  </div>
+    <section class="cards">
+      <div class="card">
+        <div class="card-title">Faturamento</div>
+        <div class="card-value" id="fat">R$ 0,00</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Total de Gastos</div>
+        <div class="card-value" id="gastos">R$ 0,00</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Saldo</div>
+        <div class="card-value" id="saldo">R$ 0,00</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Categorias</div>
+        <div class="card-value" id="qtdCategorias">0</div>
+      </div>
+    </section>
 
-  <input type="file" id="file"/>
+    <section class="grid">
+      <div class="panel">
+        <h3>Metas x Gastos por Categoria</h3>
+        <div class="chart-wrap">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
 
-  <canvas id="barChart"></canvas>
-  <canvas id="pieChart"></canvas>
+      <div class="panel">
+        <h3>Divisão por Categoria</h3>
+        <div class="chart-wrap">
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+    </section>
 
-</div>
+    <section class="status-box" style="margin-bottom: 24px;">
+      <h3 style="margin-top:0;">Status do mês</h3>
+      <div class="status-line">Mês selecionado: <strong id="statusMes">Março/2026</strong></div>
+      <div class="status-line">Última importação: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
+      <div class="status-line">Situação: <span id="situacaoMes" class="muted">Aguardando dados</span></div>
+    </section>
 
-<script>
+    <section class="table-wrap">
+      <h3 style="margin-top:0;">Resumo por Categoria</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Categoria</th>
+            <th>Gasto</th>
+            <th>Meta</th>
+            <th>Diferença</th>
+            <th>Situação</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaResumo">
+          <tr>
+            <td colspan="5" class="muted">Nenhum dado carregado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
 
-let barChart, pieChart;
+  <script>
+    const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
-document.getElementById('file').addEventListener('change', handleFile);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function handleFile(e){
-  const file = e.target.files[0];
-  const reader = new FileReader();
+    const metasFixas = {
+      MC: 1800,
+      MP: 1500,
+      TERC: 1000,
+      FRETE: 800,
+      DESP: 900,
+      TAR: 600,
+      PREST: 1100
+    };
 
-  reader.onload = function(evt){
-    const data = new Uint8Array(evt.target.result);
-    const workbook = XLSX.read(data, {type: 'array'});
+    let barChart = null;
+    let pieChart = null;
 
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const json = XLSX.utils.sheet_to_json(sheet);
+    const fileInput = document.getElementById("fileInput");
+    const mesSelect = document.getElementById("mesSelect");
+    const anoSelect = document.getElementById("anoSelect");
+    const faturamentoInput = document.getElementById("faturamentoInput");
+    const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
+    const btnCarregar = document.getElementById("btnCarregar");
+    const mensagem = document.getElementById("mensagem");
 
-    processar(json);
-  };
+    fileInput.addEventListener("change", handleFile);
+    btnSalvarFaturamento.addEventListener("click", salvarFaturamentoMes);
+    btnCarregar.addEventListener("click", carregarDadosDoBanco);
 
-  reader.readAsArrayBuffer(file);
-}
+    atualizarStatus();
 
-function processar(data){
+    function formatarMoeda(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
 
-  let categorias = {};
-  let total = 0;
+    function getMesAnoSelecionado() {
+      return {
+        mes: mesSelect.value,
+        ano: anoSelect.value
+      };
+    }
 
-  data.forEach(row => {
-    let cat = row["CATEGORIA"];
-    let val = parseFloat(row["VALOR"]);
+    function mostrarMensagem(texto, erro = false) {
+      mensagem.textContent = texto;
+      mensagem.style.color = erro ? "#ef4444" : "#22c55e";
+    }
 
-    if(!categorias[cat]) categorias[cat] = 0;
-    categorias[cat] += val;
-    total += val;
-  });
+    function atualizarCards(totalGastos, faturamento, categorias) {
+      document.getElementById("gastos").textContent = formatarMoeda(totalGastos);
+      document.getElementById("fat").textContent = formatarMoeda(faturamento);
+      document.getElementById("saldo").textContent = formatarMoeda(faturamento - totalGastos);
+      document.getElementById("qtdCategorias").textContent = Object.keys(categorias).length;
+    }
 
-  document.getElementById("gastos").innerText = total.toFixed(2);
+    function atualizarStatus(ultima = "Nenhuma", situacao = "Aguardando dados") {
+      const { mes, ano } = getMesAnoSelecionado();
+      document.getElementById("statusMes").textContent = `${mes}/${ano}`;
+      document.getElementById("ultimaImportacao").textContent = ultima;
+      document.getElementById("situacaoMes").textContent = situacao;
+    }
 
-  let faturamento = 10000;
-  document.getElementById("fat").innerText = faturamento;
+    function montarTabela(categorias) {
+      const tbody = document.getElementById("tabelaResumo");
+      const linhas = Object.keys(categorias);
 
-  document.getElementById("saldo").innerText = (faturamento - total).toFixed(2);
+      if (!linhas.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="muted">Nenhum dado carregado.</td></tr>';
+        return;
+      }
 
-  desenhar(categorias);
-}
+      tbody.innerHTML = linhas.map(cat => {
+        const gasto = categorias[cat];
+        const meta = metasFixas[cat] || 0;
+        const diferenca = gasto - meta;
+        const dentro = diferenca <= 0;
 
-function desenhar(categorias){
+        return `
+          <tr>
+            <td>${cat}</td>
+            <td>${formatarMoeda(gasto)}</td>
+            <td>${formatarMoeda(meta)}</td>
+            <td class="${dentro ? "success" : "danger"}">${formatarMoeda(diferenca)}</td>
+            <td class="${dentro ? "success" : "danger"}">${dentro ? "Dentro da meta" : "Acima da meta"}</td>
+          </tr>
+        `;
+      }).join("");
+    }
 
-  const labels = Object.keys(categorias);
-  const valores = Object.values(categorias);
+    function desenharGraficos(categorias) {
+      const labels = Object.keys(categorias);
+      const valores = Object.values(categorias);
+      const metas = labels.map(label => metasFixas[label] || 0);
 
-  if(barChart) barChart.destroy();
-  if(pieChart) pieChart.destroy();
+      if (barChart) barChart.destroy();
+      if (pieChart) pieChart.destroy();
 
-  barChart = new Chart(document.getElementById("barChart"), {
-    type:'bar',
-    data:{
-      labels:labels,
-      datasets:[
-        {
-          label:"Gastos",
-          data:valores,
-          backgroundColor:"red"
+      barChart = new Chart(document.getElementById("barChart"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Gasto Real",
+              data: valores,
+              backgroundColor: "#d10000"
+            },
+            {
+              label: "Meta",
+              data: metas,
+              type: "line",
+              borderColor: "#1f2937",
+              backgroundColor: "#1f2937",
+              borderWidth: 3,
+              tension: 0.3
+            }
+          ]
         },
-        {
-          label:"Meta",
-          data:valores.map(v => v * 0.9),
-          type:'line'
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: "#000"
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#000" }
+            },
+            y: {
+              ticks: { color: "#000" }
+            }
+          }
         }
-      ]
+      });
+
+      pieChart = new Chart(document.getElementById("pieChart"), {
+        type: "pie",
+        data: {
+          labels,
+          datasets: [{
+            data: valores,
+            backgroundColor: [
+              "#d10000",
+              "#2b2b2b",
+              "#6b7280",
+              "#b91c1c",
+              "#ef4444",
+              "#9ca3af",
+              "#7f1d1d"
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: "#000"
+              }
+            }
+          }
+        }
+      });
     }
-  });
 
-  pieChart = new Chart(document.getElementById("pieChart"), {
-    type:'pie',
-    data:{
-      labels:labels,
-      datasets:[{
-        data:valores
-      }]
+    async function salvarFaturamentoMes() {
+      try {
+        const { mes, ano } = getMesAnoSelecionado();
+        const faturamento = Number(faturamentoInput.value || 0);
+
+        const { data: existente, error: erroBusca } = await supabaseClient
+          .from("meses")
+          .select("*")
+          .eq("mes", mes)
+          .eq("ano", ano);
+
+        if (erroBusca) throw erroBusca;
+
+        if (existente && existente.length > 0) {
+          const { error: erroUpdate } = await supabaseClient
+            .from("meses")
+            .update({ faturamento })
+            .eq("mes", mes)
+            .eq("ano", ano);
+
+          if (erroUpdate) throw erroUpdate;
+        } else {
+          const { error: erroInsert } = await supabaseClient
+            .from("meses")
+            .insert([{ mes, ano, faturamento }]);
+
+          if (erroInsert) throw erroInsert;
+        }
+
+        mostrarMensagem("Faturamento salvo com sucesso.");
+        carregarDadosDoBanco();
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem("Erro ao salvar faturamento.", true);
+      }
     }
-  });
 
-}
+    async function salvarMetasSeNaoExistirem(mes, ano, categorias) {
+      try {
+        const { data: existentes, error } = await supabaseClient
+          .from("metas")
+          .select("*")
+          .eq("mes", mes)
+          .eq("ano", ano);
 
-</script>
+        if (error) throw error;
 
+        if (existentes && existentes.length > 0) return;
+
+        const payload = Object.keys(categorias).map(cat => ({
+          mes,
+          ano,
+          categoria: cat,
+          meta: metasFixas[cat] || 0
+        }));
+
+        if (!payload.length) return;
+
+        const { error: erroInsert } = await supabaseClient
+          .from("metas")
+          .insert(payload);
+
+        if (erroInsert) throw erroInsert;
+      } catch (error) {
+        console.error("Erro ao salvar metas:", error);
+      }
+    }
+
+    async function salvarDados(categorias) {
+      try {
+        const { mes, ano } = getMesAnoSelecionado();
+
+        const { error: erroDelete } = await supabaseClient
+          .from("gastos")
+          .delete()
+          .eq("mes", mes)
+          .eq("ano", ano);
+
+        if (erroDelete) throw erroDelete;
+
+        const payload = Object.keys(categorias).map(cat => ({
+          mes,
+          ano,
+          categoria: cat,
+          valor: categorias[cat]
+        }));
+
+        if (payload.length > 0) {
+          const { error: erroInsert } = await supabaseClient
+            .from("gastos")
+            .insert(payload);
+
+          if (erroInsert) throw erroInsert;
+        }
+
+        await salvarMetasSeNaoExistirem(mes, ano, categorias);
+
+        const agora = new Date().toLocaleString("pt-BR");
+        atualizarStatus(agora, "Dados importados e salvos");
+        mostrarMensagem("Planilha importada e salva no banco com sucesso.");
+
+        await carregarDadosDoBanco();
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem("Erro ao salvar dados no banco.", true);
+      }
+    }
+
+    async function carregarDadosDoBanco() {
+      try {
+        const { mes, ano } = getMesAnoSelecionado();
+
+        const { data: gastosData, error: gastosError } = await supabaseClient
+          .from("gastos")
+          .select("*")
+          .eq("mes", mes)
+          .eq("ano", ano);
+
+        if (gastosError) throw gastosError;
+
+        const { data: mesesData, error: mesesError } = await supabaseClient
+          .from("meses")
+          .select("*")
+          .eq("mes", mes)
+          .eq("ano", ano);
+
+        if (mesesError) throw mesesError;
+
+        const categorias = {};
+        let totalGastos = 0;
+
+        (gastosData || []).forEach(item => {
+          categorias[item.categoria] = Number(item.valor || 0);
+          totalGastos += Number(item.valor || 0);
+        });
+
+        const faturamento = mesesData && mesesData.length > 0
+          ? Number(mesesData[0].faturamento || 0)
+          : 0;
+
+        faturamentoInput.value = faturamento || "";
+
+        atualizarCards(totalGastos, faturamento, categorias);
+        montarTabela(categorias);
+        desenharGraficos(categorias);
+
+        if ((gastosData || []).length > 0) {
+          atualizarStatus("Banco carregado", "Dados carregados com sucesso");
+          mostrarMensagem("Dados carregados do banco com sucesso.");
+        } else {
+          atualizarStatus("Nenhuma importação", "Sem dados para este mês");
+          mostrarMensagem("Nenhum dado salvo para este mês.");
+        }
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem("Erro ao carregar dados do banco.", true);
+      }
+    }
+
+    function processarPlanilha(data) {
+      const categorias = {};
+      let total = 0;
+
+      data.forEach(row => {
+        const categoria = row["CATEGORIA"];
+        let valor = row["VALOR"];
+
+        if (!categoria) return;
+
+        if (typeof valor === "string") {
+          valor = valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
+        }
+
+        valor = Number(valor || 0);
+
+        if (!categorias[categoria]) categorias[categoria] = 0;
+        categorias[categoria] += valor;
+        total += valor;
+      });
+
+      const faturamento = Number(faturamentoInput.value || 0);
+
+      atualizarCards(total, faturamento, categorias);
+      montarTabela(categorias);
+      desenharGraficos(categorias);
+      salvarDados(categorias);
+    }
+
+    function handleFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        processarPlanilha(json);
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    mesSelect.addEventListener("change", carregarDadosDoBanco);
+    anoSelect.addEventListener("change", carregarDadosDoBanco);
+
+    carregarDadosDoBanco();
+  </script>
 </body>
 </html>
-const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
-const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
