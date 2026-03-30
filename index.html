@@ -1,245 +1,369 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Financeiro Elohim</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financeiro Elohim</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #0b0b0b, #1a0000);
-  color: #fff;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0b0b0b, #1a0000);
+      color: #fff;
+      min-height: 100vh;
+    }
 
-.hidden { display: none; }
+    .hidden {
+      display: none !important;
+    }
 
-/* LOGIN */
-.login-screen {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
 
-.login-card {
-  width: 380px;
-  padding: 40px;
-  border-radius: 20px;
-  backdrop-filter: blur(20px);
-  background: rgba(20,20,20,0.7);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  text-align: center;
-}
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      background: rgba(20, 20, 20, 0.72);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
 
-.logo-box-login img {
-  width: 180px;
-  margin-bottom: 20px;
-}
+    .logo-box-login img {
+      width: 180px;
+      max-width: 100%;
+      margin-bottom: 20px;
+    }
 
-input {
-  width: 100%;
-  margin-bottom: 15px;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  background: #111;
-  color: #fff;
-}
+    .login-title {
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
 
-button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(90deg, #d10000, #ff2a2a);
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-}
+    .login-subtitle {
+      color: #bbb;
+      margin-bottom: 22px;
+      font-size: 14px;
+    }
 
-button:hover {
-  transform: scale(1.03);
-}
+    input {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #111;
+      color: #fff;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+    }
 
-/* APP */
-.app-shell {
-  display: flex;
-}
+    input:focus {
+      box-shadow: 0 0 0 2px rgba(255, 42, 42, 0.35);
+    }
 
-/* SIDEBAR */
-.sidebar {
-  width: 220px;
-  background: rgba(20,20,20,0.8);
-  backdrop-filter: blur(15px);
-  padding: 20px;
-}
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(90deg, #d10000, #ff2a2a);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
 
-.logo-box-sidebar img {
-  width: 140px;
-  margin-bottom: 20px;
-}
+    button:hover {
+      transform: scale(1.03);
+    }
 
-.user-box {
-  background: #111;
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
+    #loginErro {
+      margin-top: 12px;
+      color: #ff6b6b;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 20px;
+    }
 
-.menu-item {
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+    }
 
-.menu-item:hover {
-  background: rgba(255,0,0,0.2);
-}
+    .sidebar {
+      width: 220px;
+      background: rgba(20,20,20,0.85);
+      backdrop-filter: blur(15px);
+      padding: 20px;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
 
-.menu-item.active {
-  background: linear-gradient(90deg, #d10000, #ff2a2a);
-}
+    .logo-box-sidebar img {
+      width: 140px;
+      max-width: 100%;
+      margin-bottom: 20px;
+    }
 
-.logout-btn {
-  margin-top: 20px;
-  background: #222;
-}
+    .user-box {
+      background: #111;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
 
-/* MAIN */
-.main {
-  flex: 1;
-  padding: 20px;
-}
+    #userName {
+      font-weight: 700;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
 
-/* CARDS */
-.cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
+    #userRole {
+      color: #bbb;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
 
-.card {
-  background: rgba(30,30,30,0.7);
-  padding: 20px;
-  border-radius: 15px;
-}
-</style>
+    .menu-item {
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      transition: 0.2s;
+    }
+
+    .menu-item:hover {
+      background: rgba(255,0,0,0.2);
+    }
+
+    .menu-item.active {
+      background: linear-gradient(90deg, #d10000, #ff2a2a);
+    }
+
+    .logout-btn {
+      margin-top: 20px;
+      background: #222;
+    }
+
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .main h1 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .card {
+      background: rgba(30,30,30,0.7);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .card-title {
+      color: #bbb;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .card-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .login-card {
+        padding: 28px;
+      }
+    }
+  </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
-<section id="loginScreen" class="login-screen">
-  <div class="login-card">
-    <div class="logo-box-login">
-      <img src="logo-elohim.png">
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="logo-box-login">
+        <img src="logo-elohim.png" alt="Logo Elohim" />
+      </div>
+
+      <div class="login-title">Entrar</div>
+      <div class="login-subtitle">Acesse o sistema financeiro da Elohim</div>
+
+      <input id="loginEmail" type="email" placeholder="Seu e-mail" />
+      <input id="loginSenha" type="password" placeholder="Sua senha" />
+
+      <button id="btnLogin" type="button">Entrar</button>
+      <div id="loginErro"></div>
     </div>
+  </section>
 
-    <input id="loginEmail" placeholder="Seu e-mail">
-    <input id="loginSenha" type="password" placeholder="Sua senha">
+  <section id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="logo-box-sidebar">
+        <img src="logo-elohim.png" alt="Logo Elohim" />
+      </div>
 
-    <button id="btnLogin">Entrar</button>
-    <div id="loginErro"></div>
-  </div>
-</section>
+      <div class="user-box">
+        <div id="userName">Usuário</div>
+        <div id="userRole">Perfil</div>
+      </div>
 
-<!-- APP -->
-<section id="appShell" class="app-shell hidden">
+      <div class="menu-item active">Dashboard</div>
+      <div class="menu-item">Faturamento</div>
+      <div class="menu-item">Metas</div>
+      <div class="menu-item">Importar</div>
+      <div class="menu-item">Resumo</div>
 
-  <aside class="sidebar">
-    <div class="logo-box-sidebar">
-      <img src="logo-elohim.png">
-    </div>
+      <button class="logout-btn" id="btnLogout" type="button">Sair</button>
+    </aside>
 
-    <div class="user-box">
-      <div id="userName"></div>
-      <div id="userRole"></div>
-    </div>
+    <main class="main">
+      <h1>Dashboard Financeiro</h1>
 
-    <div class="menu-item active">Dashboard</div>
-    <div class="menu-item">Faturamento</div>
-    <div class="menu-item">Metas</div>
-    <div class="menu-item">Importar</div>
-    <div class="menu-item">Resumo</div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-title">Faturamento</div>
+          <div class="card-value" id="fat">R$ 0,00</div>
+        </div>
 
-    <button class="logout-btn" id="btnLogout">Sair</button>
-  </aside>
+        <div class="card">
+          <div class="card-title">Gastos</div>
+          <div class="card-value" id="gastos">R$ 0,00</div>
+        </div>
 
-  <main class="main">
-    <h1>Dashboard Financeiro</h1>
+        <div class="card">
+          <div class="card-title">Saldo</div>
+          <div class="card-value" id="saldo">R$ 0,00</div>
+        </div>
 
-    <div class="cards">
-      <div class="card">Faturamento: <span id="fat"></span></div>
-      <div class="card">Gastos: <span id="gastos"></span></div>
-      <div class="card">Saldo: <span id="saldo"></span></div>
-      <div class="card">Meta: <span id="metaAtingida"></span></div>
-    </div>
-  </main>
+        <div class="card">
+          <div class="card-title">Meta</div>
+          <div class="card-value" id="metaAtingida">0%</div>
+        </div>
+      </div>
+    </main>
+  </section>
 
-</section>
+  <script>
+    const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
-<script>
-const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
-const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let usuarioAtual = null;
 
-let usuarioAtual = null;
+    const btnLogin = document.getElementById("btnLogin");
+    const btnLogout = document.getElementById("btnLogout");
 
-// ELEMENTOS
-const btnLogin = document.getElementById("btnLogin");
-const btnLogout = document.getElementById("btnLogout");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginSenha = document.getElementById("loginSenha");
+    const loginErro = document.getElementById("loginErro");
 
-const loginEmail = document.getElementById("loginEmail");
-const loginSenha = document.getElementById("loginSenha");
-const loginErro = document.getElementById("loginErro");
+    const loginScreen = document.getElementById("loginScreen");
+    const appShell = document.getElementById("appShell");
 
-const loginScreen = document.getElementById("loginScreen");
-const appShell = document.getElementById("appShell");
+    const userName = document.getElementById("userName");
+    const userRole = document.getElementById("userRole");
 
-const userName = document.getElementById("userName");
-const userRole = document.getElementById("userRole");
+    btnLogin.addEventListener("click", async () => {
+      try {
+        loginErro.innerText = "";
 
-// LOGIN
-btnLogin.addEventListener("click", async () => {
-  const email = loginEmail.value;
-  const senha = loginSenha.value;
+        const email = (loginEmail.value || "").trim().toLowerCase();
+        const senha = loginSenha.value || "";
 
-  const { data } = await supabase
-    .from("usuarios")
-    .select("*")
-    .eq("email", email)
-    .eq("senha", senha);
+        if (!email || !senha) {
+          loginErro.innerText = "Preencha e-mail e senha.";
+          return;
+        }
 
-  if (!data || data.length === 0) {
-    loginErro.innerText = "Login inválido";
-    return;
-  }
+        const { data, error } = await supabase
+          .from("usuarios")
+          .select("*")
+          .eq("email", email)
+          .eq("senha", senha)
+          .limit(1);
 
-  usuarioAtual = data[0];
+        if (error) {
+          console.error("Erro Supabase:", error);
+          loginErro.innerText = "Erro ao conectar com o banco.";
+          return;
+        }
 
-  loginScreen.classList.add("hidden");
-  appShell.classList.remove("hidden");
+        if (!data || data.length === 0) {
+          loginErro.innerText = "Login inválido.";
+          return;
+        }
 
-  userName.innerText = usuarioAtual.email;
-  userRole.innerText = usuarioAtual.perfil;
-});
+        usuarioAtual = data[0];
 
-// ENTER
-loginSenha.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") btnLogin.click();
-});
+        loginScreen.classList.add("hidden");
+        appShell.classList.remove("hidden");
 
-// LOGOUT
-btnLogout.addEventListener("click", () => {
-  location.reload();
-});
-</script>
+        userName.innerText = usuarioAtual.email || "Usuário";
+        userRole.innerText = usuarioAtual.perfil || "perfil";
+      } catch (e) {
+        console.error("Erro geral:", e);
+        loginErro.innerText = "Erro inesperado no login.";
+      }
+    });
+
+    loginSenha.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        btnLogin.click();
+      }
+    });
+
+    btnLogout.addEventListener("click", () => {
+      usuarioAtual = null;
+      loginEmail.value = "";
+      loginSenha.value = "";
+      loginErro.innerText = "";
+      appShell.classList.add("hidden");
+      loginScreen.classList.remove("hidden");
+    });
+  </script>
 
 </body>
 </html>
