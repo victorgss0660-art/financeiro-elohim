@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Elohim Financeiro</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,20 +10,92 @@
 <style>
 body{
   margin:0;
-  font-family: 'Segoe UI', sans-serif;
+  font-family:'Segoe UI',sans-serif;
   background:#0b0b0b;
   color:#fff;
 }
 
-/* LAYOUT */
+.hidden{display:none !important}
+
+/* LOGIN */
+.login{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  box-sizing:border-box;
+}
+
+.login-box{
+  background:#111;
+  padding:40px;
+  border-radius:20px;
+  width:100%;
+  max-width:360px;
+  text-align:center;
+  border:1px solid #222;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+.login-box img{
+  width:130px;
+  margin-bottom:20px;
+}
+
+.login-box h2{
+  margin:0 0 16px 0;
+}
+
+.login-box input{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#1a1a1a;
+  color:#fff;
+  box-sizing:border-box;
+  font-size:14px;
+}
+
+.login-box button{
+  width:100%;
+  margin-top:15px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(90deg,#ff0000,#ff4d4d);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:15px;
+}
+
+.login-box button:hover{
+  transform:translateY(-1px);
+}
+
+#msg{
+  margin-top:14px;
+  min-height:20px;
+  color:#ff6b6b;
+  font-size:14px;
+}
+
+/* APP */
+.app{
+  display:none;
+}
+
 .layout{
   display:flex;
+  min-height:100vh;
 }
 
 /* SIDEBAR */
 .sidebar{
   width:230px;
-  height:100vh;
   background:#111;
   padding:20px;
   border-right:1px solid #222;
@@ -32,13 +103,35 @@ body{
 
 .sidebar img{
   width:140px;
-  margin-bottom:30px;
+  margin-bottom:25px;
+  display:block;
+}
+
+.user-box{
+  background:#161616;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:20px;
+  border:1px solid #222;
+}
+
+.user-email{
+  font-weight:700;
+  font-size:14px;
+  margin-bottom:4px;
+  word-break:break-word;
+}
+
+.user-role{
+  color:#aaa;
+  font-size:12px;
+  text-transform:uppercase;
 }
 
 .menu{
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:10px;
 }
 
 .menu button{
@@ -46,9 +139,10 @@ body{
   border:none;
   color:#bbb;
   text-align:left;
-  padding:10px;
+  padding:12px;
   border-radius:10px;
   cursor:pointer;
+  font-size:14px;
 }
 
 .menu button:hover{
@@ -56,22 +150,40 @@ body{
   color:#fff;
 }
 
-/* CONTEÚDO */
+.menu button.active{
+  background:linear-gradient(90deg,#d10000,#ff2a2a);
+  color:#fff;
+}
+
+.logout-btn{
+  margin-top:18px;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#222;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* CONTENT */
 .content{
   flex:1;
   padding:30px;
 }
 
-/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   margin-bottom:25px;
+  gap:20px;
+  flex-wrap:wrap;
 }
 
 .header h1{
   margin:0;
-  font-size:22px;
+  font-size:24px;
 }
 
 .user{
@@ -100,7 +212,7 @@ body{
 .card .value{
   font-size:24px;
   font-weight:bold;
-  margin-top:5px;
+  margin-top:6px;
 }
 
 /* GRID */
@@ -111,176 +223,370 @@ body{
   margin-top:20px;
 }
 
-canvas{
+.chart-card{
   background:#161616;
   border-radius:14px;
+  border:1px solid #222;
   padding:15px;
 }
 
-/* LOGIN */
-.login{
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+.chart-title{
+  margin:0 0 10px 0;
+  font-size:16px;
+  color:#ddd;
 }
 
-.login-box{
-  background:#111;
-  padding:40px;
-  border-radius:20px;
-  width:320px;
-  text-align:center;
+canvas{
+  background:#fff;
+  border-radius:12px;
+  padding:10px;
 }
 
-.login-box input{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border:none;
-  border-radius:10px;
-  background:#1a1a1a;
-  color:#fff;
+/* STATUS */
+.status{
+  margin-top:20px;
+  background:#161616;
+  border-radius:14px;
+  border:1px solid #222;
+  padding:18px;
 }
 
-.login-box button{
-  width:100%;
-  margin-top:15px;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(90deg,#ff0000,#ff4d4d);
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
+.status h3{
+  margin-top:0;
+}
+
+.status-line{
+  margin-bottom:8px;
+  color:#ccc;
+}
+
+@media (max-width: 900px){
+  .layout{
+    flex-direction:column;
+  }
+
+  .sidebar{
+    width:100%;
+  }
+
+  .cards{
+    grid-template-columns:1fr;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
-
 <body>
 
 <!-- LOGIN -->
-<div id="login" class="login">
+<section id="loginSection" class="login">
   <div class="login-box">
-    <img src="logo-elohim.png" width="130"><br><br>
+    <img src="logo-elohim.png" alt="Elohim">
     <h2>Entrar</h2>
-    <input id="email" placeholder="Email">
+
+    <input id="email" type="email" placeholder="E-mail">
     <input id="senha" type="password" placeholder="Senha">
-    <button onclick="login()">Entrar</button>
+
+    <button id="btnEntrar" type="button">Entrar</button>
     <p id="msg"></p>
   </div>
-</div>
+</section>
 
 <!-- APP -->
-<div id="app" style="display:none">
+<section id="appSection" class="app">
+  <div class="layout">
 
-<div class="layout">
+    <aside class="sidebar">
+      <img src="logo-elohim.png" alt="Elohim">
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <img src="logo-elohim.png">
+      <div class="user-box">
+        <div class="user-email" id="userEmail">-</div>
+        <div class="user-role" id="userPerfil">-</div>
+      </div>
 
-  <div class="menu">
-    <button>📊 Dashboard</button>
-    <button>💰 Financeiro</button>
-    <button>📈 Metas</button>
-    <button>⚙️ Configurações</button>
+      <div class="menu">
+        <button class="active" type="button">📊 Dashboard</button>
+        <button type="button">💰 Financeiro</button>
+        <button type="button">📈 Metas</button>
+        <button type="button">⚙️ Configurações</button>
+      </div>
+
+      <button id="btnSair" class="logout-btn" type="button">Sair</button>
+    </aside>
+
+    <main class="content">
+      <div class="header">
+        <h1>Dashboard Financeiro</h1>
+        <div class="user" id="headerUser">-</div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="title">Faturamento</div>
+          <div class="value" id="fat">R$ 0,00</div>
+        </div>
+
+        <div class="card">
+          <div class="title">Gastos</div>
+          <div class="value" id="gas">R$ 0,00</div>
+        </div>
+
+        <div class="card">
+          <div class="title">Lucro</div>
+          <div class="value" id="lucro">R$ 0,00</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="chart-card">
+          <div class="chart-title">Gastos por Categoria</div>
+          <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Distribuição</div>
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+
+      <div class="status">
+        <h3>Status</h3>
+        <div class="status-line" id="statusLinha1">Sistema carregado.</div>
+        <div class="status-line" id="statusLinha2">Aguardando dados.</div>
+      </div>
+    </main>
+
   </div>
-</div>
-
-<!-- CONTEÚDO -->
-<div class="content">
-
-<div class="header">
-  <h1>Dashboard Financeiro</h1>
-  <div class="user" id="user"></div>
-</div>
-
-<div class="cards">
-  <div class="card">
-    <div class="title">Faturamento</div>
-    <div class="value" id="fat">0</div>
-  </div>
-
-  <div class="card">
-    <div class="title">Gastos</div>
-    <div class="value" id="gas">0</div>
-  </div>
-
-  <div class="card">
-    <div class="title">Lucro</div>
-    <div class="value" id="lucro">0</div>
-  </div>
-</div>
-
-<div class="grid">
-  <canvas id="bar"></canvas>
-  <canvas id="pie"></canvas>
-</div>
-
-</div>
-</div>
-
-</div>
+</section>
 
 <script>
-const URL="https://qaqszkhkizeifwkhumka.supabase.co";
-const KEY="sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
+const URL = "https://qaqszkhkizeifwkhumka.supabase.co";
+const KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
-async function login(){
-  let email=emailInput.value;
-  let senha=senhaInput.value;
+let usuarioAtual = null;
+let barChartInstance = null;
+let pieChartInstance = null;
 
-  let res=await fetch(`${URL}/rest/v1/usuarios?email=eq.${email}&senha=eq.${senha}`,{
-    headers:{apikey:KEY,Authorization:"Bearer "+KEY}
+const loginSection = document.getElementById("loginSection");
+const appSection = document.getElementById("appSection");
+
+const emailInput = document.getElementById("email");
+const senhaInput = document.getElementById("senha");
+const btnEntrar = document.getElementById("btnEntrar");
+const msg = document.getElementById("msg");
+
+const btnSair = document.getElementById("btnSair");
+const userEmail = document.getElementById("userEmail");
+const userPerfil = document.getElementById("userPerfil");
+const headerUser = document.getElementById("headerUser");
+
+const fatEl = document.getElementById("fat");
+const gasEl = document.getElementById("gas");
+const lucroEl = document.getElementById("lucro");
+
+const statusLinha1 = document.getElementById("statusLinha1");
+const statusLinha2 = document.getElementById("statusLinha2");
+
+function formatarMoeda(valor){
+  return Number(valor || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
   });
+}
 
-  let data=await res.json();
+async function login() {
+  try {
+    msg.innerText = "";
 
-  if(data.length){
-    document.getElementById("login").style.display="none";
-    document.getElementById("app").style.display="block";
-    document.getElementById("user").innerText=email;
-    load();
-  }else{
-    msg.innerText="Login inválido";
+    const email = (emailInput.value || "").trim().toLowerCase();
+    const senha = senhaInput.value || "";
+
+    if (!email || !senha) {
+      msg.innerText = "Preencha e-mail e senha.";
+      return;
+    }
+
+    const url = `${URL}/rest/v1/usuarios?select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}&limit=1`;
+
+    const res = await fetch(url, {
+      headers: {
+        apikey: KEY,
+        Authorization: "Bearer " + KEY
+      }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      msg.innerText = "Erro ao consultar o banco.";
+      console.error(data);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      msg.innerText = "Login inválido.";
+      return;
+    }
+
+    usuarioAtual = data[0];
+
+    loginSection.classList.add("hidden");
+    appSection.style.display = "block";
+
+    userEmail.innerText = usuarioAtual.email || "-";
+    userPerfil.innerText = usuarioAtual.perfil || "-";
+    headerUser.innerText = usuarioAtual.email || "-";
+
+    await carregarDashboard();
+  } catch (erro) {
+    msg.innerText = "Erro inesperado no login.";
+    console.error(erro);
   }
 }
 
-async function load(){
+async function carregarDashboard() {
+  try {
+    statusLinha1.innerText = "Carregando dados do dashboard...";
+    statusLinha2.innerText = "Consultando Supabase...";
 
-  let gastos=await fetch(`${URL}/rest/v1/gastos`,{
-    headers:{apikey:KEY,Authorization:"Bearer "+KEY}
-  }).then(r=>r.json());
+    const [gastosRes, mesesRes] = await Promise.all([
+      fetch(`${URL}/rest/v1/gastos?select=*`, {
+        headers: {
+          apikey: KEY,
+          Authorization: "Bearer " + KEY
+        }
+      }),
+      fetch(`${URL}/rest/v1/meses?select=*`, {
+        headers: {
+          apikey: KEY,
+          Authorization: "Bearer " + KEY
+        }
+      })
+    ]);
 
-  let meses=await fetch(`${URL}/rest/v1/meses`,{
-    headers:{apikey:KEY,Authorization:"Bearer "+KEY}
-  }).then(r=>r.json());
+    const gastos = await gastosRes.json();
+    const meses = await mesesRes.json();
 
-  let total=0;
-  let cats={};
+    if (!gastosRes.ok || !mesesRes.ok) {
+      statusLinha1.innerText = "Erro ao carregar dados.";
+      statusLinha2.innerText = "Verifique a chave e as tabelas.";
+      console.error({ gastos, meses });
+      return;
+    }
 
-  gastos.forEach(g=>{
-    total+=Number(g.valor);
-    cats[g.categoria]=(cats[g.categoria]||0)+Number(g.valor);
+    let totalGastos = 0;
+    let categorias = {};
+
+    gastos.forEach(g => {
+      const valor = Number(g.valor || 0);
+      totalGastos += valor;
+      categorias[g.categoria] = (categorias[g.categoria] || 0) + valor;
+    });
+
+    const faturamento = Number(meses?.[0]?.faturamento || 0);
+    const lucro = faturamento - totalGastos;
+
+    fatEl.innerText = formatarMoeda(faturamento);
+    gasEl.innerText = formatarMoeda(totalGastos);
+    lucroEl.innerText = formatarMoeda(lucro);
+
+    renderCharts(categorias);
+
+    statusLinha1.innerText = "Dashboard carregado com sucesso.";
+    statusLinha2.innerText = `Categorias encontradas: ${Object.keys(categorias).length}`;
+  } catch (erro) {
+    statusLinha1.innerText = "Erro inesperado ao carregar dashboard.";
+    statusLinha2.innerText = "Veja o console para mais detalhes.";
+    console.error(erro);
+  }
+}
+
+function renderCharts(cats) {
+  const labels = Object.keys(cats);
+  const values = Object.values(cats);
+
+  const cores = [
+    "#ef4444", "#3b82f6", "#22c55e", "#f59e0b",
+    "#a855f7", "#06b6d4", "#ec4899", "#84cc16",
+    "#f97316", "#64748b", "#e11d48", "#14b8a6"
+  ];
+
+  if (barChartInstance) barChartInstance.destroy();
+  if (pieChartInstance) pieChartInstance.destroy();
+
+  const barCtx = document.getElementById("barChart");
+  const pieCtx = document.getElementById("pieChart");
+
+  barChartInstance = new Chart(barCtx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Gastos",
+        data: values,
+        backgroundColor: cores.slice(0, values.length),
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: "#fff" }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#fff" },
+          grid: { color: "rgba(255,255,255,0.08)" }
+        },
+        y: {
+          ticks: { color: "#fff" },
+          grid: { color: "rgba(255,255,255,0.08)" }
+        }
+      }
+    }
   });
 
-  let fat=meses[0]?.faturamento||0;
-
-  fatEl.innerText=fat;
-  gasEl.innerText=total;
-  lucro.innerText=fat-total;
-
-  new Chart(bar,{
-    type:"bar",
-    data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}
-  });
-
-  new Chart(pie,{
-    type:"pie",
-    data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}
+  pieChartInstance = new Chart(pieCtx, {
+    type: "pie",
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: cores.slice(0, values.length)
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { color: "#fff" }
+        }
+      }
+    }
   });
 }
+
+btnEntrar.addEventListener("click", login);
+
+senhaInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    login();
+  }
+});
+
+btnSair.addEventListener("click", () => {
+  usuarioAtual = null;
+  emailInput.value = "";
+  senhaInput.value = "";
+  msg.innerText = "";
+  appSection.style.display = "none";
+  loginSection.classList.remove("hidden");
+});
 </script>
 
 </body>
