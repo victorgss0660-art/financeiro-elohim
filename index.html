@@ -3,320 +3,137 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Financeiro Elohim</title>
-
+  <title>Login Elohim</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #0b0b0b, #1a0000);
       color: #fff;
       min-height: 100vh;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .login-screen {
-      min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      padding: 24px;
+      justify-content: center;
     }
-
-    .login-card {
+    .box {
       width: 100%;
       max-width: 420px;
-      padding: 40px;
-      border-radius: 20px;
-      backdrop-filter: blur(20px);
-      background: rgba(20, 20, 20, 0.72);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(20,20,20,0.85);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 28px;
+      box-sizing: border-box;
     }
-
-    .logo-box-login img {
-      width: 180px;
-      max-width: 100%;
+    .logo {
+      text-align: center;
       margin-bottom: 20px;
     }
-
-    .login-title {
-      font-size: 30px;
-      font-weight: 700;
-      margin-bottom: 8px;
+    .logo img {
+      width: 180px;
+      max-width: 100%;
     }
-
-    .login-subtitle {
+    h2 {
+      margin: 0 0 8px 0;
+      text-align: center;
+    }
+    p {
+      margin: 0 0 18px 0;
+      text-align: center;
       color: #bbb;
-      margin-bottom: 22px;
-      font-size: 14px;
     }
-
     input {
       width: 100%;
-      margin-bottom: 15px;
       padding: 12px;
+      margin-bottom: 12px;
       border-radius: 10px;
       border: none;
       background: #111;
       color: #fff;
-      font-size: 14px;
       box-sizing: border-box;
-      outline: none;
     }
-
-    input:focus {
-      box-shadow: 0 0 0 2px rgba(255, 42, 42, 0.35);
-    }
-
     button {
       width: 100%;
       padding: 12px;
-      border-radius: 10px;
       border: none;
+      border-radius: 10px;
       background: linear-gradient(90deg, #d10000, #ff2a2a);
       color: #fff;
       font-weight: bold;
       cursor: pointer;
-      transition: transform 0.2s ease;
     }
-
-    button:hover {
-      transform: scale(1.03);
-    }
-
-    #loginErro {
-      margin-top: 12px;
-      color: #ff6b6b;
+    .msg {
+      margin-top: 14px;
       font-size: 14px;
-      font-weight: 600;
-      min-height: 20px;
+      line-height: 1.4;
+      white-space: pre-wrap;
     }
-
-    .app-shell {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      width: 220px;
-      background: rgba(20,20,20,0.85);
-      backdrop-filter: blur(15px);
-      padding: 20px;
-      border-right: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .logo-box-sidebar img {
-      width: 140px;
-      max-width: 100%;
-      margin-bottom: 20px;
-    }
-
-    .user-box {
-      background: #111;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-
-    #userName {
-      font-weight: 700;
-      margin-bottom: 4px;
-      word-break: break-word;
-    }
-
-    #userRole {
-      color: #bbb;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    .menu-item {
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.03);
-      transition: 0.2s;
-    }
-
-    .menu-item:hover {
-      background: rgba(255,0,0,0.2);
-    }
-
-    .menu-item.active {
-      background: linear-gradient(90deg, #d10000, #ff2a2a);
-    }
-
-    .logout-btn {
-      margin-top: 20px;
-      background: #222;
-    }
-
-    .main {
-      flex: 1;
-      padding: 20px;
-    }
-
-    .main h1 {
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .card {
-      background: rgba(30,30,30,0.7);
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-
-    .card-title {
-      color: #bbb;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    .card-value {
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    @media (max-width: 900px) {
-      .app-shell {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        width: 100%;
-      }
-
-      .cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 600px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
-
-      .login-card {
-        padding: 28px;
-      }
-    }
+    .ok { color: #22c55e; }
+    .err { color: #ff6b6b; }
+    .info { color: #facc15; }
   </style>
 </head>
 <body>
-
-  <section id="loginScreen" class="login-screen">
-    <div class="login-card">
-      <div class="logo-box-login">
-        <img src="logo-elohim.png" alt="Logo Elohim" />
-      </div>
-
-      <div class="login-title">Entrar</div>
-      <div class="login-subtitle">Acesse o sistema financeiro da Elohim</div>
-
-      <input id="loginEmail" type="email" placeholder="Seu e-mail" />
-      <input id="loginSenha" type="password" placeholder="Sua senha" />
-
-      <button id="btnLogin" type="button">Entrar</button>
-      <div id="loginErro"></div>
+  <div class="box">
+    <div class="logo">
+      <img src="logo-elohim.png" alt="Elohim">
     </div>
-  </section>
 
-  <section id="appShell" class="app-shell hidden">
-    <aside class="sidebar">
-      <div class="logo-box-sidebar">
-        <img src="logo-elohim.png" alt="Logo Elohim" />
-      </div>
+    <h2>Entrar</h2>
+    <p>Teste de login com diagnóstico</p>
 
-      <div class="user-box">
-        <div id="userName">Usuário</div>
-        <div id="userRole">Perfil</div>
-      </div>
+    <input id="email" type="email" placeholder="Seu e-mail">
+    <input id="senha" type="password" placeholder="Sua senha">
+    <button id="entrar">Entrar</button>
 
-      <div class="menu-item active">Dashboard</div>
-      <div class="menu-item">Faturamento</div>
-      <div class="menu-item">Metas</div>
-      <div class="menu-item">Importar</div>
-      <div class="menu-item">Resumo</div>
-
-      <button class="logout-btn" id="btnLogout" type="button">Sair</button>
-    </aside>
-
-    <main class="main">
-      <h1>Dashboard Financeiro</h1>
-
-      <div class="cards">
-        <div class="card">
-          <div class="card-title">Faturamento</div>
-          <div class="card-value" id="fat">R$ 0,00</div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Gastos</div>
-          <div class="card-value" id="gastos">R$ 0,00</div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Saldo</div>
-          <div class="card-value" id="saldo">R$ 0,00</div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Meta</div>
-          <div class="card-value" id="metaAtingida">0%</div>
-        </div>
-      </div>
-    </main>
-  </section>
+    <div id="status" class="msg info">Aguardando teste...</div>
+  </div>
 
   <script>
     const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
     const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const statusEl = document.getElementById("status");
+    const emailEl = document.getElementById("email");
+    const senhaEl = document.getElementById("senha");
+    const entrarEl = document.getElementById("entrar");
 
-    let usuarioAtual = null;
+    function setStatus(text, type = "info") {
+      statusEl.className = "msg " + type;
+      statusEl.textContent = text;
+    }
 
-    const btnLogin = document.getElementById("btnLogin");
-    const btnLogout = document.getElementById("btnLogout");
+    let supabase = null;
 
-    const loginEmail = document.getElementById("loginEmail");
-    const loginSenha = document.getElementById("loginSenha");
-    const loginErro = document.getElementById("loginErro");
+    try {
+      if (!window.supabase) {
+        setStatus("Erro: biblioteca do Supabase não carregou.", "err");
+      } else if (SUPABASE_KEY.includes("COLE_AQUI")) {
+        setStatus("Erro: você ainda não trocou a Publishable Key no index.html.", "err");
+      } else {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        setStatus("Supabase carregado. Tente fazer login.", "ok");
+      }
+    } catch (e) {
+      setStatus("Erro ao iniciar Supabase:\n" + e.message, "err");
+    }
 
-    const loginScreen = document.getElementById("loginScreen");
-    const appShell = document.getElementById("appShell");
-
-    const userName = document.getElementById("userName");
-    const userRole = document.getElementById("userRole");
-
-    btnLogin.addEventListener("click", async () => {
+    async function fazerLogin() {
       try {
-        loginErro.innerText = "";
-
-        const email = (loginEmail.value || "").trim().toLowerCase();
-        const senha = loginSenha.value || "";
-
-        if (!email || !senha) {
-          loginErro.innerText = "Preencha e-mail e senha.";
+        if (!supabase) {
+          setStatus("Supabase não está inicializado.", "err");
           return;
         }
+
+        const email = (emailEl.value || "").trim().toLowerCase();
+        const senha = senhaEl.value || "";
+
+        if (!email || !senha) {
+          setStatus("Preencha e-mail e senha.", "err");
+          return;
+        }
+
+        setStatus("Consultando tabela usuarios...", "info");
 
         const { data, error } = await supabase
           .from("usuarios")
@@ -326,44 +143,37 @@
           .limit(1);
 
         if (error) {
-          console.error("Erro Supabase:", error);
-          loginErro.innerText = "Erro ao conectar com o banco.";
+          setStatus(
+            "Erro na consulta ao Supabase:\n" +
+            error.message +
+            "\n\nVerifique:\n- tabela usuarios existe\n- RLS está desligado\n- chave pública está correta",
+            "err"
+          );
           return;
         }
 
         if (!data || data.length === 0) {
-          loginErro.innerText = "Login inválido.";
+          setStatus(
+            "Login inválido.\n\nVerifique:\n- e-mail digitado\n- senha digitada\n- se o usuário existe na tabela usuarios",
+            "err"
+          );
           return;
         }
 
-        usuarioAtual = data[0];
-
-        loginScreen.classList.add("hidden");
-        appShell.classList.remove("hidden");
-
-        userName.innerText = usuarioAtual.email || "Usuário";
-        userRole.innerText = usuarioAtual.perfil || "perfil";
+        const usuario = data[0];
+        setStatus(
+          "Login OK!\n\nUsuário: " + usuario.email + "\nPerfil: " + usuario.perfil,
+          "ok"
+        );
       } catch (e) {
-        console.error("Erro geral:", e);
-        loginErro.innerText = "Erro inesperado no login.";
+        setStatus("Erro inesperado:\n" + e.message, "err");
       }
-    });
+    }
 
-    loginSenha.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        btnLogin.click();
-      }
-    });
-
-    btnLogout.addEventListener("click", () => {
-      usuarioAtual = null;
-      loginEmail.value = "";
-      loginSenha.value = "";
-      loginErro.innerText = "";
-      appShell.classList.add("hidden");
-      loginScreen.classList.remove("hidden");
+    entrarEl.addEventListener("click", fazerLogin);
+    senhaEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") fazerLogin();
     });
   </script>
-
 </body>
 </html>
