@@ -17,6 +17,126 @@
       font-family: Arial, sans-serif;
       background: #0b0b0b;
       color: #fff;
+      min-height: 100vh;
+    }
+
+    .hidden { display: none !important; }
+
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at top, #2b0000 0%, #0b0b0b 45%);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 980px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      background: #111;
+      border: 1px solid #252525;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    }
+
+    .login-left {
+      padding: 42px;
+      background: linear-gradient(180deg, #151515 0%, #0d0d0d 100%);
+    }
+
+    .login-right {
+      padding: 42px;
+      background: #fff;
+      color: #111;
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-title {
+      font-size: 38px;
+      font-weight: 800;
+      color: #d10000;
+      margin-bottom: 8px;
+    }
+
+    .brand-subtitle {
+      color: #c7c7c7;
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+
+    .login-feature {
+      background: #181818;
+      border: 1px solid #242424;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      color: #e5e5e5;
+    }
+
+    .login-form {
+      width: 100%;
+    }
+
+    .login-form h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 32px;
+    }
+
+    .login-form p {
+      margin-top: 0;
+      color: #555;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 1px solid #d8d8d8;
+      font-size: 15px;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #d10000;
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-login:hover {
+      background: #b80000;
+    }
+
+    .login-error {
+      margin-top: 12px;
+      color: #d10000;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .app-shell {
       display: flex;
       min-height: 100vh;
     }
@@ -42,6 +162,26 @@
       margin-bottom: 28px;
     }
 
+    .user-box {
+      background: #181818;
+      border: 1px solid #242424;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 18px;
+    }
+
+    .user-box .name {
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .user-box .role {
+      font-size: 13px;
+      color: #bbb;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
     .menu-item {
       padding: 13px 14px;
       margin-bottom: 10px;
@@ -61,9 +201,26 @@
       transform: translateX(2px);
     }
 
+    .logout-btn {
+      margin-top: 14px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #2a2a2a;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .logout-btn:hover {
+      background: #3a3a3a;
+    }
+
     .main {
       flex: 1;
       padding: 24px;
+      background: #0b0b0b;
     }
 
     h1 {
@@ -103,13 +260,8 @@
       background: #b80000;
     }
 
-    .tab-section {
-      display: none;
-    }
-
-    .tab-section.active {
-      display: block;
-    }
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
 
     .cards {
       display: grid;
@@ -269,10 +421,11 @@
       .cards { grid-template-columns: repeat(2, 1fr); }
       .grid { grid-template-columns: 1fr; }
       .meta-grid { grid-template-columns: repeat(2, 1fr); }
+      .login-card { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 700px) {
-      body { flex-direction: column; }
+      .app-shell { flex-direction: column; }
       .sidebar { width: 100%; }
       .cards { grid-template-columns: 1fr; }
       .meta-grid { grid-template-columns: 1fr; }
@@ -280,163 +433,206 @@
   </style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="logo">ELOHIM</div>
-    <div class="subtitle">Usinagem e Caldeiraria</div>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-left">
+        <div class="brand-title">ELOHIM</div>
+        <div class="brand-subtitle">Sistema Financeiro com acesso protegido</div>
 
-    <div class="menu-item active" data-tab="dashboard">Dashboard</div>
-    <div class="menu-item" data-tab="faturamento">Faturamento</div>
-    <div class="menu-item" data-tab="metas">Metas</div>
-    <div class="menu-item" data-tab="importar">Importar Planilha</div>
-    <div class="menu-item" data-tab="resumo">Resumo Anual</div>
-  </aside>
+        <div class="login-feature">Dashboard financeiro mensal</div>
+        <div class="login-feature">Resumo anual e metas por categoria</div>
+        <div class="login-feature">Importação de planilhas mensais</div>
+        <div class="login-feature">Perfis de administrador e visualização</div>
+      </div>
 
-  <main class="main">
-    <h1>Sistema Financeiro Elohim</h1>
+      <div class="login-right">
+        <div class="login-form">
+          <h2>Entrar</h2>
+          <p>Acesse o sistema com seu e-mail e senha.</p>
 
-    <div class="top-filters">
-      <select id="mesSelect">
-        <option>Janeiro</option>
-        <option>Fevereiro</option>
-        <option>Março</option>
-        <option>Abril</option>
-        <option>Maio</option>
-        <option>Junho</option>
-        <option>Julho</option>
-        <option>Agosto</option>
-        <option>Setembro</option>
-        <option>Outubro</option>
-        <option>Novembro</option>
-        <option>Dezembro</option>
-      </select>
+          <div class="form-group">
+            <label for="loginEmail">E-mail</label>
+            <input id="loginEmail" type="email" placeholder="seuemail@empresa.com" />
+          </div>
 
-      <select id="anoSelect">
-        <option>2024</option>
-        <option>2025</option>
-        <option selected>2026</option>
-        <option>2027</option>
-      </select>
+          <div class="form-group">
+            <label for="loginSenha">Senha</label>
+            <input id="loginSenha" type="password" placeholder="Digite sua senha" />
+          </div>
 
-      <button id="btnCarregarMes">Carregar mês</button>
+          <button class="btn-login" id="btnLogin">Entrar no sistema</button>
+          <div class="login-error" id="loginErro"></div>
+        </div>
+      </div>
     </div>
+  </section>
 
-    <div class="message" id="mensagem"></div>
+  <section id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="logo">ELOHIM</div>
+      <div class="subtitle">Usinagem e Caldeiraria</div>
 
-    <section id="tab-dashboard" class="tab-section active">
-      <section class="cards">
-        <div class="card">
-          <div class="card-title">Faturamento</div>
-          <div class="card-value" id="fat">R$ 0,00</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Total de Gastos</div>
-          <div class="card-value" id="gastos">R$ 0,00</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Saldo</div>
-          <div class="card-value" id="saldo">R$ 0,00</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Meta Atingida</div>
-          <div class="card-value" id="metaAtingida">0%</div>
-        </div>
-      </section>
+      <div class="user-box">
+        <div class="name" id="userName">Usuário</div>
+        <div class="role" id="userRole">perfil</div>
+      </div>
 
-      <section class="grid">
-        <div class="panel">
-          <h3>Metas x Gastos por Categoria</h3>
-          <div class="chart-wrap">
-            <canvas id="barChart"></canvas>
+      <div class="menu-item active" data-tab="dashboard">Dashboard</div>
+      <div class="menu-item" data-tab="faturamento">Faturamento</div>
+      <div class="menu-item" data-tab="metas">Metas</div>
+      <div class="menu-item" data-tab="importar">Importar Planilha</div>
+      <div class="menu-item" data-tab="resumo">Resumo Anual</div>
+
+      <button class="logout-btn" id="btnLogout">Sair</button>
+    </aside>
+
+    <main class="main">
+      <h1>Sistema Financeiro Elohim</h1>
+
+      <div class="top-filters">
+        <select id="mesSelect">
+          <option>Janeiro</option>
+          <option>Fevereiro</option>
+          <option>Março</option>
+          <option>Abril</option>
+          <option>Maio</option>
+          <option>Junho</option>
+          <option>Julho</option>
+          <option>Agosto</option>
+          <option>Setembro</option>
+          <option>Outubro</option>
+          <option>Novembro</option>
+          <option>Dezembro</option>
+        </select>
+
+        <select id="anoSelect">
+          <option>2024</option>
+          <option>2025</option>
+          <option selected>2026</option>
+          <option>2027</option>
+        </select>
+
+        <button id="btnCarregarMes">Carregar mês</button>
+      </div>
+
+      <div class="message" id="mensagem"></div>
+
+      <section id="tab-dashboard" class="tab-section active">
+        <section class="cards">
+          <div class="card">
+            <div class="card-title">Faturamento</div>
+            <div class="card-value" id="fat">R$ 0,00</div>
           </div>
-        </div>
-
-        <div class="panel">
-          <h3>Divisão por Categoria</h3>
-          <div class="chart-wrap">
-            <canvas id="pieChart"></canvas>
+          <div class="card">
+            <div class="card-title">Total de Gastos</div>
+            <div class="card-value" id="gastos">R$ 0,00</div>
           </div>
-        </div>
+          <div class="card">
+            <div class="card-title">Saldo</div>
+            <div class="card-value" id="saldo">R$ 0,00</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Meta Atingida</div>
+            <div class="card-value" id="metaAtingida">0%</div>
+          </div>
+        </section>
+
+        <section class="grid">
+          <div class="panel">
+            <h3>Metas x Gastos por Categoria</h3>
+            <div class="chart-wrap">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Divisão por Categoria</h3>
+            <div class="chart-wrap">
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="status-box">
+          <h3 class="section-title">Status do mês</h3>
+          <div class="status-line">Mês selecionado: <strong id="statusMes">-</strong></div>
+          <div class="status-line">Última atualização: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
+          <div class="status-line">Situação: <span id="situacaoMes" class="muted">Aguardando dados</span></div>
+        </section>
+
+        <section class="table-wrap">
+          <h3 class="section-title">Resumo por Categoria</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Gasto</th>
+                <th>Meta %</th>
+                <th>Meta R$</th>
+                <th>Diferença</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaResumo">
+              <tr>
+                <td colspan="6" class="muted">Nenhum dado carregado.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
       </section>
 
-      <section class="status-box">
-        <h3 class="section-title">Status do mês</h3>
-        <div class="status-line">Mês selecionado: <strong id="statusMes">-</strong></div>
-        <div class="status-line">Última atualização: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
-        <div class="status-line">Situação: <span id="situacaoMes" class="muted">Aguardando dados</span></div>
+      <section id="tab-faturamento" class="tab-section">
+        <section class="panel">
+          <h3>Faturamento do mês</h3>
+          <div class="input-row">
+            <input type="number" id="faturamentoInput" placeholder="Faturamento do mês" step="0.01" />
+            <button class="btn" id="btnSalvarFaturamento">Salvar faturamento</button>
+          </div>
+        </section>
       </section>
 
-      <section class="table-wrap">
-        <h3 class="section-title">Resumo por Categoria</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Categoria</th>
-              <th>Gasto</th>
-              <th>Meta %</th>
-              <th>Meta R$</th>
-              <th>Diferença</th>
-              <th>Situação</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaResumo">
-            <tr>
-              <td colspan="6" class="muted">Nenhum dado carregado.</td>
-            </tr>
-          </tbody>
-        </table>
+      <section id="tab-metas" class="tab-section">
+        <section class="meta-wrap">
+          <h3 class="section-title">Metas por categoria (% do faturamento)</h3>
+          <div class="meta-grid" id="metaGrid"></div>
+          <div style="margin-top:16px;">
+            <button class="btn" id="btnSalvarMetas">Salvar metas</button>
+          </div>
+        </section>
       </section>
-    </section>
 
-    <section id="tab-faturamento" class="tab-section">
-      <section class="panel">
-        <h3>Faturamento do mês</h3>
-        <div class="input-row">
-          <input type="number" id="faturamentoInput" placeholder="Faturamento do mês" step="0.01" />
-          <button class="btn" id="btnSalvarFaturamento">Salvar faturamento</button>
-        </div>
+      <section id="tab-importar" class="tab-section">
+        <section class="panel">
+          <h3>Importar planilha</h3>
+          <div class="input-row">
+            <input type="file" id="fileInput" accept=".xlsx,.xls" />
+          </div>
+        </section>
       </section>
-    </section>
 
-    <section id="tab-metas" class="tab-section">
-      <section class="meta-wrap">
-        <h3 class="section-title">Metas por categoria (% do faturamento)</h3>
-        <div class="meta-grid" id="metaGrid"></div>
-        <div style="margin-top:16px;">
-          <button class="btn" id="btnSalvarMetas">Salvar metas</button>
-        </div>
+      <section id="tab-resumo" class="tab-section">
+        <section class="panel">
+          <h3>Resumo anual</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Faturamento</th>
+                <th>Gastos</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaResumoAnual">
+              <tr>
+                <td colspan="4" class="muted">Nenhum dado anual carregado.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
       </section>
-    </section>
-
-    <section id="tab-importar" class="tab-section">
-      <section class="panel">
-        <h3>Importar planilha</h3>
-        <div class="input-row">
-          <input type="file" id="fileInput" accept=".xlsx,.xls" />
-        </div>
-      </section>
-    </section>
-
-    <section id="tab-resumo" class="tab-section">
-      <section class="panel">
-        <h3>Resumo anual</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Mês</th>
-              <th>Faturamento</th>
-              <th>Gastos</th>
-              <th>Saldo</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaResumoAnual">
-            <tr>
-              <td colspan="4" class="muted">Nenhum dado anual carregado.</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-    </section>
-  </main>
+    </main>
+  </section>
 
   <script>
     const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
@@ -496,6 +692,15 @@
 
     let barChart = null;
     let pieChart = null;
+    let usuarioAtual = null;
+
+    const loginScreen = document.getElementById("loginScreen");
+    const appShell = document.getElementById("appShell");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginSenha = document.getElementById("loginSenha");
+    const btnLogin = document.getElementById("btnLogin");
+    const btnLogout = document.getElementById("btnLogout");
+    const loginErro = document.getElementById("loginErro");
 
     const fileInput = document.getElementById("fileInput");
     const mesSelect = document.getElementById("mesSelect");
@@ -718,6 +923,8 @@
     }
 
     async function salvarFaturamentoMes() {
+      if (!usuarioAtual || usuarioAtual.perfil !== "admin") return;
+
       try {
         const { mes, ano } = getMesAnoSelecionado();
         const faturamento = arred(faturamentoInput.value || 0);
@@ -742,6 +949,8 @@
     }
 
     async function salvarMetasDoMes() {
+      if (!usuarioAtual || usuarioAtual.perfil !== "admin") return;
+
       try {
         const { mes, ano } = getMesAnoSelecionado();
         const metasTela = capturarMetasDaTela();
@@ -776,6 +985,8 @@
     }
 
     async function salvarDadosPlanilha(categorias) {
+      if (!usuarioAtual || usuarioAtual.perfil !== "admin") return;
+
       try {
         const { mes, ano } = getMesAnoSelecionado();
 
@@ -859,6 +1070,7 @@
         faturamentoInput.value = faturamento || "";
 
         montarMetaGrid(metasPercentuais);
+        aplicarPermissoesNaMetaGrid();
         atualizarCards(totalGastos, faturamento, metasPercentuais);
         montarTabela(categorias, metasPercentuais, faturamento);
 
@@ -1013,6 +1225,110 @@
       });
     }
 
+    function aplicarPermissoes() {
+      const isAdmin = usuarioAtual && usuarioAtual.perfil === "admin";
+
+      document.getElementById("userName").textContent = usuarioAtual?.email || "Usuário";
+      document.getElementById("userRole").textContent = isAdmin ? "Administrador" : "Visualização";
+
+      document.querySelector('[data-tab="faturamento"]').classList.toggle("hidden", !isAdmin);
+      document.querySelector('[data-tab="metas"]').classList.toggle("hidden", !isAdmin);
+      document.querySelector('[data-tab="importar"]').classList.toggle("hidden", !isAdmin);
+
+      btnSalvarFaturamento.disabled = !isAdmin;
+      btnSalvarMetas.disabled = !isAdmin;
+      fileInput.disabled = !isAdmin;
+      faturamentoInput.disabled = !isAdmin;
+
+      if (!isAdmin) {
+        if (document.querySelector(".menu-item.active")?.dataset.tab !== "dashboard" &&
+            document.querySelector(".menu-item.active")?.dataset.tab !== "resumo") {
+          document.querySelectorAll(".menu-item").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".tab-section").forEach(a => a.classList.remove("active"));
+          document.querySelector('[data-tab="dashboard"]').classList.add("active");
+          document.getElementById("tab-dashboard").classList.add("active");
+        }
+      }
+
+      aplicarPermissoesNaMetaGrid();
+    }
+
+    function aplicarPermissoesNaMetaGrid() {
+      const isAdmin = usuarioAtual && usuarioAtual.perfil === "admin";
+      document.querySelectorAll("#metaGrid input").forEach(input => {
+        input.disabled = !isAdmin;
+      });
+    }
+
+    async function fazerLogin() {
+      try {
+        loginErro.textContent = "";
+
+        const email = (loginEmail.value || "").trim().toLowerCase();
+        const senha = loginSenha.value || "";
+
+        if (!email || !senha) {
+          loginErro.textContent = "Preencha e-mail e senha.";
+          return;
+        }
+
+        const { data, error } = await supabaseClient
+          .from("usuarios")
+          .select("*")
+          .eq("email", email)
+          .eq("senha", senha)
+          .limit(1);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          loginErro.textContent = "Usuário ou senha inválidos.";
+          return;
+        }
+
+        usuarioAtual = data[0];
+        localStorage.setItem("elohim_usuario_logado", JSON.stringify(usuarioAtual));
+
+        loginScreen.classList.add("hidden");
+        appShell.classList.remove("hidden");
+
+        aplicarPermissoes();
+        await carregarDadosDoBanco();
+        await carregarResumoAnual();
+      } catch (error) {
+        console.error(error);
+        loginErro.textContent = "Erro ao entrar no sistema.";
+      }
+    }
+
+    function logout() {
+      usuarioAtual = null;
+      localStorage.removeItem("elohim_usuario_logado");
+      appShell.classList.add("hidden");
+      loginScreen.classList.remove("hidden");
+      loginEmail.value = "";
+      loginSenha.value = "";
+      loginErro.textContent = "";
+    }
+
+    function restaurarSessao() {
+      const salvo = localStorage.getItem("elohim_usuario_logado");
+      if (!salvo) return;
+
+      try {
+        usuarioAtual = JSON.parse(salvo);
+        loginScreen.classList.add("hidden");
+        appShell.classList.remove("hidden");
+        aplicarPermissoes();
+        carregarDadosDoBanco();
+        carregarResumoAnual();
+      } catch {
+        localStorage.removeItem("elohim_usuario_logado");
+      }
+    }
+
+    btnLogin.addEventListener("click", fazerLogin);
+    btnLogout.addEventListener("click", logout);
     fileInput.addEventListener("change", handleFile);
     btnSalvarFaturamento.addEventListener("click", salvarFaturamentoMes);
     btnSalvarMetas.addEventListener("click", salvarMetasDoMes);
@@ -1023,19 +1339,20 @@
 
     mesSelect.addEventListener("change", () => {
       atualizarStatus();
-      carregarDadosDoBanco();
+      if (usuarioAtual) carregarDadosDoBanco();
     });
 
     anoSelect.addEventListener("change", () => {
       atualizarStatus();
-      carregarDadosDoBanco();
-      carregarResumoAnual();
+      if (usuarioAtual) {
+        carregarDadosDoBanco();
+        carregarResumoAnual();
+      }
     });
 
     definirMesAtual();
     ativarAbas();
-    carregarDadosDoBanco();
-    carregarResumoAnual();
+    restaurarSessao();
   </script>
 </body>
 </html>
