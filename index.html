@@ -3,57 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login Elohim</title>
+  <title>Financeiro Elohim</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #0b0b0b, #1a0000);
       color: #fff;
       min-height: 100vh;
+    }
+
+    .hidden { display: none !important; }
+
+    .login-screen {
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      box-sizing: border-box;
+      padding: 24px;
     }
 
-    .box {
+    .login-card {
       width: 100%;
       max-width: 430px;
       background: rgba(20,20,20,0.88);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
       padding: 28px;
-      box-sizing: border-box;
       box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+      text-align: center;
     }
 
-    .logo {
+    .logo-box-login img,
+    .logo-box-sidebar img {
+      display: block;
+      max-width: 100%;
+    }
+
+    .logo-box-login {
       text-align: center;
       margin-bottom: 20px;
     }
 
-    .logo img {
+    .logo-box-login img {
       width: 190px;
-      max-width: 100%;
-      display: inline-block;
+      margin: 0 auto;
     }
 
-    h2 {
+    .login-card h2 {
       margin: 0 0 8px 0;
-      text-align: center;
-      font-size: 26px;
+      font-size: 28px;
     }
 
-    p {
+    .login-card p {
       margin: 0 0 18px 0;
-      text-align: center;
       color: #bbb;
     }
 
-    input {
+    .login-card input {
       width: 100%;
       padding: 14px;
       margin-bottom: 14px;
@@ -61,33 +74,35 @@
       border: none;
       background: #111;
       color: #fff;
-      box-sizing: border-box;
       font-size: 16px;
       outline: none;
     }
 
-    input:focus {
+    .login-card input:focus {
       box-shadow: 0 0 0 2px rgba(255, 42, 42, 0.35);
     }
 
-    button {
-      width: 100%;
-      padding: 14px;
+    .btn {
       border: none;
       border-radius: 12px;
       background: linear-gradient(90deg, #d10000, #ff2a2a);
       color: #fff;
       font-weight: bold;
       cursor: pointer;
+      padding: 12px 16px;
+      transition: transform 0.15s ease;
+    }
+
+    .btn:hover { transform: scale(1.02); }
+
+    #loginBtn {
+      width: 100%;
       font-size: 16px;
-      transition: transform 0.2s ease;
+      padding: 14px;
     }
 
-    button:hover {
-      transform: scale(1.02);
-    }
-
-    .msg {
+    .login-msg,
+    .message {
       margin-top: 14px;
       font-size: 14px;
       line-height: 1.45;
@@ -98,166 +113,1108 @@
     .err { color: #ff6b6b; }
     .info { color: #facc15; }
 
-    .dashboard-temp {
-      min-height: 100vh;
-      width: 100%;
+    .app-shell {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0b0b0b;
-      padding: 30px;
-      box-sizing: border-box;
+      min-height: 100vh;
     }
 
-    .dashboard-card {
+    .sidebar {
+      width: 250px;
+      background: rgba(20,20,20,0.85);
+      backdrop-filter: blur(15px);
+      padding: 20px;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .logo-box-sidebar {
+      background: #fff;
+      padding: 10px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+    }
+
+    .logo-box-sidebar img {
+      width: 150px;
+      margin: 0 auto;
+    }
+
+    .user-box {
+      background: #111;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .user-name {
+      font-weight: 700;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    .user-role {
+      color: #bbb;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .menu-item {
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      transition: 0.2s;
+      font-weight: 600;
+    }
+
+    .menu-item:hover {
+      background: rgba(255,0,0,0.2);
+    }
+
+    .menu-item.active {
+      background: linear-gradient(90deg, #d10000, #ff2a2a);
+    }
+
+    .logout-btn {
+      margin-top: 14px;
       width: 100%;
-      max-width: 700px;
-      background: rgba(20,20,20,0.92);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 32px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-      text-align: center;
+      background: #222;
     }
 
-    .dashboard-card h1 {
+    .main {
+      flex: 1;
+      padding: 22px;
+      overflow-x: hidden;
+    }
+
+    .main h1 {
       margin-top: 0;
-      margin-bottom: 12px;
-      font-size: 34px;
+      margin-bottom: 18px;
     }
 
-    .dashboard-card p {
-      margin: 8px 0;
-      font-size: 18px;
+    .top-filters {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .top-filters select,
+    .top-filters input,
+    .top-filters button {
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: none;
+      background: #111;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .top-filters button {
+      background: linear-gradient(90deg, #d10000, #ff2a2a);
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: rgba(30,30,30,0.72);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 18px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    .card-title {
+      color: #bbb;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .panel {
+      background: rgba(30,30,30,0.72);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      margin-bottom: 22px;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    .chart-wrap {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 360px;
+    }
+
+    .table-wrap {
+      background: rgba(30,30,30,0.72);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #fff;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th { color: #bbb; }
+
+    .success { color: #22c55e; font-weight: bold; }
+    .danger { color: #ef4444; font-weight: bold; }
+    .muted { color: #999; }
+
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .meta-item {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .meta-item label {
+      display: block;
+      color: #bbb;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .meta-item input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: #1c1c1c;
+      color: #fff;
+    }
+
+    .status-line {
+      margin-bottom: 10px;
       color: #ddd;
     }
 
-    .dashboard-card .perfil {
-      color: #22c55e;
-      font-weight: bold;
+    @media (max-width: 1100px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .grid { grid-template-columns: 1fr; }
+      .meta-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 800px) {
+      .app-shell { flex-direction: column; }
+      .sidebar { width: 100%; }
+    }
+
+    @media (max-width: 600px) {
+      .cards { grid-template-columns: 1fr; }
+      .meta-grid { grid-template-columns: 1fr; }
+      .login-card { padding: 24px; }
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <div class="logo">
-      <img src="logo-elohim.png" alt="Elohim">
+
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="logo-box-login">
+        <img src="logo-elohim.png" alt="Elohim">
+      </div>
+      <h2>Entrar</h2>
+      <p>Acesse o sistema financeiro da Elohim</p>
+
+      <input id="loginEmail" type="email" placeholder="Seu e-mail">
+      <input id="loginSenha" type="password" placeholder="Sua senha">
+      <button id="loginBtn" class="btn" type="button">Entrar</button>
+
+      <div id="loginMsg" class="login-msg info">Pronto para login.</div>
     </div>
+  </section>
 
-    <h2>Entrar</h2>
-    <p>Login com conexão direta ao banco</p>
+  <section id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="logo-box-sidebar">
+        <img src="logo-elohim.png" alt="Elohim">
+      </div>
 
-    <input id="email" type="email" placeholder="Seu e-mail">
-    <input id="senha" type="password" placeholder="Sua senha">
-    <button id="entrar" type="button">Entrar</button>
+      <div class="user-box">
+        <div class="user-name" id="userName">Usuário</div>
+        <div class="user-role" id="userRole">Perfil</div>
+      </div>
 
-    <div id="status" class="msg info">Página carregada. Pronto para testar login.</div>
-  </div>
+      <div class="menu-item active" data-tab="dashboard">Dashboard</div>
+      <div class="menu-item" data-tab="faturamento">Faturamento</div>
+      <div class="menu-item" data-tab="metas">Metas</div>
+      <div class="menu-item" data-tab="importar">Importar Planilha</div>
+      <div class="menu-item" data-tab="resumo">Resumo Anual</div>
+
+      <button id="logoutBtn" class="btn logout-btn" type="button">Sair</button>
+    </aside>
+
+    <main class="main">
+      <h1>Sistema Financeiro Elohim</h1>
+
+      <div class="top-filters">
+        <select id="mesSelect">
+          <option>Janeiro</option>
+          <option>Fevereiro</option>
+          <option>Março</option>
+          <option>Abril</option>
+          <option>Maio</option>
+          <option>Junho</option>
+          <option>Julho</option>
+          <option>Agosto</option>
+          <option>Setembro</option>
+          <option>Outubro</option>
+          <option>Novembro</option>
+          <option>Dezembro</option>
+        </select>
+
+        <select id="anoSelect">
+          <option>2024</option>
+          <option>2025</option>
+          <option selected>2026</option>
+          <option>2027</option>
+        </select>
+
+        <button id="btnCarregarMes" type="button">Carregar mês</button>
+      </div>
+
+      <div id="appMsg" class="message info"></div>
+
+      <section id="tab-dashboard" class="tab-section active">
+        <section class="cards">
+          <div class="card">
+            <div class="card-title">Faturamento</div>
+            <div class="card-value" id="fat">R$ 0,00</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Gastos</div>
+            <div class="card-value" id="gastos">R$ 0,00</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Saldo</div>
+            <div class="card-value" id="saldo">R$ 0,00</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Meta Atingida</div>
+            <div class="card-value" id="metaAtingida">0%</div>
+          </div>
+        </section>
+
+        <section class="grid">
+          <div class="panel">
+            <h3>Metas x Gastos por Categoria</h3>
+            <div class="chart-wrap">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Divisão por Categoria</h3>
+            <div class="chart-wrap">
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>Status do mês</h3>
+          <div class="status-line">Mês selecionado: <strong id="statusMes">-</strong></div>
+          <div class="status-line">Última atualização: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
+          <div class="status-line">Situação: <span id="situacaoMes" class="muted">Aguardando dados</span></div>
+        </section>
+
+        <section class="table-wrap">
+          <h3>Resumo por Categoria</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Gasto</th>
+                <th>Meta %</th>
+                <th>Meta R$</th>
+                <th>Diferença</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaResumo">
+              <tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section id="tab-faturamento" class="tab-section">
+        <section class="panel">
+          <h3>Faturamento do mês</h3>
+          <div class="top-filters">
+            <input id="faturamentoInput" type="number" step="0.01" placeholder="Faturamento do mês">
+            <button id="btnSalvarFaturamento" type="button">Salvar faturamento</button>
+          </div>
+        </section>
+      </section>
+
+      <section id="tab-metas" class="tab-section">
+        <section class="panel">
+          <h3>Metas por categoria (% do faturamento)</h3>
+          <div class="meta-grid" id="metaGrid"></div>
+          <div style="margin-top:16px;">
+            <button id="btnSalvarMetas" class="btn" type="button">Salvar metas</button>
+          </div>
+        </section>
+      </section>
+
+      <section id="tab-importar" class="tab-section">
+        <section class="panel">
+          <h3>Importar planilha</h3>
+          <input id="fileInput" type="file" accept=".xlsx,.xls">
+        </section>
+      </section>
+
+      <section id="tab-resumo" class="tab-section">
+        <section class="table-wrap">
+          <h3>Resumo anual</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Faturamento</th>
+                <th>Gastos</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaResumoAnual">
+              <tr><td colspan="4" class="muted">Nenhum dado anual carregado.</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+    </main>
+  </section>
 
   <script>
     const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
     const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
-    const statusEl = document.getElementById("status");
-    const emailEl = document.getElementById("email");
-    const senhaEl = document.getElementById("senha");
-    const entrarEl = document.getElementById("entrar");
+    const categoriasPadrao = [
+      "MC", "MP", "TERC", "FRETE", "DESP", "TAR", "PREST",
+      "FOLHA", "COMIS", "IMPOS", "RESC", "MANUT"
+    ];
 
-    function setStatus(texto, tipo = "info") {
-      statusEl.className = "msg " + tipo;
-      statusEl.textContent = texto;
+    const nomesCategorias = {
+      MC: "Materiais de Consumo",
+      MP: "Matéria-Prima",
+      TERC: "Terceirizações",
+      FRETE: "Fretes",
+      DESP: "Despesas Fixas",
+      TAR: "Tarifas Bancárias",
+      PREST: "Prestações de Serviço",
+      FOLHA: "Folha de Pagamento",
+      COMIS: "Comissões",
+      IMPOS: "Impostos",
+      RESC: "Rescisões",
+      MANUT: "Manutenções"
+    };
+
+    const metasPadraoPercentuais = {
+      MC: 20,
+      MP: 18,
+      TERC: 8,
+      FRETE: 5,
+      DESP: 6,
+      TAR: 1,
+      PREST: 4,
+      FOLHA: 15,
+      COMIS: 2,
+      IMPOS: 5,
+      RESC: 1,
+      MANUT: 4
+    };
+
+    const coresGraficos = {
+      MC: "#ef4444",
+      MP: "#3b82f6",
+      TERC: "#22c55e",
+      FRETE: "#f59e0b",
+      DESP: "#a855f7",
+      TAR: "#06b6d4",
+      PREST: "#ec4899",
+      FOLHA: "#84cc16",
+      COMIS: "#f97316",
+      IMPOS: "#64748b",
+      RESC: "#e11d48",
+      MANUT: "#14b8a6"
+    };
+
+    let usuarioAtual = null;
+    let barChart = null;
+    let pieChart = null;
+
+    const loginScreen = document.getElementById("loginScreen");
+    const appShell = document.getElementById("appShell");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginSenha = document.getElementById("loginSenha");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginMsg = document.getElementById("loginMsg");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const userName = document.getElementById("userName");
+    const userRole = document.getElementById("userRole");
+    const appMsg = document.getElementById("appMsg");
+
+    const mesSelect = document.getElementById("mesSelect");
+    const anoSelect = document.getElementById("anoSelect");
+    const btnCarregarMes = document.getElementById("btnCarregarMes");
+    const faturamentoInput = document.getElementById("faturamentoInput");
+    const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
+    const btnSalvarMetas = document.getElementById("btnSalvarMetas");
+    const fileInput = document.getElementById("fileInput");
+
+    function setLoginMsg(texto, tipo = "info") {
+      loginMsg.className = "login-msg " + tipo;
+      loginMsg.textContent = texto;
+    }
+
+    function setAppMsg(texto, tipo = "info") {
+      appMsg.className = "message " + tipo;
+      appMsg.textContent = texto;
+    }
+
+    function nomeCategoria(sigla) {
+      return nomesCategorias[sigla] || sigla;
+    }
+
+    function formatarMoeda(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    function arred(valor) {
+      return Math.round(Number(valor || 0) * 100) / 100;
+    }
+
+    function getMesAnoSelecionado() {
+      return { mes: mesSelect.value, ano: anoSelect.value };
+    }
+
+    function atualizarStatus(ultima = "Nenhuma", situacao = "Aguardando dados") {
+      const { mes, ano } = getMesAnoSelecionado();
+      document.getElementById("statusMes").textContent = `${mes}/${ano}`;
+      document.getElementById("ultimaImportacao").textContent = ultima;
+      document.getElementById("situacaoMes").textContent = situacao;
+    }
+
+    function calcularMetaEmValor(percentual, faturamento) {
+      return arred((Number(percentual || 0) / 100) * Number(faturamento || 0));
+    }
+
+    function atualizarCards(totalGastos, faturamento, metasPercentuais) {
+      const totalMetaValor = Object.values(metasPercentuais || {}).reduce((acc, percentual) => {
+        return acc + calcularMetaEmValor(percentual, faturamento);
+      }, 0);
+
+      const percentualAtingido = totalMetaValor > 0
+        ? Math.round((Number(totalGastos || 0) / totalMetaValor) * 100)
+        : 0;
+
+      document.getElementById("fat").textContent = formatarMoeda(faturamento);
+      document.getElementById("gastos").textContent = formatarMoeda(totalGastos);
+      document.getElementById("saldo").textContent = formatarMoeda(faturamento - totalGastos);
+      document.getElementById("metaAtingida").textContent = `${percentualAtingido}%`;
+    }
+
+    function montarMetaGrid(metasPercentuais) {
+      const grid = document.getElementById("metaGrid");
+      const categorias = Array.from(new Set([...categoriasPadrao, ...Object.keys(metasPercentuais || {})]));
+
+      grid.innerHTML = categorias.map(cat => `
+        <div class="meta-item">
+          <label>${nomeCategoria(cat)} (%)</label>
+          <input type="number" step="0.01" data-categoria="${cat}" value="${Number(metasPercentuais[cat] || 0)}">
+        </div>
+      `).join("");
+    }
+
+    function capturarMetasDaTela() {
+      const inputs = document.querySelectorAll("#metaGrid input");
+      const metas = {};
+      inputs.forEach(input => {
+        metas[input.dataset.categoria] = arred(input.value || 0);
+      });
+      return metas;
+    }
+
+    function montarTabela(categorias, metasPercentuais, faturamento) {
+      const tbody = document.getElementById("tabelaResumo");
+      const cats = Object.keys(categorias);
+
+      if (!cats.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = cats.map(cat => {
+        const gasto = arred(categorias[cat] || 0);
+        const metaPercentual = arred(metasPercentuais[cat] || 0);
+        const metaValor = calcularMetaEmValor(metaPercentual, faturamento);
+        const diferenca = arred(gasto - metaValor);
+        const dentro = diferenca <= 0;
+
+        return `
+          <tr>
+            <td>${nomeCategoria(cat)}</td>
+            <td>${formatarMoeda(gasto)}</td>
+            <td>${metaPercentual.toFixed(2)}%</td>
+            <td>${formatarMoeda(metaValor)}</td>
+            <td class="${dentro ? "success" : "danger"}">${formatarMoeda(diferenca)}</td>
+            <td class="${dentro ? "success" : "danger"}">${dentro ? "Dentro da meta" : "Acima da meta"}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function desenharGraficos(categorias, metasPercentuais, faturamento) {
+      const keys = Object.keys(categorias);
+      const labels = keys.map(k => nomeCategoria(k));
+      const valores = keys.map(k => arred(categorias[k] || 0));
+      const metas = keys.map(k => calcularMetaEmValor(metasPercentuais[k] || 0, faturamento));
+      const cores = keys.map(k => coresGraficos[k] || "#888");
+
+      if (barChart) barChart.destroy();
+      if (pieChart) pieChart.destroy();
+
+      barChart = new Chart(document.getElementById("barChart"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Gasto Real",
+              data: valores,
+              backgroundColor: cores,
+              borderRadius: 8
+            },
+            {
+              label: "Meta",
+              data: metas,
+              type: "line",
+              borderColor: "#111827",
+              backgroundColor: "#111827",
+              borderWidth: 4,
+              tension: 0.3,
+              pointRadius: 5,
+              pointBackgroundColor: "#111827"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "#000" } } },
+          scales: {
+            x: { ticks: { color: "#000" } },
+            y: { ticks: { color: "#000" } }
+          }
+        }
+      });
+
+      pieChart = new Chart(document.getElementById("pieChart"), {
+        type: "pie",
+        data: {
+          labels,
+          datasets: [{ data: valores, backgroundColor: cores }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "#000" } } }
+        }
+      });
+    }
+
+    async function restGet(tabela, query) {
+      const url = `${SUPABASE_URL}/rest/v1/${tabela}?${query}`;
+      const resposta = await fetch(url, {
+        method: "GET",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      const texto = await resposta.text();
+      let dados = [];
+      try { dados = JSON.parse(texto); } catch {}
+
+      if (!resposta.ok) {
+        throw new Error(dados?.message || texto || "Erro GET");
+      }
+
+      return dados;
+    }
+
+    async function restInsert(tabela, payload) {
+      const resposta = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const texto = await resposta.text();
+      let dados = [];
+      try { dados = JSON.parse(texto); } catch {}
+
+      if (!resposta.ok) {
+        throw new Error(dados?.message || texto || "Erro INSERT");
+      }
+
+      return dados;
+    }
+
+    async function restPatch(tabela, filtros, payload) {
+      const resposta = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}?${filtros}`, {
+        method: "PATCH",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const texto = await resposta.text();
+      let dados = [];
+      try { dados = JSON.parse(texto); } catch {}
+
+      if (!resposta.ok) {
+        throw new Error(dados?.message || texto || "Erro PATCH");
+      }
+
+      return dados;
+    }
+
+    async function restDelete(tabela, filtros) {
+      const resposta = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}?${filtros}`, {
+        method: "DELETE",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      const texto = await resposta.text();
+      if (!resposta.ok) {
+        let dados = {};
+        try { dados = JSON.parse(texto); } catch {}
+        throw new Error(dados?.message || texto || "Erro DELETE");
+      }
     }
 
     async function fazerLogin() {
       try {
-        const email = (emailEl.value || "").trim().toLowerCase();
-        const senha = senhaEl.value || "";
+        const email = (loginEmail.value || "").trim().toLowerCase();
+        const senha = loginSenha.value || "";
 
         if (!email || !senha) {
-          setStatus("Preencha e-mail e senha.", "err");
+          setLoginMsg("Preencha e-mail e senha.", "err");
           return;
         }
 
-        setStatus("Consultando banco...", "info");
+        setLoginMsg("Consultando banco...", "info");
 
-        const url =
-          `${SUPABASE_URL}/rest/v1/usuarios` +
-          `?select=*` +
-          `&email=eq.${encodeURIComponent(email)}` +
-          `&senha=eq.${encodeURIComponent(senha)}` +
-          `&limit=1`;
-
-        const resposta = await fetch(url, {
-          method: "GET",
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json"
-          }
-        });
-
-        const texto = await resposta.text();
-        let dados = [];
-
-        try {
-          dados = JSON.parse(texto);
-        } catch {
-          setStatus("Resposta inválida do servidor:\n" + texto, "err");
-          return;
-        }
-
-        if (!resposta.ok) {
-          const mensagemErro = dados?.message || texto || "Erro desconhecido";
-          setStatus(
-            "Erro ao consultar usuários:\n" + mensagemErro +
-            "\n\nVerifique:\n- chave pública correta\n- tabela usuarios existe\n- RLS desligado",
-            "err"
-          );
-          return;
-        }
-
-        if (!dados || dados.length === 0) {
-          setStatus(
-            "Login inválido.\n\nVerifique:\n- e-mail\n- senha\n- cadastro na tabela usuarios",
-            "err"
-          );
-          return;
-        }
-
-        const usuario = dados[0];
-
-        setStatus(
-          "Login realizado com sucesso.\n\nUsuário: " + usuario.email +
-          "\nPerfil: " + usuario.perfil,
-          "ok"
+        const dados = await restGet(
+          "usuarios",
+          `select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}&limit=1`
         );
 
-        setTimeout(() => {
-          document.body.innerHTML = `
-            <div class="dashboard-temp">
-              <div class="dashboard-card">
-                <h1>Bem-vindo ao sistema</h1>
-                <p><strong>Usuário:</strong> ${usuario.email}</p>
-                <p class="perfil"><strong>Perfil:</strong> ${usuario.perfil}</p>
-                <p>Login validado com sucesso.</p>
-                <p>Agora a próxima etapa é ligar esta entrada ao dashboard completo.</p>
-              </div>
-            </div>
-          `;
-        }, 1000);
+        if (!dados || dados.length === 0) {
+          setLoginMsg("Login inválido.", "err");
+          return;
+        }
+
+        usuarioAtual = dados[0];
+        localStorage.setItem("elohim_user", JSON.stringify(usuarioAtual));
+
+        loginScreen.classList.add("hidden");
+        appShell.classList.remove("hidden");
+
+        userName.textContent = usuarioAtual.email;
+        userRole.textContent = usuarioAtual.perfil;
+
+        aplicarPermissoes();
+        await carregarTudo();
 
       } catch (erro) {
-        setStatus("Erro inesperado:\n" + erro.message, "err");
+        setLoginMsg("Erro no login:\n" + erro.message, "err");
       }
     }
 
-    entrarEl.addEventListener("click", fazerLogin);
+    function logout() {
+      localStorage.removeItem("elohim_user");
+      location.reload();
+    }
 
-    senhaEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        fazerLogin();
+    function restaurarSessao() {
+      const salvo = localStorage.getItem("elohim_user");
+      if (!salvo) return false;
+
+      try {
+        usuarioAtual = JSON.parse(salvo);
+        loginScreen.classList.add("hidden");
+        appShell.classList.remove("hidden");
+        userName.textContent = usuarioAtual.email;
+        userRole.textContent = usuarioAtual.perfil;
+        aplicarPermissoes();
+        carregarTudo();
+        return true;
+      } catch {
+        localStorage.removeItem("elohim_user");
+        return false;
       }
+    }
+
+    function aplicarPermissoes() {
+      const isAdmin = usuarioAtual?.perfil === "admin";
+
+      document.querySelector('[data-tab="faturamento"]').classList.toggle("hidden", !isAdmin);
+      document.querySelector('[data-tab="metas"]').classList.toggle("hidden", !isAdmin);
+      document.querySelector('[data-tab="importar"]').classList.toggle("hidden", !isAdmin);
+
+      if (!isAdmin) {
+        btnSalvarFaturamento.disabled = true;
+        btnSalvarMetas.disabled = true;
+        fileInput.disabled = true;
+        faturamentoInput.disabled = true;
+      }
+    }
+
+    async function garantirRegistroMes(mes, ano) {
+      const existente = await restGet("meses", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=1`);
+      if (!existente || existente.length === 0) {
+        await restInsert("meses", [{ mes, ano, faturamento: 0 }]);
+      }
+    }
+
+    async function garantirMetasPadrao(mes, ano) {
+      const metas = await restGet("metas", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+      if (metas && metas.length > 0) return metas;
+
+      const payload = categoriasPadrao.map(cat => ({
+        mes,
+        ano,
+        categoria: cat,
+        meta: metasPadraoPercentuais[cat] || 0
+      }));
+
+      await restInsert("metas", payload);
+      return payload;
+    }
+
+    async function carregarDadosDoBanco() {
+      const { mes, ano } = getMesAnoSelecionado();
+
+      await garantirRegistroMes(mes, ano);
+      const metasBanco = await garantirMetasPadrao(mes, ano);
+
+      const gastosData = await restGet("gastos", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+      const mesesData = await restGet("meses", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=1`);
+
+      const categorias = {};
+      let totalGastos = 0;
+
+      (gastosData || []).forEach(item => {
+        categorias[item.categoria] = arred(item.valor || 0);
+        totalGastos += arred(item.valor || 0);
+      });
+
+      const metasPercentuais = {};
+      (metasBanco || []).forEach(item => {
+        metasPercentuais[item.categoria] = arred(item.meta || 0);
+      });
+
+      const faturamento = mesesData && mesesData.length > 0
+        ? arred(mesesData[0].faturamento || 0)
+        : 0;
+
+      faturamentoInput.value = faturamento || "";
+
+      montarMetaGrid(metasPercentuais);
+      if (usuarioAtual?.perfil !== "admin") {
+        document.querySelectorAll("#metaGrid input").forEach(i => i.disabled = true);
+      }
+
+      atualizarCards(totalGastos, faturamento, metasPercentuais);
+      montarTabela(categorias, metasPercentuais, faturamento);
+
+      if (Object.keys(categorias).length > 0) {
+        desenharGraficos(categorias, metasPercentuais, faturamento);
+        atualizarStatus("Banco carregado", "Dados carregados com sucesso");
+        setAppMsg("Dados carregados com sucesso.", "ok");
+      } else {
+        if (barChart) { barChart.destroy(); barChart = null; }
+        if (pieChart) { pieChart.destroy(); pieChart = null; }
+        atualizarStatus("Sem importação", "Aguardando planilha para este mês");
+        setAppMsg("Nenhum gasto salvo para este mês.", "info");
+      }
+    }
+
+    async function carregarResumoAnual() {
+      const ano = anoSelect.value;
+      const mesesData = await restGet("meses", `select=*&ano=eq.${encodeURIComponent(ano)}`);
+      const gastosData = await restGet("gastos", `select=*&ano=eq.${encodeURIComponent(ano)}`);
+
+      const mesesOrdem = [
+        "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+        "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+      ];
+
+      const mapa = {};
+      mesesOrdem.forEach(m => mapa[m] = { faturamento: 0, gastos: 0 });
+
+      (mesesData || []).forEach(item => {
+        mapa[item.mes].faturamento = arred(item.faturamento || 0);
+      });
+
+      (gastosData || []).forEach(item => {
+        mapa[item.mes].gastos += arred(item.valor || 0);
+      });
+
+      const tbody = document.getElementById("tabelaResumoAnual");
+      tbody.innerHTML = mesesOrdem.map(mes => {
+        const f = arred(mapa[mes].faturamento);
+        const g = arred(mapa[mes].gastos);
+        const s = arred(f - g);
+        return `
+          <tr>
+            <td>${mes}</td>
+            <td>${formatarMoeda(f)}</td>
+            <td>${formatarMoeda(g)}</td>
+            <td class="${s >= 0 ? "success" : "danger"}">${formatarMoeda(s)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function salvarFaturamentoMes() {
+      if (usuarioAtual?.perfil !== "admin") return;
+
+      try {
+        const { mes, ano } = getMesAnoSelecionado();
+        const faturamento = arred(faturamentoInput.value || 0);
+
+        await garantirRegistroMes(mes, ano);
+        await restPatch(
+          "meses",
+          `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`,
+          { faturamento }
+        );
+
+        setAppMsg("Faturamento salvo com sucesso.", "ok");
+        await carregarTudo();
+      } catch (erro) {
+        setAppMsg("Erro ao salvar faturamento:\n" + erro.message, "err");
+      }
+    }
+
+    async function salvarMetasDoMes() {
+      if (usuarioAtual?.perfil !== "admin") return;
+
+      try {
+        const { mes, ano } = getMesAnoSelecionado();
+        const metas = capturarMetasDaTela();
+
+        await restDelete("metas", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+
+        const payload = Object.keys(metas).map(cat => ({
+          mes,
+          ano,
+          categoria: cat,
+          meta: arred(metas[cat] || 0)
+        }));
+
+        await restInsert("metas", payload);
+        setAppMsg("Metas salvas com sucesso.", "ok");
+        await carregarDadosDoBanco();
+      } catch (erro) {
+        setAppMsg("Erro ao salvar metas:\n" + erro.message, "err");
+      }
+    }
+
+    function processarPlanilha(data) {
+      const categorias = {};
+
+      data.forEach(row => {
+        const categoria = row["CATEGORIA"];
+        let valor = row["VALOR"];
+
+        if (!categoria) return;
+
+        if (typeof valor === "string") {
+          valor = valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
+        }
+
+        valor = Number(valor || 0);
+
+        if (!categorias[categoria]) categorias[categoria] = 0;
+        categorias[categoria] += valor;
+      });
+
+      salvarDadosPlanilha(categorias);
+    }
+
+    async function salvarDadosPlanilha(categorias) {
+      if (usuarioAtual?.perfil !== "admin") return;
+
+      try {
+        const { mes, ano } = getMesAnoSelecionado();
+
+        await garantirRegistroMes(mes, ano);
+        await garantirMetasPadrao(mes, ano);
+
+        await restDelete("gastos", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+
+        const payload = Object.keys(categorias).map(cat => ({
+          mes,
+          ano,
+          categoria: cat,
+          valor: arred(categorias[cat] || 0)
+        }));
+
+        if (payload.length > 0) {
+          await restInsert("gastos", payload);
+        }
+
+        atualizarStatus(new Date().toLocaleString("pt-BR"), "Planilha importada e salva");
+        setAppMsg("Planilha importada com sucesso.", "ok");
+        await carregarTudo();
+      } catch (erro) {
+        setAppMsg("Erro ao importar planilha:\n" + erro.message, "err");
+      }
+    }
+
+    function handleFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        processarPlanilha(json);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function definirMesAtual() {
+      const hoje = new Date();
+      const meses = [
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      ];
+      mesSelect.value = meses[hoje.getMonth()];
+      anoSelect.value = String(hoje.getFullYear());
+      atualizarStatus();
+    }
+
+    function ativarAbas() {
+      const botoes = document.querySelectorAll(".menu-item");
+      const abas = document.querySelectorAll(".tab-section");
+
+      botoes.forEach(botao => {
+        botao.addEventListener("click", () => {
+          if (botao.classList.contains("hidden")) return;
+
+          botoes.forEach(b => b.classList.remove("active"));
+          abas.forEach(a => a.classList.remove("active"));
+
+          botao.classList.add("active");
+          document.getElementById(`tab-${botao.dataset.tab}`).classList.add("active");
+        });
+      });
+    }
+
+    async function carregarTudo() {
+      await carregarDadosDoBanco();
+      await carregarResumoAnual();
+    }
+
+    loginBtn.addEventListener("click", fazerLogin);
+    loginSenha.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") fazerLogin();
     });
+
+    logoutBtn.addEventListener("click", logout);
+    btnCarregarMes.addEventListener("click", carregarTudo);
+    btnSalvarFaturamento.addEventListener("click", salvarFaturamentoMes);
+    btnSalvarMetas.addEventListener("click", salvarMetasDoMes);
+    fileInput.addEventListener("change", handleFile);
+
+    mesSelect.addEventListener("change", () => {
+      atualizarStatus();
+      if (usuarioAtual) carregarDadosDoBanco();
+    });
+
+    anoSelect.addEventListener("change", () => {
+      atualizarStatus();
+      if (usuarioAtual) carregarTudo();
+    });
+
+    definirMesAtual();
+    ativarAbas();
+    restaurarSessao();
   </script>
 </body>
 </html>
