@@ -48,6 +48,14 @@
       border-radius: 10px;
       color: #fff;
       border: 1px solid #222;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .menu-item:hover,
+    .menu-item.active {
+      background: #d10000;
+      border-color: #d10000;
     }
 
     .main {
@@ -61,7 +69,7 @@
       font-size: 30px;
     }
 
-    .top-actions {
+    .top-filters {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -69,9 +77,9 @@
       align-items: center;
     }
 
-    .top-actions input,
-    .top-actions select,
-    .top-actions button {
+    .top-filters select,
+    .top-filters input,
+    .top-filters button {
       padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid #333;
@@ -79,15 +87,23 @@
       color: #fff;
     }
 
-    .top-actions button {
+    .top-filters button {
       background: #d10000;
       border: none;
       cursor: pointer;
       font-weight: bold;
     }
 
-    .top-actions button:hover {
+    .top-filters button:hover {
       background: #b80000;
+    }
+
+    .tab-section {
+      display: none;
+    }
+
+    .tab-section.active {
+      display: block;
     }
 
     .cards {
@@ -127,6 +143,7 @@
       border: 1px solid #232323;
       border-radius: 14px;
       padding: 18px;
+      margin-bottom: 24px;
     }
 
     .panel h3 {
@@ -149,6 +166,7 @@
       border: 1px solid #232323;
       border-radius: 14px;
       padding: 18px;
+      margin-bottom: 24px;
     }
 
     .status-line {
@@ -216,6 +234,36 @@
       font-size: 20px;
     }
 
+    .btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #d10000;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background: #b80000;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .input-row input,
+    .input-row select {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #161616;
+      color: #fff;
+    }
+
     @media (max-width: 1100px) {
       .cards { grid-template-columns: repeat(2, 1fr); }
       .grid { grid-template-columns: 1fr; }
@@ -235,18 +283,17 @@
     <div class="logo">ELOHIM</div>
     <div class="subtitle">Usinagem e Caldeiraria</div>
 
-    <div class="menu-item">Dashboard</div>
-    <div class="menu-item">Resumo Anual</div>
-    <div class="menu-item">Faturamento</div>
-    <div class="menu-item">Metas</div>
-    <div class="menu-item">Importar Planilha</div>
+    <div class="menu-item active" data-tab="dashboard">Dashboard</div>
+    <div class="menu-item" data-tab="faturamento">Faturamento</div>
+    <div class="menu-item" data-tab="metas">Metas</div>
+    <div class="menu-item" data-tab="importar">Importar Planilha</div>
+    <div class="menu-item" data-tab="resumo">Resumo Anual</div>
   </aside>
 
   <main class="main">
-    <h1>Dashboard Financeiro</h1>
+    <h1>Sistema Financeiro Elohim</h1>
 
-    <div class="top-actions">
-      <input type="file" id="fileInput" accept=".xlsx,.xls" />
+    <div class="top-filters">
       <select id="mesSelect">
         <option>Janeiro</option>
         <option>Fevereiro</option>
@@ -261,86 +308,132 @@
         <option>Novembro</option>
         <option>Dezembro</option>
       </select>
+
       <select id="anoSelect">
         <option>2024</option>
         <option>2025</option>
         <option selected>2026</option>
         <option>2027</option>
       </select>
-      <input type="number" id="faturamentoInput" placeholder="Faturamento do mês" step="0.01" />
-      <button id="btnSalvarFaturamento">Salvar faturamento</button>
-      <button id="btnCarregar">Carregar dados do mês</button>
-      <button id="btnSalvarMetas">Salvar metas</button>
+
+      <button id="btnCarregarMes">Carregar mês</button>
     </div>
 
     <div class="message" id="mensagem"></div>
 
-    <section class="cards">
-      <div class="card">
-        <div class="card-title">Faturamento</div>
-        <div class="card-value" id="fat">R$ 0,00</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Total de Gastos</div>
-        <div class="card-value" id="gastos">R$ 0,00</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Saldo</div>
-        <div class="card-value" id="saldo">R$ 0,00</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Meta Atingida</div>
-        <div class="card-value" id="metaAtingida">0%</div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <div class="panel">
-        <h3>Metas x Gastos por Categoria</h3>
-        <div class="chart-wrap">
-          <canvas id="barChart"></canvas>
+    <section id="tab-dashboard" class="tab-section active">
+      <section class="cards">
+        <div class="card">
+          <div class="card-title">Faturamento</div>
+          <div class="card-value" id="fat">R$ 0,00</div>
         </div>
-      </div>
-
-      <div class="panel">
-        <h3>Divisão por Categoria</h3>
-        <div class="chart-wrap">
-          <canvas id="pieChart"></canvas>
+        <div class="card">
+          <div class="card-title">Total de Gastos</div>
+          <div class="card-value" id="gastos">R$ 0,00</div>
         </div>
-      </div>
+        <div class="card">
+          <div class="card-title">Saldo</div>
+          <div class="card-value" id="saldo">R$ 0,00</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Meta Atingida</div>
+          <div class="card-value" id="metaAtingida">0%</div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="panel">
+          <h3>Metas x Gastos por Categoria</h3>
+          <div class="chart-wrap">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Divisão por Categoria</h3>
+          <div class="chart-wrap">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="status-box">
+        <h3 class="section-title">Status do mês</h3>
+        <div class="status-line">Mês selecionado: <strong id="statusMes">-</strong></div>
+        <div class="status-line">Última atualização: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
+        <div class="status-line">Situação: <span id="situacaoMes" class="muted">Aguardando dados</span></div>
+      </section>
+
+      <section class="table-wrap">
+        <h3 class="section-title">Resumo por Categoria</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Gasto</th>
+              <th>Meta %</th>
+              <th>Meta R$</th>
+              <th>Diferença</th>
+              <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaResumo">
+            <tr>
+              <td colspan="6" class="muted">Nenhum dado carregado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
     </section>
 
-    <section class="status-box" style="margin-bottom: 24px;">
-      <h3 class="section-title">Status do mês</h3>
-      <div class="status-line">Mês selecionado: <strong id="statusMes">-</strong></div>
-      <div class="status-line">Última atualização: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
-      <div class="status-line">Situação: <span id="situacaoMes" class="muted">Aguardando dados</span></div>
+    <section id="tab-faturamento" class="tab-section">
+      <section class="panel">
+        <h3>Faturamento do mês</h3>
+        <div class="input-row">
+          <input type="number" id="faturamentoInput" placeholder="Faturamento do mês" step="0.01" />
+          <button class="btn" id="btnSalvarFaturamento">Salvar faturamento</button>
+        </div>
+      </section>
     </section>
 
-    <section class="meta-wrap" style="margin-bottom: 24px;">
-      <h3 class="section-title">Metas por categoria (% do faturamento)</h3>
-      <div class="meta-grid" id="metaGrid"></div>
+    <section id="tab-metas" class="tab-section">
+      <section class="meta-wrap">
+        <h3 class="section-title">Metas por categoria (% do faturamento)</h3>
+        <div class="meta-grid" id="metaGrid"></div>
+        <div style="margin-top:16px;">
+          <button class="btn" id="btnSalvarMetas">Salvar metas</button>
+        </div>
+      </section>
     </section>
 
-    <section class="table-wrap">
-      <h3 class="section-title">Resumo por Categoria</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Categoria</th>
-            <th>Gasto</th>
-            <th>Meta %</th>
-            <th>Meta R$</th>
-            <th>Diferença</th>
-            <th>Situação</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaResumo">
-          <tr>
-            <td colspan="6" class="muted">Nenhum dado carregado.</td>
-          </tr>
-        </tbody>
-      </table>
+    <section id="tab-importar" class="tab-section">
+      <section class="panel">
+        <h3>Importar planilha</h3>
+        <div class="input-row">
+          <input type="file" id="fileInput" accept=".xlsx,.xls" />
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-resumo" class="tab-section">
+      <section class="panel">
+        <h3>Resumo anual</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Faturamento</th>
+              <th>Gastos</th>
+              <th>Saldo</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaResumoAnual">
+            <tr>
+              <td colspan="4" class="muted">Nenhum dado anual carregado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
     </section>
   </main>
 
@@ -379,8 +472,8 @@
     const anoSelect = document.getElementById("anoSelect");
     const faturamentoInput = document.getElementById("faturamentoInput");
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
-    const btnCarregar = document.getElementById("btnCarregar");
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
+    const btnCarregarMes = document.getElementById("btnCarregarMes");
     const mensagem = document.getElementById("mensagem");
 
     function formatarMoeda(valor) {
@@ -400,10 +493,7 @@
     }
 
     function getMesAnoSelecionado() {
-      return {
-        mes: mesSelect.value,
-        ano: anoSelect.value
-      };
+      return { mes: mesSelect.value, ano: anoSelect.value };
     }
 
     function atualizarStatus(ultima = "Nenhuma", situacao = "Aguardando dados") {
@@ -447,11 +537,9 @@
     function capturarMetasDaTela() {
       const inputs = document.querySelectorAll("#metaGrid input");
       const resultado = {};
-
       inputs.forEach(input => {
         resultado[input.dataset.categoria] = arred(input.value || 0);
       });
-
       return resultado;
     }
 
@@ -611,6 +699,7 @@
 
         mostrarMensagem("Faturamento salvo com sucesso.");
         await carregarDadosDoBanco();
+        await carregarResumoAnual();
       } catch (error) {
         console.error(error);
         mostrarMensagem("Erro ao salvar faturamento.", true);
@@ -685,6 +774,7 @@
         atualizarStatus(agora, "Planilha importada e salva");
         mostrarMensagem("Planilha importada e salva no banco com sucesso.");
         await carregarDadosDoBanco();
+        await carregarResumoAnual();
       } catch (error) {
         console.error(error);
         mostrarMensagem("Erro ao salvar planilha no banco.", true);
@@ -753,6 +843,72 @@
       }
     }
 
+    async function carregarResumoAnual() {
+      try {
+        const ano = anoSelect.value;
+
+        const { data: mesesData, error: mesesError } = await supabaseClient
+          .from("meses")
+          .select("*")
+          .eq("ano", ano);
+
+        if (mesesError) throw mesesError;
+
+        const { data: gastosData, error: gastosError } = await supabaseClient
+          .from("gastos")
+          .select("*")
+          .eq("ano", ano);
+
+        if (gastosError) throw gastosError;
+
+        const mesesOrdem = [
+          "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+          "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+        ];
+
+        const tbody = document.getElementById("tabelaResumoAnual");
+
+        if ((!mesesData || mesesData.length === 0) && (!gastosData || gastosData.length === 0)) {
+          tbody.innerHTML = '<tr><td colspan="4" class="muted">Nenhum dado anual carregado.</td></tr>';
+          return;
+        }
+
+        const mapa = {};
+
+        mesesOrdem.forEach(mes => {
+          mapa[mes] = { faturamento: 0, gastos: 0 };
+        });
+
+        (mesesData || []).forEach(item => {
+          mapa[item.mes] = mapa[item.mes] || { faturamento: 0, gastos: 0 };
+          mapa[item.mes].faturamento = arred(item.faturamento || 0);
+        });
+
+        (gastosData || []).forEach(item => {
+          mapa[item.mes] = mapa[item.mes] || { faturamento: 0, gastos: 0 };
+          mapa[item.mes].gastos += arred(item.valor || 0);
+        });
+
+        tbody.innerHTML = mesesOrdem.map(mes => {
+          const faturamento = arred(mapa[mes]?.faturamento || 0);
+          const gastos = arred(mapa[mes]?.gastos || 0);
+          const saldo = arred(faturamento - gastos);
+
+          return `
+            <tr>
+              <td>${mes}</td>
+              <td>${formatarMoeda(faturamento)}</td>
+              <td>${formatarMoeda(gastos)}</td>
+              <td class="${saldo >= 0 ? "success" : "danger"}">${formatarMoeda(saldo)}</td>
+            </tr>
+          `;
+        }).join("");
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem("Erro ao carregar resumo anual.", true);
+      }
+    }
+
     function processarPlanilha(data) {
       const categorias = {};
 
@@ -807,21 +963,44 @@
       atualizarStatus();
     }
 
+    function ativarAbas() {
+      const botoes = document.querySelectorAll(".menu-item");
+      const abas = document.querySelectorAll(".tab-section");
+
+      botoes.forEach(botao => {
+        botao.addEventListener("click", () => {
+          botoes.forEach(b => b.classList.remove("active"));
+          abas.forEach(a => a.classList.remove("active"));
+
+          botao.classList.add("active");
+          document.getElementById(`tab-${botao.dataset.tab}`).classList.add("active");
+        });
+      });
+    }
+
     fileInput.addEventListener("change", handleFile);
     btnSalvarFaturamento.addEventListener("click", salvarFaturamentoMes);
-    btnCarregar.addEventListener("click", carregarDadosDoBanco);
     btnSalvarMetas.addEventListener("click", salvarMetasDoMes);
+    btnCarregarMes.addEventListener("click", async () => {
+      await carregarDadosDoBanco();
+      await carregarResumoAnual();
+    });
+
     mesSelect.addEventListener("change", () => {
       atualizarStatus();
       carregarDadosDoBanco();
     });
+
     anoSelect.addEventListener("change", () => {
       atualizarStatus();
       carregarDadosDoBanco();
+      carregarResumoAnual();
     });
 
     definirMesAtual();
+    ativarAbas();
     carregarDadosDoBanco();
+    carregarResumoAnual();
   </script>
 </body>
 </html>
