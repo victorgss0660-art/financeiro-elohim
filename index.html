@@ -11,7 +11,7 @@
   <style>
     :root{
       --bg:#0b0b0b;
-      --bg-2:#111111;
+      --bg-soft:#121212;
       --panel:#171717;
       --panel-2:#1d1d1d;
       --border:#2a2a2a;
@@ -22,18 +22,31 @@
       --green:#22c55e;
       --yellow:#facc15;
       --danger:#ef4444;
+      --shadow:0 10px 30px rgba(0,0,0,.28);
+      --radius:18px;
     }
 
     *{box-sizing:border-box}
     html,body{margin:0;padding:0}
     body{
       font-family:Arial, Helvetica, sans-serif;
-      background:linear-gradient(135deg,#080808,#160000);
+      background:
+        radial-gradient(circle at top left, rgba(255,0,0,.10), transparent 25%),
+        linear-gradient(135deg,#080808,#140000);
       color:var(--text);
       min-height:100vh;
     }
 
     .hidden{display:none !important}
+
+    .fade-in{
+      animation:fadeIn .25s ease;
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0; transform:translateY(6px)}
+      to{opacity:1; transform:translateY(0)}
+    }
 
     .login-screen{
       min-height:100vh;
@@ -45,13 +58,14 @@
 
     .login-card{
       width:100%;
-      max-width:420px;
-      background:rgba(20,20,20,.92);
+      max-width:430px;
+      background:rgba(20,20,20,.95);
       border:1px solid var(--border);
       border-radius:22px;
       padding:30px;
       box-shadow:0 20px 60px rgba(0,0,0,.45);
       text-align:center;
+      backdrop-filter:blur(12px);
     }
 
     .login-logo{
@@ -129,10 +143,12 @@
     }
 
     .sidebar{
-      width:250px;
-      background:rgba(15,15,15,.95);
+      width:260px;
+      background:rgba(15,15,15,.96);
       border-right:1px solid var(--border);
       padding:18px;
+      display:flex;
+      flex-direction:column;
     }
 
     .sidebar-logo{
@@ -174,6 +190,7 @@
       display:flex;
       flex-direction:column;
       gap:8px;
+      flex:1;
     }
 
     .menu-btn{
@@ -181,29 +198,40 @@
       text-align:left;
       padding:13px 14px;
       border:none;
-      border-radius:12px;
+      border-radius:14px;
       cursor:pointer;
       background:#1a1a1a;
       color:#d8d8d8;
       font-size:14px;
       font-weight:600;
       transition:.15s ease;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .menu-btn .icon{
+      width:18px;
+      text-align:center;
+      opacity:.95;
     }
 
     .menu-btn:hover{
       background:#242424;
       color:#fff;
+      transform:translateX(2px);
     }
 
     .menu-btn.active{
       background:linear-gradient(90deg,var(--red),var(--red-2));
       color:#fff;
+      box-shadow:0 8px 18px rgba(209,0,0,.25);
     }
 
     .logout-btn{
       width:100%;
       margin-top:16px;
-      background:#272727;
+      background:#252525;
     }
 
     .main{
@@ -269,9 +297,15 @@
     .card{
       background:var(--panel);
       border:1px solid var(--border);
-      border-radius:18px;
+      border-radius:var(--radius);
       padding:18px;
-      box-shadow:0 10px 30px rgba(0,0,0,.28);
+      box-shadow:var(--shadow);
+      transition:.15s ease;
+    }
+
+    .card:hover{
+      transform:translateY(-2px);
+      border-color:#343434;
     }
 
     .card-title{
@@ -301,10 +335,10 @@
     .panel{
       background:var(--panel);
       border:1px solid var(--border);
-      border-radius:18px;
+      border-radius:var(--radius);
       padding:18px;
       margin-bottom:20px;
-      box-shadow:0 10px 30px rgba(0,0,0,.28);
+      box-shadow:var(--shadow);
     }
 
     .panel-head{
@@ -491,11 +525,11 @@
       </div>
 
       <div class="menu">
-        <button class="menu-btn active" data-tab="dashboard" type="button">📊 Dashboard</button>
-        <button class="menu-btn" data-tab="faturamento" type="button">💰 Faturamento</button>
-        <button class="menu-btn" data-tab="metas" type="button">🎯 Metas</button>
-        <button class="menu-btn" data-tab="importar" type="button">📂 Importar Planilha</button>
-        <button class="menu-btn" data-tab="resumo" type="button">📈 Resumo Anual</button>
+        <button class="menu-btn active" data-tab="dashboard" type="button"><span class="icon">📊</span><span>Dashboard</span></button>
+        <button class="menu-btn" data-tab="faturamento" type="button"><span class="icon">💰</span><span>Faturamento</span></button>
+        <button class="menu-btn" data-tab="metas" type="button"><span class="icon">🎯</span><span>Metas</span></button>
+        <button class="menu-btn" data-tab="importar" type="button"><span class="icon">📂</span><span>Importar Planilha</span></button>
+        <button class="menu-btn" data-tab="resumo" type="button"><span class="icon">📈</span><span>Resumo Anual</span></button>
       </div>
 
       <button id="btnSair" class="btn logout-btn" type="button">Sair</button>
@@ -542,7 +576,7 @@
 
       <div id="appMsg" class="info"></div>
 
-      <section id="tab-dashboard" class="tab-section active">
+      <section id="tab-dashboard" class="tab-section active fade-in">
         <section class="cards">
           <div class="card">
             <div class="card-title">Faturamento</div>
@@ -644,7 +678,7 @@
         </section>
       </section>
 
-      <section id="tab-faturamento" class="tab-section">
+      <section id="tab-faturamento" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
             <h3>Faturamento do mês</h3>
@@ -657,7 +691,7 @@
         </section>
       </section>
 
-      <section id="tab-metas" class="tab-section">
+      <section id="tab-metas" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
             <h3>Metas por categoria (% do faturamento)</h3>
@@ -670,7 +704,7 @@
         </section>
       </section>
 
-      <section id="tab-importar" class="tab-section">
+      <section id="tab-importar" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
             <h3>Importar planilha</h3>
@@ -680,7 +714,7 @@
         </section>
       </section>
 
-      <section id="tab-resumo" class="tab-section">
+      <section id="tab-resumo" class="tab-section fade-in">
         <section class="panel table-wrap">
           <div class="panel-head">
             <h3>Resumo Anual</h3>
@@ -705,8 +739,8 @@
   </section>
 
   <script>
-    const URL = "https://qaqszkhkizeifwkhumka.supabase.co";
-    const KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
+    const API_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
+    const API_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
     const nomesCategorias = {
       MC: "Materiais de Consumo",
@@ -726,18 +760,8 @@
     const categoriasPadrao = Object.keys(nomesCategorias);
 
     const metasPadrao = {
-      MC: 20,
-      MP: 18,
-      TERC: 8,
-      FRETE: 5,
-      DESP: 6,
-      TAR: 1,
-      PREST: 4,
-      FOLHA: 15,
-      COMIS: 2,
-      IMPOS: 5,
-      RESC: 1,
-      MANUT: 4
+      MC: 20, MP: 18, TERC: 8, FRETE: 5, DESP: 6, TAR: 1,
+      PREST: 4, FOLHA: 15, COMIS: 2, IMPOS: 5, RESC: 1, MANUT: 4
     };
 
     const coresCategorias = {
@@ -809,74 +833,61 @@
     }
 
     function getMesAno() {
-      return {
-        mes: mesSelect.value,
-        ano: anoSelect.value
-      };
+      return { mes: mesSelect.value, ano: anoSelect.value };
     }
 
     async function restGet(tabela, query) {
-      const res = await fetch(`${URL}/rest/v1/${tabela}?${query}`, {
+      const res = await fetch(`${API_URL}/rest/v1/${tabela}?${query}`, {
         headers: {
-          apikey: KEY,
-          Authorization: "Bearer " + KEY
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY
         }
       });
-
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.message || "Erro GET");
-      }
+      if (!res.ok) throw new Error(data?.message || "Erro GET");
       return data;
     }
 
     async function restInsert(tabela, payload) {
-      const res = await fetch(`${URL}/rest/v1/${tabela}`, {
+      const res = await fetch(`${API_URL}/rest/v1/${tabela}`, {
         method: "POST",
         headers: {
-          apikey: KEY,
-          Authorization: "Bearer " + KEY,
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY,
           "Content-Type": "application/json",
           Prefer: "return=representation"
         },
         body: JSON.stringify(payload)
       });
-
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.message || "Erro INSERT");
-      }
+      if (!res.ok) throw new Error(data?.message || "Erro INSERT");
       return data;
     }
 
     async function restPatch(tabela, filtros, payload) {
-      const res = await fetch(`${URL}/rest/v1/${tabela}?${filtros}`, {
+      const res = await fetch(`${API_URL}/rest/v1/${tabela}?${filtros}`, {
         method: "PATCH",
         headers: {
-          apikey: KEY,
-          Authorization: "Bearer " + KEY,
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY,
           "Content-Type": "application/json",
           Prefer: "return=representation"
         },
         body: JSON.stringify(payload)
       });
-
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.message || "Erro PATCH");
-      }
+      if (!res.ok) throw new Error(data?.message || "Erro PATCH");
       return data;
     }
 
     async function restDelete(tabela, filtros) {
-      const res = await fetch(`${URL}/rest/v1/${tabela}?${filtros}`, {
+      const res = await fetch(`${API_URL}/rest/v1/${tabela}?${filtros}`, {
         method: "DELETE",
         headers: {
-          apikey: KEY,
-          Authorization: "Bearer " + KEY
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY
         }
       });
-
       if (!res.ok) {
         let data = {};
         try { data = await res.json(); } catch {}
@@ -887,7 +898,6 @@
     async function login() {
       try {
         setLoginMsg("Validando acesso...", "info");
-
         const email = (loginEmail.value || "").trim().toLowerCase();
         const senha = loginSenha.value || "";
 
@@ -932,8 +942,10 @@
         userEmail.textContent = usuarioAtual.email || "-";
         userPerfil.textContent = usuarioAtual.perfil || "-";
         perfilBadge.textContent = usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
+
         loginScreen.classList.add("hidden");
         appShell.classList.remove("hidden");
+
         aplicarPermissoes();
         carregarTudo();
       } catch {
@@ -955,12 +967,19 @@
           if (botao.classList.contains("hidden")) return;
 
           botoes.forEach(b => b.classList.remove("active"));
-          abas.forEach(a => a.classList.remove("active"));
+          abas.forEach(a => {
+            a.classList.remove("active");
+            a.classList.remove("fade-in");
+          });
 
           botao.classList.add("active");
+
           const tab = botao.dataset.tab;
           const secao = document.getElementById(`tab-${tab}`);
-          if (secao) secao.classList.add("active");
+          if (secao) {
+            secao.classList.add("active");
+            requestAnimationFrame(() => secao.classList.add("fade-in"));
+          }
         });
       });
     }
@@ -1012,10 +1031,7 @@
     }
 
     function atualizarCards(totalGastos, faturamento, metasPct) {
-      const totalMetaValor = Object.values(metasPct).reduce((acc, pct) => {
-        return acc + calcularMetaValor(pct, faturamento);
-      }, 0);
-
+      const totalMetaValor = Object.values(metasPct).reduce((acc, pct) => acc + calcularMetaValor(pct, faturamento), 0);
       const atingida = totalMetaValor > 0 ? Math.round((totalGastos / totalMetaValor) * 100) : 0;
 
       document.getElementById("fat").textContent = moeda(faturamento);
@@ -1063,7 +1079,6 @@
       }
 
       const acima = [];
-
       keys.forEach(cat => {
         const gasto = num(categorias[cat] || 0);
         const metaValor = calcularMetaValor(metasPct[cat] || 0, faturamento);
@@ -1211,21 +1226,12 @@
       const meses = await restGet("meses", `select=*&ano=eq.${encodeURIComponent(ano)}`);
       const gastos = await restGet("gastos", `select=*&ano=eq.${encodeURIComponent(ano)}`);
 
-      const ordem = [
-        "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-        "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-      ];
-
+      const ordem = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
       const mapa = {};
       ordem.forEach(m => mapa[m] = { faturamento: 0, gastos: 0 });
 
-      meses.forEach(item => {
-        mapa[item.mes].faturamento = num(item.faturamento || 0);
-      });
-
-      gastos.forEach(item => {
-        mapa[item.mes].gastos += num(item.valor || 0);
-      });
+      meses.forEach(item => { mapa[item.mes].faturamento = num(item.faturamento || 0); });
+      gastos.forEach(item => { mapa[item.mes].gastos += num(item.valor || 0); });
 
       const tbody = document.getElementById("tabelaResumoAnual");
       tbody.innerHTML = ordem.map(m => {
@@ -1305,9 +1311,7 @@
           valor: num(categorias[cat] || 0)
         }));
 
-        if (payload.length > 0) {
-          await restInsert("gastos", payload);
-        }
+        if (payload.length > 0) await restInsert("gastos", payload);
 
         atualizarStatus(new Date().toLocaleString("pt-BR"), "Planilha importada e salva");
         setAppMsg("Planilha importada com sucesso.", "ok");
@@ -1323,7 +1327,6 @@
       data.forEach(row => {
         const categoria = row["CATEGORIA"];
         let valor = row["VALOR"];
-
         if (!categoria) return;
 
         if (typeof valor === "string") {
@@ -1360,8 +1363,8 @@
 
       const { categorias, metasPct, faturamento, mes, ano } = ultimoContexto;
       let totalGastos = 0;
-
       const linhas = [];
+
       linhas.push(`RELATÓRIO FINANCEIRO - ${mes}/${ano}`);
       linhas.push(`Faturamento: ${moeda(faturamento)}`);
       linhas.push("");
@@ -1386,17 +1389,14 @@
 
       const blob = new Blob([linhas.join("\n")], { type: "text/plain;charset=utf-8" });
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
+      a.href = window.URL.createObjectURL(blob);
       a.download = `relatorio-${mes.toLowerCase()}-${ano}.txt`;
       a.click();
     }
 
     function definirMesAtual() {
       const hoje = new Date();
-      const meses = [
-        "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-        "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-      ];
+      const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
       mesSelect.value = meses[hoje.getMonth()];
       anoSelect.value = String(hoje.getFullYear());
       atualizarStatus();
