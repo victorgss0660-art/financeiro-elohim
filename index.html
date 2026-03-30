@@ -2,19 +2,98 @@
 <html>
 <head>
   <title>Financeiro Elohim</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body {
+      margin:0;
+      font-family:Arial;
+      background:#0b0b0b;
+      color:white;
+      display:flex;
+    }
+
+    .sidebar {
+      width:220px;
+      background:#111;
+      height:100vh;
+      padding:20px;
+    }
+
+    .sidebar h2 {
+      color:red;
+    }
+
+    .menu div {
+      margin:15px 0;
+      cursor:pointer;
+    }
+
+    .main {
+      flex:1;
+      padding:20px;
+    }
+
+    .cards {
+      display:flex;
+      gap:20px;
+    }
+
+    .card {
+      background:#151515;
+      padding:20px;
+      border-radius:10px;
+      flex:1;
+    }
+
+    canvas {
+      margin-top:20px;
+      background:white;
+      border-radius:10px;
+    }
+
+    input {
+      margin-top:20px;
+    }
+
+  </style>
 </head>
 
-<body style="background:#111;color:white;font-family:Arial">
+<body>
 
-<h2>Financeiro Elohim</h2>
+<div class="sidebar">
+  <h2>ELOHIM</h2>
 
-<input type="file" id="file" />
+  <div class="menu">
+    <div>Dashboard</div>
+    <div>Resumo</div>
+    <div>Metas</div>
+    <div>Importar</div>
+  </div>
+</div>
 
-<canvas id="grafico"></canvas>
+<div class="main">
+
+  <h1>Dashboard Financeiro</h1>
+
+  <div class="cards">
+    <div class="card">Faturamento: R$ <span id="fat">0</span></div>
+    <div class="card">Gastos: R$ <span id="gastos">0</span></div>
+    <div class="card">Saldo: R$ <span id="saldo">0</span></div>
+  </div>
+
+  <input type="file" id="file"/>
+
+  <canvas id="barChart"></canvas>
+  <canvas id="pieChart"></canvas>
+
+</div>
 
 <script>
+
+let barChart, pieChart;
 
 document.getElementById('file').addEventListener('change', handleFile);
 
@@ -36,7 +115,9 @@ function handleFile(e){
 }
 
 function processar(data){
+
   let categorias = {};
+  let total = 0;
 
   data.forEach(row => {
     let cat = row["CATEGORIA"];
@@ -44,25 +125,56 @@ function processar(data){
 
     if(!categorias[cat]) categorias[cat] = 0;
     categorias[cat] += val;
+    total += val;
   });
+
+  document.getElementById("gastos").innerText = total.toFixed(2);
+
+  let faturamento = 10000;
+  document.getElementById("fat").innerText = faturamento;
+
+  document.getElementById("saldo").innerText = (faturamento - total).toFixed(2);
 
   desenhar(categorias);
 }
 
 function desenhar(categorias){
+
   const labels = Object.keys(categorias);
   const valores = Object.values(categorias);
 
-  new Chart(document.getElementById("grafico"), {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Gastos",
-        data: valores
+  if(barChart) barChart.destroy();
+  if(pieChart) pieChart.destroy();
+
+  barChart = new Chart(document.getElementById("barChart"), {
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[
+        {
+          label:"Gastos",
+          data:valores,
+          backgroundColor:"red"
+        },
+        {
+          label:"Meta",
+          data:valores.map(v => v * 0.9),
+          type:'line'
+        }
+      ]
+    }
+  });
+
+  pieChart = new Chart(document.getElementById("pieChart"), {
+    type:'pie',
+    data:{
+      labels:labels,
+      datasets:[{
+        data:valores
       }]
     }
   });
+
 }
 
 </script>
