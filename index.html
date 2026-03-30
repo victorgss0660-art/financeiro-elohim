@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login Elohim</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     body {
       margin: 0;
@@ -15,59 +15,75 @@
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .box {
-      width: 100%;
-      max-width: 420px;
-      background: rgba(20,20,20,0.85);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 18px;
-      padding: 28px;
+      padding: 20px;
       box-sizing: border-box;
     }
+
+    .box {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(20,20,20,0.88);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 28px;
+      box-sizing: border-box;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    }
+
     .logo {
       text-align: center;
       margin-bottom: 20px;
     }
+
     .logo img {
-      width: 180px;
+      width: 190px;
       max-width: 100%;
+      display: inline-block;
     }
+
     h2 {
       margin: 0 0 8px 0;
       text-align: center;
+      font-size: 26px;
     }
+
     p {
       margin: 0 0 18px 0;
       text-align: center;
       color: #bbb;
     }
+
     input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border-radius: 12px;
       border: none;
       background: #111;
       color: #fff;
       box-sizing: border-box;
+      font-size: 16px;
     }
+
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       background: linear-gradient(90deg, #d10000, #ff2a2a);
       color: #fff;
       font-weight: bold;
       cursor: pointer;
+      font-size: 16px;
     }
+
     .msg {
       margin-top: 14px;
       font-size: 14px;
-      line-height: 1.4;
+      line-height: 1.45;
       white-space: pre-wrap;
     }
+
     .ok { color: #22c55e; }
     .err { color: #ff6b6b; }
     .info { color: #facc15; }
@@ -80,13 +96,13 @@
     </div>
 
     <h2>Entrar</h2>
-    <p>Teste de login com diagnóstico</p>
+    <p>Login com conexão direta ao banco</p>
 
     <input id="email" type="email" placeholder="Seu e-mail">
     <input id="senha" type="password" placeholder="Sua senha">
-    <button id="entrar">Entrar</button>
+    <button id="entrar" type="button">Entrar</button>
 
-    <div id="status" class="msg info">Aguardando teste...</div>
+    <div id="status" class="msg info">Página carregada. Pronto para testar login.</div>
   </div>
 
   <script>
@@ -98,33 +114,13 @@
     const senhaEl = document.getElementById("senha");
     const entrarEl = document.getElementById("entrar");
 
-    function setStatus(text, type = "info") {
-      statusEl.className = "msg " + type;
-      statusEl.textContent = text;
-    }
-
-    let supabase = null;
-
-    try {
-      if (!window.supabase) {
-        setStatus("Erro: biblioteca do Supabase não carregou.", "err");
-      } else if (SUPABASE_KEY.includes("COLE_AQUI")) {
-        setStatus("Erro: você ainda não trocou a Publishable Key no index.html.", "err");
-      } else {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        setStatus("Supabase carregado. Tente fazer login.", "ok");
-      }
-    } catch (e) {
-      setStatus("Erro ao iniciar Supabase:\n" + e.message, "err");
+    function setStatus(texto, tipo = "info") {
+      statusEl.className = "msg " + tipo;
+      statusEl.textContent = texto;
     }
 
     async function fazerLogin() {
       try {
-        if (!supabase) {
-          setStatus("Supabase não está inicializado.", "err");
-          return;
-        }
-
         const email = (emailEl.value || "").trim().toLowerCase();
         const senha = senhaEl.value || "";
 
@@ -133,46 +129,70 @@
           return;
         }
 
-        setStatus("Consultando tabela usuarios...", "info");
+        setStatus("Consultando banco...", "info");
 
-        const { data, error } = await supabase
-          .from("usuarios")
-          .select("*")
-          .eq("email", email)
-          .eq("senha", senha)
-          .limit(1);
+        const url =
+          `${SUPABASE_URL}/rest/v1/usuarios` +
+          `?select=*` +
+          `&email=eq.${encodeURIComponent(email)}` +
+          `&senha=eq.${encodeURIComponent(senha)}` +
+          `&limit=1`;
 
-        if (error) {
+        const resposta = await fetch(url, {
+          method: "GET",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        const texto = await resposta.text();
+        let dados = [];
+
+        try {
+          dados = JSON.parse(texto);
+        } catch {
+          setStatus("Resposta inválida do servidor:\n" + texto, "err");
+          return;
+        }
+
+        if (!resposta.ok) {
+          const mensagemErro = dados?.message || texto || "Erro desconhecido";
           setStatus(
-            "Erro na consulta ao Supabase:\n" +
-            error.message +
-            "\n\nVerifique:\n- tabela usuarios existe\n- RLS está desligado\n- chave pública está correta",
+            "Erro ao consultar usuários:\n" + mensagemErro +
+            "\n\nVerifique:\n- chave pública correta\n- tabela usuarios existe\n- RLS desligado",
             "err"
           );
           return;
         }
 
-        if (!data || data.length === 0) {
+        if (!dados || dados.length === 0) {
           setStatus(
-            "Login inválido.\n\nVerifique:\n- e-mail digitado\n- senha digitada\n- se o usuário existe na tabela usuarios",
+            "Login inválido.\n\nVerifique:\n- e-mail\n- senha\n- cadastro na tabela usuarios",
             "err"
           );
           return;
         }
 
-        const usuario = data[0];
+        const usuario = dados[0];
+
         setStatus(
-          "Login OK!\n\nUsuário: " + usuario.email + "\nPerfil: " + usuario.perfil,
+          "Login realizado com sucesso.\n\nUsuário: " + usuario.email +
+          "\nPerfil: " + usuario.perfil,
           "ok"
         );
-      } catch (e) {
-        setStatus("Erro inesperado:\n" + e.message, "err");
+      } catch (erro) {
+        setStatus("Erro inesperado:\n" + erro.message, "err");
       }
     }
 
     entrarEl.addEventListener("click", fazerLogin);
+
     senhaEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") fazerLogin();
+      if (e.key === "Enter") {
+        fazerLogin();
+      }
     });
   </script>
 </body>
