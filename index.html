@@ -22,10 +22,10 @@
     }
 
     .sidebar {
-      width: 240px;
-      background: #111;
+      width: 250px;
+      background: linear-gradient(180deg, #111 0%, #191919 100%);
       padding: 24px 18px;
-      border-right: 1px solid #222;
+      border-right: 1px solid #2a2a2a;
     }
 
     .logo {
@@ -33,6 +33,7 @@
       font-weight: bold;
       color: #d10000;
       margin-bottom: 8px;
+      letter-spacing: 1px;
     }
 
     .subtitle {
@@ -42,20 +43,22 @@
     }
 
     .menu-item {
-      padding: 12px 14px;
+      padding: 13px 14px;
       margin-bottom: 10px;
       background: #181818;
-      border-radius: 10px;
+      border-radius: 12px;
       color: #fff;
-      border: 1px solid #222;
+      border: 1px solid #242424;
       cursor: pointer;
       transition: 0.2s;
+      font-weight: 600;
     }
 
     .menu-item:hover,
     .menu-item.active {
       background: #d10000;
       border-color: #d10000;
+      transform: translateX(2px);
     }
 
     .main {
@@ -81,20 +84,22 @@
     .top-filters input,
     .top-filters button {
       padding: 10px 12px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #333;
       background: #161616;
       color: #fff;
     }
 
-    .top-filters button {
+    .top-filters button,
+    .btn {
       background: #d10000;
       border: none;
       cursor: pointer;
       font-weight: bold;
     }
 
-    .top-filters button:hover {
+    .top-filters button:hover,
+    .btn:hover {
       background: #b80000;
     }
 
@@ -114,10 +119,11 @@
     }
 
     .card {
-      background: #151515;
-      border-radius: 14px;
+      background: linear-gradient(180deg, #151515 0%, #1a1a1a 100%);
+      border-radius: 16px;
       padding: 18px;
-      border: 1px solid #232323;
+      border: 1px solid #252525;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
     }
 
     .card-title {
@@ -139,11 +145,12 @@
     }
 
     .panel {
-      background: #151515;
-      border: 1px solid #232323;
-      border-radius: 14px;
+      background: linear-gradient(180deg, #151515 0%, #1a1a1a 100%);
+      border: 1px solid #252525;
+      border-radius: 16px;
       padding: 18px;
       margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
     }
 
     .panel h3 {
@@ -154,19 +161,20 @@
 
     .chart-wrap {
       background: #fff;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 14px;
-      min-height: 360px;
+      min-height: 380px;
     }
 
     .status-box,
     .table-wrap,
     .meta-wrap {
-      background: #151515;
-      border: 1px solid #232323;
-      border-radius: 14px;
+      background: linear-gradient(180deg, #151515 0%, #1a1a1a 100%);
+      border: 1px solid #252525;
+      border-radius: 16px;
       padding: 18px;
       margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
     }
 
     .status-line {
@@ -198,6 +206,7 @@
       margin-bottom: 16px;
       font-size: 14px;
       color: #bbb;
+      font-weight: 600;
     }
 
     .meta-grid {
@@ -209,7 +218,7 @@
     .meta-item {
       background: #111;
       border: 1px solid #222;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 12px;
     }
 
@@ -223,7 +232,7 @@
     .meta-item input {
       width: 100%;
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #333;
       background: #161616;
       color: #fff;
@@ -236,16 +245,8 @@
 
     .btn {
       padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
-      background: #d10000;
+      border-radius: 10px;
       color: #fff;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .btn:hover {
-      background: #b80000;
     }
 
     .input-row {
@@ -258,7 +259,7 @@
     .input-row input,
     .input-row select {
       padding: 10px 12px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #333;
       background: #161616;
       color: #fff;
@@ -445,8 +446,23 @@
 
     const categoriasPadrao = [
       "MC", "MP", "TERC", "FRETE", "DESP", "TAR", "PREST",
-      "FOLHA", "COMIS", "IMP", "RESC", "MANUT", "IMPOS"
+      "FOLHA", "COMIS", "IMPOS", "RESC", "MANUT"
     ];
+
+    const nomesCategorias = {
+      MC: "Materiais de Consumo",
+      MP: "Matéria-Prima",
+      TERC: "Terceirizações",
+      FRETE: "Fretes",
+      DESP: "Despesas Fixas",
+      TAR: "Tarifas Bancárias",
+      PREST: "Prestações de Serviço",
+      FOLHA: "Folha de Pagamento",
+      COMIS: "Comissões",
+      IMPOS: "Impostos",
+      RESC: "Rescisões",
+      MANUT: "Manutenções"
+    };
 
     const metasPadraoPercentuais = {
       MC: 20,
@@ -458,10 +474,24 @@
       PREST: 4,
       FOLHA: 15,
       COMIS: 2,
-      IMP: 2,
+      IMPOS: 5,
       RESC: 1,
-      MANUT: 4,
-      IMPOS: 5
+      MANUT: 4
+    };
+
+    const coresGraficos = {
+      MC: "#ef4444",
+      MP: "#3b82f6",
+      TERC: "#22c55e",
+      FRETE: "#f59e0b",
+      DESP: "#a855f7",
+      TAR: "#06b6d4",
+      PREST: "#ec4899",
+      FOLHA: "#84cc16",
+      COMIS: "#f97316",
+      IMPOS: "#64748b",
+      RESC: "#e11d48",
+      MANUT: "#14b8a6"
     };
 
     let barChart = null;
@@ -475,6 +505,10 @@
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
     const btnCarregarMes = document.getElementById("btnCarregarMes");
     const mensagem = document.getElementById("mensagem");
+
+    function nomeCategoria(sigla) {
+      return nomesCategorias[sigla] || sigla;
+    }
 
     function formatarMoeda(valor) {
       return Number(valor || 0).toLocaleString("pt-BR", {
@@ -528,7 +562,7 @@
 
       grid.innerHTML = categorias.map(cat => `
         <div class="meta-item">
-          <label>${cat} (%)</label>
+          <label>${nomeCategoria(cat)} (%)</label>
           <input type="number" step="0.01" data-categoria="${cat}" value="${Number(metasPercentuais[cat] || 0)}" />
         </div>
       `).join("");
@@ -561,7 +595,7 @@
 
         return `
           <tr>
-            <td>${cat}</td>
+            <td>${nomeCategoria(cat)}</td>
             <td>${formatarMoeda(gasto)}</td>
             <td>${metaPercentual.toFixed(2)}%</td>
             <td>${formatarMoeda(metaValor)}</td>
@@ -573,9 +607,11 @@
     }
 
     function desenharGraficos(categorias, metasPercentuais, faturamento) {
-      const labels = Object.keys(categorias);
-      const valores = labels.map(label => arred(categorias[label] || 0));
-      const metasEmValor = labels.map(label => calcularMetaEmValor(metasPercentuais[label] || 0, faturamento));
+      const keys = Object.keys(categorias);
+      const labels = keys.map(k => nomeCategoria(k));
+      const valores = keys.map(k => arred(categorias[k] || 0));
+      const metasEmValor = keys.map(k => calcularMetaEmValor(metasPercentuais[k] || 0, faturamento));
+      const cores = keys.map(k => coresGraficos[k] || "#888");
 
       if (barChart) barChart.destroy();
       if (pieChart) pieChart.destroy();
@@ -588,16 +624,19 @@
             {
               label: "Gasto Real",
               data: valores,
-              backgroundColor: "#d10000"
+              backgroundColor: cores,
+              borderRadius: 8
             },
             {
               label: "Meta",
               data: metasEmValor,
               type: "line",
-              borderColor: "#1f2937",
-              backgroundColor: "#1f2937",
-              borderWidth: 3,
-              tension: 0.3
+              borderColor: "#111827",
+              backgroundColor: "#111827",
+              borderWidth: 4,
+              tension: 0.3,
+              pointRadius: 5,
+              pointBackgroundColor: "#111827"
             }
           ]
         },
@@ -619,11 +658,7 @@
           labels,
           datasets: [{
             data: valores,
-            backgroundColor: [
-              "#d10000", "#2b2b2b", "#6b7280", "#b91c1c", "#ef4444",
-              "#9ca3af", "#7f1d1d", "#374151", "#991b1b", "#4b5563",
-              "#dc2626", "#111827", "#f87171"
-            ]
+            backgroundColor: cores
           }]
         },
         options: {
