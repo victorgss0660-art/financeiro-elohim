@@ -173,7 +173,6 @@
 
     .success { color: #22c55e; font-weight: bold; }
     .danger { color: #ef4444; font-weight: bold; }
-    .warning { color: #f59e0b; font-weight: bold; }
     .muted { color: #999; }
 
     .message {
@@ -319,7 +318,7 @@
     </section>
 
     <section class="meta-wrap" style="margin-bottom: 24px;">
-      <h3 class="section-title">Metas por categoria</h3>
+      <h3 class="section-title">Metas por categoria (% do faturamento)</h3>
       <div class="meta-grid" id="metaGrid"></div>
     </section>
 
@@ -330,14 +329,15 @@
           <tr>
             <th>Categoria</th>
             <th>Gasto</th>
-            <th>Meta</th>
+            <th>Meta %</th>
+            <th>Meta R$</th>
             <th>Diferença</th>
             <th>Situação</th>
           </tr>
         </thead>
         <tbody id="tabelaResumo">
           <tr>
-            <td colspan="5" class="muted">Nenhum dado carregado.</td>
+            <td colspan="6" class="muted">Nenhum dado carregado.</td>
           </tr>
         </tbody>
       </table>
@@ -355,26 +355,24 @@
       "FOLHA", "COMIS", "IMP", "RESC", "MANUT", "IMPOS"
     ];
 
-    const metasPadrao = {
-      MC: 1800,
-      MP: 1500,
-      TERC: 1000,
-      FRETE: 800,
-      DESP: 900,
-      TAR: 600,
-      PREST: 1100,
-      FOLHA: 2500,
-      COMIS: 500,
-      IMP: 700,
-      RESC: 500,
-      MANUT: 1200,
-      IMPOS: 900
+    const metasPadraoPercentuais = {
+      MC: 20,
+      MP: 18,
+      TERC: 8,
+      FRETE: 5,
+      DESP: 6,
+      TAR: 1,
+      PREST: 4,
+      FOLHA: 15,
+      COMIS: 2,
+      IMP: 2,
+      RESC: 1,
+      MANUT: 4,
+      IMPOS: 5
     };
 
     let barChart = null;
     let pieChart = null;
-    let metasAtuais = {};
-    let categoriasAtuais = {};
 
     const fileInput = document.getElementById("fileInput");
     const mesSelect = document.getElementById("mesSelect");
@@ -415,24 +413,33 @@
       document.getElementById("situacaoMes").textContent = situacao;
     }
 
-    function atualizarCards(totalGastos, faturamento, categorias, metas) {
-      const totalMeta = Object.values(metas || {}).reduce((acc, val) => acc + Number(val || 0), 0);
-      const percentual = totalMeta > 0 ? Math.round((totalGastos / totalMeta) * 100) : 0;
+    function calcularMetaEmValor(percentual, faturamento) {
+      return arred((Number(percentual || 0) / 100) * Number(faturamento || 0));
+    }
+
+    function atualizarCards(totalGastos, faturamento, metasPercentuais) {
+      const totalMetaValor = Object.values(metasPercentuais || {}).reduce((acc, percentual) => {
+        return acc + calcularMetaEmValor(percentual, faturamento);
+      }, 0);
+
+      const percentualAtingido = totalMetaValor > 0
+        ? Math.round((Number(totalGastos || 0) / totalMetaValor) * 100)
+        : 0;
 
       document.getElementById("gastos").textContent = formatarMoeda(totalGastos);
       document.getElementById("fat").textContent = formatarMoeda(faturamento);
       document.getElementById("saldo").textContent = formatarMoeda(faturamento - totalGastos);
-      document.getElementById("metaAtingida").textContent = `${percentual}%`;
+      document.getElementById("metaAtingida").textContent = `${percentualAtingido}%`;
     }
 
-    function montarMetaGrid(metas) {
+    function montarMetaGrid(metasPercentuais) {
       const grid = document.getElementById("metaGrid");
-      const categorias = Array.from(new Set([...categoriasPadrao, ...Object.keys(metas || {})]));
+      const categorias = Array.from(new Set([...categoriasPadrao, ...Object.keys(metasPercentuais || {})]));
 
       grid.innerHTML = categorias.map(cat => `
         <div class="meta-item">
-          <label>${cat}</label>
-          <input type="number" step="0.01" data-categoria="${cat}" value="${Number(metas[cat] || 0)}" />
+          <label>${cat} (%)</label>
+          <input type="number" step="0.01" data-categoria="${cat}" value="${Number(metasPercentuais[cat] || 0)}" />
         </div>
       `).join("");
     }
@@ -440,32 +447,36 @@
     function capturarMetasDaTela() {
       const inputs = document.querySelectorAll("#metaGrid input");
       const resultado = {};
+
       inputs.forEach(input => {
         resultado[input.dataset.categoria] = arred(input.value || 0);
       });
+
       return resultado;
     }
 
-    function montarTabela(categorias, metas) {
+    function montarTabela(categorias, metasPercentuais, faturamento) {
       const tbody = document.getElementById("tabelaResumo");
       const cats = Object.keys(categorias);
 
       if (!cats.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="muted">Nenhum dado carregado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>';
         return;
       }
 
       tbody.innerHTML = cats.map(cat => {
         const gasto = arred(categorias[cat] || 0);
-        const meta = arred(metas[cat] || 0);
-        const diferenca = arred(gasto - meta);
+        const metaPercentual = arred(metasPercentuais[cat] || 0);
+        const metaValor = calcularMetaEmValor(metaPercentual, faturamento);
+        const diferenca = arred(gasto - metaValor);
         const dentro = diferenca <= 0;
 
         return `
           <tr>
             <td>${cat}</td>
             <td>${formatarMoeda(gasto)}</td>
-            <td>${formatarMoeda(meta)}</td>
+            <td>${metaPercentual.toFixed(2)}%</td>
+            <td>${formatarMoeda(metaValor)}</td>
             <td class="${dentro ? "success" : "danger"}">${formatarMoeda(diferenca)}</td>
             <td class="${dentro ? "success" : "danger"}">${dentro ? "Dentro da meta" : "Acima da meta"}</td>
           </tr>
@@ -473,10 +484,10 @@
       }).join("");
     }
 
-    function desenharGraficos(categorias, metas) {
+    function desenharGraficos(categorias, metasPercentuais, faturamento) {
       const labels = Object.keys(categorias);
       const valores = labels.map(label => arred(categorias[label] || 0));
-      const metasValores = labels.map(label => arred(metas[label] || 0));
+      const metasEmValor = labels.map(label => calcularMetaEmValor(metasPercentuais[label] || 0, faturamento));
 
       if (barChart) barChart.destroy();
       if (pieChart) pieChart.destroy();
@@ -493,7 +504,7 @@
             },
             {
               label: "Meta",
-              data: metasValores,
+              data: metasEmValor,
               type: "line",
               borderColor: "#1f2937",
               backgroundColor: "#1f2937",
@@ -568,7 +579,7 @@
           mes,
           ano,
           categoria: cat,
-          meta: metasPadrao[cat] || 0
+          meta: metasPadraoPercentuais[cat] || 0
         }));
 
         const { error: insertError } = await supabaseClient
@@ -632,7 +643,7 @@
 
         if (insertError) throw insertError;
 
-        mostrarMensagem("Metas salvas com sucesso.");
+        mostrarMensagem("Metas percentuais salvas com sucesso.");
         await carregarDadosDoBanco();
       } catch (error) {
         console.error(error);
@@ -711,13 +722,10 @@
           totalGastos += arred(item.valor || 0);
         });
 
-        const metas = {};
+        const metasPercentuais = {};
         (metasBanco || []).forEach(item => {
-          metas[item.categoria] = arred(item.meta || 0);
+          metasPercentuais[item.categoria] = arred(item.meta || 0);
         });
-
-        categoriasAtuais = categorias;
-        metasAtuais = metas;
 
         const faturamento = mesesData && mesesData.length > 0
           ? arred(mesesData[0].faturamento || 0)
@@ -725,12 +733,12 @@
 
         faturamentoInput.value = faturamento || "";
 
-        montarMetaGrid(metas);
-        atualizarCards(totalGastos, faturamento, categorias, metas);
-        montarTabela(categorias, metas);
+        montarMetaGrid(metasPercentuais);
+        atualizarCards(totalGastos, faturamento, metasPercentuais);
+        montarTabela(categorias, metasPercentuais, faturamento);
 
         if (Object.keys(categorias).length > 0) {
-          desenharGraficos(categorias, metas);
+          desenharGraficos(categorias, metasPercentuais, faturamento);
           atualizarStatus("Banco carregado", "Dados carregados com sucesso");
           mostrarMensagem("Dados carregados do banco com sucesso.");
         } else {
