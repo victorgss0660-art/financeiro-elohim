@@ -10,9 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -33,7 +31,7 @@
     .logo {
       font-size: 30px;
       font-weight: bold;
-      color: #e10600;
+      color: #d10000;
       margin-bottom: 8px;
     }
 
@@ -144,7 +142,9 @@
       min-height: 360px;
     }
 
-    .status-box {
+    .status-box,
+    .table-wrap,
+    .meta-wrap {
       background: #151515;
       border: 1px solid #232323;
       border-radius: 14px;
@@ -154,14 +154,6 @@
     .status-line {
       margin-bottom: 10px;
       color: #ddd;
-    }
-
-    .table-wrap {
-      background: #151515;
-      border: 1px solid #232323;
-      border-radius: 14px;
-      padding: 18px;
-      overflow-x: auto;
     }
 
     table {
@@ -177,52 +169,65 @@
       font-size: 14px;
     }
 
-    th {
-      color: #bbb;
-    }
+    th { color: #bbb; }
 
-    .success {
-      color: #22c55e;
-      font-weight: bold;
-    }
-
-    .danger {
-      color: #ef4444;
-      font-weight: bold;
-    }
-
-    .muted {
-      color: #999;
-    }
+    .success { color: #22c55e; font-weight: bold; }
+    .danger { color: #ef4444; font-weight: bold; }
+    .warning { color: #f59e0b; font-weight: bold; }
+    .muted { color: #999; }
 
     .message {
       margin-top: 10px;
+      margin-bottom: 16px;
       font-size: 14px;
       color: #bbb;
     }
 
-    @media (max-width: 1100px) {
-      .cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
 
-      .grid {
-        grid-template-columns: 1fr;
-      }
+    .meta-item {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .meta-item label {
+      display: block;
+      font-size: 13px;
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+
+    .meta-item input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #161616;
+      color: #fff;
+    }
+
+    .section-title {
+      margin: 0 0 16px 0;
+      font-size: 20px;
+    }
+
+    @media (max-width: 1100px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .grid { grid-template-columns: 1fr; }
+      .meta-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 700px) {
-      body {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        width: 100%;
-      }
-
-      .cards {
-        grid-template-columns: 1fr;
-      }
+      body { flex-direction: column; }
+      .sidebar { width: 100%; }
+      .cards { grid-template-columns: 1fr; }
+      .meta-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -263,9 +268,10 @@
         <option selected>2026</option>
         <option>2027</option>
       </select>
-      <input type="number" id="faturamentoInput" placeholder="Faturamento do mês" />
+      <input type="number" id="faturamentoInput" placeholder="Faturamento do mês" step="0.01" />
       <button id="btnSalvarFaturamento">Salvar faturamento</button>
       <button id="btnCarregar">Carregar dados do mês</button>
+      <button id="btnSalvarMetas">Salvar metas</button>
     </div>
 
     <div class="message" id="mensagem"></div>
@@ -284,8 +290,8 @@
         <div class="card-value" id="saldo">R$ 0,00</div>
       </div>
       <div class="card">
-        <div class="card-title">Categorias</div>
-        <div class="card-value" id="qtdCategorias">0</div>
+        <div class="card-title">Meta Atingida</div>
+        <div class="card-value" id="metaAtingida">0%</div>
       </div>
     </section>
 
@@ -306,14 +312,19 @@
     </section>
 
     <section class="status-box" style="margin-bottom: 24px;">
-      <h3 style="margin-top:0;">Status do mês</h3>
-      <div class="status-line">Mês selecionado: <strong id="statusMes">Março/2026</strong></div>
-      <div class="status-line">Última importação: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
+      <h3 class="section-title">Status do mês</h3>
+      <div class="status-line">Mês selecionado: <strong id="statusMes">-</strong></div>
+      <div class="status-line">Última atualização: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
       <div class="status-line">Situação: <span id="situacaoMes" class="muted">Aguardando dados</span></div>
     </section>
 
+    <section class="meta-wrap" style="margin-bottom: 24px;">
+      <h3 class="section-title">Metas por categoria</h3>
+      <div class="meta-grid" id="metaGrid"></div>
+    </section>
+
     <section class="table-wrap">
-      <h3 style="margin-top:0;">Resumo por Categoria</h3>
+      <h3 class="section-title">Resumo por Categoria</h3>
       <table>
         <thead>
           <tr>
@@ -339,18 +350,31 @@
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const metasFixas = {
+    const categoriasPadrao = [
+      "MC", "MP", "TERC", "FRETE", "DESP", "TAR", "PREST",
+      "FOLHA", "COMIS", "IMP", "RESC", "MANUT", "IMPOS"
+    ];
+
+    const metasPadrao = {
       MC: 1800,
       MP: 1500,
       TERC: 1000,
       FRETE: 800,
       DESP: 900,
       TAR: 600,
-      PREST: 1100
+      PREST: 1100,
+      FOLHA: 2500,
+      COMIS: 500,
+      IMP: 700,
+      RESC: 500,
+      MANUT: 1200,
+      IMPOS: 900
     };
 
     let barChart = null;
     let pieChart = null;
+    let metasAtuais = {};
+    let categoriasAtuais = {};
 
     const fileInput = document.getElementById("fileInput");
     const mesSelect = document.getElementById("mesSelect");
@@ -358,19 +382,23 @@
     const faturamentoInput = document.getElementById("faturamentoInput");
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
     const btnCarregar = document.getElementById("btnCarregar");
+    const btnSalvarMetas = document.getElementById("btnSalvarMetas");
     const mensagem = document.getElementById("mensagem");
-
-    fileInput.addEventListener("change", handleFile);
-    btnSalvarFaturamento.addEventListener("click", salvarFaturamentoMes);
-    btnCarregar.addEventListener("click", carregarDadosDoBanco);
-
-    atualizarStatus();
 
     function formatarMoeda(valor) {
       return Number(valor || 0).toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL"
       });
+    }
+
+    function arred(valor) {
+      return Math.round(Number(valor || 0) * 100) / 100;
+    }
+
+    function mostrarMensagem(texto, erro = false) {
+      mensagem.textContent = texto;
+      mensagem.style.color = erro ? "#ef4444" : "#22c55e";
     }
 
     function getMesAnoSelecionado() {
@@ -380,18 +408,6 @@
       };
     }
 
-    function mostrarMensagem(texto, erro = false) {
-      mensagem.textContent = texto;
-      mensagem.style.color = erro ? "#ef4444" : "#22c55e";
-    }
-
-    function atualizarCards(totalGastos, faturamento, categorias) {
-      document.getElementById("gastos").textContent = formatarMoeda(totalGastos);
-      document.getElementById("fat").textContent = formatarMoeda(faturamento);
-      document.getElementById("saldo").textContent = formatarMoeda(faturamento - totalGastos);
-      document.getElementById("qtdCategorias").textContent = Object.keys(categorias).length;
-    }
-
     function atualizarStatus(ultima = "Nenhuma", situacao = "Aguardando dados") {
       const { mes, ano } = getMesAnoSelecionado();
       document.getElementById("statusMes").textContent = `${mes}/${ano}`;
@@ -399,19 +415,50 @@
       document.getElementById("situacaoMes").textContent = situacao;
     }
 
-    function montarTabela(categorias) {
-      const tbody = document.getElementById("tabelaResumo");
-      const linhas = Object.keys(categorias);
+    function atualizarCards(totalGastos, faturamento, categorias, metas) {
+      const totalMeta = Object.values(metas || {}).reduce((acc, val) => acc + Number(val || 0), 0);
+      const percentual = totalMeta > 0 ? Math.round((totalGastos / totalMeta) * 100) : 0;
 
-      if (!linhas.length) {
+      document.getElementById("gastos").textContent = formatarMoeda(totalGastos);
+      document.getElementById("fat").textContent = formatarMoeda(faturamento);
+      document.getElementById("saldo").textContent = formatarMoeda(faturamento - totalGastos);
+      document.getElementById("metaAtingida").textContent = `${percentual}%`;
+    }
+
+    function montarMetaGrid(metas) {
+      const grid = document.getElementById("metaGrid");
+      const categorias = Array.from(new Set([...categoriasPadrao, ...Object.keys(metas || {})]));
+
+      grid.innerHTML = categorias.map(cat => `
+        <div class="meta-item">
+          <label>${cat}</label>
+          <input type="number" step="0.01" data-categoria="${cat}" value="${Number(metas[cat] || 0)}" />
+        </div>
+      `).join("");
+    }
+
+    function capturarMetasDaTela() {
+      const inputs = document.querySelectorAll("#metaGrid input");
+      const resultado = {};
+      inputs.forEach(input => {
+        resultado[input.dataset.categoria] = arred(input.value || 0);
+      });
+      return resultado;
+    }
+
+    function montarTabela(categorias, metas) {
+      const tbody = document.getElementById("tabelaResumo");
+      const cats = Object.keys(categorias);
+
+      if (!cats.length) {
         tbody.innerHTML = '<tr><td colspan="5" class="muted">Nenhum dado carregado.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = linhas.map(cat => {
-        const gasto = categorias[cat];
-        const meta = metasFixas[cat] || 0;
-        const diferenca = gasto - meta;
+      tbody.innerHTML = cats.map(cat => {
+        const gasto = arred(categorias[cat] || 0);
+        const meta = arred(metas[cat] || 0);
+        const diferenca = arred(gasto - meta);
         const dentro = diferenca <= 0;
 
         return `
@@ -426,10 +473,10 @@
       }).join("");
     }
 
-    function desenharGraficos(categorias) {
+    function desenharGraficos(categorias, metas) {
       const labels = Object.keys(categorias);
-      const valores = Object.values(categorias);
-      const metas = labels.map(label => metasFixas[label] || 0);
+      const valores = labels.map(label => arred(categorias[label] || 0));
+      const metasValores = labels.map(label => arred(metas[label] || 0));
 
       if (barChart) barChart.destroy();
       if (pieChart) pieChart.destroy();
@@ -446,7 +493,7 @@
             },
             {
               label: "Meta",
-              data: metas,
+              data: metasValores,
               type: "line",
               borderColor: "#1f2937",
               backgroundColor: "#1f2937",
@@ -458,19 +505,11 @@
         options: {
           responsive: true,
           plugins: {
-            legend: {
-              labels: {
-                color: "#000"
-              }
-            }
+            legend: { labels: { color: "#000" } }
           },
           scales: {
-            x: {
-              ticks: { color: "#000" }
-            },
-            y: {
-              ticks: { color: "#000" }
-            }
+            x: { ticks: { color: "#000" } },
+            y: { ticks: { color: "#000" } }
           }
         }
       });
@@ -482,140 +521,171 @@
           datasets: [{
             data: valores,
             backgroundColor: [
-              "#d10000",
-              "#2b2b2b",
-              "#6b7280",
-              "#b91c1c",
-              "#ef4444",
-              "#9ca3af",
-              "#7f1d1d"
+              "#d10000", "#2b2b2b", "#6b7280", "#b91c1c", "#ef4444",
+              "#9ca3af", "#7f1d1d", "#374151", "#991b1b", "#4b5563",
+              "#dc2626", "#111827", "#f87171"
             ]
           }]
         },
         options: {
           responsive: true,
           plugins: {
-            legend: {
-              labels: {
-                color: "#000"
-              }
-            }
+            legend: { labels: { color: "#000" } }
           }
         }
       });
     }
 
+    async function garantirRegistroMes(mes, ano) {
+      const { data, error } = await supabaseClient
+        .from("meses")
+        .select("*")
+        .eq("mes", mes)
+        .eq("ano", ano);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        const { error: insertError } = await supabaseClient
+          .from("meses")
+          .insert([{ mes, ano, faturamento: 0 }]);
+
+        if (insertError) throw insertError;
+      }
+    }
+
+    async function garantirMetasPadrao(mes, ano) {
+      const { data, error } = await supabaseClient
+        .from("metas")
+        .select("*")
+        .eq("mes", mes)
+        .eq("ano", ano);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        const payload = categoriasPadrao.map(cat => ({
+          mes,
+          ano,
+          categoria: cat,
+          meta: metasPadrao[cat] || 0
+        }));
+
+        const { error: insertError } = await supabaseClient
+          .from("metas")
+          .insert(payload);
+
+        if (insertError) throw insertError;
+
+        return payload;
+      }
+
+      return data;
+    }
+
     async function salvarFaturamentoMes() {
       try {
         const { mes, ano } = getMesAnoSelecionado();
-        const faturamento = Number(faturamentoInput.value || 0);
+        const faturamento = arred(faturamentoInput.value || 0);
 
-        const { data: existente, error: erroBusca } = await supabaseClient
+        await garantirRegistroMes(mes, ano);
+
+        const { error } = await supabaseClient
           .from("meses")
-          .select("*")
+          .update({ faturamento })
           .eq("mes", mes)
           .eq("ano", ano);
 
-        if (erroBusca) throw erroBusca;
-
-        if (existente && existente.length > 0) {
-          const { error: erroUpdate } = await supabaseClient
-            .from("meses")
-            .update({ faturamento })
-            .eq("mes", mes)
-            .eq("ano", ano);
-
-          if (erroUpdate) throw erroUpdate;
-        } else {
-          const { error: erroInsert } = await supabaseClient
-            .from("meses")
-            .insert([{ mes, ano, faturamento }]);
-
-          if (erroInsert) throw erroInsert;
-        }
+        if (error) throw error;
 
         mostrarMensagem("Faturamento salvo com sucesso.");
-        carregarDadosDoBanco();
+        await carregarDadosDoBanco();
       } catch (error) {
         console.error(error);
         mostrarMensagem("Erro ao salvar faturamento.", true);
       }
     }
 
-    async function salvarMetasSeNaoExistirem(mes, ano, categorias) {
+    async function salvarMetasDoMes() {
       try {
-        const { data: existentes, error } = await supabaseClient
+        const { mes, ano } = getMesAnoSelecionado();
+        const metasTela = capturarMetasDaTela();
+
+        const { error: deleteError } = await supabaseClient
           .from("metas")
-          .select("*")
+          .delete()
           .eq("mes", mes)
           .eq("ano", ano);
 
-        if (error) throw error;
+        if (deleteError) throw deleteError;
 
-        if (existentes && existentes.length > 0) return;
-
-        const payload = Object.keys(categorias).map(cat => ({
+        const payload = Object.keys(metasTela).map(cat => ({
           mes,
           ano,
           categoria: cat,
-          meta: metasFixas[cat] || 0
+          meta: arred(metasTela[cat] || 0)
         }));
 
-        if (!payload.length) return;
-
-        const { error: erroInsert } = await supabaseClient
+        const { error: insertError } = await supabaseClient
           .from("metas")
           .insert(payload);
 
-        if (erroInsert) throw erroInsert;
+        if (insertError) throw insertError;
+
+        mostrarMensagem("Metas salvas com sucesso.");
+        await carregarDadosDoBanco();
       } catch (error) {
-        console.error("Erro ao salvar metas:", error);
+        console.error(error);
+        mostrarMensagem("Erro ao salvar metas.", true);
       }
     }
 
-    async function salvarDados(categorias) {
+    async function salvarDadosPlanilha(categorias) {
       try {
         const { mes, ano } = getMesAnoSelecionado();
 
-        const { error: erroDelete } = await supabaseClient
+        await garantirRegistroMes(mes, ano);
+        await garantirMetasPadrao(mes, ano);
+
+        const { error: deleteError } = await supabaseClient
           .from("gastos")
           .delete()
           .eq("mes", mes)
           .eq("ano", ano);
 
-        if (erroDelete) throw erroDelete;
+        if (deleteError) throw deleteError;
 
         const payload = Object.keys(categorias).map(cat => ({
           mes,
           ano,
           categoria: cat,
-          valor: categorias[cat]
+          valor: arred(categorias[cat] || 0)
         }));
 
         if (payload.length > 0) {
-          const { error: erroInsert } = await supabaseClient
+          const { error: insertError } = await supabaseClient
             .from("gastos")
             .insert(payload);
 
-          if (erroInsert) throw erroInsert;
+          if (insertError) throw insertError;
         }
 
-        await salvarMetasSeNaoExistirem(mes, ano, categorias);
-
         const agora = new Date().toLocaleString("pt-BR");
-        atualizarStatus(agora, "Dados importados e salvos");
+        atualizarStatus(agora, "Planilha importada e salva");
         mostrarMensagem("Planilha importada e salva no banco com sucesso.");
-
         await carregarDadosDoBanco();
       } catch (error) {
         console.error(error);
-        mostrarMensagem("Erro ao salvar dados no banco.", true);
+        mostrarMensagem("Erro ao salvar planilha no banco.", true);
       }
     }
 
     async function carregarDadosDoBanco() {
       try {
         const { mes, ano } = getMesAnoSelecionado();
+
+        await garantirRegistroMes(mes, ano);
+        const metasBanco = await garantirMetasPadrao(mes, ano);
 
         const { data: gastosData, error: gastosError } = await supabaseClient
           .from("gastos")
@@ -637,26 +707,37 @@
         let totalGastos = 0;
 
         (gastosData || []).forEach(item => {
-          categorias[item.categoria] = Number(item.valor || 0);
-          totalGastos += Number(item.valor || 0);
+          categorias[item.categoria] = arred(item.valor || 0);
+          totalGastos += arred(item.valor || 0);
         });
 
+        const metas = {};
+        (metasBanco || []).forEach(item => {
+          metas[item.categoria] = arred(item.meta || 0);
+        });
+
+        categoriasAtuais = categorias;
+        metasAtuais = metas;
+
         const faturamento = mesesData && mesesData.length > 0
-          ? Number(mesesData[0].faturamento || 0)
+          ? arred(mesesData[0].faturamento || 0)
           : 0;
 
         faturamentoInput.value = faturamento || "";
 
-        atualizarCards(totalGastos, faturamento, categorias);
-        montarTabela(categorias);
-        desenharGraficos(categorias);
+        montarMetaGrid(metas);
+        atualizarCards(totalGastos, faturamento, categorias, metas);
+        montarTabela(categorias, metas);
 
-        if ((gastosData || []).length > 0) {
+        if (Object.keys(categorias).length > 0) {
+          desenharGraficos(categorias, metas);
           atualizarStatus("Banco carregado", "Dados carregados com sucesso");
           mostrarMensagem("Dados carregados do banco com sucesso.");
         } else {
-          atualizarStatus("Nenhuma importação", "Sem dados para este mês");
-          mostrarMensagem("Nenhum dado salvo para este mês.");
+          if (barChart) { barChart.destroy(); barChart = null; }
+          if (pieChart) { pieChart.destroy(); pieChart = null; }
+          atualizarStatus("Sem importação", "Aguardando planilha para este mês");
+          mostrarMensagem("Nenhum gasto salvo para este mês.");
         }
       } catch (error) {
         console.error(error);
@@ -666,7 +747,6 @@
 
     function processarPlanilha(data) {
       const categorias = {};
-      let total = 0;
 
       data.forEach(row => {
         const categoria = row["CATEGORIA"];
@@ -675,22 +755,20 @@
         if (!categoria) return;
 
         if (typeof valor === "string") {
-          valor = valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
+          valor = valor
+            .replace("R$", "")
+            .replace(/\./g, "")
+            .replace(",", ".")
+            .trim();
         }
 
         valor = Number(valor || 0);
 
         if (!categorias[categoria]) categorias[categoria] = 0;
         categorias[categoria] += valor;
-        total += valor;
       });
 
-      const faturamento = Number(faturamentoInput.value || 0);
-
-      atualizarCards(total, faturamento, categorias);
-      montarTabela(categorias);
-      desenharGraficos(categorias);
-      salvarDados(categorias);
+      salvarDadosPlanilha(categorias);
     }
 
     function handleFile(event) {
@@ -710,9 +788,31 @@
       reader.readAsArrayBuffer(file);
     }
 
-    mesSelect.addEventListener("change", carregarDadosDoBanco);
-    anoSelect.addEventListener("change", carregarDadosDoBanco);
+    function definirMesAtual() {
+      const hoje = new Date();
+      const meses = [
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      ];
+      mesSelect.value = meses[hoje.getMonth()];
+      anoSelect.value = String(hoje.getFullYear());
+      atualizarStatus();
+    }
 
+    fileInput.addEventListener("change", handleFile);
+    btnSalvarFaturamento.addEventListener("click", salvarFaturamentoMes);
+    btnCarregar.addEventListener("click", carregarDadosDoBanco);
+    btnSalvarMetas.addEventListener("click", salvarMetasDoMes);
+    mesSelect.addEventListener("change", () => {
+      atualizarStatus();
+      carregarDadosDoBanco();
+    });
+    anoSelect.addEventListener("change", () => {
+      atualizarStatus();
+      carregarDadosDoBanco();
+    });
+
+    definirMesAtual();
     carregarDadosDoBanco();
   </script>
 </body>
