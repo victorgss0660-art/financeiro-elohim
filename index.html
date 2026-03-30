@@ -1,1379 +1,243 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Financeiro Elohim</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financeiro Elohim</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-.logo-img {
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0b0b0b;
+  color: #fff;
+}
+
+.hidden { display: none !important; }
+
+/* LOGIN */
+.login-screen {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at top, #2b0000, #0b0b0b);
+}
+
+.login-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 900px;
   width: 100%;
-  max-width: 180px;
-  height: auto;
-  display: block;
+  background: #111;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.login-left {
+  padding: 40px;
+}
+
+.login-right {
+  background: #fff;
+  color: #000;
+  padding: 40px;
 }
 
 .logo-box-login {
   background: #fff;
-  padding: 16px;
-  border-radius: 18px;
-  display: inline-block;
+  padding: 15px;
+  border-radius: 15px;
   margin-bottom: 20px;
+  display: inline-block;
 }
 
 .logo-box-sidebar {
   background: #fff;
   padding: 10px;
-  border-radius: 14px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
 }
+
+.logo-img {
+  max-width: 150px;
+  width: 100%;
+}
+
+/* APP */
+.app-shell {
+  display: flex;
+}
+
+.sidebar {
+  width: 250px;
+  padding: 20px;
+  background: #111;
+}
+
+.menu-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #1a1a1a;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.menu-item.active {
+  background: #d10000;
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* CARDS */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.card {
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+/* GRÁFICOS */
+.chart-wrap {
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* INPUTS */
+input, select, button {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  background: #d10000;
+  color: #fff;
+  cursor: pointer;
+}
+
 </style>
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b0b0b;
-      color: #fff;
-      min-height: 100vh;
-    }
-
-    .hidden { display: none !important; }
-
-    .login-screen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: radial-gradient(circle at top, #2b0000 0%, #0b0b0b 45%);
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 980px;
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      background: #111;
-      border: 1px solid #252525;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0,0,0,.35);
-    }
-
-    .login-left {
-      padding: 42px;
-      background: linear-gradient(180deg, #151515 0%, #0d0d0d 100%);
-    }
-
-    .login-right {
-      padding: 42px;
-      background: #fff;
-      color: #111;
-      display: flex;
-      align-items: center;
-    }
-
-    .brand-title {
-      font-size: 38px;
-      font-weight: 800;
-      color: #d10000;
-      margin-bottom: 8px;
-    }
-
-    .brand-subtitle {
-      color: #c7c7c7;
-      font-size: 15px;
-      margin-bottom: 28px;
-    }
-
-    .login-feature {
-      background: #181818;
-      border: 1px solid #242424;
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 12px;
-      color: #e5e5e5;
-    }
-
-    .login-form {
-      width: 100%;
-    }
-
-    .login-form h2 {
-      margin-top: 0;
-      margin-bottom: 8px;
-      font-size: 32px;
-    }
-
-    .login-form p {
-      margin-top: 0;
-      color: #555;
-      margin-bottom: 24px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 13px 14px;
-      border-radius: 12px;
-      border: 1px solid #d8d8d8;
-      font-size: 15px;
-    }
-
-    .btn-login {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      background: #d10000;
-      color: #fff;
-      font-weight: 800;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .btn-login:hover {
-      background: #b80000;
-    }
-
-    .login-error {
-      margin-top: 12px;
-      color: #d10000;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .app-shell {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      width: 250px;
-      background: linear-gradient(180deg, #111 0%, #191919 100%);
-      padding: 24px 18px;
-      border-right: 1px solid #2a2a2a;
-    }
-
-    .logo {
-      font-size: 30px;
-      font-weight: bold;
-      color: #d10000;
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-    }
-
-    .subtitle {
-      color: #bbb;
-      font-size: 14px;
-      margin-bottom: 28px;
-    }
-
-    .user-box {
-      background: #181818;
-      border: 1px solid #242424;
-      border-radius: 14px;
-      padding: 12px;
-      margin-bottom: 18px;
-    }
-
-    .user-box .name {
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .user-box .role {
-      font-size: 13px;
-      color: #bbb;
-      text-transform: uppercase;
-      letter-spacing: .4px;
-    }
-
-    .menu-item {
-      padding: 13px 14px;
-      margin-bottom: 10px;
-      background: #181818;
-      border-radius: 12px;
-      color: #fff;
-      border: 1px solid #242424;
-      cursor: pointer;
-      transition: 0.2s;
-      font-weight: 600;
-    }
-
-    .menu-item:hover,
-    .menu-item.active {
-      background: #d10000;
-      border-color: #d10000;
-      transform: translateX(2px);
-    }
-
-    .logout-btn {
-      margin-top: 14px;
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 12px;
-      background: #2a2a2a;
-      color: #fff;
-      cursor: pointer;
-      font-weight: 800;
-    }
-
-    .logout-btn:hover {
-      background: #3a3a3a;
-    }
-
-    .main {
-      flex: 1;
-      padding: 24px;
-      background: #0b0b0b;
-    }
-
-    h1 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 30px;
-    }
-
-    .top-filters {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 22px;
-      align-items: center;
-    }
-
-    .top-filters select,
-    .top-filters input,
-    .top-filters button {
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid #333;
-      background: #161616;
-      color: #fff;
-    }
-
-    .top-filters button,
-    .btn {
-      background: #d10000;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .top-filters button:hover,
-    .btn:hover {
-      background: #b80000;
-    }
-
-    .tab-section { display: none; }
-    .tab-section.active { display: block; }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .card {
-      background: linear-gradient(180deg, #151515 0%, #1a1a1a 100%);
-      border-radius: 16px;
-      padding: 18px;
-      border: 1px solid #252525;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
-    }
-
-    .card-title {
-      color: #bbb;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    .card-value {
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .panel {
-      background: linear-gradient(180deg, #151515 0%, #1a1a1a 100%);
-      border: 1px solid #252525;
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
-    }
-
-    .panel h3 {
-      margin-top: 0;
-      margin-bottom: 18px;
-      font-size: 20px;
-    }
-
-    .chart-wrap {
-      background: #fff;
-      border-radius: 14px;
-      padding: 14px;
-      min-height: 380px;
-    }
-
-    .status-box,
-    .table-wrap,
-    .meta-wrap {
-      background: linear-gradient(180deg, #151515 0%, #1a1a1a 100%);
-      border: 1px solid #252525;
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
-    }
-
-    .status-line {
-      margin-bottom: 10px;
-      color: #ddd;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      color: #fff;
-    }
-
-    th, td {
-      padding: 12px 10px;
-      border-bottom: 1px solid #2a2a2a;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    th { color: #bbb; }
-
-    .success { color: #22c55e; font-weight: bold; }
-    .danger { color: #ef4444; font-weight: bold; }
-    .muted { color: #999; }
-
-    .message {
-      margin-top: 10px;
-      margin-bottom: 16px;
-      font-size: 14px;
-      color: #bbb;
-      font-weight: 600;
-    }
-
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .meta-item {
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    .meta-item label {
-      display: block;
-      font-size: 13px;
-      color: #bbb;
-      margin-bottom: 8px;
-    }
-
-    .meta-item input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #333;
-      background: #161616;
-      color: #fff;
-    }
-
-    .section-title {
-      margin: 0 0 16px 0;
-      font-size: 20px;
-    }
-
-    .btn {
-      padding: 10px 14px;
-      border-radius: 10px;
-      color: #fff;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .input-row input,
-    .input-row select {
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid #333;
-      background: #161616;
-      color: #fff;
-    }
-
-    @media (max-width: 1100px) {
-      .cards { grid-template-columns: repeat(2, 1fr); }
-      .grid { grid-template-columns: 1fr; }
-      .meta-grid { grid-template-columns: repeat(2, 1fr); }
-      .login-card { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 700px) {
-      .app-shell { flex-direction: column; }
-      .sidebar { width: 100%; }
-      .cards { grid-template-columns: 1fr; }
-      .meta-grid { grid-template-columns: 1fr; }
-    }
-  </style>
 </head>
+
 <body>
-  <section id="loginScreen" class="login-screen">
-    <div class="login-card">
-      <div class="login-left">
-        <div class="brand-title">ELOHIM</div>
-        <div class="brand-subtitle">Sistema Financeiro com acesso protegido</div>
 
-        <div class="login-feature">Dashboard financeiro mensal</div>
-        <div class="login-feature">Resumo anual e metas por categoria</div>
-        <div class="login-feature">Importação de planilhas mensais</div>
-        <div class="login-feature">Perfis de administrador e visualização</div>
+<!-- LOGIN -->
+<section id="loginScreen" class="login-screen">
+  <div class="login-card">
+
+    <div class="login-left">
+      <div class="logo-box-login">
+        <img src="logo-elohim.png" class="logo-img">
       </div>
-
-      <div class="login-right">
-        <div class="login-form">
-          <h2>Entrar</h2>
-          <p>Acesse o sistema com seu e-mail e senha.</p>
-
-          <div class="form-group">
-            <label for="loginEmail">E-mail</label>
-            <input id="loginEmail" type="email" placeholder="seuemail@empresa.com" />
-          </div>
-
-          <div class="form-group">
-            <label for="loginSenha">Senha</label>
-            <input id="loginSenha" type="password" placeholder="Digite sua senha" />
-          </div>
-
-          <button class="btn-login" id="btnLogin">Entrar no sistema</button>
-          <div class="login-error" id="loginErro"></div>
-        </div>
-      </div>
+      <p>Sistema financeiro inteligente</p>
     </div>
-  </section>
 
-  <section id="appShell" class="app-shell hidden">
-    <aside class="sidebar">
-      <div class="logo">ELOHIM</div>
-      <div class="subtitle">Usinagem e Caldeiraria</div>
+    <div class="login-right">
+      <h2>Login</h2>
+      <input id="loginEmail" placeholder="Email"><br><br>
+      <input id="loginSenha" type="password" placeholder="Senha"><br><br>
+      <button id="btnLogin">Entrar</button>
+      <div id="loginErro"></div>
+    </div>
 
-      <div class="user-box">
-        <div class="name" id="userName">Usuário</div>
-        <div class="role" id="userRole">perfil</div>
-      </div>
+  </div>
+</section>
 
-      <div class="menu-item active" data-tab="dashboard">Dashboard</div>
-      <div class="menu-item" data-tab="faturamento">Faturamento</div>
-      <div class="menu-item" data-tab="metas">Metas</div>
-      <div class="menu-item" data-tab="importar">Importar Planilha</div>
-      <div class="menu-item" data-tab="resumo">Resumo Anual</div>
+<!-- APP -->
+<section id="appShell" class="app-shell hidden">
 
-      <button class="logout-btn" id="btnLogout">Sair</button>
-    </aside>
+  <aside class="sidebar">
+    <div class="logo-box-sidebar">
+      <img src="logo-elohim.png" class="logo-img">
+    </div>
 
-    <main class="main">
-      <h1>Sistema Financeiro Elohim</h1>
+    <div id="userName"></div>
 
-      <div class="top-filters">
-        <select id="mesSelect">
-          <option>Janeiro</option>
-          <option>Fevereiro</option>
-          <option>Março</option>
-          <option>Abril</option>
-          <option>Maio</option>
-          <option>Junho</option>
-          <option>Julho</option>
-          <option>Agosto</option>
-          <option>Setembro</option>
-          <option>Outubro</option>
-          <option>Novembro</option>
-          <option>Dezembro</option>
-        </select>
+    <div class="menu-item active" data-tab="dashboard">Dashboard</div>
+    <div class="menu-item" data-tab="faturamento">Faturamento</div>
+    <div class="menu-item" data-tab="metas">Metas</div>
+    <div class="menu-item" data-tab="importar">Importar</div>
+    <div class="menu-item" data-tab="resumo">Resumo</div>
 
-        <select id="anoSelect">
-          <option>2024</option>
-          <option>2025</option>
-          <option selected>2026</option>
-          <option>2027</option>
-        </select>
+    <button id="btnLogout">Sair</button>
+  </aside>
 
-        <button id="btnCarregarMes">Carregar mês</button>
-      </div>
+  <main class="main">
 
-      <div class="message" id="mensagem"></div>
+    <h1>Financeiro</h1>
 
-      <section id="tab-dashboard" class="tab-section active">
-        <section class="cards">
-          <div class="card">
-            <div class="card-title">Faturamento</div>
-            <div class="card-value" id="fat">R$ 0,00</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Total de Gastos</div>
-            <div class="card-value" id="gastos">R$ 0,00</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Saldo</div>
-            <div class="card-value" id="saldo">R$ 0,00</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Meta Atingida</div>
-            <div class="card-value" id="metaAtingida">0%</div>
-          </div>
-        </section>
+    <section class="cards">
+      <div class="card">Faturamento: <span id="fat"></span></div>
+      <div class="card">Gastos: <span id="gastos"></span></div>
+      <div class="card">Saldo: <span id="saldo"></span></div>
+      <div class="card">Meta: <span id="metaAtingida"></span></div>
+    </section>
 
-        <section class="grid">
-          <div class="panel">
-            <h3>Metas x Gastos por Categoria</h3>
-            <div class="chart-wrap">
-              <canvas id="barChart"></canvas>
-            </div>
-          </div>
+    <br>
 
-          <div class="panel">
-            <h3>Divisão por Categoria</h3>
-            <div class="chart-wrap">
-              <canvas id="pieChart"></canvas>
-            </div>
-          </div>
-        </section>
+    <div class="chart-wrap">
+      <canvas id="barChart"></canvas>
+    </div>
 
-        <section class="status-box">
-          <h3 class="section-title">Status do mês</h3>
-          <div class="status-line">Mês selecionado: <strong id="statusMes">-</strong></div>
-          <div class="status-line">Última atualização: <span id="ultimaImportacao" class="muted">Nenhuma</span></div>
-          <div class="status-line">Situação: <span id="situacaoMes" class="muted">Aguardando dados</span></div>
-        </section>
+    <br>
 
-        <section class="table-wrap">
-          <h3 class="section-title">Resumo por Categoria</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Categoria</th>
-                <th>Gasto</th>
-                <th>Meta %</th>
-                <th>Meta R$</th>
-                <th>Diferença</th>
-                <th>Situação</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaResumo">
-              <tr>
-                <td colspan="6" class="muted">Nenhum dado carregado.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
+    <div class="chart-wrap">
+      <canvas id="pieChart"></canvas>
+    </div>
 
-      <section id="tab-faturamento" class="tab-section">
-        <section class="panel">
-          <h3>Faturamento do mês</h3>
-          <div class="input-row">
-            <input type="number" id="faturamentoInput" placeholder="Faturamento do mês" step="0.01" />
-            <button class="btn" id="btnSalvarFaturamento">Salvar faturamento</button>
-          </div>
-        </section>
-      </section>
+  </main>
+</section>
 
-      <section id="tab-metas" class="tab-section">
-        <section class="meta-wrap">
-          <h3 class="section-title">Metas por categoria (% do faturamento)</h3>
-          <div class="meta-grid" id="metaGrid"></div>
-          <div style="margin-top:16px;">
-            <button class="btn" id="btnSalvarMetas">Salvar metas</button>
-          </div>
-        </section>
-      </section>
+<script>
+const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
+const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
-      <section id="tab-importar" class="tab-section">
-        <section class="panel">
-          <h3>Importar planilha</h3>
-          <div class="input-row">
-            <input type="file" id="fileInput" accept=".xlsx,.xls" />
-          </div>
-        </section>
-      </section>
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      <section id="tab-resumo" class="tab-section">
-        <section class="panel">
-          <h3>Resumo anual</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Mês</th>
-                <th>Faturamento</th>
-                <th>Gastos</th>
-                <th>Saldo</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaResumoAnual">
-              <tr>
-                <td colspan="4" class="muted">Nenhum dado anual carregado.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-    </main>
-  </section>
+let usuarioAtual = null;
 
-  <script>
-    const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
+document.getElementById("btnLogin").onclick = async () => {
+  const email = loginEmail.value;
+  const senha = loginSenha.value;
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const { data } = await supabase
+    .from("usuarios")
+    .select("*")
+    .eq("email", email)
+    .eq("senha", senha);
 
-    const categoriasPadrao = [
-      "MC", "MP", "TERC", "FRETE", "DESP", "TAR", "PREST",
-      "FOLHA", "COMIS", "IMPOS", "RESC", "MANUT"
-    ];
+  if (!data || data.length === 0) {
+    loginErro.innerText = "Erro no login";
+    return;
+  }
 
-    const nomesCategorias = {
-      MC: "Materiais de Consumo",
-      MP: "Matéria-Prima",
-      TERC: "Terceirizações",
-      FRETE: "Fretes",
-      DESP: "Despesas Fixas",
-      TAR: "Tarifas Bancárias",
-      PREST: "Prestações de Serviço",
-      FOLHA: "Folha de Pagamento",
-      COMIS: "Comissões",
-      IMPOS: "Impostos",
-      RESC: "Rescisões",
-      MANUT: "Manutenções"
-    };
+  usuarioAtual = data[0];
 
-    const metasPadraoPercentuais = {
-      MC: 20,
-      MP: 18,
-      TERC: 8,
-      FRETE: 5,
-      DESP: 6,
-      TAR: 1,
-      PREST: 4,
-      FOLHA: 15,
-      COMIS: 2,
-      IMPOS: 5,
-      RESC: 1,
-      MANUT: 4
-    };
+  loginScreen.classList.add("hidden");
+  appShell.classList.remove("hidden");
 
-    const coresGraficos = {
-      MC: "#ef4444",
-      MP: "#3b82f6",
-      TERC: "#22c55e",
-      FRETE: "#f59e0b",
-      DESP: "#a855f7",
-      TAR: "#06b6d4",
-      PREST: "#ec4899",
-      FOLHA: "#84cc16",
-      COMIS: "#f97316",
-      IMPOS: "#64748b",
-      RESC: "#e11d48",
-      MANUT: "#14b8a6"
-    };
+  userName.innerText = usuarioAtual.email;
+};
 
-    let barChart = null;
-    let pieChart = null;
-    let usuarioAtual = null;
+btnLogout.onclick = () => {
+  location.reload();
+};
+</script>
 
-    const loginScreen = document.getElementById("loginScreen");
-    const appShell = document.getElementById("appShell");
-    const loginEmail = document.getElementById("loginEmail");
-    const loginSenha = document.getElementById("loginSenha");
-    const btnLogin = document.getElementById("btnLogin");
-    const btnLogout = document.getElementById("btnLogout");
-    const loginErro = document.getElementById("loginErro");
-
-    const fileInput = document.getElementById("fileInput");
-    const mesSelect = document.getElementById("mesSelect");
-    const anoSelect = document.getElementById("anoSelect");
-    const faturamentoInput = document.getElementById("faturamentoInput");
-    const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
-    const btnSalvarMetas = document.getElementById("btnSalvarMetas");
-    const btnCarregarMes = document.getElementById("btnCarregarMes");
-    const mensagem = document.getElementById("mensagem");
-
-    function nomeCategoria(sigla) {
-      return nomesCategorias[sigla] || sigla;
-    }
-
-    function formatarMoeda(valor) {
-      return Number(valor || 0).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-      });
-    }
-
-    function arred(valor) {
-      return Math.round(Number(valor || 0) * 100) / 100;
-    }
-
-    function mostrarMensagem(texto, erro = false) {
-      mensagem.textContent = texto;
-      mensagem.style.color = erro ? "#ef4444" : "#22c55e";
-    }
-
-    function getMesAnoSelecionado() {
-      return { mes: mesSelect.value, ano: anoSelect.value };
-    }
-
-    function atualizarStatus(ultima = "Nenhuma", situacao = "Aguardando dados") {
-      const { mes, ano } = getMesAnoSelecionado();
-      document.getElementById("statusMes").textContent = `${mes}/${ano}`;
-      document.getElementById("ultimaImportacao").textContent = ultima;
-      document.getElementById("situacaoMes").textContent = situacao;
-    }
-
-    function calcularMetaEmValor(percentual, faturamento) {
-      return arred((Number(percentual || 0) / 100) * Number(faturamento || 0));
-    }
-
-    function atualizarCards(totalGastos, faturamento, metasPercentuais) {
-      const totalMetaValor = Object.values(metasPercentuais || {}).reduce((acc, percentual) => {
-        return acc + calcularMetaEmValor(percentual, faturamento);
-      }, 0);
-
-      const percentualAtingido = totalMetaValor > 0
-        ? Math.round((Number(totalGastos || 0) / totalMetaValor) * 100)
-        : 0;
-
-      document.getElementById("gastos").textContent = formatarMoeda(totalGastos);
-      document.getElementById("fat").textContent = formatarMoeda(faturamento);
-      document.getElementById("saldo").textContent = formatarMoeda(faturamento - totalGastos);
-      document.getElementById("metaAtingida").textContent = `${percentualAtingido}%`;
-    }
-
-    function montarMetaGrid(metasPercentuais) {
-      const grid = document.getElementById("metaGrid");
-      const categorias = Array.from(new Set([...categoriasPadrao, ...Object.keys(metasPercentuais || {})]));
-
-      grid.innerHTML = categorias.map(cat => `
-        <div class="meta-item">
-          <label>${nomeCategoria(cat)} (%)</label>
-          <input type="number" step="0.01" data-categoria="${cat}" value="${Number(metasPercentuais[cat] || 0)}" />
-        </div>
-      `).join("");
-    }
-
-    function capturarMetasDaTela() {
-      const inputs = document.querySelectorAll("#metaGrid input");
-      const resultado = {};
-      inputs.forEach(input => {
-        resultado[input.dataset.categoria] = arred(input.value || 0);
-      });
-      return resultado;
-    }
-
-    function montarTabela(categorias, metasPercentuais, faturamento) {
-      const tbody = document.getElementById("tabelaResumo");
-      const cats = Object.keys(categorias);
-
-      if (!cats.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = cats.map(cat => {
-        const gasto = arred(categorias[cat] || 0);
-        const metaPercentual = arred(metasPercentuais[cat] || 0);
-        const metaValor = calcularMetaEmValor(metaPercentual, faturamento);
-        const diferenca = arred(gasto - metaValor);
-        const dentro = diferenca <= 0;
-
-        return `
-          <tr>
-            <td>${nomeCategoria(cat)}</td>
-            <td>${formatarMoeda(gasto)}</td>
-            <td>${metaPercentual.toFixed(2)}%</td>
-            <td>${formatarMoeda(metaValor)}</td>
-            <td class="${dentro ? "success" : "danger"}">${formatarMoeda(diferenca)}</td>
-            <td class="${dentro ? "success" : "danger"}">${dentro ? "Dentro da meta" : "Acima da meta"}</td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    function desenharGraficos(categorias, metasPercentuais, faturamento) {
-      const keys = Object.keys(categorias);
-      const labels = keys.map(k => nomeCategoria(k));
-      const valores = keys.map(k => arred(categorias[k] || 0));
-      const metasEmValor = keys.map(k => calcularMetaEmValor(metasPercentuais[k] || 0, faturamento));
-      const cores = keys.map(k => coresGraficos[k] || "#888");
-
-      if (barChart) barChart.destroy();
-      if (pieChart) pieChart.destroy();
-
-      barChart = new Chart(document.getElementById("barChart"), {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Gasto Real",
-              data: valores,
-              backgroundColor: cores,
-              borderRadius: 8
-            },
-            {
-              label: "Meta",
-              data: metasEmValor,
-              type: "line",
-              borderColor: "#111827",
-              backgroundColor: "#111827",
-              borderWidth: 4,
-              tension: 0.3,
-              pointRadius: 5,
-              pointBackgroundColor: "#111827"
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#000" } }
-          },
-          scales: {
-            x: { ticks: { color: "#000" } },
-            y: { ticks: { color: "#000" } }
-          }
-        }
-      });
-
-      pieChart = new Chart(document.getElementById("pieChart"), {
-        type: "pie",
-        data: {
-          labels,
-          datasets: [{
-            data: valores,
-            backgroundColor: cores
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#000" } }
-          }
-        }
-      });
-    }
-
-    async function garantirRegistroMes(mes, ano) {
-      const { data, error } = await supabaseClient
-        .from("meses")
-        .select("*")
-        .eq("mes", mes)
-        .eq("ano", ano);
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        const { error: insertError } = await supabaseClient
-          .from("meses")
-          .insert([{ mes, ano, faturamento: 0 }]);
-
-        if (insertError) throw insertError;
-      }
-    }
-
-    async function garantirMetasPadrao(mes, ano) {
-      const { data, error } = await supabaseClient
-        .from("metas")
-        .select("*")
-        .eq("mes", mes)
-        .eq("ano", ano);
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        const payload = categoriasPadrao.map(cat => ({
-          mes,
-          ano,
-          categoria: cat,
-          meta: metasPadraoPercentuais[cat] || 0
-        }));
-
-        const { error: insertError } = await supabaseClient
-          .from("metas")
-          .insert(payload);
-
-        if (insertError) throw insertError;
-
-        return payload;
-      }
-
-      return data;
-    }
-
-    async function salvarFaturamentoMes() {
-      if (!usuarioAtual || usuarioAtual.perfil !== "admin") return;
-
-      try {
-        const { mes, ano } = getMesAnoSelecionado();
-        const faturamento = arred(faturamentoInput.value || 0);
-
-        await garantirRegistroMes(mes, ano);
-
-        const { error } = await supabaseClient
-          .from("meses")
-          .update({ faturamento })
-          .eq("mes", mes)
-          .eq("ano", ano);
-
-        if (error) throw error;
-
-        mostrarMensagem("Faturamento salvo com sucesso.");
-        await carregarDadosDoBanco();
-        await carregarResumoAnual();
-      } catch (error) {
-        console.error(error);
-        mostrarMensagem("Erro ao salvar faturamento.", true);
-      }
-    }
-
-    async function salvarMetasDoMes() {
-      if (!usuarioAtual || usuarioAtual.perfil !== "admin") return;
-
-      try {
-        const { mes, ano } = getMesAnoSelecionado();
-        const metasTela = capturarMetasDaTela();
-
-        const { error: deleteError } = await supabaseClient
-          .from("metas")
-          .delete()
-          .eq("mes", mes)
-          .eq("ano", ano);
-
-        if (deleteError) throw deleteError;
-
-        const payload = Object.keys(metasTela).map(cat => ({
-          mes,
-          ano,
-          categoria: cat,
-          meta: arred(metasTela[cat] || 0)
-        }));
-
-        const { error: insertError } = await supabaseClient
-          .from("metas")
-          .insert(payload);
-
-        if (insertError) throw insertError;
-
-        mostrarMensagem("Metas percentuais salvas com sucesso.");
-        await carregarDadosDoBanco();
-      } catch (error) {
-        console.error(error);
-        mostrarMensagem("Erro ao salvar metas.", true);
-      }
-    }
-
-    async function salvarDadosPlanilha(categorias) {
-      if (!usuarioAtual || usuarioAtual.perfil !== "admin") return;
-
-      try {
-        const { mes, ano } = getMesAnoSelecionado();
-
-        await garantirRegistroMes(mes, ano);
-        await garantirMetasPadrao(mes, ano);
-
-        const { error: deleteError } = await supabaseClient
-          .from("gastos")
-          .delete()
-          .eq("mes", mes)
-          .eq("ano", ano);
-
-        if (deleteError) throw deleteError;
-
-        const payload = Object.keys(categorias).map(cat => ({
-          mes,
-          ano,
-          categoria: cat,
-          valor: arred(categorias[cat] || 0)
-        }));
-
-        if (payload.length > 0) {
-          const { error: insertError } = await supabaseClient
-            .from("gastos")
-            .insert(payload);
-
-          if (insertError) throw insertError;
-        }
-
-        const agora = new Date().toLocaleString("pt-BR");
-        atualizarStatus(agora, "Planilha importada e salva");
-        mostrarMensagem("Planilha importada e salva no banco com sucesso.");
-        await carregarDadosDoBanco();
-        await carregarResumoAnual();
-      } catch (error) {
-        console.error(error);
-        mostrarMensagem("Erro ao salvar planilha no banco.", true);
-      }
-    }
-
-    async function carregarDadosDoBanco() {
-      try {
-        const { mes, ano } = getMesAnoSelecionado();
-
-        await garantirRegistroMes(mes, ano);
-        const metasBanco = await garantirMetasPadrao(mes, ano);
-
-        const { data: gastosData, error: gastosError } = await supabaseClient
-          .from("gastos")
-          .select("*")
-          .eq("mes", mes)
-          .eq("ano", ano);
-
-        if (gastosError) throw gastosError;
-
-        const { data: mesesData, error: mesesError } = await supabaseClient
-          .from("meses")
-          .select("*")
-          .eq("mes", mes)
-          .eq("ano", ano);
-
-        if (mesesError) throw mesesError;
-
-        const categorias = {};
-        let totalGastos = 0;
-
-        (gastosData || []).forEach(item => {
-          categorias[item.categoria] = arred(item.valor || 0);
-          totalGastos += arred(item.valor || 0);
-        });
-
-        const metasPercentuais = {};
-        (metasBanco || []).forEach(item => {
-          metasPercentuais[item.categoria] = arred(item.meta || 0);
-        });
-
-        const faturamento = mesesData && mesesData.length > 0
-          ? arred(mesesData[0].faturamento || 0)
-          : 0;
-
-        faturamentoInput.value = faturamento || "";
-
-        montarMetaGrid(metasPercentuais);
-        aplicarPermissoesNaMetaGrid();
-        atualizarCards(totalGastos, faturamento, metasPercentuais);
-        montarTabela(categorias, metasPercentuais, faturamento);
-
-        if (Object.keys(categorias).length > 0) {
-          desenharGraficos(categorias, metasPercentuais, faturamento);
-          atualizarStatus("Banco carregado", "Dados carregados com sucesso");
-          mostrarMensagem("Dados carregados do banco com sucesso.");
-        } else {
-          if (barChart) { barChart.destroy(); barChart = null; }
-          if (pieChart) { pieChart.destroy(); pieChart = null; }
-          atualizarStatus("Sem importação", "Aguardando planilha para este mês");
-          mostrarMensagem("Nenhum gasto salvo para este mês.");
-        }
-      } catch (error) {
-        console.error(error);
-        mostrarMensagem("Erro ao carregar dados do banco.", true);
-      }
-    }
-
-    async function carregarResumoAnual() {
-      try {
-        const ano = anoSelect.value;
-
-        const { data: mesesData, error: mesesError } = await supabaseClient
-          .from("meses")
-          .select("*")
-          .eq("ano", ano);
-
-        if (mesesError) throw mesesError;
-
-        const { data: gastosData, error: gastosError } = await supabaseClient
-          .from("gastos")
-          .select("*")
-          .eq("ano", ano);
-
-        if (gastosError) throw gastosError;
-
-        const mesesOrdem = [
-          "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-          "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-        ];
-
-        const tbody = document.getElementById("tabelaResumoAnual");
-
-        if ((!mesesData || mesesData.length === 0) && (!gastosData || gastosData.length === 0)) {
-          tbody.innerHTML = '<tr><td colspan="4" class="muted">Nenhum dado anual carregado.</td></tr>';
-          return;
-        }
-
-        const mapa = {};
-
-        mesesOrdem.forEach(mes => {
-          mapa[mes] = { faturamento: 0, gastos: 0 };
-        });
-
-        (mesesData || []).forEach(item => {
-          mapa[item.mes] = mapa[item.mes] || { faturamento: 0, gastos: 0 };
-          mapa[item.mes].faturamento = arred(item.faturamento || 0);
-        });
-
-        (gastosData || []).forEach(item => {
-          mapa[item.mes] = mapa[item.mes] || { faturamento: 0, gastos: 0 };
-          mapa[item.mes].gastos += arred(item.valor || 0);
-        });
-
-        tbody.innerHTML = mesesOrdem.map(mes => {
-          const faturamento = arred(mapa[mes]?.faturamento || 0);
-          const gastos = arred(mapa[mes]?.gastos || 0);
-          const saldo = arred(faturamento - gastos);
-
-          return `
-            <tr>
-              <td>${mes}</td>
-              <td>${formatarMoeda(faturamento)}</td>
-              <td>${formatarMoeda(gastos)}</td>
-              <td class="${saldo >= 0 ? "success" : "danger"}">${formatarMoeda(saldo)}</td>
-            </tr>
-          `;
-        }).join("");
-      } catch (error) {
-        console.error(error);
-        mostrarMensagem("Erro ao carregar resumo anual.", true);
-      }
-    }
-
-    function processarPlanilha(data) {
-      const categorias = {};
-
-      data.forEach(row => {
-        const categoria = row["CATEGORIA"];
-        let valor = row["VALOR"];
-
-        if (!categoria) return;
-
-        if (typeof valor === "string") {
-          valor = valor
-            .replace("R$", "")
-            .replace(/\./g, "")
-            .replace(",", ".")
-            .trim();
-        }
-
-        valor = Number(valor || 0);
-
-        if (!categorias[categoria]) categorias[categoria] = 0;
-        categorias[categoria] += valor;
-      });
-
-      salvarDadosPlanilha(categorias);
-    }
-
-    function handleFile(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet);
-        processarPlanilha(json);
-      };
-
-      reader.readAsArrayBuffer(file);
-    }
-
-    function definirMesAtual() {
-      const hoje = new Date();
-      const meses = [
-        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-      ];
-      mesSelect.value = meses[hoje.getMonth()];
-      anoSelect.value = String(hoje.getFullYear());
-      atualizarStatus();
-    }
-
-    function ativarAbas() {
-      const botoes = document.querySelectorAll(".menu-item");
-      const abas = document.querySelectorAll(".tab-section");
-
-      botoes.forEach(botao => {
-        botao.addEventListener("click", () => {
-          botoes.forEach(b => b.classList.remove("active"));
-          abas.forEach(a => a.classList.remove("active"));
-
-          botao.classList.add("active");
-          document.getElementById(`tab-${botao.dataset.tab}`).classList.add("active");
-        });
-      });
-    }
-
-    function aplicarPermissoes() {
-      const isAdmin = usuarioAtual && usuarioAtual.perfil === "admin";
-
-      document.getElementById("userName").textContent = usuarioAtual?.email || "Usuário";
-      document.getElementById("userRole").textContent = isAdmin ? "Administrador" : "Visualização";
-
-      document.querySelector('[data-tab="faturamento"]').classList.toggle("hidden", !isAdmin);
-      document.querySelector('[data-tab="metas"]').classList.toggle("hidden", !isAdmin);
-      document.querySelector('[data-tab="importar"]').classList.toggle("hidden", !isAdmin);
-
-      btnSalvarFaturamento.disabled = !isAdmin;
-      btnSalvarMetas.disabled = !isAdmin;
-      fileInput.disabled = !isAdmin;
-      faturamentoInput.disabled = !isAdmin;
-
-      if (!isAdmin) {
-        if (document.querySelector(".menu-item.active")?.dataset.tab !== "dashboard" &&
-            document.querySelector(".menu-item.active")?.dataset.tab !== "resumo") {
-          document.querySelectorAll(".menu-item").forEach(b => b.classList.remove("active"));
-          document.querySelectorAll(".tab-section").forEach(a => a.classList.remove("active"));
-          document.querySelector('[data-tab="dashboard"]').classList.add("active");
-          document.getElementById("tab-dashboard").classList.add("active");
-        }
-      }
-
-      aplicarPermissoesNaMetaGrid();
-    }
-
-    function aplicarPermissoesNaMetaGrid() {
-      const isAdmin = usuarioAtual && usuarioAtual.perfil === "admin";
-      document.querySelectorAll("#metaGrid input").forEach(input => {
-        input.disabled = !isAdmin;
-      });
-    }
-
-    async function fazerLogin() {
-      try {
-        loginErro.textContent = "";
-
-        const email = (loginEmail.value || "").trim().toLowerCase();
-        const senha = loginSenha.value || "";
-
-        if (!email || !senha) {
-          loginErro.textContent = "Preencha e-mail e senha.";
-          return;
-        }
-
-        const { data, error } = await supabaseClient
-          .from("usuarios")
-          .select("*")
-          .eq("email", email)
-          .eq("senha", senha)
-          .limit(1);
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          loginErro.textContent = "Usuário ou senha inválidos.";
-          return;
-        }
-
-        usuarioAtual = data[0];
-        localStorage.setItem("elohim_usuario_logado", JSON.stringify(usuarioAtual));
-
-        loginScreen.classList.add("hidden");
-        appShell.classList.remove("hidden");
-
-        aplicarPermissoes();
-        await carregarDadosDoBanco();
-        await carregarResumoAnual();
-      } catch (error) {
-        console.error(error);
-        loginErro.textContent = "Erro ao entrar no sistema.";
-      }
-    }
-
-    function logout() {
-      usuarioAtual = null;
-      localStorage.removeItem("elohim_usuario_logado");
-      appShell.classList.add("hidden");
-      loginScreen.classList.remove("hidden");
-      loginEmail.value = "";
-      loginSenha.value = "";
-      loginErro.textContent = "";
-    }
-
-    function restaurarSessao() {
-      const salvo = localStorage.getItem("elohim_usuario_logado");
-      if (!salvo) return;
-
-      try {
-        usuarioAtual = JSON.parse(salvo);
-        loginScreen.classList.add("hidden");
-        appShell.classList.remove("hidden");
-        aplicarPermissoes();
-        carregarDadosDoBanco();
-        carregarResumoAnual();
-      } catch {
-        localStorage.removeItem("elohim_usuario_logado");
-      }
-    }
-
-    btnLogin.addEventListener("click", fazerLogin);
-    btnLogout.addEventListener("click", logout);
-    fileInput.addEventListener("change", handleFile);
-    btnSalvarFaturamento.addEventListener("click", salvarFaturamentoMes);
-    btnSalvarMetas.addEventListener("click", salvarMetasDoMes);
-    btnCarregarMes.addEventListener("click", async () => {
-      await carregarDadosDoBanco();
-      await carregarResumoAnual();
-    });
-
-    mesSelect.addEventListener("change", () => {
-      atualizarStatus();
-      if (usuarioAtual) carregarDadosDoBanco();
-    });
-
-    anoSelect.addEventListener("change", () => {
-      atualizarStatus();
-      if (usuarioAtual) {
-        carregarDadosDoBanco();
-        carregarResumoAnual();
-      }
-    });
-
-    definirMesAtual();
-    ativarAbas();
-    restaurarSessao();
-  </script>
 </body>
 </html>
