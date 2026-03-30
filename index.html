@@ -63,6 +63,11 @@
       color: #fff;
       box-sizing: border-box;
       font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      box-shadow: 0 0 0 2px rgba(255, 42, 42, 0.35);
     }
 
     button {
@@ -75,6 +80,11 @@
       font-weight: bold;
       cursor: pointer;
       font-size: 16px;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.02);
     }
 
     .msg {
@@ -87,6 +97,45 @@
     .ok { color: #22c55e; }
     .err { color: #ff6b6b; }
     .info { color: #facc15; }
+
+    .dashboard-temp {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0b0b0b;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+
+    .dashboard-card {
+      width: 100%;
+      max-width: 700px;
+      background: rgba(20,20,20,0.92);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+      text-align: center;
+    }
+
+    .dashboard-card h1 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 34px;
+    }
+
+    .dashboard-card p {
+      margin: 8px 0;
+      font-size: 18px;
+      color: #ddd;
+    }
+
+    .dashboard-card .perfil {
+      color: #22c55e;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -182,6 +231,21 @@
           "\nPerfil: " + usuario.perfil,
           "ok"
         );
+
+        setTimeout(() => {
+          document.body.innerHTML = `
+            <div class="dashboard-temp">
+              <div class="dashboard-card">
+                <h1>Bem-vindo ao sistema</h1>
+                <p><strong>Usuário:</strong> ${usuario.email}</p>
+                <p class="perfil"><strong>Perfil:</strong> ${usuario.perfil}</p>
+                <p>Login validado com sucesso.</p>
+                <p>Agora a próxima etapa é ligar esta entrada ao dashboard completo.</p>
+              </div>
+            </div>
+          `;
+        }, 1000);
+
       } catch (erro) {
         setStatus("Erro inesperado:\n" + erro.message, "err");
       }
