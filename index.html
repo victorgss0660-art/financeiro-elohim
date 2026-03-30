@@ -7,120 +7,100 @@
 <title>Elohim Financeiro</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 body{
   margin:0;
-  font-family:Segoe UI;
-  background:linear-gradient(135deg,#070707,#1a0000);
+  font-family: 'Segoe UI', sans-serif;
+  background:#0b0b0b;
   color:#fff;
 }
 
-/* HEADER PREMIUM */
-.header{
+/* LAYOUT */
+.layout{
+  display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:230px;
+  height:100vh;
+  background:#111;
   padding:20px;
+  border-right:1px solid #222;
+}
+
+.sidebar img{
+  width:140px;
+  margin-bottom:30px;
+}
+
+.menu{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.menu button{
+  background:none;
+  border:none;
+  color:#bbb;
+  text-align:left;
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.menu button:hover{
+  background:#1c1c1c;
+  color:#fff;
+}
+
+/* CONTEÚDO */
+.content{
+  flex:1;
+  padding:30px;
+}
+
+/* HEADER */
+.header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
+  margin-bottom:25px;
 }
 
 .header h1{
   margin:0;
+  font-size:22px;
 }
 
-.kpi{
-  display:flex;
+.user{
+  color:#aaa;
+}
+
+/* CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
   gap:15px;
-}
-
-.kpi-box{
-  background:#111;
-  padding:10px 14px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,0.1);
-}
-
-/* LOGIN */
-.login{
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
 }
 
 .card{
-  background:#111;
-  padding:30px;
-  border-radius:20px;
-  width:320px;
-  text-align:center;
-}
-
-.card input{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:10px;
-  border:none;
-}
-
-.btn{
-  margin-top:15px;
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:red;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-/* DASHBOARD */
-.container{
+  background:#161616;
   padding:20px;
+  border-radius:14px;
+  border:1px solid #222;
 }
 
-.cards{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:15px;
+.card .title{
+  color:#aaa;
+  font-size:13px;
 }
 
-.card-box{
-  background:#111;
-  padding:20px;
-  border-radius:16px;
-}
-
-.big{
-  font-size:22px;
+.card .value{
+  font-size:24px;
   font-weight:bold;
-}
-
-/* ALERTAS */
-.alert{
-  padding:10px;
-  border-radius:10px;
-  margin-top:10px;
-}
-
-.alert.ok{background:#14532d;}
-.alert.warn{background:#78350f;}
-.alert.danger{background:#7f1d1d;}
-
-/* PROGRESS */
-.progress{
-  height:8px;
-  background:#222;
-  border-radius:10px;
-  margin-top:6px;
-}
-
-.progress div{
-  height:100%;
-  border-radius:10px;
+  margin-top:5px;
 }
 
 /* GRID */
@@ -132,9 +112,47 @@ body{
 }
 
 canvas{
-  background:#fff;
-  border-radius:12px;
-  padding:10px;
+  background:#161616;
+  border-radius:14px;
+  padding:15px;
+}
+
+/* LOGIN */
+.login{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.login-box{
+  background:#111;
+  padding:40px;
+  border-radius:20px;
+  width:320px;
+  text-align:center;
+}
+
+.login-box input{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#1a1a1a;
+  color:#fff;
+}
+
+.login-box button{
+  width:100%;
+  margin-top:15px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(90deg,#ff0000,#ff4d4d);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -143,12 +161,12 @@ canvas{
 
 <!-- LOGIN -->
 <div id="login" class="login">
-  <div class="card">
-    <img src="logo-elohim.png" width="140"><br><br>
+  <div class="login-box">
+    <img src="logo-elohim.png" width="130"><br><br>
     <h2>Entrar</h2>
     <input id="email" placeholder="Email">
     <input id="senha" type="password" placeholder="Senha">
-    <button class="btn" onclick="loginUser()">Entrar</button>
+    <button onclick="login()">Entrar</button>
     <p id="msg"></p>
   </div>
 </div>
@@ -156,26 +174,51 @@ canvas{
 <!-- APP -->
 <div id="app" style="display:none">
 
-<div class="header">
-  <h1>Dashboard Financeiro</h1>
-  <div class="kpi">
-    <div class="kpi-box">Faturamento: <span id="fat">0</span></div>
-    <div class="kpi-box">Gastos: <span id="gas">0</span></div>
-    <div class="kpi-box">Saldo: <span id="sal">0</span></div>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <img src="logo-elohim.png">
+
+  <div class="menu">
+    <button>📊 Dashboard</button>
+    <button>💰 Financeiro</button>
+    <button>📈 Metas</button>
+    <button>⚙️ Configurações</button>
   </div>
 </div>
 
-<div class="container">
+<!-- CONTEÚDO -->
+<div class="content">
 
-<div class="cards" id="cards"></div>
+<div class="header">
+  <h1>Dashboard Financeiro</h1>
+  <div class="user" id="user"></div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="title">Faturamento</div>
+    <div class="value" id="fat">0</div>
+  </div>
+
+  <div class="card">
+    <div class="title">Gastos</div>
+    <div class="value" id="gas">0</div>
+  </div>
+
+  <div class="card">
+    <div class="title">Lucro</div>
+    <div class="value" id="lucro">0</div>
+  </div>
+</div>
 
 <div class="grid">
   <canvas id="bar"></canvas>
-  <canvas id="line"></canvas>
+  <canvas id="pie"></canvas>
 </div>
 
-<div id="alertas"></div>
-
+</div>
 </div>
 
 </div>
@@ -184,12 +227,9 @@ canvas{
 const URL="https://qaqszkhkizeifwkhumka.supabase.co";
 const KEY="sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
-let user=null;
-
-/* LOGIN */
-async function loginUser(){
-  let email=document.getElementById("email").value;
-  let senha=document.getElementById("senha").value;
+async function login(){
+  let email=emailInput.value;
+  let senha=senhaInput.value;
 
   let res=await fetch(`${URL}/rest/v1/usuarios?email=eq.${email}&senha=eq.${senha}`,{
     headers:{apikey:KEY,Authorization:"Bearer "+KEY}
@@ -198,17 +238,16 @@ async function loginUser(){
   let data=await res.json();
 
   if(data.length){
-    user=data[0];
     document.getElementById("login").style.display="none";
     document.getElementById("app").style.display="block";
-    loadDashboard();
+    document.getElementById("user").innerText=email;
+    load();
   }else{
-    document.getElementById("msg").innerText="Login inválido";
+    msg.innerText="Login inválido";
   }
 }
 
-/* DASHBOARD */
-async function loadDashboard(){
+async function load(){
 
   let gastos=await fetch(`${URL}/rest/v1/gastos`,{
     headers:{apikey:KEY,Authorization:"Bearer "+KEY}
@@ -219,60 +258,27 @@ async function loadDashboard(){
   }).then(r=>r.json());
 
   let total=0;
-  let categorias={};
+  let cats={};
 
   gastos.forEach(g=>{
     total+=Number(g.valor);
-    categorias[g.categoria]=(categorias[g.categoria]||0)+Number(g.valor);
+    cats[g.categoria]=(cats[g.categoria]||0)+Number(g.valor);
   });
 
   let fat=meses[0]?.faturamento||0;
 
-  document.getElementById("fat").innerText=fat;
-  document.getElementById("gas").innerText=total;
-  document.getElementById("sal").innerText=fat-total;
-
-  renderCards(categorias,fat);
-  renderCharts(categorias);
-}
-
-/* CARDS COM META */
-function renderCards(cats,fat){
-  let html="";
-
-  Object.keys(cats).forEach(c=>{
-    let val=cats[c];
-    let perc=(val/fat)*100;
-
-    let color=perc<80?"green":perc<100?"orange":"red";
-
-    html+=`
-    <div class="card-box">
-      <b>${c}</b><br>
-      ${val}
-      <div class="progress">
-        <div style="width:${perc}%;background:${color}"></div>
-      </div>
-    </div>`;
-  });
-
-  document.getElementById("cards").innerHTML=html;
-}
-
-/* GRÁFICOS */
-function renderCharts(cats){
-
-  let labels=Object.keys(cats);
-  let values=Object.values(cats);
+  fatEl.innerText=fat;
+  gasEl.innerText=total;
+  lucro.innerText=fat-total;
 
   new Chart(bar,{
     type:"bar",
-    data:{labels,datasets:[{data:values}]}
+    data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}
   });
 
-  new Chart(line,{
-    type:"line",
-    data:{labels,datasets:[{data:values}]}
+  new Chart(pie,{
+    type:"pie",
+    data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats)}]}
   });
 }
 </script>
