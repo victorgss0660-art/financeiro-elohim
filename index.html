@@ -5,21 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Financeiro Elohim</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-* { box-sizing: border-box; }
-
 body {
   margin: 0;
-  font-family: Arial;
-  background: #0b0b0b;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0b0b0b, #1a0000);
   color: #fff;
 }
 
-.hidden { display: none !important; }
+.hidden { display: none; }
 
 /* LOGIN */
 .login-screen {
@@ -27,47 +23,46 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at top, #2b0000, #0b0b0b);
 }
 
 .login-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  max-width: 900px;
-  width: 100%;
-  background: #111;
+  width: 380px;
+  padding: 40px;
   border-radius: 20px;
-  overflow: hidden;
+  backdrop-filter: blur(20px);
+  background: rgba(20,20,20,0.7);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  text-align: center;
 }
 
-.login-left {
-  padding: 40px;
-}
-
-.login-right {
-  background: #fff;
-  color: #000;
-  padding: 40px;
-}
-
-.logo-box-login {
-  background: #fff;
-  padding: 15px;
-  border-radius: 15px;
+.logo-box-login img {
+  width: 180px;
   margin-bottom: 20px;
-  display: inline-block;
 }
 
-.logo-box-sidebar {
-  background: #fff;
-  padding: 10px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-}
-
-.logo-img {
-  max-width: 150px;
+input {
   width: 100%;
+  margin-bottom: 15px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #111;
+  color: #fff;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #d10000, #ff2a2a);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  transform: scale(1.03);
 }
 
 /* APP */
@@ -75,24 +70,47 @@ body {
   display: flex;
 }
 
+/* SIDEBAR */
 .sidebar {
-  width: 250px;
+  width: 220px;
+  background: rgba(20,20,20,0.8);
+  backdrop-filter: blur(15px);
   padding: 20px;
+}
+
+.logo-box-sidebar img {
+  width: 140px;
+  margin-bottom: 20px;
+}
+
+.user-box {
   background: #111;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
 
 .menu-item {
-  padding: 10px;
-  margin-bottom: 8px;
-  background: #1a1a1a;
+  padding: 12px;
   border-radius: 10px;
+  margin-bottom: 8px;
   cursor: pointer;
 }
 
-.menu-item.active {
-  background: #d10000;
+.menu-item:hover {
+  background: rgba(255,0,0,0.2);
 }
 
+.menu-item.active {
+  background: linear-gradient(90deg, #d10000, #ff2a2a);
+}
+
+.logout-btn {
+  margin-top: 20px;
+  background: #222;
+}
+
+/* MAIN */
 .main {
   flex: 1;
   padding: 20px;
@@ -106,31 +124,10 @@ body {
 }
 
 .card {
-  background: #1a1a1a;
-  padding: 15px;
-  border-radius: 10px;
+  background: rgba(30,30,30,0.7);
+  padding: 20px;
+  border-radius: 15px;
 }
-
-/* GRÁFICOS */
-.chart-wrap {
-  background: #fff;
-  padding: 10px;
-  border-radius: 10px;
-}
-
-/* INPUTS */
-input, select, button {
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-}
-
-button {
-  background: #d10000;
-  color: #fff;
-  cursor: pointer;
-}
-
 </style>
 </head>
 
@@ -139,22 +136,15 @@ button {
 <!-- LOGIN -->
 <section id="loginScreen" class="login-screen">
   <div class="login-card">
-
-    <div class="login-left">
-      <div class="logo-box-login">
-        <img src="logo-elohim.png" class="logo-img">
-      </div>
-      <p>Sistema financeiro inteligente</p>
+    <div class="logo-box-login">
+      <img src="logo-elohim.png">
     </div>
 
-    <div class="login-right">
-      <h2>Login</h2>
-      <input id="loginEmail" placeholder="Email"><br><br>
-      <input id="loginSenha" type="password" placeholder="Senha"><br><br>
-      <button id="btnLogin">Entrar</button>
-      <div id="loginErro"></div>
-    </div>
+    <input id="loginEmail" placeholder="Seu e-mail">
+    <input id="loginSenha" type="password" placeholder="Sua senha">
 
+    <button id="btnLogin">Entrar</button>
+    <div id="loginErro"></div>
   </div>
 </section>
 
@@ -163,44 +153,34 @@ button {
 
   <aside class="sidebar">
     <div class="logo-box-sidebar">
-      <img src="logo-elohim.png" class="logo-img">
+      <img src="logo-elohim.png">
     </div>
 
-    <div id="userName"></div>
+    <div class="user-box">
+      <div id="userName"></div>
+      <div id="userRole"></div>
+    </div>
 
-    <div class="menu-item active" data-tab="dashboard">Dashboard</div>
-    <div class="menu-item" data-tab="faturamento">Faturamento</div>
-    <div class="menu-item" data-tab="metas">Metas</div>
-    <div class="menu-item" data-tab="importar">Importar</div>
-    <div class="menu-item" data-tab="resumo">Resumo</div>
+    <div class="menu-item active">Dashboard</div>
+    <div class="menu-item">Faturamento</div>
+    <div class="menu-item">Metas</div>
+    <div class="menu-item">Importar</div>
+    <div class="menu-item">Resumo</div>
 
-    <button id="btnLogout">Sair</button>
+    <button class="logout-btn" id="btnLogout">Sair</button>
   </aside>
 
   <main class="main">
+    <h1>Dashboard Financeiro</h1>
 
-    <h1>Financeiro</h1>
-
-    <section class="cards">
+    <div class="cards">
       <div class="card">Faturamento: <span id="fat"></span></div>
       <div class="card">Gastos: <span id="gastos"></span></div>
       <div class="card">Saldo: <span id="saldo"></span></div>
       <div class="card">Meta: <span id="metaAtingida"></span></div>
-    </section>
-
-    <br>
-
-    <div class="chart-wrap">
-      <canvas id="barChart"></canvas>
     </div>
-
-    <br>
-
-    <div class="chart-wrap">
-      <canvas id="pieChart"></canvas>
-    </div>
-
   </main>
+
 </section>
 
 <script>
@@ -211,7 +191,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let usuarioAtual = null;
 
-document.getElementById("btnLogin").onclick = async () => {
+btnLogin.onclick = async () => {
   const email = loginEmail.value;
   const senha = loginSenha.value;
 
@@ -222,7 +202,7 @@ document.getElementById("btnLogin").onclick = async () => {
     .eq("senha", senha);
 
   if (!data || data.length === 0) {
-    loginErro.innerText = "Erro no login";
+    loginErro.innerText = "Login inválido";
     return;
   }
 
@@ -232,11 +212,10 @@ document.getElementById("btnLogin").onclick = async () => {
   appShell.classList.remove("hidden");
 
   userName.innerText = usuarioAtual.email;
+  userRole.innerText = usuarioAtual.perfil;
 };
 
-btnLogout.onclick = () => {
-  location.reload();
-};
+btnLogout.onclick = () => location.reload();
 </script>
 
 </body>
