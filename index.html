@@ -1939,36 +1939,60 @@
       }
     });
 
-    loginBtn.addEventListener("click", login);
-    loginSenha.addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+  window.addEventListener("DOMContentLoaded", () => {
+  const loginBtnEl = document.getElementById("loginBtn");
+  const loginSenhaEl = document.getElementById("loginSenha");
+  const btnSairEl = document.getElementById("btnSair");
+  const btnCarregarMesEl = document.getElementById("btnCarregarMes");
+  const btnSalvarFaturamentoEl = document.getElementById("btnSalvarFaturamento");
+  const btnSalvarMetasEl = document.getElementById("btnSalvarMetas");
+  const btnExportarRelatorioEl = document.getElementById("btnExportarRelatorio");
+  const btnSalvarPlanejamentoEl = document.getElementById("btnSalvarPlanejamento");
+  const btnSalvarContaPagarEl = document.getElementById("btnSalvarContaPagar");
+  const btnCancelarEdicaoContaEl = document.getElementById("btnCancelarEdicaoConta");
+  const fileInputEl = document.getElementById("fileInput");
+  const mesSelectEl = document.getElementById("mesSelect");
+  const anoSelectEl = document.getElementById("anoSelect");
 
-    btnSair.addEventListener("click", logout);
-    btnCarregarMes.addEventListener("click", carregarTudo);
-    btnSalvarFaturamento.addEventListener("click", salvarFaturamento);
-    btnSalvarMetas.addEventListener("click", salvarMetas);
-    btnExportarRelatorio.addEventListener("click", exportarRelatorio);
-    btnSalvarPlanejamento.addEventListener("click", salvarPlanejamento);
-    btnSalvarContaPagar.addEventListener("click", salvarContaPagar);
-    btnCancelarEdicaoConta.addEventListener("click", cancelarEdicaoConta);
-    fileInput.addEventListener("change", handleFile);
+  if (loginBtnEl) loginBtnEl.addEventListener("click", login);
 
-    mesSelect.addEventListener("change", async () => {
+  if (loginSenhaEl) {
+    loginSenhaEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") login();
+    });
+  }
+
+  if (btnSairEl) btnSairEl.addEventListener("click", logout);
+  if (btnCarregarMesEl) btnCarregarMesEl.addEventListener("click", carregarTudo);
+  if (btnSalvarFaturamentoEl) btnSalvarFaturamentoEl.addEventListener("click", salvarFaturamento);
+  if (btnSalvarMetasEl) btnSalvarMetasEl.addEventListener("click", salvarMetas);
+  if (btnExportarRelatorioEl) btnExportarRelatorioEl.addEventListener("click", exportarRelatorio);
+  if (btnSalvarPlanejamentoEl) btnSalvarPlanejamentoEl.addEventListener("click", salvarPlanejamento);
+  if (btnSalvarContaPagarEl) btnSalvarContaPagarEl.addEventListener("click", salvarContaPagar);
+  if (btnCancelarEdicaoContaEl) btnCancelarEdicaoContaEl.addEventListener("click", cancelarEdicaoConta);
+  if (fileInputEl) fileInputEl.addEventListener("change", handleFile);
+
+  if (mesSelectEl) {
+    mesSelectEl.addEventListener("change", async () => {
       atualizarStatus();
       if (usuarioAtual) {
         await carregarDashboard();
         await carregarContasPagar();
       }
-}
     });
+  }
 
-    anoSelect.addEventListener("change", async () => {
+  if (anoSelectEl) {
+    anoSelectEl.addEventListener("change", async () => {
       atualizarStatus();
       if (usuarioAtual) await carregarTudo();
     });
+  }
 
-    definirMesAtual();
-    ativarAbas();
-    restaurarSessao();
+  definirMesAtual();
+  ativarAbas();
+  restaurarSessao();
+});
   </script>
 </body>
 </html>
