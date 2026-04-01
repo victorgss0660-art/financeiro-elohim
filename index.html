@@ -1511,9 +1511,27 @@
 
           <div class="panel-head"><h3>Planejamento Financeiro (12 semanas)</h3><div class="badge">Fluxo futuro</div></div>
 
-          <div class="top-filters">
 
-            <input id="saldoInicial" type="number" placeholder="Saldo atual em caixa">
+          <div id="saldosContas" class="form-grid">
+
+            <input class="saldo-conta" data-conta="sicoob" placeholder="Sicoob">
+
+            <input class="saldo-conta" data-conta="nubank" placeholder="Nubank">
+
+            <input class="saldo-conta" data-conta="metos" placeholder="Metos">
+
+            <input class="saldo-conta" data-conta="portal" placeholder="Portal Cash (GE)">
+
+            <input class="saldo-conta" data-conta="monkey" placeholder="Monkey (WEG)">
+
+            <input class="saldo-conta" data-conta="citibank" placeholder="Citibank (Hitachi)">
+
+            <input class="saldo-conta" data-conta="dinheiro" placeholder="Dinheiro Físico">
+
+          </div>
+
+
+          <div style="margin-top:16px;">
 
             <button id="btnSalvarPlanejamento" class="btn" type="button">Salvar</button>
 
@@ -1685,6 +1703,21 @@
       if (status === "vencido") return "pill pill-vencido";
 
       return "pill pill-pendente";
+
+    }
+
+
+    function calcularSaldoInicialTotal() {
+
+      let total = 0;
+
+      document.querySelectorAll(".saldo-conta").forEach(input => {
+
+        total += Number(input.value || 0);
+
+      });
+
+      return total;
 
     }
 
@@ -2788,16 +2821,13 @@
       const dataFim = limite.toISOString().slice(0, 10);
 
 
-      const contas = await restGet(
+      return await restGet(
 
         "contas_pagar",
 
         `select=*&vencimento=gte.${dataInicio}&vencimento=lte.${dataFim}&status=neq.pago&order=vencimento.asc`
 
       );
-
-
-      return contas;
 
     }
 
@@ -2811,7 +2841,16 @@
 
       const dados = JSON.parse(salvo);
 
-      document.getElementById("saldoInicial").value = dados.saldo || 0;
+
+      if (dados.contas) {
+
+        document.querySelectorAll(".saldo-conta").forEach(input => {
+
+          input.value = dados.contas[input.dataset.conta] || 0;
+
+        });
+
+      }
 
 
       (dados.semanas || []).forEach((s, i) => {
@@ -2838,15 +2877,9 @@
 
         const venc = new Date(conta.vencimento + "T00:00:00");
 
-
         for (let i = 0; i < semanas.length; i++) {
 
-          const inicio = semanas[i].inicio;
-
-          const fim = semanas[i].fim;
-
-
-          if (venc >= inicio && venc <= fim) {
+          if (venc >= semanas[i].inicio && venc <= semanas[i].fim) {
 
             semanas[i].saida += Number(conta.valor || 0);
 
@@ -2877,39 +2910,13 @@
 
           <td>
 
-            <input
-
-              class="edit-input"
-
-              type="number"
-
-              data-tipo="entrada"
-
-              data-index="${i}"
-
-              value="0"
-
-            >
+            <input class="edit-input" type="number" data-tipo="entrada" data-index="${i}" value="0">
 
           </td>
 
           <td>
 
-            <input
-
-              class="readonly-input"
-
-              type="number"
-
-              data-tipo="saida"
-
-              data-index="${i}"
-
-              value="${s.saida.toFixed(2)}"
-
-              readonly
-
-            >
+            <input class="readonly-input" type="number" data-tipo="saida" data-index="${i}" value="${s.saida.toFixed(2)}" readonly>
 
           </td>
 
@@ -2929,7 +2936,7 @@
 
     function calcularFluxo() {
 
-      let saldo = Number(document.getElementById("saldoInicial").value || 0);
+      let saldo = calcularSaldoInicialTotal();
 
 
       for (let i = 0; i < 12; i++) {
@@ -2961,13 +2968,14 @@
 
     function salvarPlanejamento() {
 
-      const dados = {
+      const dados = { contas: {}, semanas: [] };
 
-        saldo: document.getElementById("saldoInicial").value,
 
-        semanas: []
+      document.querySelectorAll(".saldo-conta").forEach(input => {
 
-      };
+        dados.contas[input.dataset.conta] = input.value || 0;
+
+      });
 
 
       for (let i = 0; i < 12; i++) {
@@ -3117,11 +3125,7 @@
         let status = item.status || "pendente";
 
 
-        if (status !== "pago" && item.vencimento && item.vencimento < hoje) {
-
-          status = "vencido";
-
-        }
+        if (status !== "pago" && item.vencimento && item.vencimento < hoje) status = "vencido";
 
 
         if (status === "pago") totalPago += valor;
@@ -3230,29 +3234,9 @@
 
         const payload = {
 
-          fornecedor,
+          fornecedor, descricao, categoria, documento, valor,
 
-          descricao,
-
-          categoria,
-
-          documento,
-
-          valor,
-
-          vencimento,
-
-          status,
-
-          boleto,
-
-          nota_fiscal,
-
-          observacoes,
-
-          mes,
-
-          ano
+          vencimento, status, boleto, nota_fiscal, observacoes, mes, ano
 
         };
 
@@ -3339,9 +3323,7 @@
 
     function editarContaPagar(itemJson) {
 
-      const item = JSON.parse(itemJson);
-
-      entrarModoEdicaoConta(item);
+      entrarModoEdicaoConta(JSON.parse(itemJson));
 
     }
 
@@ -3460,9 +3442,7 @@
       });
 
 
-      const tbody = document.getElementById("tabelaResumoAnual");
-
-      tbody.innerHTML = resumoAnual.map(item => `
+      document.getElementById("tabelaResumoAnual").innerHTML = resumoAnual.map(item => `
 
         <tr>
 
@@ -3748,7 +3728,7 @@
 
     document.addEventListener("input", (e) => {
 
-      if (e.target.dataset.tipo || e.target.id === "saldoInicial") {
+      if (e.target.dataset.tipo || e.target.classList.contains("saldo-conta")) {
 
         calcularFluxo();
 
@@ -3787,7 +3767,6 @@
 
 
       if (loginBtnEl) loginBtnEl.addEventListener("click", login);
-
 
       if (loginSenhaEl) {
 
