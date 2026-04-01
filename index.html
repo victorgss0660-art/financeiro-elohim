@@ -11,9 +11,7 @@
   <style>
     :root{
       --bg:#0b0b0b;
-      --bg-soft:#121212;
       --panel:#171717;
-      --panel-2:#1d1d1d;
       --border:#2a2a2a;
       --text:#ffffff;
       --muted:#a8a8a8;
@@ -38,10 +36,7 @@
     }
 
     .hidden{display:none !important}
-
-    .fade-in{
-      animation:fadeIn .25s ease;
-    }
+    .fade-in{animation:fadeIn .25s ease}
 
     @keyframes fadeIn{
       from{opacity:0; transform:translateY(6px)}
@@ -625,6 +620,26 @@
           </div>
         </section>
 
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Evolução Mensal</h3>
+            <div class="badge">Ano</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="lineChart"></canvas>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Ranking Anual de Categorias</h3>
+            <div class="badge">Top gastos</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="rankingChart"></canvas>
+          </div>
+        </section>
+
         <section class="grid">
           <div class="panel">
             <div class="panel-head">
@@ -767,24 +782,11 @@
       PREST: 4, FOLHA: 15, COMIS: 2, IMPOS: 5, RESC: 1, MANUT: 4
     };
 
-    const coresCategorias = {
-      MC: "#ff3d3d",
-      MP: "#2563eb",
-      TERC: "#22c55e",
-      FRETE: "#ff8a00",
-      DESP: "#a855f7",
-      TAR: "#06b6d4",
-      PREST: "#ff4ecd",
-      FOLHA: "#b7e000",
-      COMIS: "#f59e0b",
-      IMPOS: "#64748b",
-      RESC: "#e11d48",
-      MANUT: "#14b8a6"
-    };
-
     let usuarioAtual = null;
     let barChart = null;
     let pieChart = null;
+    let lineChart = null;
+    let rankingChart = null;
     let ultimoContexto = null;
 
     const loginScreen = document.getElementById("loginScreen");
@@ -1213,21 +1215,15 @@
               grid: {
                 color: "rgba(107,114,128,0.15)"
               },
-              border: {
-                display: false
-              }
+              border: { display: false }
             },
             y: {
               ticks: {
                 color: "#374151",
                 font: { size: 11, weight: "600" }
               },
-              grid: {
-                display: false
-              },
-              border: {
-                display: false
-              }
+              grid: { display: false },
+              border: { display: false }
             }
           }
         }
@@ -1240,18 +1236,8 @@
           datasets: [{
             data: valores,
             backgroundColor: [
-              "#ff3d3d",
-              "#2563eb",
-              "#22c55e",
-              "#ff8a00",
-              "#a855f7",
-              "#06b6d4",
-              "#ff4ecd",
-              "#b7e000",
-              "#f59e0b",
-              "#64748b",
-              "#e11d48",
-              "#14b8a6"
+              "#ff3d3d","#2563eb","#22c55e","#ff8a00","#a855f7","#06b6d4",
+              "#ff4ecd","#b7e000","#f59e0b","#64748b","#e11d48","#14b8a6"
             ],
             borderWidth: 4,
             borderColor: "#ffffff",
@@ -1291,6 +1277,189 @@
                   return `${ctx.label}: ${moeda(valor)} (${perc}%)`;
                 }
               }
+            }
+          }
+        }
+      });
+    }
+
+    function desenharGraficoEvolucao(resumoAnual) {
+      const labels = resumoAnual.map(item => item.mes.substring(0, 3));
+      const faturamento = resumoAnual.map(item => item.faturamento);
+      const gastos = resumoAnual.map(item => item.gastos);
+      const saldo = resumoAnual.map(item => item.saldo);
+
+      if (lineChart) lineChart.destroy();
+
+      lineChart = new Chart(document.getElementById("lineChart"), {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Faturamento",
+              data: faturamento,
+              borderColor: "#22c55e",
+              backgroundColor: "#22c55e",
+              borderWidth: 3,
+              tension: 0.35,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#22c55e"
+            },
+            {
+              label: "Gastos",
+              data: gastos,
+              borderColor: "#ef4444",
+              backgroundColor: "#ef4444",
+              borderWidth: 3,
+              tension: 0.35,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#ef4444"
+            },
+            {
+              label: "Saldo",
+              data: saldo,
+              borderColor: "#2563eb",
+              backgroundColor: "#2563eb",
+              borderWidth: 3,
+              tension: 0.35,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#2563eb"
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                color: "#1f2937",
+                usePointStyle: true,
+                pointStyle: "circle",
+                boxWidth: 10,
+                boxHeight: 10,
+                padding: 18,
+                font: { size: 12, weight: "600" }
+              }
+            },
+            tooltip: {
+              backgroundColor: "rgba(17,24,39,0.96)",
+              titleColor: "#fff",
+              bodyColor: "#fff",
+              borderColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${moeda(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: "#374151",
+                font: { size: 11, weight: "600" }
+              },
+              grid: { display: false },
+              border: { color: "#e5e7eb" }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: "#374151",
+                callback: (value) => moeda(value)
+              },
+              grid: { color: "rgba(107,114,128,0.15)" },
+              border: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function desenharGraficoRankingAnual(gastosAno) {
+      const acumulado = {};
+
+      gastosAno.forEach(item => {
+        const cat = item.categoria || "Outros";
+        acumulado[cat] = (acumulado[cat] || 0) + num(item.valor || 0);
+      });
+
+      const ordenado = Object.entries(acumulado)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+      const labels = ordenado.map(([cat]) => nomeCategoria(cat));
+      const valores = ordenado.map(([, valor]) => valor);
+
+      if (rankingChart) rankingChart.destroy();
+
+      rankingChart = new Chart(document.getElementById("rankingChart"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Gasto anual",
+            data: valores,
+            borderRadius: 12,
+            borderSkipped: false,
+            barThickness: 18,
+            backgroundColor: (ctx) => {
+              const chart = ctx.chart;
+              const { ctx: canvasCtx, chartArea } = chart;
+              if (!chartArea) return "#ff3d3d";
+              const gradient = canvasCtx.createLinearGradient(0, 0, chartArea.right, 0);
+              gradient.addColorStop(0, "#ff3d3d");
+              gradient.addColorStop(0.45, "#ff7a18");
+              gradient.addColorStop(1, "#ffd200");
+              return gradient;
+            }
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          maintainAspectRatio: false,
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "rgba(17,24,39,0.96)",
+              titleColor: "#fff",
+              bodyColor: "#fff",
+              borderColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: (ctx) => `Gasto: ${moeda(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: {
+                color: "#374151",
+                callback: (value) => moeda(value)
+              },
+              grid: { color: "rgba(107,114,128,0.15)" },
+              border: { display: false }
+            },
+            y: {
+              ticks: {
+                color: "#374151",
+                font: { size: 11, weight: "600" }
+              },
+              grid: { display: false },
+              border: { display: false }
             }
           }
         }
@@ -1349,24 +1518,33 @@
       const mapa = {};
       ordem.forEach(m => mapa[m] = { faturamento: 0, gastos: 0 });
 
-      meses.forEach(item => { mapa[item.mes].faturamento = num(item.faturamento || 0); });
-      gastos.forEach(item => { mapa[item.mes].gastos += num(item.valor || 0); });
+      meses.forEach(item => {
+        mapa[item.mes].faturamento = num(item.faturamento || 0);
+      });
 
-      const tbody = document.getElementById("tabelaResumoAnual");
-      tbody.innerHTML = ordem.map(m => {
+      gastos.forEach(item => {
+        mapa[item.mes].gastos += num(item.valor || 0);
+      });
+
+      const resumoAnual = ordem.map(m => {
         const f = num(mapa[m].faturamento);
         const g = num(mapa[m].gastos);
         const s = num(f - g);
+        return { mes: m, faturamento: f, gastos: g, saldo: s };
+      });
 
-        return `
-          <tr>
-            <td>${m}</td>
-            <td>${moeda(f)}</td>
-            <td>${moeda(g)}</td>
-            <td class="${s >= 0 ? "success" : "danger"}">${moeda(s)}</td>
-          </tr>
-        `;
-      }).join("");
+      const tbody = document.getElementById("tabelaResumoAnual");
+      tbody.innerHTML = resumoAnual.map(item => `
+        <tr>
+          <td>${item.mes}</td>
+          <td>${moeda(item.faturamento)}</td>
+          <td>${moeda(item.gastos)}</td>
+          <td class="${item.saldo >= 0 ? "success" : "danger"}">${moeda(item.saldo)}</td>
+        </tr>
+      `).join("");
+
+      desenharGraficoEvolucao(resumoAnual);
+      desenharGraficoRankingAnual(gastos);
     }
 
     async function salvarFaturamento() {
@@ -1408,6 +1586,7 @@
 
         setAppMsg("Metas salvas com sucesso.", "ok");
         await carregarDashboard();
+        await carregarResumoAnual();
       } catch (erro) {
         setAppMsg("Erro ao salvar metas: " + erro.message, "err");
       }
