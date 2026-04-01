@@ -138,6 +138,7 @@
 
     .small-green{background:#15803d}
     .small-red{background:#b91c1c}
+    .small-blue{background:#1d4ed8}
     .small-gray{background:#374151}
 
     #loginBtn{width:100%;font-size:15px}
@@ -538,7 +539,6 @@
   </style>
 </head>
 <body>
-
   <section id="loginScreen" class="login-screen">
     <div class="login-card">
       <div class="login-logo">
@@ -678,7 +678,7 @@
 
         <section class="panel">
           <div class="panel-head">
-            <h3>Cadastrar Conta a Pagar</h3>
+            <h3 id="cpTituloFormulario">Cadastrar Conta a Pagar</h3>
             <div class="badge">Financeiro</div>
           </div>
 
@@ -717,8 +717,9 @@
             <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
           </div>
 
-          <div style="margin-top:16px;">
+          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
             <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
+            <button id="btnCancelarEdicaoConta" class="secondary-btn hidden" type="button">Cancelar edição</button>
           </div>
         </section>
 
@@ -838,6 +839,7 @@
     let lineChart = null;
     let rankingChart = null;
     let ultimoContexto = null;
+    let contaPagarEditandoId = null;
 
     const loginScreen = document.getElementById("loginScreen");
     const appShell = document.getElementById("appShell");
@@ -861,9 +863,9 @@
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
     const fileInput = document.getElementById("fileInput");
-    const saldoInicialInput = document.getElementById("saldoInicial");
     const btnSalvarPlanejamento = document.getElementById("btnSalvarPlanejamento");
     const btnSalvarContaPagar = document.getElementById("btnSalvarContaPagar");
+    const btnCancelarEdicaoConta = document.getElementById("btnCancelarEdicaoConta");
 
     function setLoginMsg(texto, tipo = "info") {
       loginMsg.className = tipo;
@@ -1463,8 +1465,8 @@
       tbody.innerHTML = semanas.map((s, i) => `
         <tr>
           <td>${s.semana}</td>
-          <td><input class="planejamento-input" type="number" data-tipo="entrada" data-index="${i}" value="0"></td>
-          <td><input class="planejamento-input" type="number" data-tipo="saida" data-index="${i}" value="0"></td>
+          <td><input type="number" data-tipo="entrada" data-index="${i}" value="0" style="width:100%;padding:10px;border:none;border-radius:10px;background:#1b1b1b;color:#fff;"></td>
+          <td><input type="number" data-tipo="saida" data-index="${i}" value="0" style="width:100%;padding:10px;border:none;border-radius:10px;background:#1b1b1b;color:#fff;"></td>
           <td id="saldo_${i}">R$ 0,00</td>
         </tr>
       `).join("");
@@ -1478,7 +1480,6 @@
       for (let i = 0; i < 12; i++) {
         const entrada = Number(document.querySelector(`[data-tipo="entrada"][data-index="${i}"]`)?.value || 0);
         const saida = Number(document.querySelector(`[data-tipo="saida"][data-index="${i}"]`)?.value || 0);
-
         saldo += entrada - saida;
 
         const el = document.getElementById(`saldo_${i}`);
@@ -1523,10 +1524,51 @@
       calcularFluxo();
     }
 
+    function limparFormularioContaPagar() {
+      document.getElementById("cpFornecedor").value = "";
+      document.getElementById("cpDescricao").value = "";
+      document.getElementById("cpCategoria").value = "";
+      document.getElementById("cpDocumento").value = "";
+      document.getElementById("cpValor").value = "";
+      document.getElementById("cpVencimento").value = "";
+      document.getElementById("cpStatus").value = "pendente";
+      document.getElementById("cpBoleto").checked = false;
+      document.getElementById("cpNota").checked = false;
+      document.getElementById("cpObservacoes").value = "";
+    }
+
+    function entrarModoEdicaoConta(item) {
+      contaPagarEditandoId = item.id;
+      document.getElementById("cpFornecedor").value = item.fornecedor || "";
+      document.getElementById("cpDescricao").value = item.descricao || "";
+      document.getElementById("cpCategoria").value = item.categoria || "";
+      document.getElementById("cpDocumento").value = item.documento || "";
+      document.getElementById("cpValor").value = item.valor || "";
+      document.getElementById("cpVencimento").value = item.vencimento || "";
+      document.getElementById("cpStatus").value = item.status || "pendente";
+      document.getElementById("cpBoleto").checked = !!item.boleto;
+      document.getElementById("cpNota").checked = !!item.nota_fiscal;
+      document.getElementById("cpObservacoes").value = item.observacoes || "";
+
+      document.getElementById("cpTituloFormulario").textContent = "Editar Conta a Pagar";
+      btnSalvarContaPagar.textContent = "Atualizar conta";
+      btnCancelarEdicaoConta.classList.remove("hidden");
+      setAppMsg("Conta carregada para edição.", "info");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function cancelarEdicaoConta() {
+      contaPagarEditandoId = null;
+      limparFormularioContaPagar();
+      document.getElementById("cpTituloFormulario").textContent = "Cadastrar Conta a Pagar";
+      btnSalvarContaPagar.textContent = "Salvar conta";
+      btnCancelarEdicaoConta.classList.add("hidden");
+      setAppMsg("Edição cancelada.", "info");
+    }
+
     async function carregarContasPagar() {
       const { mes, ano } = getMesAno();
       const data = await restGet("contas_pagar", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&order=vencimento.asc`);
-
       const tbody = document.getElementById("tabelaContasPagar");
       const hoje = hojeISO();
 
@@ -1555,6 +1597,8 @@
         else if (status === "vencido") totalVencido += valor;
         else totalPendente += valor;
 
+        const safeItem = JSON.stringify(item).replace(/"/g, '&quot;');
+
         return `
           <tr>
             <td>${item.fornecedor || "-"}</td>
@@ -1568,6 +1612,7 @@
             <td>${item.nota_fiscal ? "✅" : "❌"}</td>
             <td>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="small-btn small-blue" onclick="editarContaPagar(${safeItem})">Editar</button>
                 <button class="small-btn small-green" onclick="marcarContaPaga(${item.id})">Pagar</button>
                 <button class="small-btn small-red" onclick="excluirContaPagar(${item.id})">Excluir</button>
               </div>
@@ -1604,7 +1649,7 @@
           return;
         }
 
-        await restInsert("contas_pagar", [{
+        const payload = {
           fornecedor,
           descricao,
           categoria,
@@ -1616,34 +1661,30 @@
           nota_fiscal,
           observacoes,
           mes,
-          ano,
-          created_at: new Date().toISOString()
-        }]);
+          ano
+        };
 
-        limparFormularioContaPagar();
-        setAppMsg("Conta a pagar cadastrada com sucesso.", "ok");
+        if (contaPagarEditandoId) {
+          await restPatch("contas_pagar", `id=eq.${contaPagarEditandoId}`, payload);
+          setAppMsg("Conta atualizada com sucesso.", "ok");
+          cancelarEdicaoConta();
+        } else {
+          payload.created_at = new Date().toISOString();
+          await restInsert("contas_pagar", [payload]);
+          limparFormularioContaPagar();
+          setAppMsg("Conta a pagar cadastrada com sucesso.", "ok");
+        }
+
         await carregarContasPagar();
       } catch (erro) {
         setAppMsg("Erro ao salvar conta: " + erro.message, "err");
       }
     }
 
-    function limparFormularioContaPagar() {
-      document.getElementById("cpFornecedor").value = "";
-      document.getElementById("cpDescricao").value = "";
-      document.getElementById("cpCategoria").value = "";
-      document.getElementById("cpDocumento").value = "";
-      document.getElementById("cpValor").value = "";
-      document.getElementById("cpVencimento").value = "";
-      document.getElementById("cpStatus").value = "pendente";
-      document.getElementById("cpBoleto").checked = false;
-      document.getElementById("cpNota").checked = false;
-      document.getElementById("cpObservacoes").value = "";
-    }
-
     async function marcarContaPaga(id) {
       try {
         await restPatch("contas_pagar", `id=eq.${id}`, { status: "pago" });
+        if (contaPagarEditandoId === id) cancelarEdicaoConta();
         setAppMsg("Conta marcada como paga.", "ok");
         await carregarContasPagar();
       } catch (erro) {
@@ -1654,6 +1695,7 @@
     async function excluirContaPagar(id) {
       try {
         await restDelete("contas_pagar", `id=eq.${id}`);
+        if (contaPagarEditandoId === id) cancelarEdicaoConta();
         setAppMsg("Conta excluída com sucesso.", "ok");
         await carregarContasPagar();
       } catch (erro) {
@@ -1661,8 +1703,13 @@
       }
     }
 
+    function editarContaPagar(item) {
+      entrarModoEdicaoConta(item);
+    }
+
     window.marcarContaPaga = marcarContaPaga;
     window.excluirContaPagar = excluirContaPagar;
+    window.editarContaPagar = editarContaPagar;
 
     async function carregarDashboard() {
       const { mes, ano } = getMesAno();
@@ -1763,11 +1810,7 @@
         const metas = capturarMetas();
 
         await restDelete("metas", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
-
-        const payload = Object.keys(metas).map(cat => ({
-          mes, ano, categoria: cat, meta: num(metas[cat] || 0)
-        }));
-
+        const payload = Object.keys(metas).map(cat => ({ mes, ano, categoria: cat, meta: num(metas[cat] || 0) }));
         await restInsert("metas", payload);
 
         setAppMsg("Metas salvas com sucesso.", "ok");
@@ -1905,6 +1948,7 @@
     btnExportarRelatorio.addEventListener("click", exportarRelatorio);
     btnSalvarPlanejamento.addEventListener("click", salvarPlanejamento);
     btnSalvarContaPagar.addEventListener("click", salvarContaPagar);
+    btnCancelarEdicaoConta.addEventListener("click", cancelarEdicaoConta);
     fileInput.addEventListener("change", handleFile);
 
     mesSelect.addEventListener("change", async () => {
@@ -1913,6 +1957,7 @@
         await carregarDashboard();
         await carregarContasPagar();
       }
+}
     });
 
     anoSelect.addEventListener("change", async () => {
