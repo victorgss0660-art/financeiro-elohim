@@ -556,7 +556,9 @@
 
     .sim-grid input,
 
-    .sim-grid select{
+    .sim-grid select,
+
+    .modal-content input{
 
       padding:11px 12px;
 
@@ -1089,6 +1091,81 @@
     }
 
 
+    .modal{
+
+      position:fixed;
+
+      inset:0;
+
+      background:rgba(0,0,0,.7);
+
+      display:flex;
+
+      align-items:center;
+
+      justify-content:center;
+
+      z-index:9999;
+
+      padding:20px;
+
+    }
+
+
+    .modal-content{
+
+      width:100%;
+
+      max-width:380px;
+
+      background:#111;
+
+      border:1px solid #333;
+
+      border-radius:18px;
+
+      padding:24px;
+
+      box-shadow:0 24px 60px rgba(0,0,0,.45);
+
+    }
+
+
+    .modal-content h3{
+
+      margin:0 0 16px 0;
+
+      font-size:22px;
+
+    }
+
+
+    .modal-content label{
+
+      display:block;
+
+      margin:10px 0 6px;
+
+      color:#ddd;
+
+      font-size:14px;
+
+    }
+
+
+    .modal-actions{
+
+      display:flex;
+
+      gap:10px;
+
+      margin-top:18px;
+
+      flex-wrap:wrap;
+
+    }
+
+
     @media (max-width:1100px){
 
       .cards{grid-template-columns:repeat(2,1fr)}
@@ -1181,6 +1258,8 @@
         <button class="menu-btn active" data-tab="dashboard" type="button"><span class="icon">📊</span><span>Dashboard</span></button>
 
         <button class="menu-btn" data-tab="contas-pagar" type="button"><span class="icon">🧾</span><span>Contas a Pagar</span></button>
+
+        <button class="menu-btn" data-tab="contas-pagas" type="button"><span class="icon">✅</span><span>Contas Pagas</span></button>
 
         <button class="menu-btn" data-tab="faturamento" type="button"><span class="icon">💰</span><span>Faturamento</span></button>
 
@@ -1525,6 +1604,59 @@
       </section>
 
 
+      <section id="tab-contas-pagas" class="tab-section fade-in">
+
+        <section class="panel table-wrap">
+
+          <div class="panel-head">
+
+            <h3>Contas Pagas</h3>
+
+            <div class="badge">Histórico</div>
+
+          </div>
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>Fornecedor</th>
+
+                <th>Descrição</th>
+
+                <th>Categoria</th>
+
+                <th>Documento</th>
+
+                <th>Valor</th>
+
+                <th>Vencimento</th>
+
+                <th>Pago em</th>
+
+                <th>Multa</th>
+
+                <th>Total Pago</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="tabelaContasPagas">
+
+              <tr><td colspan="9" class="muted">Nenhuma conta paga.</td></tr>
+
+            </tbody>
+
+          </table>
+
+        </section>
+
+      </section>
+
+
       <section id="tab-faturamento" class="tab-section fade-in">
 
         <section class="panel">
@@ -1569,7 +1701,7 @@
 
           <div class="import-help">
 
-            <div><strong>Colunas obrigatórias:</strong> FORNECEDOR, DESCRICAO ou DESCRIÇÃO, CATEGORIA, DOCUMENTO, VALOR, VENCIMENTO, STATUS, BOLETO, NOTA_FISCAL, OBSERVACOES ou OBSERVAÇÕES</div>
+            <div><strong>Colunas aceitas:</strong> FORNECEDOR, DESCRICAO ou DESCRIÇÃO, CATEGORIA, DOCUMENTO, VALOR, VENCIMENTO, STATUS, BOLETO, NOTA_FISCAL, OBSERVACOES ou OBSERVAÇÕES</div>
 
             <div><strong>CATEGORIA:</strong> MC, MP, TERC, FRETE, DESP, TAR, PREST, FOLHA, COMIS, IMPOS, RESC, MANUT</div>
 
@@ -1577,7 +1709,7 @@
 
             <div><strong>BOLETO / NOTA_FISCAL:</strong> TRUE ou FALSE</div>
 
-            <div><strong>VENCIMENTO:</strong> aceita número do Excel, DD/MM/AAAA ou YYYY-MM-DD</div>
+            <div><strong>VENCIMENTO:</strong> aceita 46003, 01/04/2026 ou 2026-04-01</div>
 
           </div>
 
@@ -1787,6 +1919,36 @@
   </section>
 
 
+  <div id="modalPagamento" class="modal hidden">
+
+    <div class="modal-content">
+
+      <h3>Confirmar Pagamento</h3>
+
+
+      <label for="dataPagamento">Data do pagamento</label>
+
+      <input type="date" id="dataPagamento">
+
+
+      <label for="multaPagamento">Multa por atraso (R$)</label>
+
+      <input type="number" id="multaPagamento" step="0.01" value="0">
+
+
+      <div class="modal-actions">
+
+        <button id="btnConfirmarPagamento" class="btn" type="button">Confirmar</button>
+
+        <button id="btnCancelarPagamento" class="secondary-btn" type="button">Cancelar</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
   <script>
 
     const API_BASE = "https://qaqszkhkizeifwkhumka.supabase.co";
@@ -1849,6 +2011,8 @@
     let ultimoContexto = null;
 
     let contaPagarEditandoId = null;
+
+    let contaPagamentoSelecionadaId = null;
 
     let simulacaoAtual = null;
 
@@ -2016,16 +2180,13 @@
 
     function validarLinhaImportacao(row, indice) {
 
+      const descricao = row["DESCRICAO"] || row["DESCRIÇÃO"] || "";
+
       const categoria = normalizarCategoria(row["CATEGORIA"]);
 
       const status = String(row["STATUS"] || "pendente").trim().toLowerCase();
 
       const vencimento = normalizarDataExcel(row["VENCIMENTO"]);
-
-
-      const descricao = row["DESCRICAO"] || row["DESCRIÇÃO"] || "";
-
-      const observacoes = row["OBSERVACOES"] || row["OBSERVAÇÕES"] || "";
 
 
       if (!row["FORNECEDOR"]) return `Linha ${indice}: FORNECEDOR vazio`;
@@ -2038,8 +2199,7 @@
 
       if (!["pendente","pago","vencido"].includes(status)) return `Linha ${indice}: STATUS inválido (${row["STATUS"]})`;
 
-      if (Number(String(row["VALOR"] || 0).replace("R$", "").replace(/\./g, "").replace(",", ".")) <= 0) return `Linha ${indice}: VALOR inválido`;
-
+      if (Number(String(row["VALOR"] || 0).toString().replace("R$", "").replace(/\./g, "").replace(",", ".")) <= 0) return `Linha ${indice}: VALOR inválido`;
 
       return null;
 
@@ -3673,6 +3833,9 @@
 
       desenharGraficoPlanejamento(base, simulacaoAtual ? simulados : null);
 
+
+      ultimoPlanejamento = { base, simulados };
+
     }
 
 
@@ -3907,11 +4070,89 @@
     }
 
 
+    function abrirModalPagamento(id) {
+
+      contaPagamentoSelecionadaId = id;
+
+      document.getElementById("dataPagamento").value = hojeISO();
+
+      document.getElementById("multaPagamento").value = "0";
+
+      document.getElementById("modalPagamento").classList.remove("hidden");
+
+    }
+
+
+    function fecharModalPagamento() {
+
+      contaPagamentoSelecionadaId = null;
+
+      document.getElementById("modalPagamento").classList.add("hidden");
+
+    }
+
+
+    async function confirmarPagamento() {
+
+      try {
+
+        const data = document.getElementById("dataPagamento").value;
+
+        const multa = Number(document.getElementById("multaPagamento").value || 0);
+
+
+        if (!data) {
+
+          setAppMsg("Informe a data de pagamento.", "err");
+
+          return;
+
+        }
+
+
+        await restPatch("contas_pagar", `id=eq.${contaPagamentoSelecionadaId}`, {
+
+          status: "pago",
+
+          data_pagamento: data,
+
+          multa_atraso: multa
+
+        });
+
+
+        fecharModalPagamento();
+
+        setAppMsg("Pagamento registrado com sucesso.", "ok");
+
+
+        await carregarContasPagar();
+
+        await carregarContasPagas();
+
+        await carregarPlanejamento();
+
+      } catch (erro) {
+
+        setAppMsg("Erro ao registrar pagamento: " + erro.message, "err");
+
+      }
+
+    }
+
+
     async function carregarContasPagar() {
 
       const { mes, ano } = getMesAno();
 
-      const data = await restGet("contas_pagar", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&order=vencimento.asc`);
+      const data = await restGet(
+
+        "contas_pagar",
+
+        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&status=neq.pago&order=vencimento.asc`
+
+      );
+
 
       const tbody = document.getElementById("tabelaContasPagar");
 
@@ -3922,9 +4163,21 @@
 
         tbody.innerHTML = '<tr><td colspan="10" class="muted">Nenhuma conta cadastrada.</td></tr>';
 
+
+        const pagasMes = await restGet(
+
+          "contas_pagar",
+
+          `select=valor,multa_atraso,status&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
+
+        );
+
+
+        const totalPago = pagasMes.filter(i => i.status === "pago").reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0), 0);
+
         document.getElementById("cpPendente").textContent = moeda(0);
 
-        document.getElementById("cpPago").textContent = moeda(0);
+        document.getElementById("cpPago").textContent = moeda(totalPago);
 
         document.getElementById("cpVencido").textContent = moeda(0);
 
@@ -3936,8 +4189,6 @@
 
 
       let totalPendente = 0;
-
-      let totalPago = 0;
 
       let totalVencido = 0;
 
@@ -3951,9 +4202,7 @@
         if (status !== "pago" && item.vencimento && item.vencimento < hoje) status = "vencido";
 
 
-        if (status === "pago") totalPago += valor;
-
-        else if (status === "vencido") totalVencido += valor;
+        if (status === "vencido") totalVencido += valor;
 
         else totalPendente += valor;
 
@@ -3989,7 +4238,7 @@
 
                 <button class="small-btn small-blue" onclick="editarContaPagar(decodeURIComponent('${safeItem}'))">Editar</button>
 
-                <button class="small-btn small-green" onclick="marcarContaPaga(${item.id})">Pagar</button>
+                <button class="small-btn small-green" onclick="abrirModalPagamento(${item.id})">Pagar</button>
 
                 <button class="small-btn small-red" onclick="excluirContaPagar(${item.id})">Excluir</button>
 
@@ -4004,6 +4253,18 @@
       }).join("");
 
 
+      const todasMes = await restGet(
+
+        "contas_pagar",
+
+        `select=valor,multa_atraso,status&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
+
+      );
+
+
+      const totalPago = todasMes.filter(i => i.status === "pago").reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0), 0);
+
+
       document.getElementById("cpPendente").textContent = moeda(totalPendente);
 
       document.getElementById("cpPago").textContent = moeda(totalPago);
@@ -4011,6 +4272,68 @@
       document.getElementById("cpVencido").textContent = moeda(totalVencido);
 
       document.getElementById("cpQuantidade").textContent = String(data.length);
+
+    }
+
+
+    async function carregarContasPagas() {
+
+      const { mes, ano } = getMesAno();
+
+
+      const data = await restGet(
+
+        "contas_pagar",
+
+        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&status=eq.pago&order=data_pagamento.desc`
+
+      );
+
+
+      const tbody = document.getElementById("tabelaContasPagas");
+
+
+      if (!data.length) {
+
+        tbody.innerHTML = '<tr><td colspan="9" class="muted">Nenhuma conta paga.</td></tr>';
+
+        return;
+
+      }
+
+
+      tbody.innerHTML = data.map(item => {
+
+        const totalPago = Number(item.valor || 0) + Number(item.multa_atraso || 0);
+
+
+        return `
+
+          <tr>
+
+            <td>${item.fornecedor || "-"}</td>
+
+            <td>${item.descricao || "-"}</td>
+
+            <td>${nomeCategoria(item.categoria)}</td>
+
+            <td>${item.documento || "-"}</td>
+
+            <td>${moeda(item.valor || 0)}</td>
+
+            <td>${item.vencimento || "-"}</td>
+
+            <td>${item.data_pagamento || "-"}</td>
+
+            <td>${moeda(item.multa_atraso || 0)}</td>
+
+            <td class="success">${moeda(totalPago)}</td>
+
+          </tr>
+
+        `;
+
+      }).join("");
 
     }
 
@@ -4076,6 +4399,8 @@
 
           payload.created_at = new Date().toISOString();
 
+          payload.multa_atraso = 0;
+
           await restInsert("contas_pagar", [payload]);
 
           limparFormularioContaPagar();
@@ -4087,34 +4412,13 @@
 
         await carregarContasPagar();
 
+        await carregarContasPagas();
+
         await carregarPlanejamento();
 
       } catch (erro) {
 
         setAppMsg("Erro ao salvar conta: " + erro.message, "err");
-
-      }
-
-    }
-
-
-    async function marcarContaPaga(id) {
-
-      try {
-
-        await restPatch("contas_pagar", `id=eq.${id}`, { status: "pago" });
-
-        if (contaPagarEditandoId === id) cancelarEdicaoConta();
-
-        setAppMsg("Conta marcada como paga.", "ok");
-
-        await carregarContasPagar();
-
-        await carregarPlanejamento();
-
-      } catch (erro) {
-
-        setAppMsg("Erro ao atualizar conta: " + erro.message, "err");
 
       }
 
@@ -4132,6 +4436,8 @@
         setAppMsg("Conta excluída com sucesso.", "ok");
 
         await carregarContasPagar();
+
+        await carregarContasPagas();
 
         await carregarPlanejamento();
 
@@ -4160,14 +4466,7 @@
         const { mes, ano } = getMesAno();
 
 
-        await restDelete(
-
-          "contas_pagar",
-
-          `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-
-        );
-
+        await restDelete("contas_pagar", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
 
         await restInsert("contas_pagar", payload);
 
@@ -4175,6 +4474,8 @@
         setAppMsg("Contas importadas com sucesso!", "ok");
 
         await carregarContasPagar();
+
+        await carregarContasPagas();
 
         await carregarPlanejamento();
 
@@ -4244,9 +4545,6 @@
         }
 
 
-        const vencimento = normalizarDataExcel(row["VENCIMENTO"]);
-
-
         return {
 
           fornecedor: String(row["FORNECEDOR"] || "").trim(),
@@ -4259,7 +4557,7 @@
 
           valor: Number(valor || 0),
 
-          vencimento: vencimento,
+          vencimento: normalizarDataExcel(row["VENCIMENTO"]),
 
           status: String(row["STATUS"] || "pendente").trim().toLowerCase(),
 
@@ -4272,6 +4570,10 @@
           mes,
 
           ano,
+
+          data_pagamento: null,
+
+          multa_atraso: 0,
 
           created_at: new Date().toISOString()
 
@@ -4298,7 +4600,7 @@
 
         const data = new Uint8Array(e.target.result);
 
-        const workbook = XLSX.read(data, { type: "array" });
+        const workbook = XLSX.read(data, { type: "array", cellDates: false });
 
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
@@ -4320,11 +4622,11 @@
     }
 
 
-    window.marcarContaPaga = marcarContaPaga;
-
     window.excluirContaPagar = excluirContaPagar;
 
     window.editarContaPagar = editarContaPagar;
+
+    window.abrirModalPagamento = abrirModalPagamento;
 
 
     async function carregarDashboard() {
@@ -4615,6 +4917,8 @@
 
       await carregarContasPagar();
 
+      await carregarContasPagas();
+
       await carregarPlanejamento();
 
     }
@@ -4673,6 +4977,10 @@
 
       document.getElementById("fileInput").addEventListener("change", handleFile);
 
+      document.getElementById("btnConfirmarPagamento").addEventListener("click", confirmarPagamento);
+
+      document.getElementById("btnCancelarPagamento").addEventListener("click", fecharModalPagamento);
+
 
       document.getElementById("mesSelect").addEventListener("change", async () => {
 
@@ -4683,6 +4991,8 @@
           await carregarDashboard();
 
           await carregarContasPagar();
+
+          await carregarContasPagas();
 
           await carregarPlanejamento();
 
