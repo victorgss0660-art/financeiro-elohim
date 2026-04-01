@@ -1,233 +1,1539 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Elohim Financeiro</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elohim Financeiro</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0b0b0b;
-  color:#fff;
-}
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --bg-soft:#121212;
+      --panel:#171717;
+      --panel-2:#1d1d1d;
+      --border:#2a2a2a;
+      --text:#ffffff;
+      --muted:#a8a8a8;
+      --red:#d10000;
+      --red-2:#ff3b3b;
+      --green:#22c55e;
+      --yellow:#facc15;
+      --danger:#ef4444;
+      --shadow:0 10px 30px rgba(0,0,0,.28);
+      --radius:18px;
+    }
 
-/* HEADER */
-.header{
-  padding:20px;
-  font-size:22px;
-  font-weight:bold;
-}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,0,0,.10), transparent 25%),
+        linear-gradient(135deg,#080808,#140000);
+      color:var(--text);
+      min-height:100vh;
+    }
 
-/* KPI */
-.kpis{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  padding:20px;
-}
+    .hidden{display:none !important}
 
-.kpi{
-  background:#151515;
-  padding:18px;
-  border-radius:12px;
-}
+    .fade-in{
+      animation:fadeIn .25s ease;
+    }
 
-.kpi h3{
-  margin:0;
-  font-size:14px;
-  color:#aaa;
-}
+    @keyframes fadeIn{
+      from{opacity:0; transform:translateY(6px)}
+      to{opacity:1; transform:translateY(0)}
+    }
 
-.kpi p{
-  font-size:22px;
-  margin:5px 0 0;
-  font-weight:bold;
-}
+    .login-screen{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
 
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:20px;
-  padding:20px;
-}
+    .login-card{
+      width:100%;
+      max-width:430px;
+      background:rgba(20,20,20,.95);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:30px;
+      box-shadow:0 20px 60px rgba(0,0,0,.45);
+      text-align:center;
+      backdrop-filter:blur(12px);
+    }
 
-.card{
-  background:#151515;
-  padding:20px;
-  border-radius:12px;
-}
+    .login-logo{
+      background:#fff;
+      border-radius:18px;
+      padding:12px;
+      display:inline-block;
+      margin-bottom:18px;
+    }
 
-/* ALERT */
-.alert{
-  margin-top:10px;
-  padding:10px;
-  border-radius:8px;
-}
+    .login-logo img{
+      width:170px;
+      display:block;
+    }
 
-.ok{background:#065f46}
-.warn{background:#78350f}
-.bad{background:#7f1d1d}
-</style>
+    .login-card h2{
+      margin:0 0 8px 0;
+      font-size:30px;
+    }
+
+    .login-card p{
+      margin:0 0 18px 0;
+      color:var(--muted);
+    }
+
+    .login-card input{
+      width:100%;
+      padding:14px;
+      border:none;
+      outline:none;
+      border-radius:12px;
+      background:#101010;
+      color:#fff;
+      margin-bottom:12px;
+      font-size:15px;
+    }
+
+    .login-card input:focus{
+      box-shadow:0 0 0 2px rgba(255,59,59,.25);
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:13px 16px;
+      cursor:pointer;
+      font-weight:bold;
+      color:#fff;
+      background:linear-gradient(90deg,var(--red),var(--red-2));
+      transition:.15s ease;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+    #loginBtn{
+      width:100%;
+      font-size:15px;
+    }
+
+    #loginMsg,#appMsg{
+      margin-top:12px;
+      font-size:14px;
+      line-height:1.45;
+      white-space:pre-wrap;
+    }
+
+    .ok{color:var(--green)}
+    .err{color:#ff8080}
+    .info{color:var(--yellow)}
+
+    .app{
+      min-height:100vh;
+      display:flex;
+    }
+
+    .sidebar{
+      width:260px;
+      background:rgba(15,15,15,.96);
+      border-right:1px solid var(--border);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .sidebar-logo{
+      background:#fff;
+      border-radius:16px;
+      padding:10px;
+      margin-bottom:16px;
+    }
+
+    .sidebar-logo img{
+      width:150px;
+      display:block;
+      margin:0 auto;
+    }
+
+    .user-box{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:16px;
+    }
+
+    .user-email{
+      font-size:14px;
+      font-weight:bold;
+      margin-bottom:4px;
+      word-break:break-word;
+    }
+
+    .user-role{
+      font-size:12px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.4px;
+    }
+
+    .menu{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      flex:1;
+    }
+
+    .menu-btn{
+      width:100%;
+      text-align:left;
+      padding:13px 14px;
+      border:none;
+      border-radius:14px;
+      cursor:pointer;
+      background:#1a1a1a;
+      color:#d8d8d8;
+      font-size:14px;
+      font-weight:600;
+      transition:.15s ease;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .menu-btn .icon{
+      width:18px;
+      text-align:center;
+      opacity:.95;
+    }
+
+    .menu-btn:hover{
+      background:#242424;
+      color:#fff;
+      transform:translateX(2px);
+    }
+
+    .menu-btn.active{
+      background:linear-gradient(90deg,var(--red),var(--red-2));
+      color:#fff;
+      box-shadow:0 8px 18px rgba(209,0,0,.25);
+    }
+
+    .logout-btn{
+      width:100%;
+      margin-top:16px;
+      background:#252525;
+    }
+
+    .main{
+      flex:1;
+      padding:24px;
+      overflow-x:hidden;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .topbar h1{
+      margin:0;
+      font-size:32px;
+    }
+
+    .topbar p{
+      margin:6px 0 0 0;
+      color:var(--muted);
+    }
+
+    .badge{
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#1f1f1f;
+      color:#ddd;
+      font-size:12px;
+      border:1px solid var(--border);
+    }
+
+    .top-filters{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-bottom:18px;
+    }
+
+    .top-filters select,
+    .top-filters input{
+      padding:11px 12px;
+      border:none;
+      border-radius:12px;
+      background:#111;
+      color:#fff;
+      min-width:150px;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-bottom:20px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      transition:.15s ease;
+    }
+
+    .card:hover{
+      transform:translateY(-2px);
+      border-color:#343434;
+    }
+
+    .card-title{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    .card-value{
+      font-size:24px;
+      font-weight:bold;
+    }
+
+    .card-sub{
+      margin-top:8px;
+      font-size:12px;
+      color:#8f8f8f;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.25fr 1fr;
+      gap:18px;
+      margin-bottom:20px;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:18px;
+      margin-bottom:20px;
+      box-shadow:var(--shadow);
+    }
+
+    .panel-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+
+    .panel-head h3{
+      margin:0;
+      font-size:20px;
+    }
+
+    .chart-wrap{
+      background:linear-gradient(180deg, #ffffff 0%, #f5f5f7 100%);
+      border-radius:16px;
+      padding:16px;
+      min-height:350px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+    }
+
+    .status-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .status-item{
+      background:#101010;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+    }
+
+    .status-item .label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .status-item .value{
+      font-size:15px;
+      font-weight:bold;
+    }
+
+    .alert-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .alert-item{
+      background:#161616;
+      border:1px solid var(--border);
+      border-left:4px solid var(--danger);
+      border-radius:12px;
+      padding:12px 14px;
+    }
+
+    .alert-item.ok{
+      border-left-color:var(--green);
+    }
+
+    .table-wrap{
+      overflow-x:auto;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      color:#fff;
+    }
+
+    th,td{
+      padding:12px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      text-align:left;
+      font-size:14px;
+    }
+
+    th{color:var(--muted)}
+
+    .success{color:var(--green);font-weight:bold}
+    .danger{color:var(--danger);font-weight:bold}
+    .muted{color:#9a9a9a}
+
+    .tab-section{display:none}
+    .tab-section.active{display:block}
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .meta-item{
+      background:#101010;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .meta-item label{
+      display:block;
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:8px;
+    }
+
+    .meta-item input{
+      width:100%;
+      padding:10px;
+      border:none;
+      border-radius:10px;
+      background:#1b1b1b;
+      color:#fff;
+    }
+
+    .row-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .secondary-btn{
+      background:#222;
+      border:1px solid var(--border);
+      color:#fff;
+      padding:11px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    @media (max-width:1100px){
+      .cards{grid-template-columns:repeat(2,1fr)}
+      .grid{grid-template-columns:1fr}
+      .meta-grid{grid-template-columns:repeat(2,1fr)}
+      .status-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width:850px){
+      .app{flex-direction:column}
+      .sidebar{width:100%}
+    }
+
+    @media (max-width:600px){
+      .cards{grid-template-columns:1fr}
+      .meta-grid{grid-template-columns:1fr}
+      .main{padding:16px}
+      .login-card{padding:22px}
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="header">Dashboard Financeiro</div>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="logo-elohim.png" alt="Elohim">
+      </div>
+      <h2>Entrar</h2>
+      <p>Acesse o sistema financeiro da Elohim</p>
 
-<div class="kpis">
-  <div class="kpi">
-    <h3>Receita</h3>
-    <p id="receita">0</p>
-  </div>
-  <div class="kpi">
-    <h3>Gastos</h3>
-    <p id="gastos">0</p>
-  </div>
-  <div class="kpi">
-    <h3>Lucro</h3>
-    <p id="lucro">0</p>
-  </div>
-  <div class="kpi">
-    <h3>Meta</h3>
-    <p id="meta">0%</p>
-  </div>
-</div>
+      <input id="loginEmail" type="email" placeholder="Seu e-mail">
+      <input id="loginSenha" type="password" placeholder="Sua senha">
+      <button id="loginBtn" class="btn" type="button">Entrar</button>
 
-<div class="grid">
-  <div class="card">
-    <canvas id="barChart"></canvas>
-  </div>
+      <div id="loginMsg" class="info">Pronto para login.</div>
+    </div>
+  </section>
 
-  <div class="card">
-    <canvas id="pieChart"></canvas>
-  </div>
-</div>
+  <section id="appShell" class="app hidden">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="logo-elohim.png" alt="Elohim">
+      </div>
 
-<div class="card" style="margin:20px">
-  <canvas id="lineChart"></canvas>
-</div>
+      <div class="user-box">
+        <div class="user-email" id="userEmail">-</div>
+        <div class="user-role" id="userPerfil">-</div>
+      </div>
 
-<div class="card" style="margin:20px">
-  <h3>Alertas</h3>
-  <div id="alertas"></div>
-</div>
+      <div class="menu">
+        <button class="menu-btn active" data-tab="dashboard" type="button"><span class="icon">📊</span><span>Dashboard</span></button>
+        <button class="menu-btn" data-tab="faturamento" type="button"><span class="icon">💰</span><span>Faturamento</span></button>
+        <button class="menu-btn" data-tab="metas" type="button"><span class="icon">🎯</span><span>Metas</span></button>
+        <button class="menu-btn" data-tab="importar" type="button"><span class="icon">📂</span><span>Importar Planilha</span></button>
+        <button class="menu-btn" data-tab="resumo" type="button"><span class="icon">📈</span><span>Resumo Anual</span></button>
+      </div>
 
-<script>
+      <button id="btnSair" class="btn logout-btn" type="button">Sair</button>
+    </aside>
 
-const URL="https://qaqszkhkizeifwkhumka.supabase.co";
-const API_KEY="sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1>Sistema Financeiro Elohim</h1>
+          <p>Controle financeiro mensal com visão estratégica</p>
+        </div>
+        <div class="badge" id="perfilBadge">Perfil</div>
+      </div>
 
-/* CORES FORTES */
-const cores=[
-"#ff0000","#2563eb","#22c55e","#f59e0b",
-"#a855f7","#06b6d4","#ec4899","#eab308"
-];
+      <div class="top-filters">
+        <select id="mesSelect">
+          <option>Janeiro</option>
+          <option>Fevereiro</option>
+          <option>Março</option>
+          <option>Abril</option>
+          <option>Maio</option>
+          <option>Junho</option>
+          <option>Julho</option>
+          <option>Agosto</option>
+          <option>Setembro</option>
+          <option>Outubro</option>
+          <option>Novembro</option>
+          <option>Dezembro</option>
+        </select>
 
-async function carregar(){
+        <select id="anoSelect">
+          <option>2024</option>
+          <option>2025</option>
+          <option selected>2026</option>
+          <option>2027</option>
+        </select>
 
-  let gastos=await fetch(`${URL}/rest/v1/gastos`,{
-    headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}
-  }).then(r=>r.json());
+        <button id="btnCarregarMes" class="btn" type="button">Carregar mês</button>
+      </div>
 
-  let meses=await fetch(`${URL}/rest/v1/meses`,{
-    headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}
-  }).then(r=>r.json());
+      <div class="row-actions">
+        <button id="btnExportarRelatorio" class="secondary-btn" type="button">Exportar relatório do mês</button>
+      </div>
 
-  let metas=await fetch(`${URL}/rest/v1/metas`,{
-    headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}
-  }).then(r=>r.json());
+      <div id="appMsg" class="info"></div>
 
-  let categorias={};
-  let total=0;
+      <section id="tab-dashboard" class="tab-section active fade-in">
+        <section class="cards">
+          <div class="card">
+            <div class="card-title">Faturamento</div>
+            <div class="card-value" id="fat">R$ 0,00</div>
+            <div class="card-sub">Receita do mês atual</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Gastos</div>
+            <div class="card-value" id="gas">R$ 0,00</div>
+            <div class="card-sub">Total por categoria</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Saldo</div>
+            <div class="card-value" id="saldo">R$ 0,00</div>
+            <div class="card-sub">Faturamento - gastos</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Meta atingida</div>
+            <div class="card-value" id="metaAtingida">0%</div>
+            <div class="card-sub">Em relação ao limite definido</div>
+          </div>
+        </section>
 
-  gastos.forEach(g=>{
-    total+=Number(g.valor);
-    categorias[g.categoria]=(categorias[g.categoria]||0)+Number(g.valor);
-  });
+        <section class="grid">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Gastos x Meta por Categoria</h3>
+              <div class="badge">Comparativo</div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
 
-  let receita=meses[0]?.faturamento||0;
-  let lucro=receita-total;
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Distribuição dos Gastos</h3>
+              <div class="badge">Donut</div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+        </section>
 
-  document.getElementById("receita").innerText=receita;
-  document.getElementById("gastos").innerText=total;
-  document.getElementById("lucro").innerText=lucro;
+        <section class="grid">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Status do mês</h3>
+              <div class="badge">Resumo</div>
+            </div>
+            <div class="status-grid">
+              <div class="status-item">
+                <div class="label">Mês selecionado</div>
+                <div class="value" id="statusMes">-</div>
+              </div>
+              <div class="status-item">
+                <div class="label">Última atualização</div>
+                <div class="value" id="statusAtualizacao">Nenhuma</div>
+              </div>
+              <div class="status-item">
+                <div class="label">Situação</div>
+                <div class="value" id="statusSituacao">Aguardando dados</div>
+              </div>
+            </div>
+          </div>
 
-  /* META */
-  let metaTotal=0;
-  metas.forEach(m=>{
-    metaTotal+=(m.meta/100)*receita;
-  });
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Alertas</h3>
+              <div class="badge">Automático</div>
+            </div>
+            <div id="alertList" class="alert-list">
+              <div class="muted">Nenhum alerta disponível.</div>
+            </div>
+          </div>
+        </section>
 
-  let perc=(total/metaTotal*100)||0;
-  document.getElementById("meta").innerText=perc.toFixed(0)+"%";
+        <section class="panel table-wrap">
+          <div class="panel-head">
+            <h3>Resumo por Categoria</h3>
+            <div class="badge">Detalhado</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Gasto</th>
+                <th>Meta %</th>
+                <th>Meta R$</th>
+                <th>Diferença</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaResumo">
+              <tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
 
-  /* BAR + META */
-  new Chart(barChart,{
-    type:"bar",
-    data:{
-      labels:Object.keys(categorias),
-      datasets:[
-        {
-          label:"Gasto",
-          data:Object.values(categorias),
-          backgroundColor:cores
+      <section id="tab-faturamento" class="tab-section fade-in">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Faturamento do mês</h3>
+            <div class="badge">Admin</div>
+          </div>
+          <div class="top-filters">
+            <input id="faturamentoInput" type="number" step="0.01" placeholder="Faturamento do mês">
+            <button id="btnSalvarFaturamento" class="btn" type="button">Salvar faturamento</button>
+          </div>
+        </section>
+      </section>
+
+      <section id="tab-metas" class="tab-section fade-in">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Metas por categoria (% do faturamento)</h3>
+            <div class="badge">Admin</div>
+          </div>
+          <div id="metaGrid" class="meta-grid"></div>
+          <div style="margin-top:16px;">
+            <button id="btnSalvarMetas" class="btn" type="button">Salvar metas</button>
+          </div>
+        </section>
+      </section>
+
+      <section id="tab-importar" class="tab-section fade-in">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Importar planilha</h3>
+            <div class="badge">Admin</div>
+          </div>
+          <input id="fileInput" type="file" accept=".xlsx,.xls">
+        </section>
+      </section>
+
+      <section id="tab-resumo" class="tab-section fade-in">
+        <section class="panel table-wrap">
+          <div class="panel-head">
+            <h3>Resumo Anual</h3>
+            <div class="badge">Ano</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Faturamento</th>
+                <th>Gastos</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaResumoAnual">
+              <tr><td colspan="4" class="muted">Nenhum dado anual carregado.</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+    </main>
+  </section>
+
+  <script>
+    const API_BASE = "https://qaqszkhkizeifwkhumka.supabase.co";
+    const API_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
+
+    const nomesCategorias = {
+      MC: "Materiais de Consumo",
+      MP: "Matéria-Prima",
+      TERC: "Terceirizações",
+      FRETE: "Fretes",
+      DESP: "Despesas Fixas",
+      TAR: "Tarifas Bancárias",
+      PREST: "Prestações de Serviço",
+      FOLHA: "Folha de Pagamento",
+      COMIS: "Comissões",
+      IMPOS: "Impostos",
+      RESC: "Rescisões",
+      MANUT: "Manutenções"
+    };
+
+    const categoriasPadrao = Object.keys(nomesCategorias);
+
+    const metasPadrao = {
+      MC: 20, MP: 18, TERC: 8, FRETE: 5, DESP: 6, TAR: 1,
+      PREST: 4, FOLHA: 15, COMIS: 2, IMPOS: 5, RESC: 1, MANUT: 4
+    };
+
+    const coresCategorias = {
+      MC: "#ef4444",
+      MP: "#2563eb",
+      TERC: "#22c55e",
+      FRETE: "#f59e0b",
+      DESP: "#a855f7",
+      TAR: "#06b6d4",
+      PREST: "#ec4899",
+      FOLHA: "#84cc16",
+      COMIS: "#f97316",
+      IMPOS: "#64748b",
+      RESC: "#e11d48",
+      MANUT: "#14b8a6"
+    };
+
+    let usuarioAtual = null;
+    let barChart = null;
+    let pieChart = null;
+    let ultimoContexto = null;
+
+    const loginScreen = document.getElementById("loginScreen");
+    const appShell = document.getElementById("appShell");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginSenha = document.getElementById("loginSenha");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginMsg = document.getElementById("loginMsg");
+
+    const btnSair = document.getElementById("btnSair");
+    const userEmail = document.getElementById("userEmail");
+    const userPerfil = document.getElementById("userPerfil");
+    const perfilBadge = document.getElementById("perfilBadge");
+
+    const mesSelect = document.getElementById("mesSelect");
+    const anoSelect = document.getElementById("anoSelect");
+    const btnCarregarMes = document.getElementById("btnCarregarMes");
+    const appMsg = document.getElementById("appMsg");
+    const btnExportarRelatorio = document.getElementById("btnExportarRelatorio");
+
+    const faturamentoInput = document.getElementById("faturamentoInput");
+    const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
+    const btnSalvarMetas = document.getElementById("btnSalvarMetas");
+    const fileInput = document.getElementById("fileInput");
+
+    function setLoginMsg(texto, tipo = "info") {
+      loginMsg.className = tipo;
+      loginMsg.textContent = texto;
+    }
+
+    function setAppMsg(texto, tipo = "info") {
+      appMsg.className = tipo;
+      appMsg.textContent = texto;
+    }
+
+    function nomeCategoria(sigla) {
+      return nomesCategorias[sigla] || sigla;
+    }
+
+    function moeda(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    function num(valor) {
+      return Math.round(Number(valor || 0) * 100) / 100;
+    }
+
+    function getMesAno() {
+      return { mes: mesSelect.value, ano: anoSelect.value };
+    }
+
+    async function restGet(tabela, query) {
+      const res = await fetch(`${API_BASE}/rest/v1/${tabela}?${query}`, {
+        headers: {
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY
         }
-      ]
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Erro GET");
+      return data;
     }
-  });
 
-  /* DONUT */
-  new Chart(pieChart,{
-    type:"doughnut",
-    data:{
-      labels:Object.keys(categorias),
-      datasets:[{
-        data:Object.values(categorias),
-        backgroundColor:cores
-      }]
+    async function restInsert(tabela, payload) {
+      const res = await fetch(`${API_BASE}/rest/v1/${tabela}`, {
+        method: "POST",
+        headers: {
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY,
+          "Content-Type": "application/json",
+          Prefer: "return=representation"
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Erro INSERT");
+      return data;
     }
-  });
 
-  /* LINHA (simulação evolução) */
-  new Chart(lineChart,{
-    type:"line",
-    data:{
-      labels:["Jan","Fev","Mar","Abr","Mai"],
-      datasets:[
-        {label:"Receita",data:[10,15,12,20,18],borderColor:"#22c55e"},
-        {label:"Gastos",data:[8,10,9,15,14],borderColor:"#ef4444"},
-        {label:"Lucro",data:[2,5,3,5,4],borderColor:"#3b82f6"}
-      ]
+    async function restPatch(tabela, filtros, payload) {
+      const res = await fetch(`${API_BASE}/rest/v1/${tabela}?${filtros}`, {
+        method: "PATCH",
+        headers: {
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY,
+          "Content-Type": "application/json",
+          Prefer: "return=representation"
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Erro PATCH");
+      return data;
     }
-  });
 
-  /* ALERTAS */
-  let html="";
-  Object.keys(categorias).forEach(c=>{
-    let gasto=categorias[c];
-    let meta=metas.find(m=>m.categoria==c);
-
-    if(meta){
-      let limite=(meta.meta/100)*receita;
-      if(gasto>limite){
-        html+=`<div class="alert bad">${c} acima da meta</div>`;
-      }else{
-        html+=`<div class="alert ok">${c} dentro da meta</div>`;
+    async function restDelete(tabela, filtros) {
+      const res = await fetch(`${API_BASE}/rest/v1/${tabela}?${filtros}`, {
+        method: "DELETE",
+        headers: {
+          apikey: API_KEY,
+          Authorization: "Bearer " + API_KEY
+        }
+      });
+      if (!res.ok) {
+        let data = {};
+        try { data = await res.json(); } catch {}
+        throw new Error(data?.message || "Erro DELETE");
       }
     }
-  });
 
-  document.getElementById("alertas").innerHTML=html;
-}
+    async function login() {
+      try {
+        setLoginMsg("Validando acesso...", "info");
+        const email = (loginEmail.value || "").trim().toLowerCase();
+        const senha = loginSenha.value || "";
 
-carregar();
+        if (!email || !senha) {
+          setLoginMsg("Preencha e-mail e senha.", "err");
+          return;
+        }
 
-</script>
+        const data = await restGet(
+          "usuarios",
+          `select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}&limit=1`
+        );
 
+        if (!data || data.length === 0) {
+          setLoginMsg("Login inválido.", "err");
+          return;
+        }
+
+        usuarioAtual = data[0];
+        localStorage.setItem("elohim_user", JSON.stringify(usuarioAtual));
+
+        userEmail.textContent = usuarioAtual.email || "-";
+        userPerfil.textContent = usuarioAtual.perfil || "-";
+        perfilBadge.textContent = usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
+
+        loginScreen.classList.add("hidden");
+        appShell.classList.remove("hidden");
+
+        aplicarPermissoes();
+        await carregarTudo();
+      } catch (erro) {
+        setLoginMsg("Erro no login: " + erro.message, "err");
+      }
+    }
+
+    function restaurarSessao() {
+      const salvo = localStorage.getItem("elohim_user");
+      if (!salvo) return;
+
+      try {
+        usuarioAtual = JSON.parse(salvo);
+        userEmail.textContent = usuarioAtual.email || "-";
+        userPerfil.textContent = usuarioAtual.perfil || "-";
+        perfilBadge.textContent = usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
+
+        loginScreen.classList.add("hidden");
+        appShell.classList.remove("hidden");
+
+        aplicarPermissoes();
+        carregarTudo();
+      } catch {
+        localStorage.removeItem("elohim_user");
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("elohim_user");
+      location.reload();
+    }
+
+    function ativarAbas() {
+      const botoes = document.querySelectorAll(".menu-btn");
+      const abas = document.querySelectorAll(".tab-section");
+
+      botoes.forEach(botao => {
+        botao.addEventListener("click", () => {
+          if (botao.classList.contains("hidden")) return;
+
+          botoes.forEach(b => b.classList.remove("active"));
+          abas.forEach(a => {
+            a.classList.remove("active");
+            a.classList.remove("fade-in");
+          });
+
+          botao.classList.add("active");
+
+          const tab = botao.dataset.tab;
+          const secao = document.getElementById(`tab-${tab}`);
+          if (secao) {
+            secao.classList.add("active");
+            requestAnimationFrame(() => secao.classList.add("fade-in"));
+          }
+        });
+      });
+    }
+
+    function aplicarPermissoes() {
+      const isAdmin = usuarioAtual?.perfil === "admin";
+
+      document.querySelector('[data-tab="faturamento"]').classList.toggle("hidden", !isAdmin);
+      document.querySelector('[data-tab="metas"]').classList.toggle("hidden", !isAdmin);
+      document.querySelector('[data-tab="importar"]').classList.toggle("hidden", !isAdmin);
+
+      btnSalvarFaturamento.disabled = !isAdmin;
+      btnSalvarMetas.disabled = !isAdmin;
+      faturamentoInput.disabled = !isAdmin;
+      fileInput.disabled = !isAdmin;
+    }
+
+    async function garantirMes(mes, ano) {
+      const data = await restGet("meses", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=1`);
+      if (!data || data.length === 0) {
+        await restInsert("meses", [{ mes, ano, faturamento: 0 }]);
+      }
+    }
+
+    async function garantirMetas(mes, ano) {
+      const data = await restGet("metas", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+      if (data && data.length > 0) return data;
+
+      const payload = categoriasPadrao.map(cat => ({
+        mes,
+        ano,
+        categoria: cat,
+        meta: metasPadrao[cat] || 0
+      }));
+
+      await restInsert("metas", payload);
+      return payload;
+    }
+
+    function atualizarStatus(ultima = "Nenhuma", situacao = "Aguardando dados") {
+      const { mes, ano } = getMesAno();
+      document.getElementById("statusMes").textContent = `${mes}/${ano}`;
+      document.getElementById("statusAtualizacao").textContent = ultima;
+      document.getElementById("statusSituacao").textContent = situacao;
+    }
+
+    function calcularMetaValor(metaPct, faturamento) {
+      return num((Number(metaPct || 0) / 100) * Number(faturamento || 0));
+    }
+
+    function atualizarCards(totalGastos, faturamento, metasPct) {
+      const totalMetaValor = Object.values(metasPct).reduce((acc, pct) => acc + calcularMetaValor(pct, faturamento), 0);
+      const atingida = totalMetaValor > 0 ? Math.round((totalGastos / totalMetaValor) * 100) : 0;
+
+      document.getElementById("fat").textContent = moeda(faturamento);
+      document.getElementById("gas").textContent = moeda(totalGastos);
+      document.getElementById("saldo").textContent = moeda(faturamento - totalGastos);
+      document.getElementById("metaAtingida").textContent = `${atingida}%`;
+    }
+
+    function montarTabela(categorias, metasPct, faturamento) {
+      const tbody = document.getElementById("tabelaResumo");
+      const keys = Object.keys(categorias);
+
+      if (!keys.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = keys.map(cat => {
+        const gasto = num(categorias[cat] || 0);
+        const pct = num(metasPct[cat] || 0);
+        const metaValor = calcularMetaValor(pct, faturamento);
+        const dif = num(gasto - metaValor);
+        const ok = dif <= 0;
+
+        return `
+          <tr>
+            <td>${nomeCategoria(cat)}</td>
+            <td>${moeda(gasto)}</td>
+            <td>${pct.toFixed(2)}%</td>
+            <td>${moeda(metaValor)}</td>
+            <td class="${ok ? "success" : "danger"}">${moeda(dif)}</td>
+            <td class="${ok ? "success" : "danger"}">${ok ? "Dentro da meta" : "Acima da meta"}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function montarAlertas(categorias, metasPct, faturamento) {
+      const alertList = document.getElementById("alertList");
+      const keys = Object.keys(categorias);
+
+      if (!keys.length) {
+        alertList.innerHTML = '<div class="muted">Nenhum alerta disponível.</div>';
+        return;
+      }
+
+      const acima = [];
+      keys.forEach(cat => {
+        const gasto = num(categorias[cat] || 0);
+        const metaValor = calcularMetaValor(metasPct[cat] || 0, faturamento);
+        const dif = num(gasto - metaValor);
+        if (dif > 0) acima.push({ cat, dif });
+      });
+
+      if (!acima.length) {
+        alertList.innerHTML = `<div class="alert-item ok"><strong>Tudo sob controle.</strong><br>Nenhuma categoria acima da meta.</div>`;
+        return;
+      }
+
+      alertList.innerHTML = acima.map(item => `
+        <div class="alert-item">
+          <strong>${nomeCategoria(item.cat)}</strong><br>
+          Acima da meta em ${moeda(item.dif)}
+        </div>
+      `).join("");
+    }
+
+    function montarMetaGrid(metasPct) {
+      const grid = document.getElementById("metaGrid");
+      grid.innerHTML = categoriasPadrao.map(cat => `
+        <div class="meta-item">
+          <label>${nomeCategoria(cat)} (%)</label>
+          <input type="number" step="0.01" data-cat="${cat}" value="${Number(metasPct[cat] || 0)}">
+        </div>
+      `).join("");
+
+      if (usuarioAtual?.perfil !== "admin") {
+        document.querySelectorAll("#metaGrid input").forEach(i => i.disabled = true);
+      }
+    }
+
+    function capturarMetas() {
+      const metas = {};
+      document.querySelectorAll("#metaGrid input").forEach(input => {
+        metas[input.dataset.cat] = num(input.value || 0);
+      });
+      return metas;
+    }
+
+    function getBarColors(keys) {
+      return keys.map(k => coresCategorias[k] || "#888888");
+    }
+
+    function desenharGraficos(categorias, metasPct, faturamento) {
+      const keys = Object.keys(categorias);
+      const labels = keys.map(k => nomeCategoria(k));
+      const valores = keys.map(k => num(categorias[k] || 0));
+      const metas = keys.map(k => calcularMetaValor(metasPct[k] || 0, faturamento));
+      const cores = getBarColors(keys);
+
+      if (barChart) barChart.destroy();
+      if (pieChart) pieChart.destroy();
+
+      barChart = new Chart(document.getElementById("barChart"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              type: "bar",
+              label: "Gasto real",
+              data: valores,
+              backgroundColor: cores,
+              borderRadius: 10,
+              borderSkipped: false,
+              maxBarThickness: 46
+            },
+            {
+              type: "line",
+              label: "Meta",
+              data: metas,
+              borderColor: "#111827",
+              backgroundColor: "#111827",
+              borderWidth: 3,
+              tension: 0.35,
+              pointRadius: 5,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#111827",
+              pointBorderColor: "#ffffff",
+              pointBorderWidth: 2
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                color: "#1f2937",
+                usePointStyle: true,
+                pointStyle: "circle",
+                boxWidth: 10,
+                boxHeight: 10,
+                padding: 18,
+                font: { size: 12, weight: "600" }
+              }
+            },
+            tooltip: {
+              backgroundColor: "rgba(17,24,39,0.96)",
+              titleColor: "#fff",
+              bodyColor: "#fff",
+              borderColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${moeda(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: "#374151",
+                font: { size: 11, weight: "600" }
+              },
+              grid: {
+                display: false
+              },
+              border: {
+                color: "#e5e7eb"
+              }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: "#374151",
+                callback: (value) => moeda(value)
+              },
+              grid: {
+                color: "rgba(107,114,128,0.15)",
+                drawBorder: false
+              },
+              border: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+
+      pieChart = new Chart(document.getElementById("pieChart"), {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [{
+            data: valores,
+            backgroundColor: cores,
+            borderColor: "#ffffff",
+            borderWidth: 3,
+            hoverOffset: 10,
+            spacing: 2
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          cutout: "62%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                color: "#1f2937",
+                usePointStyle: true,
+                pointStyle: "circle",
+                boxWidth: 10,
+                boxHeight: 10,
+                padding: 16,
+                font: { size: 12, weight: "600" }
+              }
+            },
+            tooltip: {
+              backgroundColor: "rgba(17,24,39,0.96)",
+              titleColor: "#fff",
+              bodyColor: "#fff",
+              borderColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: (ctx) => {
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const valor = Number(ctx.raw || 0);
+                  const perc = total > 0 ? ((valor / total) * 100).toFixed(1) : "0.0";
+                  return `${ctx.label}: ${moeda(valor)} (${perc}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    async function carregarDashboard() {
+      const { mes, ano } = getMesAno();
+
+      await garantirMes(mes, ano);
+      const metasData = await garantirMetas(mes, ano);
+      const gastosData = await restGet("gastos", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+      const mesesData = await restGet("meses", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=1`);
+
+      const categorias = {};
+      let totalGastos = 0;
+
+      gastosData.forEach(item => {
+        categorias[item.categoria] = num(item.valor || 0);
+        totalGastos += num(item.valor || 0);
+      });
+
+      const metasPct = {};
+      metasData.forEach(item => {
+        metasPct[item.categoria] = num(item.meta || 0);
+      });
+
+      const faturamento = mesesData?.[0] ? num(mesesData[0].faturamento || 0) : 0;
+
+      faturamentoInput.value = faturamento || "";
+      atualizarCards(totalGastos, faturamento, metasPct);
+      montarTabela(categorias, metasPct, faturamento);
+      montarAlertas(categorias, metasPct, faturamento);
+      montarMetaGrid(metasPct);
+
+      if (Object.keys(categorias).length > 0) {
+        desenharGraficos(categorias, metasPct, faturamento);
+        atualizarStatus("Banco carregado", "Dados carregados com sucesso");
+        setAppMsg("Dashboard atualizado com sucesso.", "ok");
+      } else {
+        if (barChart) { barChart.destroy(); barChart = null; }
+        if (pieChart) { pieChart.destroy(); pieChart = null; }
+        atualizarStatus("Sem importação", "Aguardando planilha para este mês");
+        setAppMsg("Nenhum gasto salvo para este mês.", "info");
+      }
+
+      ultimoContexto = { categorias, metasPct, faturamento, mes, ano };
+    }
+
+    async function carregarResumoAnual() {
+      const ano = anoSelect.value;
+      const meses = await restGet("meses", `select=*&ano=eq.${encodeURIComponent(ano)}`);
+      const gastos = await restGet("gastos", `select=*&ano=eq.${encodeURIComponent(ano)}`);
+
+      const ordem = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+      const mapa = {};
+      ordem.forEach(m => mapa[m] = { faturamento: 0, gastos: 0 });
+
+      meses.forEach(item => { mapa[item.mes].faturamento = num(item.faturamento || 0); });
+      gastos.forEach(item => { mapa[item.mes].gastos += num(item.valor || 0); });
+
+      const tbody = document.getElementById("tabelaResumoAnual");
+      tbody.innerHTML = ordem.map(m => {
+        const f = num(mapa[m].faturamento);
+        const g = num(mapa[m].gastos);
+        const s = num(f - g);
+
+        return `
+          <tr>
+            <td>${m}</td>
+            <td>${moeda(f)}</td>
+            <td>${moeda(g)}</td>
+            <td class="${s >= 0 ? "success" : "danger"}">${moeda(s)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function salvarFaturamento() {
+      if (usuarioAtual?.perfil !== "admin") return;
+
+      try {
+        const { mes, ano } = getMesAno();
+        const valor = num(faturamentoInput.value || 0);
+
+        await garantirMes(mes, ano);
+        await restPatch("meses", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`, {
+          faturamento: valor
+        });
+
+        setAppMsg("Faturamento salvo com sucesso.", "ok");
+        await carregarTudo();
+      } catch (erro) {
+        setAppMsg("Erro ao salvar faturamento: " + erro.message, "err");
+      }
+    }
+
+    async function salvarMetas() {
+      if (usuarioAtual?.perfil !== "admin") return;
+
+      try {
+        const { mes, ano } = getMesAno();
+        const metas = capturarMetas();
+
+        await restDelete("metas", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+
+        const payload = Object.keys(metas).map(cat => ({
+          mes,
+          ano,
+          categoria: cat,
+          meta: num(metas[cat] || 0)
+        }));
+
+        await restInsert("metas", payload);
+
+        setAppMsg("Metas salvas com sucesso.", "ok");
+        await carregarDashboard();
+      } catch (erro) {
+        setAppMsg("Erro ao salvar metas: " + erro.message, "err");
+      }
+    }
+
+    async function salvarPlanilha(categorias) {
+      if (usuarioAtual?.perfil !== "admin") return;
+
+      try {
+        const { mes, ano } = getMesAno();
+
+        await garantirMes(mes, ano);
+        await garantirMetas(mes, ano);
+        await restDelete("gastos", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+
+        const payload = Object.keys(categorias).map(cat => ({
+          mes,
+          ano,
+          categoria: cat,
+          valor: num(categorias[cat] || 0)
+        }));
+
+        if (payload.length > 0) await restInsert("gastos", payload);
+
+        atualizarStatus(new Date().toLocaleString("pt-BR"), "Planilha importada e salva");
+        setAppMsg("Planilha importada com sucesso.", "ok");
+        await carregarTudo();
+      } catch (erro) {
+        setAppMsg("Erro ao importar planilha: " + erro.message, "err");
+      }
+    }
+
+    function processarPlanilha(data) {
+      const categorias = {};
+
+      data.forEach(row => {
+        const categoria = row["CATEGORIA"];
+        let valor = row["VALOR"];
+        if (!categoria) return;
+
+        if (typeof valor === "string") {
+          valor = valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
+        }
+
+        valor = Number(valor || 0);
+        categorias[categoria] = (categorias[categoria] || 0) + valor;
+      });
+
+      salvarPlanilha(categorias);
+    }
+
+    function handleFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        processarPlanilha(json);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function exportarRelatorio() {
+      if (!ultimoContexto) {
+        setAppMsg("Nenhum dado carregado para exportar.", "err");
+        return;
+      }
+
+      const { categorias, metasPct, faturamento, mes, ano } = ultimoContexto;
+      let totalGastos = 0;
+      const linhas = [];
+
+      linhas.push(`RELATÓRIO FINANCEIRO - ${mes}/${ano}`);
+      linhas.push(`Faturamento: ${moeda(faturamento)}`);
+      linhas.push("");
+
+      Object.keys(categorias).forEach(cat => {
+        const gasto = num(categorias[cat] || 0);
+        const pct = num(metasPct[cat] || 0);
+        const metaValor = calcularMetaValor(pct, faturamento);
+        const dif = num(gasto - metaValor);
+        totalGastos += gasto;
+
+        linhas.push(`${nomeCategoria(cat)}`);
+        linhas.push(`Gasto: ${moeda(gasto)}`);
+        linhas.push(`Meta %: ${pct.toFixed(2)}%`);
+        linhas.push(`Meta R$: ${moeda(metaValor)}`);
+        linhas.push(`Diferença: ${moeda(dif)}`);
+        linhas.push("");
+      });
+
+      linhas.push(`Total de gastos: ${moeda(totalGastos)}`);
+      linhas.push(`Saldo: ${moeda(faturamento - totalGastos)}`);
+
+      const blob = new Blob([linhas.join("\n")], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = window.URL.createObjectURL(blob);
+      a.download = `relatorio-${mes.toLowerCase()}-${ano}.txt`;
+      a.click();
+    }
+
+    function definirMesAtual() {
+      const hoje = new Date();
+      const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+      mesSelect.value = meses[hoje.getMonth()];
+      anoSelect.value = String(hoje.getFullYear());
+      atualizarStatus();
+    }
+
+    async function carregarTudo() {
+      await carregarDashboard();
+      await carregarResumoAnual();
+    }
+
+    loginBtn.addEventListener("click", login);
+    loginSenha.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") login();
+    });
+
+    btnSair.addEventListener("click", logout);
+    btnCarregarMes.addEventListener("click", carregarTudo);
+    btnSalvarFaturamento.addEventListener("click", salvarFaturamento);
+    btnSalvarMetas.addEventListener("click", salvarMetas);
+    btnExportarRelatorio.addEventListener("click", exportarRelatorio);
+    fileInput.addEventListener("change", handleFile);
+
+    mesSelect.addEventListener("change", () => {
+      atualizarStatus();
+      if (usuarioAtual) carregarDashboard();
+    });
+
+    anoSelect.addEventListener("change", () => {
+      atualizarStatus();
+      if (usuarioAtual) carregarTudo();
+    });
+
+    definirMesAtual();
+    ativarAbas();
+    restaurarSessao();
+  </script>
 </body>
 </html>
