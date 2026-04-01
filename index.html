@@ -455,6 +455,15 @@
       color:#fff;
     }
 
+    .planejamento-input{
+      width:100%;
+      padding:10px;
+      border:none;
+      border-radius:10px;
+      background:#1b1b1b;
+      color:#fff;
+    }
+
     .row-actions{
       display:flex;
       gap:10px;
@@ -528,6 +537,7 @@
         <button class="menu-btn" data-tab="metas" type="button"><span class="icon">🎯</span><span>Metas</span></button>
         <button class="menu-btn" data-tab="importar" type="button"><span class="icon">📂</span><span>Importar Planilha</span></button>
         <button class="menu-btn" data-tab="resumo" type="button"><span class="icon">📈</span><span>Resumo Anual</span></button>
+        <button class="menu-btn" data-tab="planejamento" type="button"><span class="icon">📅</span><span>Planejamento</span></button>
       </div>
 
       <button id="btnSair" class="btn logout-btn" type="button">Sair</button>
@@ -753,6 +763,34 @@
           </table>
         </section>
       </section>
+
+      <section id="tab-planejamento" class="tab-section fade-in">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Planejamento Financeiro (12 semanas)</h3>
+            <div class="badge">Fluxo futuro</div>
+          </div>
+
+          <div class="top-filters">
+            <input id="saldoInicial" type="number" placeholder="Saldo atual em caixa">
+            <button id="btnSalvarPlanejamento" class="btn" type="button">Salvar</button>
+          </div>
+        </section>
+
+        <section class="panel table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Semana</th>
+                <th>Entradas (R$)</th>
+                <th>Saídas (R$)</th>
+                <th>Saldo Projetado</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaPlanejamento"></tbody>
+          </table>
+        </section>
+      </section>
     </main>
   </section>
 
@@ -811,6 +849,8 @@
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
     const fileInput = document.getElementById("fileInput");
+    const saldoInicialInput = document.getElementById("saldoInicial");
+    const btnSalvarPlanejamento = document.getElementById("btnSalvarPlanejamento");
 
     function setLoginMsg(texto, tipo = "info") {
       loginMsg.className = tipo;
@@ -1212,9 +1252,7 @@
                 color: "#374151",
                 callback: (value) => moeda(value)
               },
-              grid: {
-                color: "rgba(107,114,128,0.15)"
-              },
+              grid: { color: "rgba(107,114,128,0.15)" },
               border: { display: false }
             },
             y: {
@@ -1466,6 +1504,85 @@
       });
     }
 
+    function gerarSemanas() {
+      const semanas = [];
+      for (let i = 1; i <= 12; i++) {
+        semanas.push({ semana: "Semana " + i, entrada: 0, saida: 0 });
+      }
+      return semanas;
+    }
+
+    function montarPlanejamento() {
+      const tbody = document.getElementById("tabelaPlanejamento");
+      const semanas = gerarSemanas();
+
+      tbody.innerHTML = semanas.map((s, i) => `
+        <tr>
+          <td>${s.semana}</td>
+          <td><input class="planejamento-input" type="number" data-tipo="entrada" data-index="${i}" value="0"></td>
+          <td><input class="planejamento-input" type="number" data-tipo="saida" data-index="${i}" value="0"></td>
+          <td id="saldo_${i}">R$ 0,00</td>
+        </tr>
+      `).join("");
+
+      calcularFluxo();
+    }
+
+    function calcularFluxo() {
+      let saldo = Number(document.getElementById("saldoInicial").value || 0);
+
+      for (let i = 0; i < 12; i++) {
+        const entrada = Number(document.querySelector(`[data-tipo="entrada"][data-index="${i}"]`)?.value || 0);
+        const saida = Number(document.querySelector(`[data-tipo="saida"][data-index="${i}"]`)?.value || 0);
+
+        saldo += entrada - saida;
+
+        const el = document.getElementById(`saldo_${i}`);
+        if (el) {
+          el.innerText = moeda(saldo);
+          el.style.color = saldo >= 0 ? "#22c55e" : "#ef4444";
+          el.style.fontWeight = "700";
+        }
+      }
+    }
+
+    function salvarPlanejamento() {
+      const dados = {
+        saldo: document.getElementById("saldoInicial").value,
+        semanas: []
+      };
+
+      for (let i = 0; i < 12; i++) {
+        dados.semanas.push({
+          entrada: document.querySelector(`[data-index="${i}"][data-tipo="entrada"]`)?.value || 0,
+          saida: document.querySelector(`[data-index="${i}"][data-tipo="saida"]`)?.value || 0
+        });
+      }
+
+      localStorage.setItem("planejamento", JSON.stringify(dados));
+      setAppMsg("Planejamento salvo com sucesso.", "ok");
+    }
+
+    function carregarPlanejamento() {
+      montarPlanejamento();
+
+      const salvo = localStorage.getItem("planejamento");
+      if (!salvo) return;
+
+      const dados = JSON.parse(salvo);
+
+      document.getElementById("saldoInicial").value = dados.saldo || 0;
+
+      (dados.semanas || []).forEach((s, i) => {
+        const entrada = document.querySelector(`[data-index="${i}"][data-tipo="entrada"]`);
+        const saida = document.querySelector(`[data-index="${i}"][data-tipo="saida"]`);
+        if (entrada) entrada.value = s.entrada || 0;
+        if (saida) saida.value = s.saida || 0;
+      });
+
+      calcularFluxo();
+    }
+
     async function carregarDashboard() {
       const { mes, ano } = getMesAno();
 
@@ -1703,7 +1820,14 @@
     async function carregarTudo() {
       await carregarDashboard();
       await carregarResumoAnual();
+      carregarPlanejamento();
     }
+
+    document.addEventListener("input", (e) => {
+      if (e.target.dataset.tipo || e.target.id === "saldoInicial") {
+        calcularFluxo();
+      }
+    });
 
     loginBtn.addEventListener("click", login);
     loginSenha.addEventListener("keydown", (e) => {
@@ -1715,6 +1839,7 @@
     btnSalvarFaturamento.addEventListener("click", salvarFaturamento);
     btnSalvarMetas.addEventListener("click", salvarMetas);
     btnExportarRelatorio.addEventListener("click", exportarRelatorio);
+    btnSalvarPlanejamento.addEventListener("click", salvarPlanejamento);
     fileInput.addEventListener("change", handleFile);
 
     mesSelect.addEventListener("change", () => {
