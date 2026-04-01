@@ -1569,7 +1569,7 @@
 
           <div class="import-help">
 
-            <div><strong>Colunas obrigatórias:</strong> FORNECEDOR, DESCRICAO, CATEGORIA, DOCUMENTO, VALOR, VENCIMENTO, STATUS, BOLETO, NOTA_FISCAL, OBSERVACOES</div>
+            <div><strong>Colunas obrigatórias:</strong> FORNECEDOR, DESCRICAO ou DESCRIÇÃO, CATEGORIA, DOCUMENTO, VALOR, VENCIMENTO, STATUS, BOLETO, NOTA_FISCAL, OBSERVACOES ou OBSERVAÇÕES</div>
 
             <div><strong>CATEGORIA:</strong> MC, MP, TERC, FRETE, DESP, TAR, PREST, FOLHA, COMIS, IMPOS, RESC, MANUT</div>
 
@@ -1577,7 +1577,7 @@
 
             <div><strong>BOLETO / NOTA_FISCAL:</strong> TRUE ou FALSE</div>
 
-            <div><strong>VENCIMENTO:</strong> formato YYYY-MM-DD</div>
+            <div><strong>VENCIMENTO:</strong> aceita número do Excel, DD/MM/AAAA ou YYYY-MM-DD</div>
 
           </div>
 
@@ -1852,8 +1852,6 @@
 
     let simulacaoAtual = null;
 
-    let ultimoPlanejamento = null;
-
 
     function setLoginMsg(texto, tipo = "info") {
 
@@ -1970,18 +1968,69 @@
     }
 
 
+    function normalizarDataExcel(valor) {
+
+      if (valor === null || valor === undefined || valor === "") return "";
+
+
+      if (typeof valor === "number") {
+
+        const utcDays = Math.floor(valor - 25569);
+
+        const utcValue = utcDays * 86400;
+
+        const dateInfo = new Date(utcValue * 1000);
+
+
+        const ano = dateInfo.getUTCFullYear();
+
+        const mes = String(dateInfo.getUTCMonth() + 1).padStart(2, "0");
+
+        const dia = String(dateInfo.getUTCDate()).padStart(2, "0");
+
+
+        return `${ano}-${mes}-${dia}`;
+
+      }
+
+
+      const texto = String(valor).trim();
+
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto;
+
+
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
+
+        const [dia, mes, ano] = texto.split("/");
+
+        return `${ano}-${mes}-${dia}`;
+
+      }
+
+
+      return texto;
+
+    }
+
+
     function validarLinhaImportacao(row, indice) {
 
       const categoria = normalizarCategoria(row["CATEGORIA"]);
 
       const status = String(row["STATUS"] || "pendente").trim().toLowerCase();
 
-      const vencimento = String(row["VENCIMENTO"] || "").trim();
+      const vencimento = normalizarDataExcel(row["VENCIMENTO"]);
+
+
+      const descricao = row["DESCRICAO"] || row["DESCRIÇÃO"] || "";
+
+      const observacoes = row["OBSERVACOES"] || row["OBSERVAÇÕES"] || "";
 
 
       if (!row["FORNECEDOR"]) return `Linha ${indice}: FORNECEDOR vazio`;
 
-      if (!row["DESCRICAO"]) return `Linha ${indice}: DESCRICAO vazia`;
+      if (!descricao) return `Linha ${indice}: DESCRICAO vazia`;
 
       if (!categoria || !categoriasPadrao.includes(categoria)) return `Linha ${indice}: CATEGORIA inválida (${row["CATEGORIA"]})`;
 
@@ -1989,7 +2038,7 @@
 
       if (!["pendente","pago","vencido"].includes(status)) return `Linha ${indice}: STATUS inválido (${row["STATUS"]})`;
 
-      if (Number(row["VALOR"] || 0) <= 0) return `Linha ${indice}: VALOR inválido`;
+      if (Number(String(row["VALOR"] || 0).replace("R$", "").replace(/\./g, "").replace(",", ".")) <= 0) return `Linha ${indice}: VALOR inválido`;
 
 
       return null;
@@ -2232,11 +2281,7 @@
 
           const entrada = document.querySelector(`[data-index="${i}"][data-tipo="entrada"]`);
 
-          if (entrada) {
-
-            entrada.value = planejamento.entradas[`semana_${i + 1}`] ?? 0;
-
-          }
+          if (entrada) entrada.value = planejamento.entradas[`semana_${i + 1}`] ?? 0;
 
         }
 
@@ -3330,15 +3375,9 @@
       if (idx < 0 || idx >= simulados.length || valor <= 0) return simulados;
 
 
-      if (simulacaoAtual.tipo === "entrada") {
+      if (simulacaoAtual.tipo === "entrada") simulados[idx].entrada += valor;
 
-        simulados[idx].entrada += valor;
-
-      } else {
-
-        simulados[idx].saida += valor;
-
-      }
+      else simulados[idx].saida += valor;
 
 
       let saldoRodando = calcularSaldoInicialTotal();
@@ -3468,6 +3507,7 @@
       const labels = base.map(item => `S${item.semana}`);
 
       const saldoBase = base.map(item => item.saldo);
+
 
       const datasets = [{
 
@@ -3632,9 +3672,6 @@
       atualizarResumoSimulacao(base, simulacaoAtual ? simulados : null);
 
       desenharGraficoPlanejamento(base, simulacaoAtual ? simulados : null);
-
-
-      ultimoPlanejamento = { base, simulados };
 
     }
 
@@ -4150,35 +4187,6 @@
     }
 
 
-    function normalizarDataExcel(valor) {
-  if (valor === null || valor === undefined || valor === "") return "";
-
-  if (typeof valor === "number") {
-    const utcDays = Math.floor(valor - 25569);
-    const utcValue = utcDays * 86400;
-    const dateInfo = new Date(utcValue * 1000);
-
-    const ano = dateInfo.getUTCFullYear();
-    const mes = String(dateInfo.getUTCMonth() + 1).padStart(2, "0");
-    const dia = String(dateInfo.getUTCDate()).padStart(2, "0");
-
-    return `${ano}-${mes}-${dia}`;
-  }
-
-  const texto = String(valor).trim();
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
-    return texto;
-  }
-
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
-    const [dia, mes, ano] = texto.split("/");
-    return `${ano}-${mes}-${dia}`;
-  }
-
-  return texto;
-}
-    
     function processarPlanilha(data) {
 
       if (!usuarioAtual || usuarioAtual.perfil !== "admin") {
@@ -4215,45 +4223,92 @@
 
       if (erros.length) {
 
-        setAppMsg(erros.slice(0, 5).join("\n"), "err");
+        setAppMsg(erros.slice(0, 8).join("\n"), "err");
 
         return;
 
       }
 
 
-      const payload = data.map(row => ({
+      const payload = data.map(row => {
 
-        fornecedor: String(row["FORNECEDOR"] || "").trim(),
+        const valorBruto = row["VALOR"];
 
-        descricao: String(row["DESCRICAO"] || "").trim(),
+        let valor = valorBruto;
 
-        categoria: normalizarCategoria(row["CATEGORIA"]),
 
-        documento: String(row["DOCUMENTO"] || "").trim(),
+        if (typeof valor === "string") {
 
-        valor: Number(row["VALOR"] || 0),
+          valor = valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
 
-        vencimento: String(row["VENCIMENTO"] || "").trim(),
+        }
 
-        status: String(row["STATUS"] || "pendente").trim().toLowerCase(),
 
-        boleto: normalizarBooleano(row["BOLETO"]),
+        const vencimento = normalizarDataExcel(row["VENCIMENTO"]);
 
-        nota_fiscal: normalizarBooleano(row["NOTA_FISCAL"]),
 
-        observacoes: String(row["OBSERVACOES"] || "").trim(),
+        return {
 
-        mes,
+          fornecedor: String(row["FORNECEDOR"] || "").trim(),
 
-        ano,
+          descricao: String(row["DESCRICAO"] || row["DESCRIÇÃO"] || "").trim(),
 
-        created_at: new Date().toISOString()
+          categoria: normalizarCategoria(row["CATEGORIA"]),
 
-      }));
+          documento: String(row["DOCUMENTO"] || "").trim(),
+
+          valor: Number(valor || 0),
+
+          vencimento: vencimento,
+
+          status: String(row["STATUS"] || "pendente").trim().toLowerCase(),
+
+          boleto: normalizarBooleano(row["BOLETO"]),
+
+          nota_fiscal: normalizarBooleano(row["NOTA_FISCAL"]),
+
+          observacoes: String(row["OBSERVACOES"] || row["OBSERVAÇÕES"] || "").trim(),
+
+          mes,
+
+          ano,
+
+          created_at: new Date().toISOString()
+
+        };
+
+      });
 
 
       importarContasPagar(payload);
+
+    }
+
+
+    function handleFile(event) {
+
+      const file = event.target.files[0];
+
+      if (!file) return;
+
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+
+        const data = new Uint8Array(e.target.result);
+
+        const workbook = XLSX.read(data, { type: "array" });
+
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+        processarPlanilha(json);
+
+      };
+
+      reader.readAsArrayBuffer(file);
 
     }
 
@@ -4462,34 +4517,6 @@
         setAppMsg("Erro ao salvar metas: " + erro.message, "err");
 
       }
-
-    }
-
-
-    function handleFile(event) {
-
-      const file = event.target.files[0];
-
-      if (!file) return;
-
-
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-
-        const data = new Uint8Array(e.target.result);
-
-        const workbook = XLSX.read(data, { type: "array" });
-
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-        const json = XLSX.utils.sheet_to_json(sheet);
-
-        processarPlanilha(json);
-
-      };
-
-      reader.readAsArrayBuffer(file);
 
     }
 
