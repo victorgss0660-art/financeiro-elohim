@@ -116,11 +116,31 @@
     .btn:hover{transform:translateY(-1px)}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 
-    #loginBtn{
-      width:100%;
-      font-size:15px;
+    .secondary-btn{
+      background:#222;
+      border:1px solid var(--border);
+      color:#fff;
+      padding:11px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
     }
 
+    .small-btn{
+      padding:8px 10px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:12px;
+      font-weight:700;
+      color:#fff;
+    }
+
+    .small-green{background:#15803d}
+    .small-red{background:#b91c1c}
+    .small-gray{background:#374151}
+
+    #loginBtn{width:100%;font-size:15px}
     #loginMsg,#appMsg{
       margin-top:12px;
       font-size:14px;
@@ -132,10 +152,7 @@
     .err{color:#ff8080}
     .info{color:var(--yellow)}
 
-    .app{
-      min-height:100vh;
-      display:flex;
-    }
+    .app{min-height:100vh;display:flex}
 
     .sidebar{
       width:260px;
@@ -273,13 +290,21 @@
     }
 
     .top-filters select,
-    .top-filters input{
+    .top-filters input,
+    .form-grid input,
+    .form-grid select,
+    .form-grid textarea{
       padding:11px 12px;
       border:none;
       border-radius:12px;
       background:#111;
       color:#fff;
       min-width:150px;
+    }
+
+    .form-grid textarea{
+      min-height:90px;
+      resize:vertical;
     }
 
     .cards{
@@ -400,9 +425,7 @@
       border-left-color:var(--green);
     }
 
-    .table-wrap{
-      overflow-x:auto;
-    }
+    .table-wrap{overflow-x:auto}
 
     table{
       width:100%;
@@ -415,6 +438,7 @@
       border-bottom:1px solid rgba(255,255,255,.06);
       text-align:left;
       font-size:14px;
+      vertical-align:middle;
     }
 
     th{color:var(--muted)}
@@ -422,7 +446,6 @@
     .success{color:var(--green);font-weight:bold}
     .danger{color:var(--danger);font-weight:bold}
     .muted{color:#9a9a9a}
-
     .tab-section{display:none}
     .tab-section.active{display:block}
 
@@ -446,24 +469,6 @@
       margin-bottom:8px;
     }
 
-    .meta-item input{
-      width:100%;
-      padding:10px;
-      border:none;
-      border-radius:10px;
-      background:#1b1b1b;
-      color:#fff;
-    }
-
-    .planejamento-input{
-      width:100%;
-      padding:10px;
-      border:none;
-      border-radius:10px;
-      background:#1b1b1b;
-      color:#fff;
-    }
-
     .row-actions{
       display:flex;
       gap:10px;
@@ -471,21 +476,50 @@
       margin-bottom:16px;
     }
 
-    .secondary-btn{
-      background:#222;
-      border:1px solid var(--border);
-      color:#fff;
-      padding:11px 14px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:600;
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
     }
+
+    .form-grid .full{
+      grid-column:1 / -1;
+    }
+
+    .check-row{
+      display:flex;
+      gap:20px;
+      align-items:center;
+      flex-wrap:wrap;
+      padding:8px 0;
+    }
+
+    .check-row label{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:#ddd;
+      font-size:14px;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .pill-pendente{background:#78350f;color:#fde68a}
+    .pill-pago{background:#14532d;color:#bbf7d0}
+    .pill-vencido{background:#7f1d1d;color:#fecaca}
 
     @media (max-width:1100px){
       .cards{grid-template-columns:repeat(2,1fr)}
       .grid{grid-template-columns:1fr}
       .meta-grid{grid-template-columns:repeat(2,1fr)}
       .status-grid{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:repeat(2,1fr)}
     }
 
     @media (max-width:850px){
@@ -496,6 +530,7 @@
     @media (max-width:600px){
       .cards{grid-template-columns:1fr}
       .meta-grid{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr}
       .main{padding:16px}
       .login-card{padding:22px}
       .chart-wrap{height:340px; min-height:340px;}
@@ -511,11 +546,9 @@
       </div>
       <h2>Entrar</h2>
       <p>Acesse o sistema financeiro da Elohim</p>
-
       <input id="loginEmail" type="email" placeholder="Seu e-mail">
       <input id="loginSenha" type="password" placeholder="Sua senha">
       <button id="loginBtn" class="btn" type="button">Entrar</button>
-
       <div id="loginMsg" class="info">Pronto para login.</div>
     </div>
   </section>
@@ -533,6 +566,7 @@
 
       <div class="menu">
         <button class="menu-btn active" data-tab="dashboard" type="button"><span class="icon">📊</span><span>Dashboard</span></button>
+        <button class="menu-btn" data-tab="contas-pagar" type="button"><span class="icon">🧾</span><span>Contas a Pagar</span></button>
         <button class="menu-btn" data-tab="faturamento" type="button"><span class="icon">💰</span><span>Faturamento</span></button>
         <button class="menu-btn" data-tab="metas" type="button"><span class="icon">🎯</span><span>Metas</span></button>
         <button class="menu-btn" data-tab="importar" type="button"><span class="icon">📂</span><span>Importar Planilha</span></button>
@@ -554,18 +588,9 @@
 
       <div class="top-filters">
         <select id="mesSelect">
-          <option>Janeiro</option>
-          <option>Fevereiro</option>
-          <option>Março</option>
-          <option>Abril</option>
-          <option>Maio</option>
-          <option>Junho</option>
-          <option>Julho</option>
-          <option>Agosto</option>
-          <option>Setembro</option>
-          <option>Outubro</option>
-          <option>Novembro</option>
-          <option>Dezembro</option>
+          <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
+          <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
+          <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
         </select>
 
         <select id="anoSelect">
@@ -586,118 +611,55 @@
 
       <section id="tab-dashboard" class="tab-section active fade-in">
         <section class="cards">
-          <div class="card">
-            <div class="card-title">Faturamento</div>
-            <div class="card-value" id="fat">R$ 0,00</div>
-            <div class="card-sub">Receita do mês atual</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Gastos</div>
-            <div class="card-value" id="gas">R$ 0,00</div>
-            <div class="card-sub">Total por categoria</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Saldo</div>
-            <div class="card-value" id="saldo">R$ 0,00</div>
-            <div class="card-sub">Faturamento - gastos</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Meta atingida</div>
-            <div class="card-value" id="metaAtingida">0%</div>
-            <div class="card-sub">Em relação ao limite definido</div>
-          </div>
+          <div class="card"><div class="card-title">Faturamento</div><div class="card-value" id="fat">R$ 0,00</div><div class="card-sub">Receita do mês atual</div></div>
+          <div class="card"><div class="card-title">Gastos</div><div class="card-value" id="gas">R$ 0,00</div><div class="card-sub">Total por categoria</div></div>
+          <div class="card"><div class="card-title">Saldo</div><div class="card-value" id="saldo">R$ 0,00</div><div class="card-sub">Faturamento - gastos</div></div>
+          <div class="card"><div class="card-title">Meta atingida</div><div class="card-value" id="metaAtingida">0%</div><div class="card-sub">Em relação ao limite definido</div></div>
         </section>
 
         <section class="grid">
           <div class="panel">
-            <div class="panel-head">
-              <h3>Gastos x Meta por Categoria</h3>
-              <div class="badge">Horizontal BI</div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="barChart"></canvas>
-            </div>
+            <div class="panel-head"><h3>Gastos x Meta por Categoria</h3><div class="badge">Horizontal BI</div></div>
+            <div class="chart-wrap"><canvas id="barChart"></canvas></div>
           </div>
 
           <div class="panel">
-            <div class="panel-head">
-              <h3>Distribuição dos Gastos</h3>
-              <div class="badge">Donut Premium</div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="pieChart"></canvas>
-            </div>
+            <div class="panel-head"><h3>Distribuição dos Gastos</h3><div class="badge">Donut Premium</div></div>
+            <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
           </div>
         </section>
 
         <section class="panel">
-          <div class="panel-head">
-            <h3>Evolução Mensal</h3>
-            <div class="badge">Ano</div>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="lineChart"></canvas>
-          </div>
+          <div class="panel-head"><h3>Evolução Mensal</h3><div class="badge">Ano</div></div>
+          <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
         </section>
 
         <section class="panel">
-          <div class="panel-head">
-            <h3>Ranking Anual de Categorias</h3>
-            <div class="badge">Top gastos</div>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="rankingChart"></canvas>
-          </div>
+          <div class="panel-head"><h3>Ranking Anual de Categorias</h3><div class="badge">Top gastos</div></div>
+          <div class="chart-wrap"><canvas id="rankingChart"></canvas></div>
         </section>
 
         <section class="grid">
           <div class="panel">
-            <div class="panel-head">
-              <h3>Status do mês</h3>
-              <div class="badge">Resumo</div>
-            </div>
+            <div class="panel-head"><h3>Status do mês</h3><div class="badge">Resumo</div></div>
             <div class="status-grid">
-              <div class="status-item">
-                <div class="label">Mês selecionado</div>
-                <div class="value" id="statusMes">-</div>
-              </div>
-              <div class="status-item">
-                <div class="label">Última atualização</div>
-                <div class="value" id="statusAtualizacao">Nenhuma</div>
-              </div>
-              <div class="status-item">
-                <div class="label">Situação</div>
-                <div class="value" id="statusSituacao">Aguardando dados</div>
-              </div>
+              <div class="status-item"><div class="label">Mês selecionado</div><div class="value" id="statusMes">-</div></div>
+              <div class="status-item"><div class="label">Última atualização</div><div class="value" id="statusAtualizacao">Nenhuma</div></div>
+              <div class="status-item"><div class="label">Situação</div><div class="value" id="statusSituacao">Aguardando dados</div></div>
             </div>
           </div>
 
           <div class="panel">
-            <div class="panel-head">
-              <h3>Alertas</h3>
-              <div class="badge">Automático</div>
-            </div>
-            <div id="alertList" class="alert-list">
-              <div class="muted">Nenhum alerta disponível.</div>
-            </div>
+            <div class="panel-head"><h3>Alertas</h3><div class="badge">Automático</div></div>
+            <div id="alertList" class="alert-list"><div class="muted">Nenhum alerta disponível.</div></div>
           </div>
         </section>
 
         <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Resumo por Categoria</h3>
-            <div class="badge">Detalhado</div>
-          </div>
+          <div class="panel-head"><h3>Resumo por Categoria</h3><div class="badge">Detalhado</div></div>
           <table>
             <thead>
-              <tr>
-                <th>Categoria</th>
-                <th>Gasto</th>
-                <th>Meta %</th>
-                <th>Meta R$</th>
-                <th>Diferença</th>
-                <th>Situação</th>
-              </tr>
+              <tr><th>Categoria</th><th>Gasto</th><th>Meta %</th><th>Meta R$</th><th>Diferença</th><th>Situação</th></tr>
             </thead>
             <tbody id="tabelaResumo">
               <tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>
@@ -706,12 +668,90 @@
         </section>
       </section>
 
-      <section id="tab-faturamento" class="tab-section fade-in">
+      <section id="tab-contas-pagar" class="tab-section fade-in">
+        <section class="cards">
+          <div class="card"><div class="card-title">Total Pendente</div><div class="card-value" id="cpPendente">R$ 0,00</div><div class="card-sub">Contas ainda não pagas</div></div>
+          <div class="card"><div class="card-title">Total Pago</div><div class="card-value" id="cpPago">R$ 0,00</div><div class="card-sub">Contas já quitadas</div></div>
+          <div class="card"><div class="card-title">Total Vencido</div><div class="card-value" id="cpVencido">R$ 0,00</div><div class="card-sub">Contas em atraso</div></div>
+          <div class="card"><div class="card-title">Qtd. Contas</div><div class="card-value" id="cpQuantidade">0</div><div class="card-sub">Registros no mês/ano</div></div>
+        </section>
+
         <section class="panel">
           <div class="panel-head">
-            <h3>Faturamento do mês</h3>
-            <div class="badge">Admin</div>
+            <h3>Cadastrar Conta a Pagar</h3>
+            <div class="badge">Financeiro</div>
           </div>
+
+          <div class="form-grid">
+            <input id="cpFornecedor" placeholder="Fornecedor">
+            <input id="cpDescricao" placeholder="Descrição">
+            <select id="cpCategoria">
+              <option value="">Categoria</option>
+              <option value="MC">Materiais de Consumo</option>
+              <option value="MP">Matéria-Prima</option>
+              <option value="TERC">Terceirizações</option>
+              <option value="FRETE">Fretes</option>
+              <option value="DESP">Despesas Fixas</option>
+              <option value="TAR">Tarifas Bancárias</option>
+              <option value="PREST">Prestações de Serviço</option>
+              <option value="FOLHA">Folha de Pagamento</option>
+              <option value="COMIS">Comissões</option>
+              <option value="IMPOS">Impostos</option>
+              <option value="RESC">Rescisões</option>
+              <option value="MANUT">Manutenções</option>
+            </select>
+            <input id="cpDocumento" placeholder="Pedido / NFe / FAT">
+
+            <input id="cpValor" type="number" step="0.01" placeholder="Valor">
+            <input id="cpVencimento" type="date">
+            <select id="cpStatus">
+              <option value="pendente">Pendente</option>
+              <option value="pago">Pago</option>
+              <option value="vencido">Vencido</option>
+            </select>
+            <div class="check-row">
+              <label><input id="cpBoleto" type="checkbox"> Boleto recebido</label>
+              <label><input id="cpNota" type="checkbox"> Nota fiscal recebida</label>
+            </div>
+
+            <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
+          </div>
+
+          <div style="margin-top:16px;">
+            <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
+          </div>
+        </section>
+
+        <section class="panel table-wrap">
+          <div class="panel-head">
+            <h3>Contas Cadastradas</h3>
+            <div class="badge">Mês selecionado</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Fornecedor</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Documento</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Boleto</th>
+                <th>NF</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaContasPagar">
+              <tr><td colspan="10" class="muted">Nenhuma conta cadastrada.</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
+      <section id="tab-faturamento" class="tab-section fade-in">
+        <section class="panel">
+          <div class="panel-head"><h3>Faturamento do mês</h3><div class="badge">Admin</div></div>
           <div class="top-filters">
             <input id="faturamentoInput" type="number" step="0.01" placeholder="Faturamento do mês">
             <button id="btnSalvarFaturamento" class="btn" type="button">Salvar faturamento</button>
@@ -721,42 +761,24 @@
 
       <section id="tab-metas" class="tab-section fade-in">
         <section class="panel">
-          <div class="panel-head">
-            <h3>Metas por categoria (% do faturamento)</h3>
-            <div class="badge">Admin</div>
-          </div>
+          <div class="panel-head"><h3>Metas por categoria (% do faturamento)</h3><div class="badge">Admin</div></div>
           <div id="metaGrid" class="meta-grid"></div>
-          <div style="margin-top:16px;">
-            <button id="btnSalvarMetas" class="btn" type="button">Salvar metas</button>
-          </div>
+          <div style="margin-top:16px;"><button id="btnSalvarMetas" class="btn" type="button">Salvar metas</button></div>
         </section>
       </section>
 
       <section id="tab-importar" class="tab-section fade-in">
         <section class="panel">
-          <div class="panel-head">
-            <h3>Importar planilha</h3>
-            <div class="badge">Admin</div>
-          </div>
+          <div class="panel-head"><h3>Importar planilha</h3><div class="badge">Admin</div></div>
           <input id="fileInput" type="file" accept=".xlsx,.xls">
         </section>
       </section>
 
       <section id="tab-resumo" class="tab-section fade-in">
         <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Resumo Anual</h3>
-            <div class="badge">Ano</div>
-          </div>
+          <div class="panel-head"><h3>Resumo Anual</h3><div class="badge">Ano</div></div>
           <table>
-            <thead>
-              <tr>
-                <th>Mês</th>
-                <th>Faturamento</th>
-                <th>Gastos</th>
-                <th>Saldo</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Mês</th><th>Faturamento</th><th>Gastos</th><th>Saldo</th></tr></thead>
             <tbody id="tabelaResumoAnual">
               <tr><td colspan="4" class="muted">Nenhum dado anual carregado.</td></tr>
             </tbody>
@@ -766,11 +788,7 @@
 
       <section id="tab-planejamento" class="tab-section fade-in">
         <section class="panel">
-          <div class="panel-head">
-            <h3>Planejamento Financeiro (12 semanas)</h3>
-            <div class="badge">Fluxo futuro</div>
-          </div>
-
+          <div class="panel-head"><h3>Planejamento Financeiro (12 semanas)</h3><div class="badge">Fluxo futuro</div></div>
           <div class="top-filters">
             <input id="saldoInicial" type="number" placeholder="Saldo atual em caixa">
             <button id="btnSalvarPlanejamento" class="btn" type="button">Salvar</button>
@@ -780,12 +798,7 @@
         <section class="panel table-wrap">
           <table>
             <thead>
-              <tr>
-                <th>Semana</th>
-                <th>Entradas (R$)</th>
-                <th>Saídas (R$)</th>
-                <th>Saldo Projetado</th>
-              </tr>
+              <tr><th>Semana</th><th>Entradas (R$)</th><th>Saídas (R$)</th><th>Saldo Projetado</th></tr>
             </thead>
             <tbody id="tabelaPlanejamento"></tbody>
           </table>
@@ -814,7 +827,6 @@
     };
 
     const categoriasPadrao = Object.keys(nomesCategorias);
-
     const metasPadrao = {
       MC: 20, MP: 18, TERC: 8, FRETE: 5, DESP: 6, TAR: 1,
       PREST: 4, FOLHA: 15, COMIS: 2, IMPOS: 5, RESC: 1, MANUT: 4
@@ -851,6 +863,7 @@
     const fileInput = document.getElementById("fileInput");
     const saldoInicialInput = document.getElementById("saldoInicial");
     const btnSalvarPlanejamento = document.getElementById("btnSalvarPlanejamento");
+    const btnSalvarContaPagar = document.getElementById("btnSalvarContaPagar");
 
     function setLoginMsg(texto, tipo = "info") {
       loginMsg.className = tipo;
@@ -863,7 +876,7 @@
     }
 
     function nomeCategoria(sigla) {
-      return nomesCategorias[sigla] || sigla;
+      return nomesCategorias[sigla] || sigla || "-";
     }
 
     function moeda(valor) {
@@ -881,12 +894,19 @@
       return { mes: mesSelect.value, ano: anoSelect.value };
     }
 
+    function hojeISO() {
+      return new Date().toISOString().slice(0,10);
+    }
+
+    function classStatusConta(status) {
+      if (status === "pago") return "pill pill-pago";
+      if (status === "vencido") return "pill pill-vencido";
+      return "pill pill-pendente";
+    }
+
     async function restGet(tabela, query) {
       const res = await fetch(`${API_BASE}/rest/v1/${tabela}?${query}`, {
-        headers: {
-          apikey: API_KEY,
-          Authorization: "Bearer " + API_KEY
-        }
+        headers: { apikey: API_KEY, Authorization: "Bearer " + API_KEY }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Erro GET");
@@ -928,10 +948,7 @@
     async function restDelete(tabela, filtros) {
       const res = await fetch(`${API_BASE}/rest/v1/${tabela}?${filtros}`, {
         method: "DELETE",
-        headers: {
-          apikey: API_KEY,
-          Authorization: "Bearer " + API_KEY
-        }
+        headers: { apikey: API_KEY, Authorization: "Bearer " + API_KEY }
       });
       if (!res.ok) {
         let data = {};
@@ -1018,7 +1035,6 @@
           });
 
           botao.classList.add("active");
-
           const tab = botao.dataset.tab;
           const secao = document.getElementById(`tab-${tab}`);
           if (secao) {
@@ -1040,6 +1056,7 @@
       btnSalvarMetas.disabled = !isAdmin;
       faturamentoInput.disabled = !isAdmin;
       fileInput.disabled = !isAdmin;
+      btnSalvarContaPagar.disabled = !isAdmin;
     }
 
     async function garantirMes(mes, ano) {
@@ -1054,12 +1071,8 @@
       if (data && data.length > 0) return data;
 
       const payload = categoriasPadrao.map(cat => ({
-        mes,
-        ano,
-        categoria: cat,
-        meta: metasPadrao[cat] || 0
+        mes, ano, categoria: cat, meta: metasPadrao[cat] || 0
       }));
-
       await restInsert("metas", payload);
       return payload;
     }
@@ -1216,10 +1229,7 @@
           indexAxis: "y",
           maintainAspectRatio: false,
           responsive: true,
-          interaction: {
-            mode: "index",
-            intersect: false
-          },
+          interaction: { mode: "index", intersect: false },
           plugins: {
             legend: {
               position: "top",
@@ -1240,26 +1250,18 @@
               borderColor: "rgba(255,255,255,0.08)",
               borderWidth: 1,
               padding: 12,
-              callbacks: {
-                label: (ctx) => `${ctx.dataset.label}: ${moeda(ctx.raw)}`
-              }
+              callbacks: { label: (ctx) => `${ctx.dataset.label}: ${moeda(ctx.raw)}` }
             }
           },
           scales: {
             x: {
               beginAtZero: true,
-              ticks: {
-                color: "#374151",
-                callback: (value) => moeda(value)
-              },
+              ticks: { color: "#374151", callback: (value) => moeda(value) },
               grid: { color: "rgba(107,114,128,0.15)" },
               border: { display: false }
             },
             y: {
-              ticks: {
-                color: "#374151",
-                font: { size: 11, weight: "600" }
-              },
+              ticks: { color: "#374151", font: { size: 11, weight: "600" } },
               grid: { display: false },
               border: { display: false }
             }
@@ -1273,10 +1275,7 @@
           labels,
           datasets: [{
             data: valores,
-            backgroundColor: [
-              "#ff3d3d","#2563eb","#22c55e","#ff8a00","#a855f7","#06b6d4",
-              "#ff4ecd","#b7e000","#f59e0b","#64748b","#e11d48","#14b8a6"
-            ],
+            backgroundColor: ["#ff3d3d","#2563eb","#22c55e","#ff8a00","#a855f7","#06b6d4","#ff4ecd","#b7e000","#f59e0b","#64748b","#e11d48","#14b8a6"],
             borderWidth: 4,
             borderColor: "#ffffff",
             hoverOffset: 14,
@@ -1334,48 +1333,15 @@
         data: {
           labels,
           datasets: [
-            {
-              label: "Faturamento",
-              data: faturamento,
-              borderColor: "#22c55e",
-              backgroundColor: "#22c55e",
-              borderWidth: 3,
-              tension: 0.35,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: "#22c55e"
-            },
-            {
-              label: "Gastos",
-              data: gastos,
-              borderColor: "#ef4444",
-              backgroundColor: "#ef4444",
-              borderWidth: 3,
-              tension: 0.35,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: "#ef4444"
-            },
-            {
-              label: "Saldo",
-              data: saldo,
-              borderColor: "#2563eb",
-              backgroundColor: "#2563eb",
-              borderWidth: 3,
-              tension: 0.35,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: "#2563eb"
-            }
+            { label: "Faturamento", data: faturamento, borderColor: "#22c55e", backgroundColor: "#22c55e", borderWidth: 3, tension: 0.35, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: "#22c55e" },
+            { label: "Gastos", data: gastos, borderColor: "#ef4444", backgroundColor: "#ef4444", borderWidth: 3, tension: 0.35, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: "#ef4444" },
+            { label: "Saldo", data: saldo, borderColor: "#2563eb", backgroundColor: "#2563eb", borderWidth: 3, tension: 0.35, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: "#2563eb" }
           ]
         },
         options: {
           maintainAspectRatio: false,
           responsive: true,
-          interaction: {
-            mode: "index",
-            intersect: false
-          },
+          interaction: { mode: "index", intersect: false },
           plugins: {
             legend: {
               position: "top",
@@ -1396,26 +1362,18 @@
               borderColor: "rgba(255,255,255,0.08)",
               borderWidth: 1,
               padding: 12,
-              callbacks: {
-                label: (ctx) => `${ctx.dataset.label}: ${moeda(ctx.raw)}`
-              }
+              callbacks: { label: (ctx) => `${ctx.dataset.label}: ${moeda(ctx.raw)}` }
             }
           },
           scales: {
             x: {
-              ticks: {
-                color: "#374151",
-                font: { size: 11, weight: "600" }
-              },
+              ticks: { color: "#374151", font: { size: 11, weight: "600" } },
               grid: { display: false },
               border: { color: "#e5e7eb" }
             },
             y: {
               beginAtZero: true,
-              ticks: {
-                color: "#374151",
-                callback: (value) => moeda(value)
-              },
+              ticks: { color: "#374151", callback: (value) => moeda(value) },
               grid: { color: "rgba(107,114,128,0.15)" },
               border: { display: false }
             }
@@ -1426,16 +1384,12 @@
 
     function desenharGraficoRankingAnual(gastosAno) {
       const acumulado = {};
-
       gastosAno.forEach(item => {
         const cat = item.categoria || "Outros";
         acumulado[cat] = (acumulado[cat] || 0) + num(item.valor || 0);
       });
 
-      const ordenado = Object.entries(acumulado)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-
+      const ordenado = Object.entries(acumulado).sort((a, b) => b[1] - a[1]).slice(0, 10);
       const labels = ordenado.map(([cat]) => nomeCategoria(cat));
       const valores = ordenado.map(([, valor]) => valor);
 
@@ -1476,26 +1430,18 @@
               borderColor: "rgba(255,255,255,0.08)",
               borderWidth: 1,
               padding: 12,
-              callbacks: {
-                label: (ctx) => `Gasto: ${moeda(ctx.raw)}`
-              }
+              callbacks: { label: (ctx) => `Gasto: ${moeda(ctx.raw)}` }
             }
           },
           scales: {
             x: {
               beginAtZero: true,
-              ticks: {
-                color: "#374151",
-                callback: (value) => moeda(value)
-              },
+              ticks: { color: "#374151", callback: (value) => moeda(value) },
               grid: { color: "rgba(107,114,128,0.15)" },
               border: { display: false }
             },
             y: {
-              ticks: {
-                color: "#374151",
-                font: { size: 11, weight: "600" }
-              },
+              ticks: { color: "#374151", font: { size: 11, weight: "600" } },
               grid: { display: false },
               border: { display: false }
             }
@@ -1506,9 +1452,7 @@
 
     function gerarSemanas() {
       const semanas = [];
-      for (let i = 1; i <= 12; i++) {
-        semanas.push({ semana: "Semana " + i, entrada: 0, saida: 0 });
-      }
+      for (let i = 1; i <= 12; i++) semanas.push({ semana: "Semana " + i, entrada: 0, saida: 0 });
       return semanas;
     }
 
@@ -1547,10 +1491,7 @@
     }
 
     function salvarPlanejamento() {
-      const dados = {
-        saldo: document.getElementById("saldoInicial").value,
-        semanas: []
-      };
+      const dados = { saldo: document.getElementById("saldoInicial").value, semanas: [] };
 
       for (let i = 0; i < 12; i++) {
         dados.semanas.push({
@@ -1570,7 +1511,6 @@
       if (!salvo) return;
 
       const dados = JSON.parse(salvo);
-
       document.getElementById("saldoInicial").value = dados.saldo || 0;
 
       (dados.semanas || []).forEach((s, i) => {
@@ -1582,6 +1522,147 @@
 
       calcularFluxo();
     }
+
+    async function carregarContasPagar() {
+      const { mes, ano } = getMesAno();
+      const data = await restGet("contas_pagar", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&order=vencimento.asc`);
+
+      const tbody = document.getElementById("tabelaContasPagar");
+      const hoje = hojeISO();
+
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="muted">Nenhuma conta cadastrada.</td></tr>';
+        document.getElementById("cpPendente").textContent = moeda(0);
+        document.getElementById("cpPago").textContent = moeda(0);
+        document.getElementById("cpVencido").textContent = moeda(0);
+        document.getElementById("cpQuantidade").textContent = "0";
+        return;
+      }
+
+      let totalPendente = 0;
+      let totalPago = 0;
+      let totalVencido = 0;
+
+      tbody.innerHTML = data.map(item => {
+        const valor = num(item.valor || 0);
+        let status = item.status || "pendente";
+
+        if (status !== "pago" && item.vencimento && item.vencimento < hoje) {
+          status = "vencido";
+        }
+
+        if (status === "pago") totalPago += valor;
+        else if (status === "vencido") totalVencido += valor;
+        else totalPendente += valor;
+
+        return `
+          <tr>
+            <td>${item.fornecedor || "-"}</td>
+            <td>${item.descricao || "-"}</td>
+            <td>${nomeCategoria(item.categoria)}</td>
+            <td>${item.documento || "-"}</td>
+            <td>${moeda(valor)}</td>
+            <td>${item.vencimento || "-"}</td>
+            <td><span class="${classStatusConta(status)}">${status}</span></td>
+            <td>${item.boleto ? "✅" : "❌"}</td>
+            <td>${item.nota_fiscal ? "✅" : "❌"}</td>
+            <td>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="small-btn small-green" onclick="marcarContaPaga(${item.id})">Pagar</button>
+                <button class="small-btn small-red" onclick="excluirContaPagar(${item.id})">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      document.getElementById("cpPendente").textContent = moeda(totalPendente);
+      document.getElementById("cpPago").textContent = moeda(totalPago);
+      document.getElementById("cpVencido").textContent = moeda(totalVencido);
+      document.getElementById("cpQuantidade").textContent = String(data.length);
+    }
+
+    async function salvarContaPagar() {
+      if (usuarioAtual?.perfil !== "admin") return;
+
+      try {
+        const { mes, ano } = getMesAno();
+
+        const fornecedor = document.getElementById("cpFornecedor").value.trim();
+        const descricao = document.getElementById("cpDescricao").value.trim();
+        const categoria = document.getElementById("cpCategoria").value;
+        const documento = document.getElementById("cpDocumento").value.trim();
+        const valor = num(document.getElementById("cpValor").value || 0);
+        const vencimento = document.getElementById("cpVencimento").value;
+        const status = document.getElementById("cpStatus").value;
+        const boleto = document.getElementById("cpBoleto").checked;
+        const nota_fiscal = document.getElementById("cpNota").checked;
+        const observacoes = document.getElementById("cpObservacoes").value.trim();
+
+        if (!fornecedor || !descricao || !categoria || !valor || !vencimento) {
+          setAppMsg("Preencha fornecedor, descrição, categoria, valor e vencimento.", "err");
+          return;
+        }
+
+        await restInsert("contas_pagar", [{
+          fornecedor,
+          descricao,
+          categoria,
+          documento,
+          valor,
+          vencimento,
+          status,
+          boleto,
+          nota_fiscal,
+          observacoes,
+          mes,
+          ano,
+          created_at: new Date().toISOString()
+        }]);
+
+        limparFormularioContaPagar();
+        setAppMsg("Conta a pagar cadastrada com sucesso.", "ok");
+        await carregarContasPagar();
+      } catch (erro) {
+        setAppMsg("Erro ao salvar conta: " + erro.message, "err");
+      }
+    }
+
+    function limparFormularioContaPagar() {
+      document.getElementById("cpFornecedor").value = "";
+      document.getElementById("cpDescricao").value = "";
+      document.getElementById("cpCategoria").value = "";
+      document.getElementById("cpDocumento").value = "";
+      document.getElementById("cpValor").value = "";
+      document.getElementById("cpVencimento").value = "";
+      document.getElementById("cpStatus").value = "pendente";
+      document.getElementById("cpBoleto").checked = false;
+      document.getElementById("cpNota").checked = false;
+      document.getElementById("cpObservacoes").value = "";
+    }
+
+    async function marcarContaPaga(id) {
+      try {
+        await restPatch("contas_pagar", `id=eq.${id}`, { status: "pago" });
+        setAppMsg("Conta marcada como paga.", "ok");
+        await carregarContasPagar();
+      } catch (erro) {
+        setAppMsg("Erro ao atualizar conta: " + erro.message, "err");
+      }
+    }
+
+    async function excluirContaPagar(id) {
+      try {
+        await restDelete("contas_pagar", `id=eq.${id}`);
+        setAppMsg("Conta excluída com sucesso.", "ok");
+        await carregarContasPagar();
+      } catch (erro) {
+        setAppMsg("Erro ao excluir conta: " + erro.message, "err");
+      }
+    }
+
+    window.marcarContaPaga = marcarContaPaga;
+    window.excluirContaPagar = excluirContaPagar;
 
     async function carregarDashboard() {
       const { mes, ano } = getMesAno();
@@ -1600,9 +1681,7 @@
       });
 
       const metasPct = {};
-      metasData.forEach(item => {
-        metasPct[item.categoria] = num(item.meta || 0);
-      });
+      metasData.forEach(item => { metasPct[item.categoria] = num(item.meta || 0); });
 
       const faturamento = mesesData?.[0] ? num(mesesData[0].faturamento || 0) : 0;
 
@@ -1635,13 +1714,8 @@
       const mapa = {};
       ordem.forEach(m => mapa[m] = { faturamento: 0, gastos: 0 });
 
-      meses.forEach(item => {
-        mapa[item.mes].faturamento = num(item.faturamento || 0);
-      });
-
-      gastos.forEach(item => {
-        mapa[item.mes].gastos += num(item.valor || 0);
-      });
+      meses.forEach(item => { mapa[item.mes].faturamento = num(item.faturamento || 0); });
+      gastos.forEach(item => { mapa[item.mes].gastos += num(item.valor || 0); });
 
       const resumoAnual = ordem.map(m => {
         const f = num(mapa[m].faturamento);
@@ -1672,9 +1746,7 @@
         const valor = num(faturamentoInput.value || 0);
 
         await garantirMes(mes, ano);
-        await restPatch("meses", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`, {
-          faturamento: valor
-        });
+        await restPatch("meses", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`, { faturamento: valor });
 
         setAppMsg("Faturamento salvo com sucesso.", "ok");
         await carregarTudo();
@@ -1693,10 +1765,7 @@
         await restDelete("metas", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
 
         const payload = Object.keys(metas).map(cat => ({
-          mes,
-          ano,
-          categoria: cat,
-          meta: num(metas[cat] || 0)
+          mes, ano, categoria: cat, meta: num(metas[cat] || 0)
         }));
 
         await restInsert("metas", payload);
@@ -1720,10 +1789,7 @@
         await restDelete("gastos", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
 
         const payload = Object.keys(categorias).map(cat => ({
-          mes,
-          ano,
-          categoria: cat,
-          valor: num(categorias[cat] || 0)
+          mes, ano, categoria: cat, valor: num(categorias[cat] || 0)
         }));
 
         if (payload.length > 0) await restInsert("gastos", payload);
@@ -1738,7 +1804,6 @@
 
     function processarPlanilha(data) {
       const categorias = {};
-
       data.forEach(row => {
         const categoria = row["CATEGORIA"];
         let valor = row["VALOR"];
@@ -1820,6 +1885,7 @@
     async function carregarTudo() {
       await carregarDashboard();
       await carregarResumoAnual();
+      await carregarContasPagar();
       carregarPlanejamento();
     }
 
@@ -1830,9 +1896,7 @@
     });
 
     loginBtn.addEventListener("click", login);
-    loginSenha.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") login();
-    });
+    loginSenha.addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
 
     btnSair.addEventListener("click", logout);
     btnCarregarMes.addEventListener("click", carregarTudo);
@@ -1840,16 +1904,20 @@
     btnSalvarMetas.addEventListener("click", salvarMetas);
     btnExportarRelatorio.addEventListener("click", exportarRelatorio);
     btnSalvarPlanejamento.addEventListener("click", salvarPlanejamento);
+    btnSalvarContaPagar.addEventListener("click", salvarContaPagar);
     fileInput.addEventListener("change", handleFile);
 
-    mesSelect.addEventListener("change", () => {
+    mesSelect.addEventListener("change", async () => {
       atualizarStatus();
-      if (usuarioAtual) carregarDashboard();
+      if (usuarioAtual) {
+        await carregarDashboard();
+        await carregarContasPagar();
+      }
     });
 
-    anoSelect.addEventListener("change", () => {
+    anoSelect.addEventListener("change", async () => {
       atualizarStatus();
-      if (usuarioAtual) carregarTudo();
+      if (usuarioAtual) await carregarTudo();
     });
 
     definirMesAtual();
