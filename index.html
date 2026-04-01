@@ -959,43 +959,44 @@
       }
     }
 
-    async function login() {
-      try {
-        setLoginMsg("Validando acesso...", "info");
-        const email = (loginEmail.value || "").trim().toLowerCase();
-        const senha = loginSenha.value || "";
+   async function login() {
+  try {
+    setLoginMsg("Validando acesso...", "info");
 
-        if (!email || !senha) {
-          setLoginMsg("Preencha e-mail e senha.", "err");
-          return;
-        }
+    const email = (document.getElementById("loginEmail").value || "").trim().toLowerCase();
+    const senha = document.getElementById("loginSenha").value || "";
 
-        const data = await restGet(
-          "usuarios",
-          `select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}&limit=1`
-        );
-
-        if (!data || data.length === 0) {
-          setLoginMsg("Login inválido.", "err");
-          return;
-        }
-
-        usuarioAtual = data[0];
-        localStorage.setItem("elohim_user", JSON.stringify(usuarioAtual));
-
-        userEmail.textContent = usuarioAtual.email || "-";
-        userPerfil.textContent = usuarioAtual.perfil || "-";
-        perfilBadge.textContent = usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
-
-        loginScreen.classList.add("hidden");
-        appShell.classList.remove("hidden");
-
-        aplicarPermissoes();
-        await carregarTudo();
-      } catch (erro) {
-        setLoginMsg("Erro no login: " + erro.message, "err");
-      }
+    if (!email || !senha) {
+      setLoginMsg("Preencha e-mail e senha.", "err");
+      return;
     }
+
+    const query = `select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}&limit=1`;
+    const data = await restGet("usuarios", query);
+
+    if (!data || data.length === 0) {
+      setLoginMsg("Login inválido.", "err");
+      return;
+    }
+
+    usuarioAtual = data[0];
+    localStorage.setItem("elohim_user", JSON.stringify(usuarioAtual));
+
+    document.getElementById("userEmail").textContent = usuarioAtual.email || "-";
+    document.getElementById("userPerfil").textContent = usuarioAtual.perfil || "-";
+    document.getElementById("perfilBadge").textContent =
+      usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
+
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("appShell").classList.remove("hidden");
+
+    aplicarPermissoes();
+    await carregarTudo();
+  } catch (erro) {
+    console.error("Erro no login:", erro);
+    setLoginMsg("Erro no login: " + erro.message, "err");
+  }
+}
 
     function restaurarSessao() {
       const salvo = localStorage.getItem("elohim_user");
