@@ -1,1998 +1,3867 @@
+
+
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="UTF-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Elohim Financeiro</title>
 
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
+
   <style>
+
     :root{
+
       --bg:#0b0b0b;
+
       --panel:#171717;
+
       --border:#2a2a2a;
+
       --text:#ffffff;
+
       --muted:#a8a8a8;
+
       --red:#d10000;
+
       --red-2:#ff3b3b;
+
       --green:#22c55e;
+
       --yellow:#facc15;
+
       --danger:#ef4444;
+
       --shadow:0 10px 30px rgba(0,0,0,.28);
+
       --radius:18px;
+
     }
+
 
     *{box-sizing:border-box}
+
     html,body{margin:0;padding:0}
+
     body{
+
       font-family:Arial, Helvetica, sans-serif;
+
       background:
+
         radial-gradient(circle at top left, rgba(255,0,0,.10), transparent 25%),
+
         linear-gradient(135deg,#080808,#140000);
+
       color:var(--text);
+
       min-height:100vh;
+
     }
+
 
     .hidden{display:none !important}
+
     .fade-in{animation:fadeIn .25s ease}
 
+
     @keyframes fadeIn{
+
       from{opacity:0; transform:translateY(6px)}
+
       to{opacity:1; transform:translateY(0)}
+
     }
+
 
     .login-screen{
+
       min-height:100vh;
+
       display:flex;
+
       align-items:center;
+
       justify-content:center;
+
       padding:24px;
+
     }
+
 
     .login-card{
+
       width:100%;
+
       max-width:430px;
+
       background:rgba(20,20,20,.95);
+
       border:1px solid var(--border);
+
       border-radius:22px;
+
       padding:30px;
+
       box-shadow:0 20px 60px rgba(0,0,0,.45);
+
       text-align:center;
+
       backdrop-filter:blur(12px);
+
     }
+
 
     .login-logo{
+
       background:#fff;
+
       border-radius:18px;
+
       padding:12px;
+
       display:inline-block;
+
       margin-bottom:18px;
+
     }
+
 
     .login-logo img{
+
       width:170px;
+
       display:block;
+
     }
+
 
     .login-card h2{
+
       margin:0 0 8px 0;
+
       font-size:30px;
+
     }
+
 
     .login-card p{
+
       margin:0 0 18px 0;
+
       color:var(--muted);
+
     }
+
 
     .login-card input{
+
       width:100%;
+
       padding:14px;
+
       border:none;
+
       outline:none;
+
       border-radius:12px;
+
       background:#101010;
+
       color:#fff;
+
       margin-bottom:12px;
+
       font-size:15px;
+
     }
+
 
     .login-card input:focus{
+
       box-shadow:0 0 0 2px rgba(255,59,59,.25);
+
     }
+
 
     .btn{
+
       border:none;
+
       border-radius:12px;
+
       padding:13px 16px;
+
       cursor:pointer;
+
       font-weight:bold;
+
       color:#fff;
+
       background:linear-gradient(90deg,var(--red),var(--red-2));
+
       transition:.15s ease;
+
     }
+
 
     .btn:hover{transform:translateY(-1px)}
+
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 
+
     .secondary-btn{
+
       background:#222;
+
       border:1px solid var(--border);
+
       color:#fff;
+
       padding:11px 14px;
+
       border-radius:12px;
+
       cursor:pointer;
+
       font-weight:600;
+
     }
+
 
     .small-btn{
+
       padding:8px 10px;
+
       border:none;
+
       border-radius:8px;
+
       cursor:pointer;
+
       font-size:12px;
+
       font-weight:700;
+
       color:#fff;
+
     }
+
 
     .small-green{background:#15803d}
+
     .small-red{background:#b91c1c}
+
     .small-blue{background:#1d4ed8}
-    .small-gray{background:#374151}
+
 
     #loginBtn{width:100%;font-size:15px}
+
     #loginMsg,#appMsg{
+
       margin-top:12px;
+
       font-size:14px;
+
       line-height:1.45;
+
       white-space:pre-wrap;
+
     }
 
+
     .ok{color:var(--green)}
+
     .err{color:#ff8080}
+
     .info{color:var(--yellow)}
+
 
     .app{min-height:100vh;display:flex}
 
+
     .sidebar{
+
       width:260px;
+
       background:rgba(15,15,15,.96);
+
       border-right:1px solid var(--border);
+
       padding:18px;
+
       display:flex;
+
       flex-direction:column;
+
     }
+
 
     .sidebar-logo{
+
       background:#fff;
+
       border-radius:16px;
+
       padding:10px;
+
       margin-bottom:16px;
+
     }
+
 
     .sidebar-logo img{
+
       width:150px;
+
       display:block;
+
       margin:0 auto;
+
     }
+
 
     .user-box{
+
       background:var(--panel);
+
       border:1px solid var(--border);
+
       border-radius:14px;
+
       padding:12px;
+
       margin-bottom:16px;
+
     }
+
 
     .user-email{
+
       font-size:14px;
+
       font-weight:bold;
+
       margin-bottom:4px;
+
       word-break:break-word;
+
     }
+
 
     .user-role{
+
       font-size:12px;
+
       color:var(--muted);
+
       text-transform:uppercase;
+
       letter-spacing:.4px;
+
     }
+
 
     .menu{
+
       display:flex;
+
       flex-direction:column;
+
       gap:8px;
+
       flex:1;
+
     }
+
 
     .menu-btn{
+
       width:100%;
+
       text-align:left;
+
       padding:13px 14px;
+
       border:none;
+
       border-radius:14px;
+
       cursor:pointer;
+
       background:#1a1a1a;
+
       color:#d8d8d8;
+
       font-size:14px;
+
       font-weight:600;
+
       transition:.15s ease;
+
       display:flex;
+
       align-items:center;
+
       gap:10px;
+
     }
+
 
     .menu-btn .icon{
+
       width:18px;
+
       text-align:center;
+
       opacity:.95;
+
     }
+
 
     .menu-btn:hover{
+
       background:#242424;
+
       color:#fff;
+
       transform:translateX(2px);
+
     }
+
 
     .menu-btn.active{
+
       background:linear-gradient(90deg,var(--red),var(--red-2));
+
       color:#fff;
+
       box-shadow:0 8px 18px rgba(209,0,0,.25);
+
     }
+
 
     .logout-btn{
+
       width:100%;
+
       margin-top:16px;
+
       background:#252525;
+
     }
+
 
     .main{
+
       flex:1;
+
       padding:24px;
+
       overflow-x:hidden;
+
     }
+
 
     .topbar{
+
       display:flex;
+
       justify-content:space-between;
+
       align-items:flex-start;
+
       gap:16px;
+
       margin-bottom:18px;
+
       flex-wrap:wrap;
+
     }
+
 
     .topbar h1{
+
       margin:0;
+
       font-size:32px;
+
     }
+
 
     .topbar p{
+
       margin:6px 0 0 0;
+
       color:var(--muted);
+
     }
+
 
     .badge{
+
       display:inline-block;
+
       padding:8px 12px;
+
       border-radius:999px;
+
       background:#1f1f1f;
+
       color:#ddd;
+
       font-size:12px;
+
       border:1px solid var(--border);
+
     }
+
 
     .top-filters{
+
       display:flex;
+
       gap:12px;
+
       flex-wrap:wrap;
+
       align-items:center;
+
       margin-bottom:18px;
+
     }
+
 
     .top-filters select,
+
     .top-filters input,
+
     .form-grid input,
+
     .form-grid select,
-    .form-grid textarea{
-      padding:11px 12px;
-      border:none;
-      border-radius:12px;
-      background:#111;
-      color:#fff;
-      min-width:150px;
-    }
 
     .form-grid textarea{
-      min-height:90px;
-      resize:vertical;
+
+      padding:11px 12px;
+
+      border:none;
+
+      border-radius:12px;
+
+      background:#111;
+
+      color:#fff;
+
+      min-width:150px;
+
     }
+
+
+    .form-grid textarea{
+
+      min-height:90px;
+
+      resize:vertical;
+
+    }
+
 
     .cards{
+
       display:grid;
+
       grid-template-columns:repeat(4,1fr);
+
       gap:14px;
+
       margin-bottom:20px;
+
     }
+
 
     .card{
+
       background:var(--panel);
+
       border:1px solid var(--border);
+
       border-radius:var(--radius);
+
       padding:18px;
+
       box-shadow:var(--shadow);
+
       transition:.15s ease;
+
     }
+
 
     .card:hover{
+
       transform:translateY(-2px);
+
       border-color:#343434;
+
     }
+
 
     .card-title{
+
       font-size:13px;
+
       color:var(--muted);
+
       margin-bottom:8px;
+
     }
+
 
     .card-value{
+
       font-size:24px;
+
       font-weight:bold;
+
     }
+
 
     .card-sub{
+
       margin-top:8px;
+
       font-size:12px;
+
       color:#8f8f8f;
+
     }
+
 
     .grid{
+
       display:grid;
+
       grid-template-columns:1.35fr 1fr;
+
       gap:18px;
+
       margin-bottom:20px;
+
     }
+
 
     .panel{
+
       background:var(--panel);
+
       border:1px solid var(--border);
+
       border-radius:var(--radius);
+
       padding:18px;
+
       margin-bottom:20px;
+
       box-shadow:var(--shadow);
+
     }
+
 
     .panel-head{
+
       display:flex;
+
       justify-content:space-between;
+
       align-items:center;
+
       gap:10px;
+
       margin-bottom:14px;
+
       flex-wrap:wrap;
+
     }
+
 
     .panel-head h3{
+
       margin:0;
+
       font-size:20px;
+
     }
+
 
     .chart-wrap{
+
       background:linear-gradient(180deg, #ffffff 0%, #f4f4f6 100%);
+
       border-radius:16px;
+
       padding:16px;
+
       min-height:390px;
+
       height:390px;
+
       box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+
     }
+
 
     .status-grid{
+
       display:grid;
+
       grid-template-columns:repeat(3,1fr);
+
       gap:12px;
+
     }
+
 
     .status-item{
+
       background:#101010;
+
       border:1px solid var(--border);
+
       border-radius:14px;
+
       padding:14px;
+
     }
+
 
     .status-item .label{
+
       color:var(--muted);
+
       font-size:12px;
+
       margin-bottom:8px;
+
     }
+
 
     .status-item .value{
+
       font-size:15px;
+
       font-weight:bold;
+
     }
+
 
     .alert-list{
+
       display:grid;
+
       gap:10px;
+
     }
+
 
     .alert-item{
+
       background:#161616;
+
       border:1px solid var(--border);
+
       border-left:4px solid var(--danger);
+
       border-radius:12px;
+
       padding:12px 14px;
+
     }
 
+
     .alert-item.ok{
+
       border-left-color:var(--green);
+
     }
+
 
     .table-wrap{overflow-x:auto}
 
+
     table{
+
       width:100%;
+
       border-collapse:collapse;
+
       color:#fff;
+
     }
 
+
     th,td{
+
       padding:12px 10px;
+
       border-bottom:1px solid rgba(255,255,255,.06);
+
       text-align:left;
+
       font-size:14px;
+
       vertical-align:middle;
+
     }
+
 
     th{color:var(--muted)}
 
+
     .success{color:var(--green);font-weight:bold}
+
     .danger{color:var(--danger);font-weight:bold}
+
     .muted{color:#9a9a9a}
+
     .tab-section{display:none}
+
     .tab-section.active{display:block}
 
+
     .meta-grid{
+
       display:grid;
+
       grid-template-columns:repeat(4,1fr);
+
       gap:12px;
+
     }
+
 
     .meta-item{
+
       background:#101010;
+
       border:1px solid var(--border);
+
       border-radius:14px;
+
       padding:12px;
+
     }
+
 
     .meta-item label{
+
       display:block;
+
       color:var(--muted);
+
       font-size:13px;
+
       margin-bottom:8px;
+
     }
+
 
     .row-actions{
+
       display:flex;
+
       gap:10px;
+
       flex-wrap:wrap;
+
       margin-bottom:16px;
+
     }
+
 
     .form-grid{
+
       display:grid;
+
       grid-template-columns:repeat(4,1fr);
+
       gap:12px;
+
     }
+
 
     .form-grid .full{
+
       grid-column:1 / -1;
+
     }
+
 
     .check-row{
+
       display:flex;
+
       gap:20px;
+
       align-items:center;
+
       flex-wrap:wrap;
+
       padding:8px 0;
+
     }
+
 
     .check-row label{
+
       display:flex;
+
       align-items:center;
+
       gap:8px;
+
       color:#ddd;
+
       font-size:14px;
+
     }
+
 
     .pill{
+
       display:inline-block;
+
       padding:6px 10px;
+
       border-radius:999px;
+
       font-size:12px;
+
       font-weight:700;
+
+      text-transform:capitalize;
+
     }
+
 
     .pill-pendente{background:#78350f;color:#fde68a}
+
     .pill-pago{background:#14532d;color:#bbf7d0}
+
     .pill-vencido{background:#7f1d1d;color:#fecaca}
 
-    @media (max-width:1100px){
-      .cards{grid-template-columns:repeat(2,1fr)}
-      .grid{grid-template-columns:1fr}
-      .meta-grid{grid-template-columns:repeat(2,1fr)}
-      .status-grid{grid-template-columns:1fr}
-      .form-grid{grid-template-columns:repeat(2,1fr)}
+
+    .readonly-input{
+
+      width:100%;
+
+      padding:10px;
+
+      border:none;
+
+      border-radius:10px;
+
+      background:#2a2a2a;
+
+      color:#fff;
+
     }
+
+
+    .edit-input{
+
+      width:100%;
+
+      padding:10px;
+
+      border:none;
+
+      border-radius:10px;
+
+      background:#1b1b1b;
+
+      color:#fff;
+
+    }
+
+
+    @media (max-width:1100px){
+
+      .cards{grid-template-columns:repeat(2,1fr)}
+
+      .grid{grid-template-columns:1fr}
+
+      .meta-grid{grid-template-columns:repeat(2,1fr)}
+
+      .status-grid{grid-template-columns:1fr}
+
+      .form-grid{grid-template-columns:repeat(2,1fr)}
+
+    }
+
 
     @media (max-width:850px){
+
       .app{flex-direction:column}
+
       .sidebar{width:100%}
+
     }
+
 
     @media (max-width:600px){
+
       .cards{grid-template-columns:1fr}
+
       .meta-grid{grid-template-columns:1fr}
+
       .form-grid{grid-template-columns:1fr}
+
       .main{padding:16px}
+
       .login-card{padding:22px}
+
       .chart-wrap{height:340px; min-height:340px;}
+
     }
+
   </style>
+
 </head>
+
 <body>
+
   <section id="loginScreen" class="login-screen">
+
     <div class="login-card">
+
       <div class="login-logo">
+
         <img src="logo-elohim.png" alt="Elohim">
+
       </div>
+
       <h2>Entrar</h2>
+
       <p>Acesse o sistema financeiro da Elohim</p>
+
       <input id="loginEmail" type="email" placeholder="Seu e-mail">
+
       <input id="loginSenha" type="password" placeholder="Sua senha">
+
       <button id="loginBtn" class="btn" type="button">Entrar</button>
+
       <div id="loginMsg" class="info">Pronto para login.</div>
+
     </div>
+
   </section>
 
+
   <section id="appShell" class="app hidden">
+
     <aside class="sidebar">
+
       <div class="sidebar-logo">
+
         <img src="logo-elohim.png" alt="Elohim">
+
       </div>
+
 
       <div class="user-box">
+
         <div class="user-email" id="userEmail">-</div>
+
         <div class="user-role" id="userPerfil">-</div>
+
       </div>
+
 
       <div class="menu">
+
         <button class="menu-btn active" data-tab="dashboard" type="button"><span class="icon">📊</span><span>Dashboard</span></button>
+
         <button class="menu-btn" data-tab="contas-pagar" type="button"><span class="icon">🧾</span><span>Contas a Pagar</span></button>
+
         <button class="menu-btn" data-tab="faturamento" type="button"><span class="icon">💰</span><span>Faturamento</span></button>
+
         <button class="menu-btn" data-tab="metas" type="button"><span class="icon">🎯</span><span>Metas</span></button>
+
         <button class="menu-btn" data-tab="importar" type="button"><span class="icon">📂</span><span>Importar Planilha</span></button>
+
         <button class="menu-btn" data-tab="resumo" type="button"><span class="icon">📈</span><span>Resumo Anual</span></button>
+
         <button class="menu-btn" data-tab="planejamento" type="button"><span class="icon">📅</span><span>Planejamento</span></button>
+
       </div>
+
 
       <button id="btnSair" class="btn logout-btn" type="button">Sair</button>
+
     </aside>
 
+
     <main class="main">
+
       <div class="topbar">
+
         <div>
+
           <h1>Sistema Financeiro Elohim</h1>
+
           <p>Controle financeiro mensal com visão estratégica</p>
+
         </div>
+
         <div class="badge" id="perfilBadge">Perfil</div>
+
       </div>
+
 
       <div class="top-filters">
+
         <select id="mesSelect">
+
           <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
+
           <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
+
           <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+
         </select>
+
 
         <select id="anoSelect">
+
           <option>2024</option>
+
           <option>2025</option>
+
           <option selected>2026</option>
+
           <option>2027</option>
+
         </select>
 
+
         <button id="btnCarregarMes" class="btn" type="button">Carregar mês</button>
+
       </div>
 
+
       <div class="row-actions">
+
         <button id="btnExportarRelatorio" class="secondary-btn" type="button">Exportar relatório do mês</button>
+
       </div>
+
 
       <div id="appMsg" class="info"></div>
 
+
       <section id="tab-dashboard" class="tab-section active fade-in">
+
         <section class="cards">
+
           <div class="card"><div class="card-title">Faturamento</div><div class="card-value" id="fat">R$ 0,00</div><div class="card-sub">Receita do mês atual</div></div>
+
           <div class="card"><div class="card-title">Gastos</div><div class="card-value" id="gas">R$ 0,00</div><div class="card-sub">Total por categoria</div></div>
+
           <div class="card"><div class="card-title">Saldo</div><div class="card-value" id="saldo">R$ 0,00</div><div class="card-sub">Faturamento - gastos</div></div>
+
           <div class="card"><div class="card-title">Meta atingida</div><div class="card-value" id="metaAtingida">0%</div><div class="card-sub">Em relação ao limite definido</div></div>
+
         </section>
 
+
         <section class="grid">
+
           <div class="panel">
+
             <div class="panel-head"><h3>Gastos x Meta por Categoria</h3><div class="badge">Horizontal BI</div></div>
+
             <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+
           </div>
+
 
           <div class="panel">
+
             <div class="panel-head"><h3>Distribuição dos Gastos</h3><div class="badge">Donut Premium</div></div>
+
             <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+
           </div>
+
         </section>
 
+
         <section class="panel">
+
           <div class="panel-head"><h3>Evolução Mensal</h3><div class="badge">Ano</div></div>
+
           <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+
         </section>
 
+
         <section class="panel">
+
           <div class="panel-head"><h3>Ranking Anual de Categorias</h3><div class="badge">Top gastos</div></div>
+
           <div class="chart-wrap"><canvas id="rankingChart"></canvas></div>
+
         </section>
+
 
         <section class="grid">
-          <div class="panel">
-            <div class="panel-head"><h3>Status do mês</h3><div class="badge">Resumo</div></div>
-            <div class="status-grid">
-              <div class="status-item"><div class="label">Mês selecionado</div><div class="value" id="statusMes">-</div></div>
-              <div class="status-item"><div class="label">Última atualização</div><div class="value" id="statusAtualizacao">Nenhuma</div></div>
-              <div class="status-item"><div class="label">Situação</div><div class="value" id="statusSituacao">Aguardando dados</div></div>
-            </div>
-          </div>
 
           <div class="panel">
-            <div class="panel-head"><h3>Alertas</h3><div class="badge">Automático</div></div>
-            <div id="alertList" class="alert-list"><div class="muted">Nenhum alerta disponível.</div></div>
+
+            <div class="panel-head"><h3>Status do mês</h3><div class="badge">Resumo</div></div>
+
+            <div class="status-grid">
+
+              <div class="status-item"><div class="label">Mês selecionado</div><div class="value" id="statusMes">-</div></div>
+
+              <div class="status-item"><div class="label">Última atualização</div><div class="value" id="statusAtualizacao">Nenhuma</div></div>
+
+              <div class="status-item"><div class="label">Situação</div><div class="value" id="statusSituacao">Aguardando dados</div></div>
+
+            </div>
+
           </div>
+
+
+          <div class="panel">
+
+            <div class="panel-head"><h3>Alertas</h3><div class="badge">Automático</div></div>
+
+            <div id="alertList" class="alert-list"><div class="muted">Nenhum alerta disponível.</div></div>
+
+          </div>
+
         </section>
+
 
         <section class="panel table-wrap">
+
           <div class="panel-head"><h3>Resumo por Categoria</h3><div class="badge">Detalhado</div></div>
+
           <table>
+
             <thead>
+
               <tr><th>Categoria</th><th>Gasto</th><th>Meta %</th><th>Meta R$</th><th>Diferença</th><th>Situação</th></tr>
+
             </thead>
+
             <tbody id="tabelaResumo">
+
               <tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>
+
             </tbody>
+
           </table>
+
         </section>
+
       </section>
+
 
       <section id="tab-contas-pagar" class="tab-section fade-in">
+
         <section class="cards">
+
           <div class="card"><div class="card-title">Total Pendente</div><div class="card-value" id="cpPendente">R$ 0,00</div><div class="card-sub">Contas ainda não pagas</div></div>
+
           <div class="card"><div class="card-title">Total Pago</div><div class="card-value" id="cpPago">R$ 0,00</div><div class="card-sub">Contas já quitadas</div></div>
+
           <div class="card"><div class="card-title">Total Vencido</div><div class="card-value" id="cpVencido">R$ 0,00</div><div class="card-sub">Contas em atraso</div></div>
+
           <div class="card"><div class="card-title">Qtd. Contas</div><div class="card-value" id="cpQuantidade">0</div><div class="card-sub">Registros no mês/ano</div></div>
+
         </section>
 
+
         <section class="panel">
+
           <div class="panel-head">
+
             <h3 id="cpTituloFormulario">Cadastrar Conta a Pagar</h3>
+
             <div class="badge">Financeiro</div>
+
           </div>
+
 
           <div class="form-grid">
+
             <input id="cpFornecedor" placeholder="Fornecedor">
+
             <input id="cpDescricao" placeholder="Descrição">
+
             <select id="cpCategoria">
+
               <option value="">Categoria</option>
+
               <option value="MC">Materiais de Consumo</option>
+
               <option value="MP">Matéria-Prima</option>
+
               <option value="TERC">Terceirizações</option>
+
               <option value="FRETE">Fretes</option>
+
               <option value="DESP">Despesas Fixas</option>
+
               <option value="TAR">Tarifas Bancárias</option>
+
               <option value="PREST">Prestações de Serviço</option>
+
               <option value="FOLHA">Folha de Pagamento</option>
+
               <option value="COMIS">Comissões</option>
+
               <option value="IMPOS">Impostos</option>
+
               <option value="RESC">Rescisões</option>
+
               <option value="MANUT">Manutenções</option>
+
             </select>
+
             <input id="cpDocumento" placeholder="Pedido / NFe / FAT">
 
+
             <input id="cpValor" type="number" step="0.01" placeholder="Valor">
+
             <input id="cpVencimento" type="date">
+
             <select id="cpStatus">
+
               <option value="pendente">Pendente</option>
+
               <option value="pago">Pago</option>
+
               <option value="vencido">Vencido</option>
+
             </select>
+
             <div class="check-row">
+
               <label><input id="cpBoleto" type="checkbox"> Boleto recebido</label>
+
               <label><input id="cpNota" type="checkbox"> Nota fiscal recebida</label>
+
             </div>
 
+
             <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
+
           </div>
+
 
           <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+
             <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
+
             <button id="btnCancelarEdicaoConta" class="secondary-btn hidden" type="button">Cancelar edição</button>
+
           </div>
+
         </section>
 
+
         <section class="panel table-wrap">
+
           <div class="panel-head">
+
             <h3>Contas Cadastradas</h3>
+
             <div class="badge">Mês selecionado</div>
+
           </div>
+
           <table>
+
             <thead>
+
               <tr>
+
                 <th>Fornecedor</th>
+
                 <th>Descrição</th>
+
                 <th>Categoria</th>
+
                 <th>Documento</th>
+
                 <th>Valor</th>
+
                 <th>Vencimento</th>
+
                 <th>Status</th>
+
                 <th>Boleto</th>
+
                 <th>NF</th>
+
                 <th>Ações</th>
+
               </tr>
+
             </thead>
+
             <tbody id="tabelaContasPagar">
+
               <tr><td colspan="10" class="muted">Nenhuma conta cadastrada.</td></tr>
+
             </tbody>
+
           </table>
+
         </section>
+
       </section>
+
 
       <section id="tab-faturamento" class="tab-section fade-in">
+
         <section class="panel">
+
           <div class="panel-head"><h3>Faturamento do mês</h3><div class="badge">Admin</div></div>
+
           <div class="top-filters">
+
             <input id="faturamentoInput" type="number" step="0.01" placeholder="Faturamento do mês">
+
             <button id="btnSalvarFaturamento" class="btn" type="button">Salvar faturamento</button>
+
           </div>
+
         </section>
+
       </section>
+
 
       <section id="tab-metas" class="tab-section fade-in">
+
         <section class="panel">
+
           <div class="panel-head"><h3>Metas por categoria (% do faturamento)</h3><div class="badge">Admin</div></div>
+
           <div id="metaGrid" class="meta-grid"></div>
+
           <div style="margin-top:16px;"><button id="btnSalvarMetas" class="btn" type="button">Salvar metas</button></div>
+
         </section>
+
       </section>
+
 
       <section id="tab-importar" class="tab-section fade-in">
+
         <section class="panel">
+
           <div class="panel-head"><h3>Importar planilha</h3><div class="badge">Admin</div></div>
+
           <input id="fileInput" type="file" accept=".xlsx,.xls">
+
         </section>
+
       </section>
+
 
       <section id="tab-resumo" class="tab-section fade-in">
+
         <section class="panel table-wrap">
+
           <div class="panel-head"><h3>Resumo Anual</h3><div class="badge">Ano</div></div>
+
           <table>
+
             <thead><tr><th>Mês</th><th>Faturamento</th><th>Gastos</th><th>Saldo</th></tr></thead>
+
             <tbody id="tabelaResumoAnual">
+
               <tr><td colspan="4" class="muted">Nenhum dado anual carregado.</td></tr>
+
             </tbody>
+
           </table>
+
         </section>
+
       </section>
+
 
       <section id="tab-planejamento" class="tab-section fade-in">
+
         <section class="panel">
+
           <div class="panel-head"><h3>Planejamento Financeiro (12 semanas)</h3><div class="badge">Fluxo futuro</div></div>
+
           <div class="top-filters">
+
             <input id="saldoInicial" type="number" placeholder="Saldo atual em caixa">
+
             <button id="btnSalvarPlanejamento" class="btn" type="button">Salvar</button>
+
           </div>
+
         </section>
+
 
         <section class="panel table-wrap">
+
           <table>
+
             <thead>
+
               <tr><th>Semana</th><th>Entradas (R$)</th><th>Saídas (R$)</th><th>Saldo Projetado</th></tr>
+
             </thead>
+
             <tbody id="tabelaPlanejamento"></tbody>
+
           </table>
+
         </section>
+
       </section>
+
     </main>
+
   </section>
 
+
   <script>
+
     const API_BASE = "https://qaqszkhkizeifwkhumka.supabase.co";
+
     const API_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
+
     const nomesCategorias = {
+
       MC: "Materiais de Consumo",
+
       MP: "Matéria-Prima",
+
       TERC: "Terceirizações",
+
       FRETE: "Fretes",
+
       DESP: "Despesas Fixas",
+
       TAR: "Tarifas Bancárias",
+
       PREST: "Prestações de Serviço",
+
       FOLHA: "Folha de Pagamento",
+
       COMIS: "Comissões",
+
       IMPOS: "Impostos",
+
       RESC: "Rescisões",
+
       MANUT: "Manutenções"
+
     };
+
 
     const categoriasPadrao = Object.keys(nomesCategorias);
+
     const metasPadrao = {
+
       MC: 20, MP: 18, TERC: 8, FRETE: 5, DESP: 6, TAR: 1,
+
       PREST: 4, FOLHA: 15, COMIS: 2, IMPOS: 5, RESC: 1, MANUT: 4
+
     };
 
+
     let usuarioAtual = null;
+
     let barChart = null;
+
     let pieChart = null;
+
     let lineChart = null;
+
     let rankingChart = null;
+
     let ultimoContexto = null;
+
     let contaPagarEditandoId = null;
 
-    const loginScreen = document.getElementById("loginScreen");
-    const appShell = document.getElementById("appShell");
-    const loginEmail = document.getElementById("loginEmail");
-    const loginSenha = document.getElementById("loginSenha");
-    const loginBtn = document.getElementById("loginBtn");
-    const loginMsg = document.getElementById("loginMsg");
-
-    const btnSair = document.getElementById("btnSair");
-    const userEmail = document.getElementById("userEmail");
-    const userPerfil = document.getElementById("userPerfil");
-    const perfilBadge = document.getElementById("perfilBadge");
-
-    const mesSelect = document.getElementById("mesSelect");
-    const anoSelect = document.getElementById("anoSelect");
-    const btnCarregarMes = document.getElementById("btnCarregarMes");
-    const appMsg = document.getElementById("appMsg");
-    const btnExportarRelatorio = document.getElementById("btnExportarRelatorio");
-
-    const faturamentoInput = document.getElementById("faturamentoInput");
-    const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
-    const btnSalvarMetas = document.getElementById("btnSalvarMetas");
-    const fileInput = document.getElementById("fileInput");
-    const btnSalvarPlanejamento = document.getElementById("btnSalvarPlanejamento");
-    const btnSalvarContaPagar = document.getElementById("btnSalvarContaPagar");
-    const btnCancelarEdicaoConta = document.getElementById("btnCancelarEdicaoConta");
 
     function setLoginMsg(texto, tipo = "info") {
-      loginMsg.className = tipo;
-      loginMsg.textContent = texto;
+
+      const el = document.getElementById("loginMsg");
+
+      if (!el) return;
+
+      el.className = tipo;
+
+      el.textContent = texto;
+
     }
+
 
     function setAppMsg(texto, tipo = "info") {
-      appMsg.className = tipo;
-      appMsg.textContent = texto;
+
+      const el = document.getElementById("appMsg");
+
+      if (!el) return;
+
+      el.className = tipo;
+
+      el.textContent = texto;
+
     }
+
 
     function nomeCategoria(sigla) {
+
       return nomesCategorias[sigla] || sigla || "-";
+
     }
+
 
     function moeda(valor) {
+
       return Number(valor || 0).toLocaleString("pt-BR", {
+
         style: "currency",
+
         currency: "BRL"
+
       });
+
     }
+
 
     function num(valor) {
+
       return Math.round(Number(valor || 0) * 100) / 100;
+
     }
+
 
     function getMesAno() {
-      return { mes: mesSelect.value, ano: anoSelect.value };
+
+      const mesEl = document.getElementById("mesSelect");
+
+      const anoEl = document.getElementById("anoSelect");
+
+      return { mes: mesEl.value, ano: anoEl.value };
+
     }
+
 
     function hojeISO() {
+
       return new Date().toISOString().slice(0,10);
+
     }
+
 
     function classStatusConta(status) {
+
       if (status === "pago") return "pill pill-pago";
+
       if (status === "vencido") return "pill pill-vencido";
+
       return "pill pill-pendente";
+
     }
+
 
     async function restGet(tabela, query) {
+
       const res = await fetch(`${API_BASE}/rest/v1/${tabela}?${query}`, {
+
         headers: { apikey: API_KEY, Authorization: "Bearer " + API_KEY }
+
       });
+
       const data = await res.json();
+
       if (!res.ok) throw new Error(data?.message || "Erro GET");
+
       return data;
+
     }
+
 
     async function restInsert(tabela, payload) {
+
       const res = await fetch(`${API_BASE}/rest/v1/${tabela}`, {
+
         method: "POST",
+
         headers: {
+
           apikey: API_KEY,
+
           Authorization: "Bearer " + API_KEY,
+
           "Content-Type": "application/json",
+
           Prefer: "return=representation"
+
         },
+
         body: JSON.stringify(payload)
+
       });
+
       const data = await res.json();
+
       if (!res.ok) throw new Error(data?.message || "Erro INSERT");
+
       return data;
+
     }
+
 
     async function restPatch(tabela, filtros, payload) {
+
       const res = await fetch(`${API_BASE}/rest/v1/${tabela}?${filtros}`, {
+
         method: "PATCH",
+
         headers: {
+
           apikey: API_KEY,
+
           Authorization: "Bearer " + API_KEY,
+
           "Content-Type": "application/json",
+
           Prefer: "return=representation"
+
         },
+
         body: JSON.stringify(payload)
+
       });
+
       const data = await res.json();
+
       if (!res.ok) throw new Error(data?.message || "Erro PATCH");
+
       return data;
+
     }
+
 
     async function restDelete(tabela, filtros) {
+
       const res = await fetch(`${API_BASE}/rest/v1/${tabela}?${filtros}`, {
+
         method: "DELETE",
+
         headers: { apikey: API_KEY, Authorization: "Bearer " + API_KEY }
+
       });
+
       if (!res.ok) {
+
         let data = {};
+
         try { data = await res.json(); } catch {}
+
         throw new Error(data?.message || "Erro DELETE");
+
       }
+
     }
 
-   async function login() {
-  try {
-    setLoginMsg("Validando acesso...", "info");
 
-    const email = (document.getElementById("loginEmail").value || "").trim().toLowerCase();
-    const senha = document.getElementById("loginSenha").value || "";
-
-    if (!email || !senha) {
-      setLoginMsg("Preencha e-mail e senha.", "err");
-      return;
-    }
-
-    const query = `select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}&limit=1`;
-    const data = await restGet("usuarios", query);
-
-    if (!data || data.length === 0) {
-      setLoginMsg("Login inválido.", "err");
-      return;
-    }
-
-    usuarioAtual = data[0];
-    localStorage.setItem("elohim_user", JSON.stringify(usuarioAtual));
-
-    document.getElementById("userEmail").textContent = usuarioAtual.email || "-";
-    document.getElementById("userPerfil").textContent = usuarioAtual.perfil || "-";
-    document.getElementById("perfilBadge").textContent =
-      usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
-
-    document.getElementById("loginScreen").classList.add("hidden");
-    document.getElementById("appShell").classList.remove("hidden");
-
-    aplicarPermissoes();
-    await carregarTudo();
-  } catch (erro) {
-    console.error("Erro no login:", erro);
-    setLoginMsg("Erro no login: " + erro.message, "err");
-  }
-}
-
-    function restaurarSessao() {
-      const salvo = localStorage.getItem("elohim_user");
-      if (!salvo) return;
+    async function login() {
 
       try {
-        usuarioAtual = JSON.parse(salvo);
-        userEmail.textContent = usuarioAtual.email || "-";
-        userPerfil.textContent = usuarioAtual.perfil || "-";
-        perfilBadge.textContent = usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
 
-        loginScreen.classList.add("hidden");
-        appShell.classList.remove("hidden");
+        setLoginMsg("Validando acesso...", "info");
+
+
+        const email = (document.getElementById("loginEmail").value || "").trim().toLowerCase();
+
+        const senha = document.getElementById("loginSenha").value || "";
+
+
+        if (!email || !senha) {
+
+          setLoginMsg("Preencha e-mail e senha.", "err");
+
+          return;
+
+        }
+
+
+        const query = `select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}&limit=1`;
+
+        const data = await restGet("usuarios", query);
+
+
+        if (!data || data.length === 0) {
+
+          setLoginMsg("Login inválido.", "err");
+
+          return;
+
+        }
+
+
+        usuarioAtual = data[0];
+
+        localStorage.setItem("elohim_user", JSON.stringify(usuarioAtual));
+
+
+        document.getElementById("userEmail").textContent = usuarioAtual.email || "-";
+
+        document.getElementById("userPerfil").textContent = usuarioAtual.perfil || "-";
+
+        document.getElementById("perfilBadge").textContent =
+
+          usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
+
+
+        document.getElementById("loginScreen").classList.add("hidden");
+
+        document.getElementById("appShell").classList.remove("hidden");
+
 
         aplicarPermissoes();
-        carregarTudo();
-      } catch {
-        localStorage.removeItem("elohim_user");
+
+        await carregarTudo();
+
+      } catch (erro) {
+
+        console.error("Erro no login:", erro);
+
+        setLoginMsg("Erro no login: " + erro.message, "err");
+
       }
+
     }
+
+
+    function restaurarSessao() {
+
+      const salvo = localStorage.getItem("elohim_user");
+
+      if (!salvo) return;
+
+
+      try {
+
+        usuarioAtual = JSON.parse(salvo);
+
+        document.getElementById("userEmail").textContent = usuarioAtual.email || "-";
+
+        document.getElementById("userPerfil").textContent = usuarioAtual.perfil || "-";
+
+        document.getElementById("perfilBadge").textContent =
+
+          usuarioAtual.perfil === "admin" ? "Administrador" : "Visualização";
+
+
+        document.getElementById("loginScreen").classList.add("hidden");
+
+        document.getElementById("appShell").classList.remove("hidden");
+
+
+        aplicarPermissoes();
+
+        carregarTudo();
+
+      } catch {
+
+        localStorage.removeItem("elohim_user");
+
+      }
+
+    }
+
 
     function logout() {
+
       localStorage.removeItem("elohim_user");
+
       location.reload();
+
     }
+
 
     function ativarAbas() {
+
       const botoes = document.querySelectorAll(".menu-btn");
+
       const abas = document.querySelectorAll(".tab-section");
 
+
       botoes.forEach(botao => {
+
         botao.addEventListener("click", () => {
+
           if (botao.classList.contains("hidden")) return;
 
+
           botoes.forEach(b => b.classList.remove("active"));
+
           abas.forEach(a => {
+
             a.classList.remove("active");
+
             a.classList.remove("fade-in");
+
           });
 
+
           botao.classList.add("active");
+
           const tab = botao.dataset.tab;
+
           const secao = document.getElementById(`tab-${tab}`);
+
           if (secao) {
+
             secao.classList.add("active");
+
             requestAnimationFrame(() => secao.classList.add("fade-in"));
+
           }
+
         });
+
       });
+
     }
+
 
     function aplicarPermissoes() {
+
       const isAdmin = usuarioAtual?.perfil === "admin";
 
+
       document.querySelector('[data-tab="faturamento"]').classList.toggle("hidden", !isAdmin);
+
       document.querySelector('[data-tab="metas"]').classList.toggle("hidden", !isAdmin);
+
       document.querySelector('[data-tab="importar"]').classList.toggle("hidden", !isAdmin);
 
-      btnSalvarFaturamento.disabled = !isAdmin;
-      btnSalvarMetas.disabled = !isAdmin;
-      faturamentoInput.disabled = !isAdmin;
-      fileInput.disabled = !isAdmin;
-      btnSalvarContaPagar.disabled = !isAdmin;
+
+      document.getElementById("btnSalvarFaturamento").disabled = !isAdmin;
+
+      document.getElementById("btnSalvarMetas").disabled = !isAdmin;
+
+      document.getElementById("faturamentoInput").disabled = !isAdmin;
+
+      document.getElementById("fileInput").disabled = !isAdmin;
+
+      document.getElementById("btnSalvarContaPagar").disabled = !isAdmin;
+
     }
+
 
     async function garantirMes(mes, ano) {
+
       const data = await restGet("meses", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=1`);
+
       if (!data || data.length === 0) {
+
         await restInsert("meses", [{ mes, ano, faturamento: 0 }]);
+
       }
+
     }
+
 
     async function garantirMetas(mes, ano) {
+
       const data = await restGet("metas", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+
       if (data && data.length > 0) return data;
 
-      const payload = categoriasPadrao.map(cat => ({
-        mes, ano, categoria: cat, meta: metasPadrao[cat] || 0
-      }));
+
+      const payload = categoriasPadrao.map(cat => ({ mes, ano, categoria: cat, meta: metasPadrao[cat] || 0 }));
+
       await restInsert("metas", payload);
+
       return payload;
+
     }
+
 
     function atualizarStatus(ultima = "Nenhuma", situacao = "Aguardando dados") {
+
       const { mes, ano } = getMesAno();
+
       document.getElementById("statusMes").textContent = `${mes}/${ano}`;
+
       document.getElementById("statusAtualizacao").textContent = ultima;
+
       document.getElementById("statusSituacao").textContent = situacao;
+
     }
+
 
     function calcularMetaValor(metaPct, faturamento) {
+
       return num((Number(metaPct || 0) / 100) * Number(faturamento || 0));
+
     }
+
 
     function atualizarCards(totalGastos, faturamento, metasPct) {
+
       const totalMetaValor = Object.values(metasPct).reduce((acc, pct) => acc + calcularMetaValor(pct, faturamento), 0);
+
       const atingida = totalMetaValor > 0 ? Math.round((totalGastos / totalMetaValor) * 100) : 0;
 
+
       document.getElementById("fat").textContent = moeda(faturamento);
+
       document.getElementById("gas").textContent = moeda(totalGastos);
+
       document.getElementById("saldo").textContent = moeda(faturamento - totalGastos);
+
       document.getElementById("metaAtingida").textContent = `${atingida}%`;
+
     }
+
 
     function montarTabela(categorias, metasPct, faturamento) {
+
       const tbody = document.getElementById("tabelaResumo");
+
       const keys = Object.keys(categorias);
 
+
       if (!keys.length) {
+
         tbody.innerHTML = '<tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>';
+
         return;
+
       }
+
 
       tbody.innerHTML = keys.map(cat => {
+
         const gasto = num(categorias[cat] || 0);
+
         const pct = num(metasPct[cat] || 0);
+
         const metaValor = calcularMetaValor(pct, faturamento);
+
         const dif = num(gasto - metaValor);
+
         const ok = dif <= 0;
 
+
         return `
+
           <tr>
+
             <td>${nomeCategoria(cat)}</td>
+
             <td>${moeda(gasto)}</td>
+
             <td>${pct.toFixed(2)}%</td>
+
             <td>${moeda(metaValor)}</td>
+
             <td class="${ok ? "success" : "danger"}">${moeda(dif)}</td>
+
             <td class="${ok ? "success" : "danger"}">${ok ? "Dentro da meta" : "Acima da meta"}</td>
+
           </tr>
+
         `;
+
       }).join("");
+
     }
+
 
     function montarAlertas(categorias, metasPct, faturamento) {
+
       const alertList = document.getElementById("alertList");
+
       const keys = Object.keys(categorias);
+
 
       if (!keys.length) {
+
         alertList.innerHTML = '<div class="muted">Nenhum alerta disponível.</div>';
+
         return;
+
       }
+
 
       const acima = [];
+
       keys.forEach(cat => {
+
         const gasto = num(categorias[cat] || 0);
+
         const metaValor = calcularMetaValor(metasPct[cat] || 0, faturamento);
+
         const dif = num(gasto - metaValor);
+
         if (dif > 0) acima.push({ cat, dif });
+
       });
+
 
       if (!acima.length) {
+
         alertList.innerHTML = `<div class="alert-item ok"><strong>Tudo sob controle.</strong><br>Nenhuma categoria acima da meta.</div>`;
+
         return;
+
       }
+
 
       alertList.innerHTML = acima.map(item => `
+
         <div class="alert-item">
+
           <strong>${nomeCategoria(item.cat)}</strong><br>
+
           Acima da meta em ${moeda(item.dif)}
+
         </div>
+
       `).join("");
+
     }
+
 
     function montarMetaGrid(metasPct) {
+
       const grid = document.getElementById("metaGrid");
+
       grid.innerHTML = categoriasPadrao.map(cat => `
+
         <div class="meta-item">
+
           <label>${nomeCategoria(cat)} (%)</label>
+
           <input type="number" step="0.01" data-cat="${cat}" value="${Number(metasPct[cat] || 0)}">
+
         </div>
+
       `).join("");
 
+
       if (usuarioAtual?.perfil !== "admin") {
+
         document.querySelectorAll("#metaGrid input").forEach(i => i.disabled = true);
+
       }
+
     }
+
 
     function capturarMetas() {
+
       const metas = {};
+
       document.querySelectorAll("#metaGrid input").forEach(input => {
+
         metas[input.dataset.cat] = num(input.value || 0);
+
       });
+
       return metas;
+
     }
+
 
     function desenharGraficos(categorias, metasPct, faturamento) {
+
       const keys = Object.keys(categorias);
+
       const labels = keys.map(k => nomeCategoria(k));
+
       const valores = keys.map(k => num(categorias[k] || 0));
+
       const metas = keys.map(k => calcularMetaValor(metasPct[k] || 0, faturamento));
 
+
       if (barChart) barChart.destroy();
+
       if (pieChart) pieChart.destroy();
 
+
       barChart = new Chart(document.getElementById("barChart"), {
+
         type: "bar",
+
         data: {
+
           labels,
+
           datasets: [
+
             {
+
               label: "Gasto real",
+
               data: valores,
+
               borderRadius: 12,
+
               borderSkipped: false,
+
               barThickness: 18,
+
               backgroundColor: (ctx) => {
+
                 const chart = ctx.chart;
+
                 const {ctx: canvasCtx, chartArea} = chart;
+
                 if (!chartArea) return "#ff3d3d";
+
                 const gradient = canvasCtx.createLinearGradient(0, 0, chartArea.right, 0);
+
                 gradient.addColorStop(0, "#ff3d3d");
+
                 gradient.addColorStop(0.45, "#ff7a18");
+
                 gradient.addColorStop(1, "#ffd200");
+
                 return gradient;
+
               }
+
             },
+
             {
+
               type: "line",
+
               label: "Meta",
+
               data: metas,
+
               borderColor: "#00e5c3",
+
               backgroundColor: "#00e5c3",
+
               borderWidth: 3,
+
               tension: 0.4,
+
               pointBackgroundColor: "#00e5c3",
+
               pointRadius: 4,
+
               pointHoverRadius: 6,
+
               fill: false
+
             }
+
           ]
+
         },
+
         options: {
+
           indexAxis: "y",
+
           maintainAspectRatio: false,
+
           responsive: true,
+
           interaction: { mode: "index", intersect: false },
+
           plugins: {
+
             legend: {
+
               position: "top",
+
               labels: {
+
                 color: "#1f2937",
+
                 usePointStyle: true,
+
                 pointStyle: "circle",
+
                 boxWidth: 10,
+
                 boxHeight: 10,
+
                 padding: 18,
+
                 font: { size: 12, weight: "600" }
+
               }
+
             },
+
             tooltip: {
+
               backgroundColor: "rgba(17,24,39,0.96)",
+
               titleColor: "#fff",
+
               bodyColor: "#fff",
+
               borderColor: "rgba(255,255,255,0.08)",
+
               borderWidth: 1,
+
               padding: 12,
+
               callbacks: { label: (ctx) => `${ctx.dataset.label}: ${moeda(ctx.raw)}` }
+
             }
+
           },
+
           scales: {
+
             x: {
+
               beginAtZero: true,
+
               ticks: { color: "#374151", callback: (value) => moeda(value) },
+
               grid: { color: "rgba(107,114,128,0.15)" },
+
               border: { display: false }
+
             },
+
             y: {
+
               ticks: { color: "#374151", font: { size: 11, weight: "600" } },
+
               grid: { display: false },
+
               border: { display: false }
+
             }
+
           }
+
         }
+
       });
+
 
       pieChart = new Chart(document.getElementById("pieChart"), {
+
         type: "doughnut",
+
         data: {
+
           labels,
+
           datasets: [{
+
             data: valores,
+
             backgroundColor: ["#ff3d3d","#2563eb","#22c55e","#ff8a00","#a855f7","#06b6d4","#ff4ecd","#b7e000","#f59e0b","#64748b","#e11d48","#14b8a6"],
+
             borderWidth: 4,
+
             borderColor: "#ffffff",
+
             hoverOffset: 14,
+
             spacing: 3
+
           }]
+
         },
+
         options: {
+
           maintainAspectRatio: false,
+
           responsive: true,
+
           cutout: "72%",
+
           plugins: {
+
             legend: {
+
               position: "bottom",
+
               labels: {
+
                 color: "#1f2937",
+
                 usePointStyle: true,
+
                 pointStyle: "circle",
+
                 boxWidth: 10,
+
                 boxHeight: 10,
+
                 padding: 15,
+
                 font: { size: 11, weight: "600" }
+
               }
+
             },
+
             tooltip: {
+
               backgroundColor: "rgba(17,24,39,0.96)",
+
               titleColor: "#fff",
+
               bodyColor: "#fff",
+
               borderColor: "rgba(255,255,255,0.08)",
+
               borderWidth: 1,
+
               padding: 12,
+
               callbacks: {
+
                 label: (ctx) => {
+
                   const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+
                   const valor = Number(ctx.raw || 0);
+
                   const perc = total > 0 ? ((valor / total) * 100).toFixed(1) : "0.0";
+
                   return `${ctx.label}: ${moeda(valor)} (${perc}%)`;
+
                 }
+
               }
+
             }
+
           }
+
         }
+
       });
+
     }
 
+
     function desenharGraficoEvolucao(resumoAnual) {
+
       const labels = resumoAnual.map(item => item.mes.substring(0, 3));
+
       const faturamento = resumoAnual.map(item => item.faturamento);
+
       const gastos = resumoAnual.map(item => item.gastos);
+
       const saldo = resumoAnual.map(item => item.saldo);
+
 
       if (lineChart) lineChart.destroy();
 
+
       lineChart = new Chart(document.getElementById("lineChart"), {
+
         type: "line",
+
         data: {
+
           labels,
+
           datasets: [
+
             { label: "Faturamento", data: faturamento, borderColor: "#22c55e", backgroundColor: "#22c55e", borderWidth: 3, tension: 0.35, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: "#22c55e" },
+
             { label: "Gastos", data: gastos, borderColor: "#ef4444", backgroundColor: "#ef4444", borderWidth: 3, tension: 0.35, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: "#ef4444" },
+
             { label: "Saldo", data: saldo, borderColor: "#2563eb", backgroundColor: "#2563eb", borderWidth: 3, tension: 0.35, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: "#2563eb" }
+
           ]
+
         },
+
         options: {
+
           maintainAspectRatio: false,
+
           responsive: true,
+
           interaction: { mode: "index", intersect: false },
+
           plugins: {
+
             legend: {
+
               position: "top",
+
               labels: {
+
                 color: "#1f2937",
+
                 usePointStyle: true,
+
                 pointStyle: "circle",
+
                 boxWidth: 10,
+
                 boxHeight: 10,
+
                 padding: 18,
+
                 font: { size: 12, weight: "600" }
+
               }
+
             },
+
             tooltip: {
+
               backgroundColor: "rgba(17,24,39,0.96)",
+
               titleColor: "#fff",
+
               bodyColor: "#fff",
+
               borderColor: "rgba(255,255,255,0.08)",
+
               borderWidth: 1,
+
               padding: 12,
+
               callbacks: { label: (ctx) => `${ctx.dataset.label}: ${moeda(ctx.raw)}` }
+
             }
+
           },
+
           scales: {
+
             x: {
+
               ticks: { color: "#374151", font: { size: 11, weight: "600" } },
+
               grid: { display: false },
+
               border: { color: "#e5e7eb" }
+
             },
+
             y: {
+
               beginAtZero: true,
+
               ticks: { color: "#374151", callback: (value) => moeda(value) },
+
               grid: { color: "rgba(107,114,128,0.15)" },
+
               border: { display: false }
+
             }
+
           }
+
         }
+
       });
+
     }
 
+
     function desenharGraficoRankingAnual(gastosAno) {
+
       const acumulado = {};
+
       gastosAno.forEach(item => {
+
         const cat = item.categoria || "Outros";
+
         acumulado[cat] = (acumulado[cat] || 0) + num(item.valor || 0);
+
       });
 
+
       const ordenado = Object.entries(acumulado).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
       const labels = ordenado.map(([cat]) => nomeCategoria(cat));
+
       const valores = ordenado.map(([, valor]) => valor);
+
 
       if (rankingChart) rankingChart.destroy();
 
+
       rankingChart = new Chart(document.getElementById("rankingChart"), {
+
         type: "bar",
+
         data: {
+
           labels,
+
           datasets: [{
+
             label: "Gasto anual",
+
             data: valores,
+
             borderRadius: 12,
+
             borderSkipped: false,
+
             barThickness: 18,
+
             backgroundColor: (ctx) => {
+
               const chart = ctx.chart;
+
               const { ctx: canvasCtx, chartArea } = chart;
+
               if (!chartArea) return "#ff3d3d";
+
               const gradient = canvasCtx.createLinearGradient(0, 0, chartArea.right, 0);
+
               gradient.addColorStop(0, "#ff3d3d");
+
               gradient.addColorStop(0.45, "#ff7a18");
+
               gradient.addColorStop(1, "#ffd200");
+
               return gradient;
+
             }
+
           }]
+
         },
+
         options: {
+
           indexAxis: "y",
+
           maintainAspectRatio: false,
+
           responsive: true,
+
           plugins: {
+
             legend: { display: false },
+
             tooltip: {
+
               backgroundColor: "rgba(17,24,39,0.96)",
+
               titleColor: "#fff",
+
               bodyColor: "#fff",
+
               borderColor: "rgba(255,255,255,0.08)",
+
               borderWidth: 1,
+
               padding: 12,
+
               callbacks: { label: (ctx) => `Gasto: ${moeda(ctx.raw)}` }
+
             }
+
           },
+
           scales: {
+
             x: {
+
               beginAtZero: true,
+
               ticks: { color: "#374151", callback: (value) => moeda(value) },
+
               grid: { color: "rgba(107,114,128,0.15)" },
+
               border: { display: false }
+
             },
+
             y: {
+
               ticks: { color: "#374151", font: { size: 11, weight: "600" } },
+
               grid: { display: false },
+
               border: { display: false }
+
             }
+
           }
+
         }
+
       });
+
     }
+
 
     function gerarSemanas() {
+
       const semanas = [];
-      for (let i = 1; i <= 12; i++) semanas.push({ semana: "Semana " + i, entrada: 0, saida: 0 });
-      return semanas;
-    }
 
-    function montarPlanejamento() {
-      const tbody = document.getElementById("tabelaPlanejamento");
-      const semanas = gerarSemanas();
+      const hoje = new Date();
 
-      tbody.innerHTML = semanas.map((s, i) => `
-        <tr>
-          <td>${s.semana}</td>
-          <td><input type="number" data-tipo="entrada" data-index="${i}" value="0" style="width:100%;padding:10px;border:none;border-radius:10px;background:#1b1b1b;color:#fff;"></td>
-          <td><input type="number" data-tipo="saida" data-index="${i}" value="0" style="width:100%;padding:10px;border:none;border-radius:10px;background:#1b1b1b;color:#fff;"></td>
-          <td id="saldo_${i}">R$ 0,00</td>
-        </tr>
-      `).join("");
+      hoje.setHours(0,0,0,0);
 
-      calcularFluxo();
-    }
-
-    function calcularFluxo() {
-      let saldo = Number(document.getElementById("saldoInicial").value || 0);
 
       for (let i = 0; i < 12; i++) {
-        const entrada = Number(document.querySelector(`[data-tipo="entrada"][data-index="${i}"]`)?.value || 0);
-        const saida = Number(document.querySelector(`[data-tipo="saida"][data-index="${i}"]`)?.value || 0);
-        saldo += entrada - saida;
 
-        const el = document.getElementById(`saldo_${i}`);
-        if (el) {
-          el.innerText = moeda(saldo);
-          el.style.color = saldo >= 0 ? "#22c55e" : "#ef4444";
-          el.style.fontWeight = "700";
-        }
-      }
-    }
+        const inicio = new Date(hoje);
 
-    function salvarPlanejamento() {
-      const dados = { saldo: document.getElementById("saldoInicial").value, semanas: [] };
+        inicio.setDate(hoje.getDate() + (i * 7));
 
-      for (let i = 0; i < 12; i++) {
-        dados.semanas.push({
-          entrada: document.querySelector(`[data-index="${i}"][data-tipo="entrada"]`)?.value || 0,
-          saida: document.querySelector(`[data-index="${i}"][data-tipo="saida"]`)?.value || 0
+
+        const fim = new Date(inicio);
+
+        fim.setDate(inicio.getDate() + 6);
+
+        fim.setHours(23,59,59,999);
+
+
+        semanas.push({
+
+          semana: `Semana ${i + 1}`,
+
+          inicio,
+
+          fim,
+
+          entrada: 0,
+
+          saida: 0
+
         });
+
       }
 
-      localStorage.setItem("planejamento", JSON.stringify(dados));
-      setAppMsg("Planejamento salvo com sucesso.", "ok");
+
+      return semanas;
+
     }
 
-    function carregarPlanejamento() {
-      montarPlanejamento();
+
+    async function buscarContasPagar12Semanas() {
+
+      const hoje = new Date();
+
+      hoje.setHours(0,0,0,0);
+
+
+      const limite = new Date(hoje);
+
+      limite.setDate(hoje.getDate() + 83);
+
+
+      const dataInicio = hoje.toISOString().slice(0, 10);
+
+      const dataFim = limite.toISOString().slice(0, 10);
+
+
+      const contas = await restGet(
+
+        "contas_pagar",
+
+        `select=*&vencimento=gte.${dataInicio}&vencimento=lte.${dataFim}&status=neq.pago&order=vencimento.asc`
+
+      );
+
+
+      return contas;
+
+    }
+
+
+    function carregarEntradasPlanejamento() {
 
       const salvo = localStorage.getItem("planejamento");
+
       if (!salvo) return;
 
+
       const dados = JSON.parse(salvo);
+
       document.getElementById("saldoInicial").value = dados.saldo || 0;
 
+
       (dados.semanas || []).forEach((s, i) => {
+
         const entrada = document.querySelector(`[data-index="${i}"][data-tipo="entrada"]`);
-        const saida = document.querySelector(`[data-index="${i}"][data-tipo="saida"]`);
+
         if (entrada) entrada.value = s.entrada || 0;
-        if (saida) saida.value = s.saida || 0;
+
       });
+
+    }
+
+
+    async function montarPlanejamento() {
+
+      const tbody = document.getElementById("tabelaPlanejamento");
+
+      const semanas = gerarSemanas();
+
+      const contas = await buscarContasPagar12Semanas();
+
+
+      contas.forEach(conta => {
+
+        const venc = new Date(conta.vencimento + "T00:00:00");
+
+
+        for (let i = 0; i < semanas.length; i++) {
+
+          const inicio = semanas[i].inicio;
+
+          const fim = semanas[i].fim;
+
+
+          if (venc >= inicio && venc <= fim) {
+
+            semanas[i].saida += Number(conta.valor || 0);
+
+            break;
+
+          }
+
+        }
+
+      });
+
+
+      tbody.innerHTML = semanas.map((s, i) => `
+
+        <tr>
+
+          <td>
+
+            <div><strong>${s.semana}</strong></div>
+
+            <div class="muted" style="font-size:12px;">
+
+              ${s.inicio.toLocaleDateString("pt-BR")} até ${s.fim.toLocaleDateString("pt-BR")}
+
+            </div>
+
+          </td>
+
+          <td>
+
+            <input
+
+              class="edit-input"
+
+              type="number"
+
+              data-tipo="entrada"
+
+              data-index="${i}"
+
+              value="0"
+
+            >
+
+          </td>
+
+          <td>
+
+            <input
+
+              class="readonly-input"
+
+              type="number"
+
+              data-tipo="saida"
+
+              data-index="${i}"
+
+              value="${s.saida.toFixed(2)}"
+
+              readonly
+
+            >
+
+          </td>
+
+          <td id="saldo_${i}">R$ 0,00</td>
+
+        </tr>
+
+      `).join("");
+
+
+      carregarEntradasPlanejamento();
 
       calcularFluxo();
+
     }
+
+
+    function calcularFluxo() {
+
+      let saldo = Number(document.getElementById("saldoInicial").value || 0);
+
+
+      for (let i = 0; i < 12; i++) {
+
+        const entrada = Number(document.querySelector(`[data-tipo="entrada"][data-index="${i}"]`)?.value || 0);
+
+        const saida = Number(document.querySelector(`[data-tipo="saida"][data-index="${i}"]`)?.value || 0);
+
+
+        saldo += entrada - saida;
+
+
+        const el = document.getElementById(`saldo_${i}`);
+
+        if (el) {
+
+          el.innerText = moeda(saldo);
+
+          el.style.color = saldo >= 0 ? "#22c55e" : "#ef4444";
+
+          el.style.fontWeight = "700";
+
+        }
+
+      }
+
+    }
+
+
+    function salvarPlanejamento() {
+
+      const dados = {
+
+        saldo: document.getElementById("saldoInicial").value,
+
+        semanas: []
+
+      };
+
+
+      for (let i = 0; i < 12; i++) {
+
+        dados.semanas.push({
+
+          entrada: document.querySelector(`[data-index="${i}"][data-tipo="entrada"]`)?.value || 0
+
+        });
+
+      }
+
+
+      localStorage.setItem("planejamento", JSON.stringify(dados));
+
+      setAppMsg("Planejamento salvo com sucesso.", "ok");
+
+    }
+
+
+    async function carregarPlanejamento() {
+
+      await montarPlanejamento();
+
+    }
+
 
     function limparFormularioContaPagar() {
+
       document.getElementById("cpFornecedor").value = "";
+
       document.getElementById("cpDescricao").value = "";
+
       document.getElementById("cpCategoria").value = "";
+
       document.getElementById("cpDocumento").value = "";
+
       document.getElementById("cpValor").value = "";
+
       document.getElementById("cpVencimento").value = "";
+
       document.getElementById("cpStatus").value = "pendente";
+
       document.getElementById("cpBoleto").checked = false;
+
       document.getElementById("cpNota").checked = false;
+
       document.getElementById("cpObservacoes").value = "";
+
     }
+
 
     function entrarModoEdicaoConta(item) {
+
       contaPagarEditandoId = item.id;
+
       document.getElementById("cpFornecedor").value = item.fornecedor || "";
+
       document.getElementById("cpDescricao").value = item.descricao || "";
+
       document.getElementById("cpCategoria").value = item.categoria || "";
+
       document.getElementById("cpDocumento").value = item.documento || "";
+
       document.getElementById("cpValor").value = item.valor || "";
+
       document.getElementById("cpVencimento").value = item.vencimento || "";
+
       document.getElementById("cpStatus").value = item.status || "pendente";
+
       document.getElementById("cpBoleto").checked = !!item.boleto;
+
       document.getElementById("cpNota").checked = !!item.nota_fiscal;
+
       document.getElementById("cpObservacoes").value = item.observacoes || "";
 
+
       document.getElementById("cpTituloFormulario").textContent = "Editar Conta a Pagar";
-      btnSalvarContaPagar.textContent = "Atualizar conta";
-      btnCancelarEdicaoConta.classList.remove("hidden");
+
+      document.getElementById("btnSalvarContaPagar").textContent = "Atualizar conta";
+
+      document.getElementById("btnCancelarEdicaoConta").classList.remove("hidden");
+
       setAppMsg("Conta carregada para edição.", "info");
+
       window.scrollTo({ top: 0, behavior: "smooth" });
+
     }
+
 
     function cancelarEdicaoConta() {
+
       contaPagarEditandoId = null;
+
       limparFormularioContaPagar();
+
       document.getElementById("cpTituloFormulario").textContent = "Cadastrar Conta a Pagar";
-      btnSalvarContaPagar.textContent = "Salvar conta";
-      btnCancelarEdicaoConta.classList.add("hidden");
+
+      document.getElementById("btnSalvarContaPagar").textContent = "Salvar conta";
+
+      document.getElementById("btnCancelarEdicaoConta").classList.add("hidden");
+
       setAppMsg("Edição cancelada.", "info");
+
     }
+
 
     async function carregarContasPagar() {
+
       const { mes, ano } = getMesAno();
+
       const data = await restGet("contas_pagar", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&order=vencimento.asc`);
+
       const tbody = document.getElementById("tabelaContasPagar");
+
       const hoje = hojeISO();
 
+
       if (!data.length) {
+
         tbody.innerHTML = '<tr><td colspan="10" class="muted">Nenhuma conta cadastrada.</td></tr>';
+
         document.getElementById("cpPendente").textContent = moeda(0);
+
         document.getElementById("cpPago").textContent = moeda(0);
+
         document.getElementById("cpVencido").textContent = moeda(0);
+
         document.getElementById("cpQuantidade").textContent = "0";
+
         return;
+
       }
+
 
       let totalPendente = 0;
+
       let totalPago = 0;
+
       let totalVencido = 0;
 
+
       tbody.innerHTML = data.map(item => {
+
         const valor = num(item.valor || 0);
+
         let status = item.status || "pendente";
 
+
         if (status !== "pago" && item.vencimento && item.vencimento < hoje) {
+
           status = "vencido";
+
         }
+
 
         if (status === "pago") totalPago += valor;
+
         else if (status === "vencido") totalVencido += valor;
+
         else totalPendente += valor;
 
-        const safeItem = JSON.stringify(item).replace(/"/g, '&quot;');
+
+        const safeItem = encodeURIComponent(JSON.stringify(item));
+
 
         return `
+
           <tr>
+
             <td>${item.fornecedor || "-"}</td>
+
             <td>${item.descricao || "-"}</td>
+
             <td>${nomeCategoria(item.categoria)}</td>
+
             <td>${item.documento || "-"}</td>
+
             <td>${moeda(valor)}</td>
+
             <td>${item.vencimento || "-"}</td>
+
             <td><span class="${classStatusConta(status)}">${status}</span></td>
+
             <td>${item.boleto ? "✅" : "❌"}</td>
+
             <td>${item.nota_fiscal ? "✅" : "❌"}</td>
+
             <td>
+
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button class="small-btn small-blue" onclick="editarContaPagar(${safeItem})">Editar</button>
+
+                <button class="small-btn small-blue" onclick="editarContaPagar(decodeURIComponent('${safeItem}'))">Editar</button>
+
                 <button class="small-btn small-green" onclick="marcarContaPaga(${item.id})">Pagar</button>
+
                 <button class="small-btn small-red" onclick="excluirContaPagar(${item.id})">Excluir</button>
+
               </div>
+
             </td>
+
           </tr>
+
         `;
+
       }).join("");
 
+
       document.getElementById("cpPendente").textContent = moeda(totalPendente);
+
       document.getElementById("cpPago").textContent = moeda(totalPago);
+
       document.getElementById("cpVencido").textContent = moeda(totalVencido);
+
       document.getElementById("cpQuantidade").textContent = String(data.length);
+
     }
+
 
     async function salvarContaPagar() {
+
       if (usuarioAtual?.perfil !== "admin") return;
 
+
       try {
+
         const { mes, ano } = getMesAno();
 
+
         const fornecedor = document.getElementById("cpFornecedor").value.trim();
+
         const descricao = document.getElementById("cpDescricao").value.trim();
+
         const categoria = document.getElementById("cpCategoria").value;
+
         const documento = document.getElementById("cpDocumento").value.trim();
+
         const valor = num(document.getElementById("cpValor").value || 0);
+
         const vencimento = document.getElementById("cpVencimento").value;
+
         const status = document.getElementById("cpStatus").value;
+
         const boleto = document.getElementById("cpBoleto").checked;
+
         const nota_fiscal = document.getElementById("cpNota").checked;
+
         const observacoes = document.getElementById("cpObservacoes").value.trim();
 
+
         if (!fornecedor || !descricao || !categoria || !valor || !vencimento) {
+
           setAppMsg("Preencha fornecedor, descrição, categoria, valor e vencimento.", "err");
+
           return;
+
         }
+
 
         const payload = {
+
           fornecedor,
+
           descricao,
+
           categoria,
+
           documento,
+
           valor,
+
           vencimento,
+
           status,
+
           boleto,
+
           nota_fiscal,
+
           observacoes,
+
           mes,
+
           ano
+
         };
 
+
         if (contaPagarEditandoId) {
+
           await restPatch("contas_pagar", `id=eq.${contaPagarEditandoId}`, payload);
+
           setAppMsg("Conta atualizada com sucesso.", "ok");
+
           cancelarEdicaoConta();
+
         } else {
+
           payload.created_at = new Date().toISOString();
+
           await restInsert("contas_pagar", [payload]);
+
           limparFormularioContaPagar();
+
           setAppMsg("Conta a pagar cadastrada com sucesso.", "ok");
+
         }
 
+
         await carregarContasPagar();
+
+        await carregarPlanejamento();
+
       } catch (erro) {
+
         setAppMsg("Erro ao salvar conta: " + erro.message, "err");
+
       }
+
     }
+
 
     async function marcarContaPaga(id) {
+
       try {
+
         await restPatch("contas_pagar", `id=eq.${id}`, { status: "pago" });
+
         if (contaPagarEditandoId === id) cancelarEdicaoConta();
+
         setAppMsg("Conta marcada como paga.", "ok");
+
         await carregarContasPagar();
+
+        await carregarPlanejamento();
+
       } catch (erro) {
+
         setAppMsg("Erro ao atualizar conta: " + erro.message, "err");
+
       }
+
     }
+
 
     async function excluirContaPagar(id) {
+
       try {
+
         await restDelete("contas_pagar", `id=eq.${id}`);
+
         if (contaPagarEditandoId === id) cancelarEdicaoConta();
+
         setAppMsg("Conta excluída com sucesso.", "ok");
+
         await carregarContasPagar();
+
+        await carregarPlanejamento();
+
       } catch (erro) {
+
         setAppMsg("Erro ao excluir conta: " + erro.message, "err");
+
       }
+
     }
 
-    function editarContaPagar(item) {
+
+    function editarContaPagar(itemJson) {
+
+      const item = JSON.parse(itemJson);
+
       entrarModoEdicaoConta(item);
+
     }
+
 
     window.marcarContaPaga = marcarContaPaga;
+
     window.excluirContaPagar = excluirContaPagar;
+
     window.editarContaPagar = editarContaPagar;
 
+
     async function carregarDashboard() {
+
       const { mes, ano } = getMesAno();
 
+
       await garantirMes(mes, ano);
+
       const metasData = await garantirMetas(mes, ano);
+
       const gastosData = await restGet("gastos", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+
       const mesesData = await restGet("meses", `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=1`);
 
+
       const categorias = {};
+
       let totalGastos = 0;
 
+
       gastosData.forEach(item => {
+
         categorias[item.categoria] = num(item.valor || 0);
+
         totalGastos += num(item.valor || 0);
+
       });
 
+
       const metasPct = {};
+
       metasData.forEach(item => { metasPct[item.categoria] = num(item.meta || 0); });
+
 
       const faturamento = mesesData?.[0] ? num(mesesData[0].faturamento || 0) : 0;
 
-      faturamentoInput.value = faturamento || "";
+
+      document.getElementById("faturamentoInput").value = faturamento || "";
+
       atualizarCards(totalGastos, faturamento, metasPct);
+
       montarTabela(categorias, metasPct, faturamento);
+
       montarAlertas(categorias, metasPct, faturamento);
+
       montarMetaGrid(metasPct);
 
+
       if (Object.keys(categorias).length > 0) {
+
         desenharGraficos(categorias, metasPct, faturamento);
+
         atualizarStatus("Banco carregado", "Dados carregados com sucesso");
+
         setAppMsg("Dashboard atualizado com sucesso.", "ok");
+
       } else {
+
         if (barChart) { barChart.destroy(); barChart = null; }
+
         if (pieChart) { pieChart.destroy(); pieChart = null; }
+
         atualizarStatus("Sem importação", "Aguardando planilha para este mês");
+
         setAppMsg("Nenhum gasto salvo para este mês.", "info");
+
       }
+
 
       ultimoContexto = { categorias, metasPct, faturamento, mes, ano };
+
     }
+
 
     async function carregarResumoAnual() {
-      const ano = anoSelect.value;
+
+      const ano = document.getElementById("anoSelect").value;
+
       const meses = await restGet("meses", `select=*&ano=eq.${encodeURIComponent(ano)}`);
+
       const gastos = await restGet("gastos", `select=*&ano=eq.${encodeURIComponent(ano)}`);
 
+
       const ordem = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
       const mapa = {};
+
       ordem.forEach(m => mapa[m] = { faturamento: 0, gastos: 0 });
 
+
       meses.forEach(item => { mapa[item.mes].faturamento = num(item.faturamento || 0); });
+
       gastos.forEach(item => { mapa[item.mes].gastos += num(item.valor || 0); });
 
+
       const resumoAnual = ordem.map(m => {
+
         const f = num(mapa[m].faturamento);
+
         const g = num(mapa[m].gastos);
+
         const s = num(f - g);
+
         return { mes: m, faturamento: f, gastos: g, saldo: s };
+
       });
 
+
       const tbody = document.getElementById("tabelaResumoAnual");
+
       tbody.innerHTML = resumoAnual.map(item => `
+
         <tr>
+
           <td>${item.mes}</td>
+
           <td>${moeda(item.faturamento)}</td>
+
           <td>${moeda(item.gastos)}</td>
+
           <td class="${item.saldo >= 0 ? "success" : "danger"}">${moeda(item.saldo)}</td>
+
         </tr>
+
       `).join("");
 
+
       desenharGraficoEvolucao(resumoAnual);
+
       desenharGraficoRankingAnual(gastos);
+
     }
+
 
     async function salvarFaturamento() {
+
       if (usuarioAtual?.perfil !== "admin") return;
 
+
       try {
+
         const { mes, ano } = getMesAno();
-        const valor = num(faturamentoInput.value || 0);
+
+        const valor = num(document.getElementById("faturamentoInput").value || 0);
+
 
         await garantirMes(mes, ano);
+
         await restPatch("meses", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`, { faturamento: valor });
 
+
         setAppMsg("Faturamento salvo com sucesso.", "ok");
+
         await carregarTudo();
+
       } catch (erro) {
+
         setAppMsg("Erro ao salvar faturamento: " + erro.message, "err");
+
       }
+
     }
+
 
     async function salvarMetas() {
+
       if (usuarioAtual?.perfil !== "admin") return;
 
+
       try {
+
         const { mes, ano } = getMesAno();
+
         const metas = capturarMetas();
 
+
         await restDelete("metas", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+
         const payload = Object.keys(metas).map(cat => ({ mes, ano, categoria: cat, meta: num(metas[cat] || 0) }));
+
         await restInsert("metas", payload);
 
+
         setAppMsg("Metas salvas com sucesso.", "ok");
+
         await carregarDashboard();
+
         await carregarResumoAnual();
+
       } catch (erro) {
+
         setAppMsg("Erro ao salvar metas: " + erro.message, "err");
+
       }
+
     }
 
+
     async function salvarPlanilha(categorias) {
+
       if (usuarioAtual?.perfil !== "admin") return;
 
+
       try {
+
         const { mes, ano } = getMesAno();
 
+
         await garantirMes(mes, ano);
+
         await garantirMetas(mes, ano);
+
         await restDelete("gastos", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
 
-        const payload = Object.keys(categorias).map(cat => ({
-          mes, ano, categoria: cat, valor: num(categorias[cat] || 0)
-        }));
+
+        const payload = Object.keys(categorias).map(cat => ({ mes, ano, categoria: cat, valor: num(categorias[cat] || 0) }));
 
         if (payload.length > 0) await restInsert("gastos", payload);
 
+
         atualizarStatus(new Date().toLocaleString("pt-BR"), "Planilha importada e salva");
+
         setAppMsg("Planilha importada com sucesso.", "ok");
+
         await carregarTudo();
+
       } catch (erro) {
+
         setAppMsg("Erro ao importar planilha: " + erro.message, "err");
+
       }
+
     }
+
 
     function processarPlanilha(data) {
+
       const categorias = {};
+
       data.forEach(row => {
+
         const categoria = row["CATEGORIA"];
+
         let valor = row["VALOR"];
+
         if (!categoria) return;
 
+
         if (typeof valor === "string") {
+
           valor = valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
+
         }
 
+
         valor = Number(valor || 0);
+
         categorias[categoria] = (categorias[categoria] || 0) + valor;
+
       });
+
 
       salvarPlanilha(categorias);
+
     }
+
 
     function handleFile(event) {
+
       const file = event.target.files[0];
+
       if (!file) return;
 
+
       const reader = new FileReader();
+
       reader.onload = function(e) {
+
         const data = new Uint8Array(e.target.result);
+
         const workbook = XLSX.read(data, { type: "array" });
+
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
         const json = XLSX.utils.sheet_to_json(sheet);
+
         processarPlanilha(json);
+
       };
+
       reader.readAsArrayBuffer(file);
+
     }
+
 
     function exportarRelatorio() {
+
       if (!ultimoContexto) {
+
         setAppMsg("Nenhum dado carregado para exportar.", "err");
+
         return;
+
       }
+
 
       const { categorias, metasPct, faturamento, mes, ano } = ultimoContexto;
+
       let totalGastos = 0;
+
       const linhas = [];
 
+
       linhas.push(`RELATÓRIO FINANCEIRO - ${mes}/${ano}`);
+
       linhas.push(`Faturamento: ${moeda(faturamento)}`);
+
       linhas.push("");
 
+
       Object.keys(categorias).forEach(cat => {
+
         const gasto = num(categorias[cat] || 0);
+
         const pct = num(metasPct[cat] || 0);
+
         const metaValor = calcularMetaValor(pct, faturamento);
+
         const dif = num(gasto - metaValor);
+
         totalGastos += gasto;
 
+
         linhas.push(`${nomeCategoria(cat)}`);
+
         linhas.push(`Gasto: ${moeda(gasto)}`);
+
         linhas.push(`Meta %: ${pct.toFixed(2)}%`);
+
         linhas.push(`Meta R$: ${moeda(metaValor)}`);
+
         linhas.push(`Diferença: ${moeda(dif)}`);
+
         linhas.push("");
+
       });
 
+
       linhas.push(`Total de gastos: ${moeda(totalGastos)}`);
+
       linhas.push(`Saldo: ${moeda(faturamento - totalGastos)}`);
 
+
       const blob = new Blob([linhas.join("\n")], { type: "text/plain;charset=utf-8" });
+
       const a = document.createElement("a");
+
       a.href = window.URL.createObjectURL(blob);
+
       a.download = `relatorio-${mes.toLowerCase()}-${ano}.txt`;
+
       a.click();
+
     }
+
 
     function definirMesAtual() {
+
       const hoje = new Date();
+
       const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-      mesSelect.value = meses[hoje.getMonth()];
-      anoSelect.value = String(hoje.getFullYear());
+
+      document.getElementById("mesSelect").value = meses[hoje.getMonth()];
+
+      document.getElementById("anoSelect").value = String(hoje.getFullYear());
+
       atualizarStatus();
+
     }
+
 
     async function carregarTudo() {
+
       await carregarDashboard();
+
       await carregarResumoAnual();
+
       await carregarContasPagar();
-      carregarPlanejamento();
+
+      await carregarPlanejamento();
+
     }
 
+
     document.addEventListener("input", (e) => {
+
       if (e.target.dataset.tipo || e.target.id === "saldoInicial") {
+
         calcularFluxo();
+
       }
+
     });
 
-  window.addEventListener("DOMContentLoaded", () => {
-  const loginBtnEl = document.getElementById("loginBtn");
-  const loginSenhaEl = document.getElementById("loginSenha");
-  const btnSairEl = document.getElementById("btnSair");
-  const btnCarregarMesEl = document.getElementById("btnCarregarMes");
-  const btnSalvarFaturamentoEl = document.getElementById("btnSalvarFaturamento");
-  const btnSalvarMetasEl = document.getElementById("btnSalvarMetas");
-  const btnExportarRelatorioEl = document.getElementById("btnExportarRelatorio");
-  const btnSalvarPlanejamentoEl = document.getElementById("btnSalvarPlanejamento");
-  const btnSalvarContaPagarEl = document.getElementById("btnSalvarContaPagar");
-  const btnCancelarEdicaoContaEl = document.getElementById("btnCancelarEdicaoConta");
-  const fileInputEl = document.getElementById("fileInput");
-  const mesSelectEl = document.getElementById("mesSelect");
-  const anoSelectEl = document.getElementById("anoSelect");
 
-  if (loginBtnEl) loginBtnEl.addEventListener("click", login);
+    window.addEventListener("DOMContentLoaded", () => {
 
-  if (loginSenhaEl) {
-    loginSenhaEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") login();
-    });
-  }
+      const loginBtnEl = document.getElementById("loginBtn");
 
-  if (btnSairEl) btnSairEl.addEventListener("click", logout);
-  if (btnCarregarMesEl) btnCarregarMesEl.addEventListener("click", carregarTudo);
-  if (btnSalvarFaturamentoEl) btnSalvarFaturamentoEl.addEventListener("click", salvarFaturamento);
-  if (btnSalvarMetasEl) btnSalvarMetasEl.addEventListener("click", salvarMetas);
-  if (btnExportarRelatorioEl) btnExportarRelatorioEl.addEventListener("click", exportarRelatorio);
-  if (btnSalvarPlanejamentoEl) btnSalvarPlanejamentoEl.addEventListener("click", salvarPlanejamento);
-  if (btnSalvarContaPagarEl) btnSalvarContaPagarEl.addEventListener("click", salvarContaPagar);
-  if (btnCancelarEdicaoContaEl) btnCancelarEdicaoContaEl.addEventListener("click", cancelarEdicaoConta);
-  if (fileInputEl) fileInputEl.addEventListener("change", handleFile);
+      const loginSenhaEl = document.getElementById("loginSenha");
 
-  if (mesSelectEl) {
-    mesSelectEl.addEventListener("change", async () => {
-      atualizarStatus();
-      if (usuarioAtual) {
-        await carregarDashboard();
-        await carregarContasPagar();
+      const btnSairEl = document.getElementById("btnSair");
+
+      const btnCarregarMesEl = document.getElementById("btnCarregarMes");
+
+      const btnSalvarFaturamentoEl = document.getElementById("btnSalvarFaturamento");
+
+      const btnSalvarMetasEl = document.getElementById("btnSalvarMetas");
+
+      const btnExportarRelatorioEl = document.getElementById("btnExportarRelatorio");
+
+      const btnSalvarPlanejamentoEl = document.getElementById("btnSalvarPlanejamento");
+
+      const btnSalvarContaPagarEl = document.getElementById("btnSalvarContaPagar");
+
+      const btnCancelarEdicaoContaEl = document.getElementById("btnCancelarEdicaoConta");
+
+      const fileInputEl = document.getElementById("fileInput");
+
+      const mesSelectEl = document.getElementById("mesSelect");
+
+      const anoSelectEl = document.getElementById("anoSelect");
+
+
+      if (loginBtnEl) loginBtnEl.addEventListener("click", login);
+
+
+      if (loginSenhaEl) {
+
+        loginSenhaEl.addEventListener("keydown", (e) => {
+
+          if (e.key === "Enter") login();
+
+        });
+
       }
-    });
-  }
 
-  if (anoSelectEl) {
-    anoSelectEl.addEventListener("change", async () => {
-      atualizarStatus();
-      if (usuarioAtual) await carregarTudo();
-    });
-  }
 
-  definirMesAtual();
-  ativarAbas();
-  restaurarSessao();
-});
+      if (btnSairEl) btnSairEl.addEventListener("click", logout);
+
+      if (btnCarregarMesEl) btnCarregarMesEl.addEventListener("click", carregarTudo);
+
+      if (btnSalvarFaturamentoEl) btnSalvarFaturamentoEl.addEventListener("click", salvarFaturamento);
+
+      if (btnSalvarMetasEl) btnSalvarMetasEl.addEventListener("click", salvarMetas);
+
+      if (btnExportarRelatorioEl) btnExportarRelatorioEl.addEventListener("click", exportarRelatorio);
+
+      if (btnSalvarPlanejamentoEl) btnSalvarPlanejamentoEl.addEventListener("click", salvarPlanejamento);
+
+      if (btnSalvarContaPagarEl) btnSalvarContaPagarEl.addEventListener("click", salvarContaPagar);
+
+      if (btnCancelarEdicaoContaEl) btnCancelarEdicaoContaEl.addEventListener("click", cancelarEdicaoConta);
+
+      if (fileInputEl) fileInputEl.addEventListener("change", handleFile);
+
+
+      if (mesSelectEl) {
+
+        mesSelectEl.addEventListener("change", async () => {
+
+          atualizarStatus();
+
+          if (usuarioAtual) {
+
+            await carregarDashboard();
+
+            await carregarContasPagar();
+
+          }
+
+        });
+
+      }
+
+
+      if (anoSelectEl) {
+
+        anoSelectEl.addEventListener("change", async () => {
+
+          atualizarStatus();
+
+          if (usuarioAtual) await carregarTudo();
+
+        });
+
+      }
+
+
+      definirMesAtual();
+
+      ativarAbas();
+
+      restaurarSessao();
+
+    });
+
   </script>
+
 </body>
+
 </html>
+
