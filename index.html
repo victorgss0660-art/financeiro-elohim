@@ -4150,6 +4150,34 @@
     }
 
 
+    function normalizarDataExcel(valor) {
+  if (valor === null || valor === undefined || valor === "") return "";
+
+  if (typeof valor === "number") {
+    const utcDays = Math.floor(valor - 25569);
+    const utcValue = utcDays * 86400;
+    const dateInfo = new Date(utcValue * 1000);
+
+    const ano = dateInfo.getUTCFullYear();
+    const mes = String(dateInfo.getUTCMonth() + 1).padStart(2, "0");
+    const dia = String(dateInfo.getUTCDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  const texto = String(valor).trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+    return texto;
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
+    const [dia, mes, ano] = texto.split("/");
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  return texto;
+}
     function processarPlanilha(data) {
 
       if (!usuarioAtual || usuarioAtual.perfil !== "admin") {
