@@ -189,11 +189,7 @@
     }
 
 
-    .login-card input:focus{
-
-      box-shadow:0 0 0 2px rgba(255,59,59,.25);
-
-    }
+    .login-card input:focus{box-shadow:0 0 0 2px rgba(255,59,59,.25)}
 
 
     .btn{
@@ -422,27 +418,9 @@
     }
 
 
-    .menu-btn .icon{
+    .menu-btn .icon{width:18px;text-align:center;opacity:.95}
 
-      width:18px;
-
-      text-align:center;
-
-      opacity:.95;
-
-    }
-
-
-    .menu-btn:hover{
-
-      background:#242424;
-
-      color:#fff;
-
-      transform:translateX(2px);
-
-    }
-
+    .menu-btn:hover{background:#242424;color:#fff;transform:translateX(2px)}
 
     .menu-btn.active{
 
@@ -455,15 +433,7 @@
     }
 
 
-    .logout-btn{
-
-      width:100%;
-
-      margin-top:16px;
-
-      background:#252525;
-
-    }
+    .logout-btn{width:100%;margin-top:16px;background:#252525}
 
 
     .main{
@@ -494,22 +464,9 @@
     }
 
 
-    .topbar h1{
+    .topbar h1{margin:0;font-size:32px}
 
-      margin:0;
-
-      font-size:32px;
-
-    }
-
-
-    .topbar p{
-
-      margin:6px 0 0 0;
-
-      color:var(--muted);
-
-    }
+    .topbar p{margin:6px 0 0 0;color:var(--muted)}
 
 
     .badge{
@@ -564,7 +521,11 @@
 
     .modal-content select,
 
-    .modal-content textarea{
+    .modal-content textarea,
+
+    .filters-grid input,
+
+    .filters-grid select{
 
       padding:11px 12px;
 
@@ -583,7 +544,9 @@
     }
 
 
-    .form-grid textarea{
+    .form-grid textarea,
+
+    .modal-content textarea{
 
       min-height:90px;
 
@@ -622,44 +585,13 @@
     }
 
 
-    .card:hover{
+    .card:hover{transform:translateY(-2px);border-color:#343434}
 
-      transform:translateY(-2px);
+    .card-title{font-size:13px;color:var(--muted);margin-bottom:8px}
 
-      border-color:#343434;
+    .card-value{font-size:24px;font-weight:bold}
 
-    }
-
-
-    .card-title{
-
-      font-size:13px;
-
-      color:var(--muted);
-
-      margin-bottom:8px;
-
-    }
-
-
-    .card-value{
-
-      font-size:24px;
-
-      font-weight:bold;
-
-    }
-
-
-    .card-sub{
-
-      margin-top:8px;
-
-      font-size:12px;
-
-      color:#8f8f8f;
-
-    }
+    .card-sub{margin-top:8px;font-size:12px;color:#8f8f8f}
 
 
     .grid{
@@ -722,13 +654,7 @@
     }
 
 
-    .panel-head h3{
-
-      margin:0;
-
-      font-size:20px;
-
-    }
+    .panel-head h3{margin:0;font-size:20px}
 
 
     .chart-wrap{
@@ -781,33 +707,12 @@
     }
 
 
-    .status-item .label{
+    .status-item .label{color:var(--muted);font-size:12px;margin-bottom:8px}
 
-      color:var(--muted);
-
-      font-size:12px;
-
-      margin-bottom:8px;
-
-    }
+    .status-item .value{font-size:15px;font-weight:bold}
 
 
-    .status-item .value{
-
-      font-size:15px;
-
-      font-weight:bold;
-
-    }
-
-
-    .alert-list{
-
-      display:grid;
-
-      gap:10px;
-
-    }
+    .alert-list{display:grid;gap:10px}
 
 
     .alert-item{
@@ -825,18 +730,9 @@
     }
 
 
-    .alert-item.ok{
+    .alert-item.ok{border-left-color:var(--green)}
 
-      border-left-color:var(--green);
-
-    }
-
-
-    .alert-item.warn{
-
-      border-left-color:var(--yellow);
-
-    }
+    .alert-item.warn{border-left-color:var(--yellow)}
 
 
     .risk-box{
@@ -852,24 +748,9 @@
     }
 
 
-    .risk-box .title{
+    .risk-box .title{color:var(--muted);font-size:12px;margin-bottom:8px}
 
-      color:var(--muted);
-
-      font-size:12px;
-
-      margin-bottom:8px;
-
-    }
-
-
-    .risk-box .value{
-
-      font-size:18px;
-
-      font-weight:700;
-
-    }
+    .risk-box .value{font-size:18px;font-weight:700}
 
 
     .table-wrap{overflow-x:auto}
@@ -994,6 +875,19 @@
     }
 
 
+    .filters-grid{
+
+      display:grid;
+
+      grid-template-columns:repeat(6,1fr);
+
+      gap:10px;
+
+      margin-bottom:12px;
+
+    }
+
+
     .sim-grid{
 
       display:grid;
@@ -1007,11 +901,7 @@
     }
 
 
-    .form-grid .full{
-
-      grid-column:1 / -1;
-
-    }
+    .form-grid .full{grid-column:1 / -1}
 
 
     .check-row{
@@ -1157,37 +1047,16 @@
     }
 
 
-    .modal-content h3{
+    .modal-content h3{margin:0 0 16px 0;font-size:22px}
 
-      margin:0 0 16px 0;
+    .modal-content label{display:block;margin:10px 0 6px;color:#ddd;font-size:14px}
 
-      font-size:22px;
-
-    }
+    .modal-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 
 
-    .modal-content label{
+    @media (max-width:1200px){
 
-      display:block;
-
-      margin:10px 0 6px;
-
-      color:#ddd;
-
-      font-size:14px;
-
-    }
-
-
-    .modal-actions{
-
-      display:flex;
-
-      gap:10px;
-
-      margin-top:18px;
-
-      flex-wrap:wrap;
+      .filters-grid{grid-template-columns:repeat(3,1fr)}
 
     }
 
@@ -1210,6 +1079,13 @@
       .app{flex-direction:column}
 
       .sidebar{width:100%}
+
+    }
+
+
+    @media (max-width:700px){
+
+      .filters-grid{grid-template-columns:1fr}
 
     }
 
@@ -1487,7 +1363,7 @@
 
           <div class="card"><div class="card-title">Total Vencido</div><div class="card-value" id="cpVencido">R$ 0,00</div><div class="card-sub">Contas em atraso</div></div>
 
-          <div class="card"><div class="card-title">Qtd. Contas</div><div class="card-value" id="cpQuantidade">0</div><div class="card-sub">Registros pendentes/vencidos</div></div>
+          <div class="card"><div class="card-title">Qtd. Contas</div><div class="card-value" id="cpQuantidade">0</div><div class="card-sub">Registros filtrados</div></div>
 
         </section>
 
@@ -1587,9 +1463,70 @@
 
             <h3>Contas Cadastradas</h3>
 
-            <div class="badge">Visualização</div>
+            <div class="badge">Filtro tipo Excel</div>
 
           </div>
+
+
+          <div class="filters-grid">
+
+            <input id="filtroPagarBusca" placeholder="Buscar em tudo">
+
+            <input id="filtroPagarFornecedor" placeholder="Fornecedor">
+
+            <select id="filtroPagarCategoria">
+
+              <option value="">Todas categorias</option>
+
+              <option value="MC">Materiais de Consumo</option>
+
+              <option value="MP">Matéria-Prima</option>
+
+              <option value="TERC">Terceirizações</option>
+
+              <option value="FRETE">Fretes</option>
+
+              <option value="DESP">Despesas Fixas</option>
+
+              <option value="TAR">Tarifas Bancárias</option>
+
+              <option value="PREST">Prestações de Serviço</option>
+
+              <option value="FOLHA">Folha de Pagamento</option>
+
+              <option value="COMIS">Comissões</option>
+
+              <option value="IMPOS">Impostos</option>
+
+              <option value="RESC">Rescisões</option>
+
+              <option value="MANUT">Manutenções</option>
+
+            </select>
+
+            <input id="filtroPagarDocumento" placeholder="Documento">
+
+            <select id="filtroPagarStatus">
+
+              <option value="">Todos status</option>
+
+              <option value="pendente">Pendente</option>
+
+              <option value="vencido">Vencido</option>
+
+            </select>
+
+            <input id="filtroPagarVencimento" type="date">
+
+          </div>
+
+
+          <div style="margin-bottom:12px;">
+
+            <button class="secondary-btn" type="button" onclick="limparFiltrosPagar()">Limpar filtros</button>
+
+          </div>
+
 
           <table>
 
@@ -1642,9 +1579,59 @@
 
             <h3>Contas Pagas</h3>
 
-            <div class="badge">Histórico</div>
+            <div class="badge">Filtro tipo Excel</div>
 
           </div>
+
+
+          <div class="filters-grid">
+
+            <input id="filtroPagasBusca" placeholder="Buscar em tudo">
+
+            <input id="filtroPagasFornecedor" placeholder="Fornecedor">
+
+            <select id="filtroPagasCategoria">
+
+              <option value="">Todas categorias</option>
+
+              <option value="MC">Materiais de Consumo</option>
+
+              <option value="MP">Matéria-Prima</option>
+
+              <option value="TERC">Terceirizações</option>
+
+              <option value="FRETE">Fretes</option>
+
+              <option value="DESP">Despesas Fixas</option>
+
+              <option value="TAR">Tarifas Bancárias</option>
+
+              <option value="PREST">Prestações de Serviço</option>
+
+              <option value="FOLHA">Folha de Pagamento</option>
+
+              <option value="COMIS">Comissões</option>
+
+              <option value="IMPOS">Impostos</option>
+
+              <option value="RESC">Rescisões</option>
+
+              <option value="MANUT">Manutenções</option>
+
+            </select>
+
+            <input id="filtroPagasDocumento" placeholder="Documento">
+
+            <input id="filtroPagasPagamento" type="date">
+
+            <div>
+
+              <button class="secondary-btn" type="button" onclick="limparFiltrosPagas()">Limpar filtros</button>
+
+            </div>
+
+          </div>
+
 
           <table>
 
@@ -2251,6 +2238,13 @@
     }
 
 
+    function textoInclui(valor, filtro) {
+
+      return String(valor || "").toLowerCase().includes(String(filtro || "").toLowerCase());
+
+    }
+
+
     function calcularSaldoInicialTotal() {
 
       let total = 0;
@@ -2295,13 +2289,11 @@
 
         const dateInfo = new Date(utcValue * 1000);
 
-
         const ano = dateInfo.getUTCFullYear();
 
         const mes = String(dateInfo.getUTCMonth() + 1).padStart(2, "0");
 
         const dia = String(dateInfo.getUTCDate()).padStart(2, "0");
-
 
         return `${ano}-${mes}-${dia}`;
 
@@ -2506,15 +2498,164 @@
       ];
 
 
-      if (tabsSemFiltro.includes(abaAtiva.id)) {
+      if (tabsSemFiltro.includes(abaAtiva.id)) bloco.classList.add("hidden");
 
-        bloco.classList.add("hidden");
+      else bloco.classList.remove("hidden");
 
-      } else {
+    }
 
-        bloco.classList.remove("hidden");
 
-      }
+    function aplicarFiltrosContasPagar(data) {
+
+      const busca = document.getElementById("filtroPagarBusca")?.value?.trim().toLowerCase() || "";
+
+      const fornecedor = document.getElementById("filtroPagarFornecedor")?.value?.trim().toLowerCase() || "";
+
+      const categoria = document.getElementById("filtroPagarCategoria")?.value || "";
+
+      const documento = document.getElementById("filtroPagarDocumento")?.value?.trim().toLowerCase() || "";
+
+      const status = document.getElementById("filtroPagarStatus")?.value || "";
+
+      const vencimento = document.getElementById("filtroPagarVencimento")?.value || "";
+
+      const hoje = hojeISO();
+
+
+      return data.filter(item => {
+
+        let statusAtual = item.status || "pendente";
+
+        if (statusAtual !== "pago" && item.vencimento && item.vencimento < hoje) statusAtual = "vencido";
+
+
+        const textoCompleto = [
+
+          item.fornecedor,
+
+          item.descricao,
+
+          item.categoria,
+
+          nomeCategoria(item.categoria),
+
+          item.documento,
+
+          item.vencimento,
+
+          statusAtual,
+
+          item.observacoes
+
+        ].join(" ").toLowerCase();
+
+
+        if (busca && !textoCompleto.includes(busca)) return false;
+
+        if (fornecedor && !textoInclui(item.fornecedor, fornecedor)) return false;
+
+        if (categoria && item.categoria !== categoria) return false;
+
+        if (documento && !textoInclui(item.documento, documento)) return false;
+
+        if (status && statusAtual !== status) return false;
+
+        if (vencimento && item.vencimento !== vencimento) return false;
+
+
+        return true;
+
+      });
+
+    }
+
+
+    function aplicarFiltrosContasPagas(data) {
+
+      const busca = document.getElementById("filtroPagasBusca")?.value?.trim().toLowerCase() || "";
+
+      const fornecedor = document.getElementById("filtroPagasFornecedor")?.value?.trim().toLowerCase() || "";
+
+      const categoria = document.getElementById("filtroPagasCategoria")?.value || "";
+
+      const documento = document.getElementById("filtroPagasDocumento")?.value?.trim().toLowerCase() || "";
+
+      const pagamento = document.getElementById("filtroPagasPagamento")?.value || "";
+
+
+      return data.filter(item => {
+
+        const textoCompleto = [
+
+          item.fornecedor,
+
+          item.descricao,
+
+          item.categoria,
+
+          nomeCategoria(item.categoria),
+
+          item.documento,
+
+          item.vencimento,
+
+          item.data_pagamento,
+
+          item.observacoes
+
+        ].join(" ").toLowerCase();
+
+
+        if (busca && !textoCompleto.includes(busca)) return false;
+
+        if (fornecedor && !textoInclui(item.fornecedor, fornecedor)) return false;
+
+        if (categoria && item.categoria !== categoria) return false;
+
+        if (documento && !textoInclui(item.documento, documento)) return false;
+
+        if (pagamento && item.data_pagamento !== pagamento) return false;
+
+
+        return true;
+
+      });
+
+    }
+
+
+    function limparFiltrosPagar() {
+
+      document.getElementById("filtroPagarBusca").value = "";
+
+      document.getElementById("filtroPagarFornecedor").value = "";
+
+      document.getElementById("filtroPagarCategoria").value = "";
+
+      document.getElementById("filtroPagarDocumento").value = "";
+
+      document.getElementById("filtroPagarStatus").value = "";
+
+      document.getElementById("filtroPagarVencimento").value = "";
+
+      carregarContasPagar();
+
+    }
+
+
+    function limparFiltrosPagas() {
+
+      document.getElementById("filtroPagasBusca").value = "";
+
+      document.getElementById("filtroPagasFornecedor").value = "";
+
+      document.getElementById("filtroPagasCategoria").value = "";
+
+      document.getElementById("filtroPagasDocumento").value = "";
+
+      document.getElementById("filtroPagasPagamento").value = "";
+
+      carregarContasPagas();
 
     }
 
@@ -4476,11 +4617,7 @@
         };
 
 
-        if (status === "pago") {
-
-          payload.status = "pendente";
-
-        }
+        if (status === "pago") payload.status = "pendente";
 
 
         await restInsert("contas_pagar", [payload]);
@@ -4518,38 +4655,11 @@
       );
 
 
+      const filtradas = aplicarFiltrosContasPagar(data);
+
       const tbody = document.getElementById("tabelaContasPagar");
 
       const hoje = hojeISO();
-
-
-      if (!data.length) {
-
-        tbody.innerHTML = '<tr><td colspan="10" class="muted">Nenhuma conta cadastrada.</td></tr>';
-
-
-        const pagasMes = await restGet(
-
-          "contas_pagar",
-
-          `select=valor,multa_atraso,desconto,status&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-
-        );
-
-
-        const totalPago = pagasMes.filter(i => i.status === "pago").reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0) - Number(i.desconto || 0), 0);
-
-        document.getElementById("cpPendente").textContent = moeda(0);
-
-        document.getElementById("cpPago").textContent = moeda(totalPago);
-
-        document.getElementById("cpVencido").textContent = moeda(0);
-
-        document.getElementById("cpQuantidade").textContent = "0";
-
-        return;
-
-      }
 
 
       let totalPendente = 0;
@@ -4557,66 +4667,74 @@
       let totalVencido = 0;
 
 
-      tbody.innerHTML = data.map(item => {
+      if (!filtradas.length) {
 
-        const valor = num(item.valor || 0);
+        tbody.innerHTML = '<tr><td colspan="10" class="muted">Nenhuma conta encontrada.</td></tr>';
 
-        let status = item.status || "pendente";
+      } else {
 
-        if (status !== "pago" && item.vencimento && item.vencimento < hoje) status = "vencido";
+        tbody.innerHTML = filtradas.map(item => {
 
+          const valor = num(item.valor || 0);
 
-        if (status === "vencido") totalVencido += valor;
+          let status = item.status || "pendente";
 
-        else totalPendente += valor;
-
-
-        const safeItem = encodeURIComponent(JSON.stringify(item));
+          if (status !== "pago" && item.vencimento && item.vencimento < hoje) status = "vencido";
 
 
-        return `
+          if (status === "vencido") totalVencido += valor;
 
-          <tr>
+          else totalPendente += valor;
 
-            <td>${item.fornecedor || "-"}</td>
 
-            <td>${item.descricao || "-"}</td>
+          const safeItem = encodeURIComponent(JSON.stringify(item));
 
-            <td>${nomeCategoria(item.categoria)}</td>
 
-            <td>${item.documento || "-"}</td>
+          return `
 
-            <td>${moeda(valor)}</td>
+            <tr>
 
-            <td>${item.vencimento || "-"}</td>
+              <td>${item.fornecedor || "-"}</td>
 
-            <td><span class="${classStatusConta(status)}">${status}</span></td>
+              <td>${item.descricao || "-"}</td>
 
-            <td>${item.boleto ? "✅" : "❌"}</td>
+              <td>${nomeCategoria(item.categoria)}</td>
 
-            <td>${item.nota_fiscal ? "✅" : "❌"}</td>
+              <td>${item.documento || "-"}</td>
 
-            <td>
+              <td>${moeda(valor)}</td>
 
-              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <td>${item.vencimento || "-"}</td>
 
-                <button class="small-btn small-blue" onclick="editarContaPagar(decodeURIComponent('${safeItem}'))">Editar</button>
+              <td><span class="${classStatusConta(status)}">${status}</span></td>
 
-                <button class="small-btn small-yellow" onclick="abrirModalDuplicar(decodeURIComponent('${safeItem}'))">Duplicar</button>
+              <td>${item.boleto ? "✅" : "❌"}</td>
 
-                <button class="small-btn small-green" onclick="abrirModalPagamento(${item.id})">Pagar</button>
+              <td>${item.nota_fiscal ? "✅" : "❌"}</td>
 
-                <button class="small-btn small-red" onclick="excluirContaPagar(${item.id})">Excluir</button>
+              <td>
 
-              </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
 
-            </td>
+                  <button class="small-btn small-blue" onclick="editarContaPagar(decodeURIComponent('${safeItem}'))">Editar</button>
 
-          </tr>
+                  <button class="small-btn small-yellow" onclick="abrirModalDuplicar(decodeURIComponent('${safeItem}'))">Duplicar</button>
 
-        `;
+                  <button class="small-btn small-green" onclick="abrirModalPagamento(${item.id})">Pagar</button>
 
-      }).join("");
+                  <button class="small-btn small-red" onclick="excluirContaPagar(${item.id})">Excluir</button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          `;
+
+        }).join("");
+
+      }
 
 
       const todasMes = await restGet(
@@ -4628,7 +4746,11 @@
       );
 
 
-      const totalPago = todasMes.filter(i => i.status === "pago").reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0) - Number(i.desconto || 0), 0);
+      const totalPago = todasMes
+
+        .filter(i => i.status === "pago")
+
+        .reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0) - Number(i.desconto || 0), 0);
 
 
       document.getElementById("cpPendente").textContent = moeda(totalPendente);
@@ -4637,7 +4759,7 @@
 
       document.getElementById("cpVencido").textContent = moeda(totalVencido);
 
-      document.getElementById("cpQuantidade").textContent = String(data.length);
+      document.getElementById("cpQuantidade").textContent = String(filtradas.length);
 
     }
 
@@ -4656,19 +4778,21 @@
       );
 
 
+      const filtradas = aplicarFiltrosContasPagas(data);
+
       const tbody = document.getElementById("tabelaContasPagas");
 
 
-      if (!data.length) {
+      if (!filtradas.length) {
 
-        tbody.innerHTML = '<tr><td colspan="10" class="muted">Nenhuma conta paga.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="muted">Nenhuma conta paga encontrada.</td></tr>';
 
         return;
 
       }
 
 
-      tbody.innerHTML = data.map(item => {
+      tbody.innerHTML = filtradas.map(item => {
 
         const totalPago = Number(item.valor || 0) + Number(item.multa_atraso || 0) - Number(item.desconto || 0);
 
@@ -4938,7 +5062,6 @@
 
         const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-
         processarPlanilhaDespesas(json);
 
       };
@@ -4962,6 +5085,10 @@
     window.abrirModalPagamento = abrirModalPagamento;
 
     window.abrirModalDuplicar = abrirModalDuplicar;
+
+    window.limparFiltrosPagar = limparFiltrosPagar;
+
+    window.limparFiltrosPagas = limparFiltrosPagas;
 
 
     async function carregarDashboard() {
@@ -5319,6 +5446,54 @@
       document.getElementById("btnSalvarDuplicacao").addEventListener("click", salvarDuplicacao);
 
       document.getElementById("btnCancelarDuplicacao").addEventListener("click", fecharModalDuplicar);
+
+
+      [
+
+        "filtroPagarBusca",
+
+        "filtroPagarFornecedor",
+
+        "filtroPagarCategoria",
+
+        "filtroPagarDocumento",
+
+        "filtroPagarStatus",
+
+        "filtroPagarVencimento"
+
+      ].forEach(id => {
+
+        const el = document.getElementById(id);
+
+        if (el) el.addEventListener("input", carregarContasPagar);
+
+        if (el && el.tagName === "SELECT") el.addEventListener("change", carregarContasPagar);
+
+      });
+
+
+      [
+
+        "filtroPagasBusca",
+
+        "filtroPagasFornecedor",
+
+        "filtroPagasCategoria",
+
+        "filtroPagasDocumento",
+
+        "filtroPagasPagamento"
+
+      ].forEach(id => {
+
+        const el = document.getElementById(id);
+
+        if (el) el.addEventListener("input", carregarContasPagas);
+
+        if (el && el.tagName === "SELECT") el.addEventListener("change", carregarContasPagas);
+
+      });
 
 
       document.getElementById("mesSelect").addEventListener("change", async () => {
