@@ -5500,15 +5500,17 @@
 
         atualizarStatus();
 
-        if (usuarioAtual) {
+if (usuarioAtual) {
 
-          await carregarDashboard();
+  await carregarDashboard();
+  await carregarContasPagar();
+  await carregarContasPagas();
+  await carregarPlanejamento();
 
-          await carregarContasPagar();
-
-          await carregarContasPagas();
-
-          await carregarPlanejamento();
+  await carregarContasReceber();
+  await carregarContasRecebidas();
+}
+}
 
         }
 
