@@ -1,0 +1,9 @@
+<button class="menu-btn" data-tab="contas-receber" type="button">
+  <span class="icon">💵</span>
+  <span>Contas a Receber</span>
+</button>
+
+<button class="menu-btn" data-tab="contas-recebidas" type="button">
+  <span class="icon">🏦</span>
+  <span>Contas Recebidas</span>
+</button>
