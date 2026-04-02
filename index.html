@@ -1322,40 +1322,44 @@
       </div>
 
 
-      <div class="top-filters">
+      <div id="blocoFiltroMesAno">
 
-        <select id="mesSelect">
+        <div class="top-filters">
 
-          <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
+          <select id="mesSelect">
 
-          <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
+            <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
 
-          <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+            <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
 
-        </select>
+            <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
 
-
-        <select id="anoSelect">
-
-          <option>2024</option>
-
-          <option>2025</option>
-
-          <option selected>2026</option>
-
-          <option>2027</option>
-
-        </select>
+          </select>
 
 
-        <button id="btnCarregarMes" class="btn" type="button">Carregar mês</button>
+          <select id="anoSelect">
 
-      </div>
+            <option>2024</option>
+
+            <option>2025</option>
+
+            <option selected>2026</option>
+
+            <option>2027</option>
+
+          </select>
 
 
-      <div class="row-actions">
+          <button id="btnCarregarMes" class="btn" type="button">Carregar mês</button>
 
-        <button id="btnExportarRelatorio" class="secondary-btn" type="button">Exportar relatório do mês</button>
+        </div>
+
+
+        <div class="row-actions">
+
+          <button id="btnExportarRelatorio" class="secondary-btn" type="button">Exportar relatório do mês</button>
+
+        </div>
 
       </div>
 
@@ -1583,7 +1587,7 @@
 
             <h3>Contas Cadastradas</h3>
 
-            <div class="badge">Mês selecionado</div>
+            <div class="badge">Visualização</div>
 
           </div>
 
@@ -1723,21 +1727,27 @@
 
         <section class="panel">
 
-          <div class="panel-head"><h3>Importar planilha de Contas a Pagar</h3><div class="badge">Excel</div></div>
+          <div class="panel-head">
+
+            <h3>Importar planilha de Despesas</h3>
+
+            <div class="badge">Excel</div>
+
+          </div>
+
 
           <input id="fileInput" type="file" accept=".xlsx,.xls">
 
+
           <div class="import-help">
 
-            <div><strong>Colunas aceitas:</strong> FORNECEDOR, DESCRICAO ou DESCRIÇÃO, CATEGORIA, DOCUMENTO, VALOR, VENCIMENTO, STATUS, BOLETO, NOTA_FISCAL, OBSERVACOES ou OBSERVAÇÕES</div>
+            <div><strong>Colunas aceitas:</strong> CATEGORIA, VALOR</div>
 
             <div><strong>CATEGORIA:</strong> MC, MP, TERC, FRETE, DESP, TAR, PREST, FOLHA, COMIS, IMPOS, RESC, MANUT</div>
 
-            <div><strong>STATUS:</strong> pendente, pago, vencido</div>
+            <div><strong>VALOR:</strong> aceita 1500, 1500,50, 1500.50, R$ 1.500,50</div>
 
-            <div><strong>BOLETO / NOTA_FISCAL:</strong> TRUE ou FALSE</div>
-
-            <div><strong>VENCIMENTO:</strong> aceita 46003, 01/04/2026 ou 2026-04-01</div>
+            <div><strong>Objetivo:</strong> essa aba importa a planilha de despesas do dashboard.</div>
 
           </div>
 
@@ -2318,28 +2328,56 @@
     }
 
 
-    function validarLinhaImportacao(row, indice) {
+    function tratarValorImportacao(valor) {
 
-      const descricao = row["DESCRICAO"] || row["DESCRIÇÃO"] || "";
+      if (valor === undefined || valor === null || valor === "") return 0;
+
+      if (typeof valor === "number") return valor;
+
+
+      let texto = String(valor).trim();
+
+      texto = texto.replace("R$", "").replace(/\s/g, "");
+
+
+      if (texto.includes(",") && texto.includes(".")) {
+
+        texto = texto.replace(/\./g, "").replace(",", ".");
+
+      } else if (texto.includes(",")) {
+
+        texto = texto.replace(",", ".");
+
+      }
+
+
+      const numero = parseFloat(texto);
+
+      return isNaN(numero) ? 0 : numero;
+
+    }
+
+
+    function validarLinhaDespesa(row, indice) {
 
       const categoria = normalizarCategoria(row["CATEGORIA"]);
 
-      const status = String(row["STATUS"] || "pendente").trim().toLowerCase();
-
-      const vencimento = normalizarDataExcel(row["VENCIMENTO"]);
+      const valor = tratarValorImportacao(row["VALOR"]);
 
 
-      if (!row["FORNECEDOR"]) return `Linha ${indice}: FORNECEDOR vazio`;
+      if (!categoria || !categoriasPadrao.includes(categoria)) {
 
-      if (!descricao) return `Linha ${indice}: DESCRICAO vazia`;
+        return `Linha ${indice}: CATEGORIA inválida (${row["CATEGORIA"]})`;
 
-      if (!categoria || !categoriasPadrao.includes(categoria)) return `Linha ${indice}: CATEGORIA inválida (${row["CATEGORIA"]})`;
+      }
 
-      if (!vencimento || !/^\d{4}-\d{2}-\d{2}$/.test(vencimento)) return `Linha ${indice}: VENCIMENTO inválido (${row["VENCIMENTO"]})`;
 
-      if (!["pendente","pago","vencido"].includes(status)) return `Linha ${indice}: STATUS inválido (${row["STATUS"]})`;
+      if (valor <= 0) {
 
-      if (Number(String(row["VALOR"] || 0).toString().replace("R$", "").replace(/\./g, "").replace(",", ".")) <= 0) return `Linha ${indice}: VALOR inválido`;
+        return `Linha ${indice}: VALOR inválido`;
+
+      }
+
 
       return null;
 
@@ -2442,6 +2480,39 @@
         try { data = await res.json(); } catch {}
 
         throw new Error(data?.message || "Erro DELETE");
+
+      }
+
+    }
+
+
+    function atualizarVisibilidadeFiltroMesAno() {
+
+      const bloco = document.getElementById("blocoFiltroMesAno");
+
+      const abaAtiva = document.querySelector(".tab-section.active");
+
+      if (!bloco || !abaAtiva) return;
+
+
+      const tabsSemFiltro = [
+
+        "tab-contas-pagar",
+
+        "tab-contas-pagas",
+
+        "tab-planejamento"
+
+      ];
+
+
+      if (tabsSemFiltro.includes(abaAtiva.id)) {
+
+        bloco.classList.add("hidden");
+
+      } else {
+
+        bloco.classList.remove("hidden");
 
       }
 
@@ -2768,11 +2839,18 @@
 
           const secao = document.getElementById(`tab-${tab}`);
 
+
           if (secao) {
 
             secao.classList.add("active");
 
-            requestAnimationFrame(() => secao.classList.add("fade-in"));
+            requestAnimationFrame(() => {
+
+              secao.classList.add("fade-in");
+
+              atualizarVisibilidadeFiltroMesAno();
+
+            });
 
           }
 
@@ -3973,9 +4051,6 @@
 
       desenharGraficoPlanejamento(base, simulacaoAtual ? simulados : null);
 
-
-      ultimoPlanejamento = { base, simulados };
-
     }
 
 
@@ -4747,7 +4822,7 @@
     }
 
 
-    async function importarContasPagar(payload) {
+    async function importarDespesas(payload) {
 
       try {
 
@@ -4763,29 +4838,27 @@
         const { mes, ano } = getMesAno();
 
 
-        await restDelete("contas_pagar", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
+        await restDelete("gastos", `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`);
 
-        await restInsert("contas_pagar", payload);
+        await restInsert("gastos", payload);
 
 
-        setAppMsg("Contas importadas com sucesso!", "ok");
+        setAppMsg("Despesas importadas com sucesso!", "ok");
 
-        await carregarContasPagar();
+        await carregarDashboard();
 
-        await carregarContasPagas();
-
-        await carregarPlanejamento();
+        await carregarResumoAnual();
 
       } catch (erro) {
 
-        setAppMsg("Erro ao importar: " + erro.message, "err");
+        setAppMsg("Erro ao importar despesas: " + erro.message, "err");
 
       }
 
     }
 
 
-    function processarPlanilha(data) {
+    function processarPlanilhaDespesas(data) {
 
       if (!usuarioAtual || usuarioAtual.perfil !== "admin") {
 
@@ -4812,7 +4885,7 @@
 
       data.forEach((row, index) => {
 
-        const erro = validarLinhaImportacao(row, index + 2);
+        const erro = validarLinhaDespesa(row, index + 2);
 
         if (erro) erros.push(erro);
 
@@ -4828,60 +4901,20 @@
       }
 
 
-      const payload = data.map(row => {
+      const payload = data.map(row => ({
 
-        const valorBruto = row["VALOR"];
+        categoria: normalizarCategoria(row["CATEGORIA"]),
 
-        let valor = valorBruto;
+        valor: tratarValorImportacao(row["VALOR"]),
 
+        mes,
 
-        if (typeof valor === "string") {
+        ano
 
-          valor = valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim();
-
-        }
-
-
-        return {
-
-          fornecedor: String(row["FORNECEDOR"] || "").trim(),
-
-          descricao: String(row["DESCRICAO"] || row["DESCRIÇÃO"] || "").trim(),
-
-          categoria: normalizarCategoria(row["CATEGORIA"]),
-
-          documento: String(row["DOCUMENTO"] || "").trim(),
-
-          valor: Number(valor || 0),
-
-          vencimento: normalizarDataExcel(row["VENCIMENTO"]),
-
-          status: String(row["STATUS"] || "pendente").trim().toLowerCase(),
-
-          boleto: normalizarBooleano(row["BOLETO"]),
-
-          nota_fiscal: normalizarBooleano(row["NOTA_FISCAL"]),
-
-          observacoes: String(row["OBSERVACOES"] || row["OBSERVAÇÕES"] || "").trim(),
-
-          mes,
-
-          ano,
-
-          data_pagamento: null,
-
-          multa_atraso: 0,
-
-          desconto: 0,
-
-          created_at: new Date().toISOString()
-
-        };
-
-      });
+      }));
 
 
-      importarContasPagar(payload);
+      importarDespesas(payload);
 
     }
 
@@ -4905,7 +4938,8 @@
 
         const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-        processarPlanilha(json);
+
+        processarPlanilhaDespesas(json);
 
       };
 
@@ -5320,6 +5354,8 @@
       ativarAbas();
 
       restaurarSessao();
+
+      setTimeout(() => atualizarVisibilidadeFiltroMesAno(), 100);
 
     });
 
