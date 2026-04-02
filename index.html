@@ -1,587 +1,210 @@
-
-
 <!DOCTYPE html>
-
 <html lang="pt-BR">
-
 <head>
-
-  <meta charset="UTF-8" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Elohim Financeiro</title>
 
-
-  <link rel="stylesheet" href="./css/style.css" />
-
+  <link rel="stylesheet" href="./css/style.css">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
 </head>
 
 <body>
 
-  <section id="loginScreen" class="login-screen">
+<!-- LOGIN -->
+<section id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h2>Login</h2>
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginSenha" type="password" placeholder="Senha">
+    <button id="loginBtn" class="btn">Entrar</button>
+    <div id="loginMsg"></div>
+  </div>
+</section>
 
-    <div class="login-card">
+<!-- APP -->
+<section id="appShell" class="app hidden">
 
-      <div class="login-logo">
+  <!-- MENU -->
+  <aside class="sidebar">
+    <div id="userEmail"></div>
+    <div id="userPerfil"></div>
+    <div id="perfilBadge"></div>
 
-        <img src="./logo-elohim.png" alt="Elohim">
-
-      </div>
-
-      <h2>Entrar</h2>
-
-      <p>Acesse o sistema financeiro da Elohim</p>
-
-      <input id="loginEmail" type="email" placeholder="Seu e-mail">
-
-      <input id="loginSenha" type="password" placeholder="Sua senha">
-
-      <button id="loginBtn" class="btn" type="button">Entrar</button>
-
-      <div id="loginMsg" class="info">Pronto para login.</div>
-
+    <div class="menu">
+      <button class="menu-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="menu-btn" data-tab="contas-pagar">Contas a Pagar</button>
+      <button class="menu-btn" data-tab="contas-pagas">Contas Pagas</button>
+      <button class="menu-btn" data-tab="contas-receber">Contas a Receber</button>
+      <button class="menu-btn" data-tab="contas-recebidas">Contas Recebidas</button>
+      <button class="menu-btn" data-tab="faturamento">Faturamento</button>
+      <button class="menu-btn" data-tab="metas">Metas</button>
+      <button class="menu-btn" data-tab="importar">Importar</button>
+      <button class="menu-btn" data-tab="resumo">Resumo</button>
+      <button class="menu-btn" data-tab="planejamento">Planejamento</button>
     </div>
 
-  </section>
+    <button id="btnSair" class="btn">Sair</button>
+  </aside>
 
+  <!-- CONTEÚDO -->
+  <main class="main">
 
-  <section id="appShell" class="app hidden">
+    <!-- FILTRO -->
+    <div id="blocoFiltroMesAno">
+      <select id="mesSelect">
+        <option>Janeiro</option><option>Fevereiro</option><option>Março</option>
+        <option>Abril</option><option>Maio</option><option>Junho</option>
+        <option>Julho</option><option>Agosto</option><option>Setembro</option>
+        <option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+      </select>
 
-    <aside class="sidebar">
+      <select id="anoSelect">
+        <option>2024</option>
+        <option selected>2026</option>
+        <option>2027</option>
+      </select>
 
-      <div class="sidebar-logo">
+      <button id="btnCarregarMes" class="btn">Carregar</button>
+    </div>
 
-        <img src="./logo-elohim.png" alt="Elohim">
+    <div id="appMsg"></div>
 
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard" class="tab-section active">
+      <div class="cards">
+        <div><div id="fat"></div></div>
+        <div><div id="gas"></div></div>
+        <div><div id="saldo"></div></div>
+        <div><div id="metaAtingida"></div></div>
       </div>
 
-
-      <div class="user-box">
-
-        <div class="user-email" id="userEmail">-</div>
-
-        <div class="user-role" id="userPerfil">-</div>
-
-      </div>
-
-
-      <div class="menu">
-
-        <button class="menu-btn active" data-tab="dashboard" type="button"><span class="icon">📊</span><span>Dashboard</span></button>
-
-        <button class="menu-btn" data-tab="contas-pagar" type="button"><span class="icon">🧾</span><span>Contas a Pagar</span></button>
-
-        <button class="menu-btn" data-tab="contas-pagas" type="button"><span class="icon">✅</span><span>Contas Pagas</span></button>
-
-        <button class="menu-btn" data-tab="contas-receber" type="button"><span class="icon">💵</span><span>Contas a Receber</span></button>
-
-        <button class="menu-btn" data-tab="contas-recebidas" type="button"><span class="icon">🏦</span><span>Contas Recebidas</span></button>
-
-        <button class="menu-btn" data-tab="faturamento" type="button"><span class="icon">💰</span><span>Faturamento</span></button>
-
-        <button class="menu-btn" data-tab="metas" type="button"><span class="icon">🎯</span><span>Metas</span></button>
-
-        <button class="menu-btn" data-tab="importar" type="button"><span class="icon">📂</span><span>Importar Planilha</span></button>
-
-        <button class="menu-btn" data-tab="resumo" type="button"><span class="icon">📈</span><span>Resumo Anual</span></button>
-
-        <button class="menu-btn" data-tab="planejamento" type="button"><span class="icon">📅</span><span>Planejamento</span></button>
-
-      </div>
-
-
-      <button id="btnSair" class="btn logout-btn" type="button">Sair</button>
-
-    </aside>
-
-
-    <main class="main">
-
-      <div class="topbar">
-
-        <div>
-
-          <h1>Sistema Financeiro Elohim</h1>
-
-          <p>Controle financeiro mensal com visão estratégica</p>
-
-        </div>
-
-        <div class="badge" id="perfilBadge">Perfil</div>
-
-      </div>
-
-
-      <div id="blocoFiltroMesAno">
-
-        <div class="top-filters">
-
-          <select id="mesSelect">
-
-            <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
-
-            <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
-
-            <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
-
-          </select>
-
-
-          <select id="anoSelect">
-
-            <option>2024</option>
-
-            <option>2025</option>
-
-            <option selected>2026</option>
-
-            <option>2027</option>
-
-          </select>
-
-
-          <button id="btnCarregarMes" class="btn" type="button">Carregar mês</button>
-
-        </div>
-
-
-        <div class="row-actions">
-
-          <button id="btnExportarRelatorio" class="secondary-btn" type="button">Exportar relatório do mês</button>
-
-        </div>
-
-      </div>
-
-
-      <div id="appMsg" class="info"></div>
-
-
-      <section id="tab-dashboard" class="tab-section active fade-in">
-
-        <section class="cards">
-
-          <div class="card"><div class="card-title">Faturamento</div><div class="card-value" id="fat">R$ 0,00</div></div>
-
-          <div class="card"><div class="card-title">Gastos</div><div class="card-value" id="gas">R$ 0,00</div></div>
-
-          <div class="card"><div class="card-title">Saldo</div><div class="card-value" id="saldo">R$ 0,00</div></div>
-
-          <div class="card"><div class="card-title">Meta atingida</div><div class="card-value" id="metaAtingida">0%</div></div>
-
-        </section>
-
-
-        <section class="grid">
-
-          <div class="panel">
-
-            <div class="panel-head"><h3>Gastos x Meta por Categoria</h3></div>
-
-            <div class="chart-wrap"><canvas id="barChart"></canvas></div>
-
-          </div>
-
-
-          <div class="panel">
-
-            <div class="panel-head"><h3>Distribuição dos Gastos</h3></div>
-
-            <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
-
-          </div>
-
-        </section>
-
-
-        <section class="panel">
-
-          <div class="panel-head"><h3>Evolução Mensal</h3></div>
-
-          <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
-
-        </section>
-
-
-        <section class="panel">
-
-          <div class="panel-head"><h3>Ranking Anual de Categorias</h3></div>
-
-          <div class="chart-wrap"><canvas id="rankingChart"></canvas></div>
-
-        </section>
-
-
-        <section class="panel table-wrap">
-
-          <div class="panel-head"><h3>Resumo por Categoria</h3></div>
-
-          <table>
-
-            <thead>
-
-              <tr><th>Categoria</th><th>Gasto</th><th>Meta %</th><th>Meta R$</th><th>Diferença</th><th>Situação</th></tr>
-
-            </thead>
-
-            <tbody id="tabelaResumo">
-
-              <tr><td colspan="6" class="muted">Nenhum dado carregado.</td></tr>
-
-            </tbody>
-
-          </table>
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-contas-pagar" class="tab-section fade-in">
-
-        <section class="panel">
-
-          <div class="panel-head"><h3>Cadastrar Conta a Pagar</h3></div>
-
-          <div class="form-grid">
-
-            <input id="cpFornecedor" placeholder="Fornecedor">
-
-            <input id="cpDescricao" placeholder="Descrição">
-
-            <input id="cpCategoria" placeholder="Categoria">
-
-            <input id="cpDocumento" placeholder="Documento">
-
-            <input id="cpValor" type="number" step="0.01" placeholder="Valor">
-
-            <input id="cpVencimento" type="date">
-
-            <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
-
-          </div>
-
-          <div style="margin-top:16px;">
-
-            <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
-
-          </div>
-
-        </section>
-
-
-        <section class="panel table-wrap">
-
-          <div class="panel-head"><h3>Contas a Pagar</h3></div>
-
-          <tbody id="filtrosContasPagar"></tbody>
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>Fornecedor</th><th>Descrição</th><th>Categoria</th><th>Documento</th>
-
-                <th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody id="tabelaContasPagar"></tbody>
-
-          </table>
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-contas-pagas" class="tab-section fade-in">
-
-        <section class="panel table-wrap">
-
-          <div class="panel-head"><h3>Contas Pagas</h3></div>
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>Fornecedor</th><th>Descrição</th><th>Categoria</th><th>Documento</th>
-
-                <th>Valor</th><th>Pago em</th><th>Total</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody id="tabelaContasPagas"></tbody>
-
-          </table>
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-contas-receber" class="tab-section fade-in">
-
-        <section class="panel">
-
-          <div class="panel-head"><h3>Cadastrar Conta a Receber</h3></div>
-
-          <div class="form-grid">
-
-            <input id="crrCliente" placeholder="Cliente">
-
-            <input id="crrDescricao" placeholder="Descrição">
-
-            <input id="crrDocumento" placeholder="NF / FAT / Pedido">
-
-            <input id="crrValor" type="number" step="0.01" placeholder="Valor">
-
-            <input id="crrVencimento" type="date">
-
-            <input id="crrCategoria" placeholder="Categoria / Tipo">
-
-            <textarea id="crrObs" class="full" placeholder="Observações"></textarea>
-
-          </div>
-
-          <div style="margin-top:16px;">
-
-            <button id="btnSalvarContaReceber" class="btn" type="button">Salvar conta</button>
-
-          </div>
-
-        </section>
-
-
-        <section class="panel table-wrap">
-
-          <div class="panel-head"><h3>Contas a Receber</h3></div>
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>Cliente</th><th>Descrição</th><th>Documento</th><th>Categoria</th>
-
-                <th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody id="tabelaContasReceber"></tbody>
-
-          </table>
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-contas-recebidas" class="tab-section fade-in">
-
-        <section class="panel table-wrap">
-
-          <div class="panel-head"><h3>Contas Recebidas</h3></div>
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>Cliente</th><th>Descrição</th><th>Documento</th><th>Categoria</th>
-
-                <th>Valor</th><th>Recebido em</th><th>Total</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody id="tabelaContasRecebidas"></tbody>
-
-          </table>
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-faturamento" class="tab-section fade-in">
-
-        <section class="panel">
-
-          <div class="panel-head"><h3>Faturamento</h3></div>
-
-          <div class="top-filters">
-
-            <input id="faturamentoInput" type="number" step="0.01" placeholder="Faturamento do mês">
-
-            <button id="btnSalvarFaturamento" class="btn" type="button">Salvar faturamento</button>
-
-          </div>
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-metas" class="tab-section fade-in">
-
-        <section class="panel">
-
-          <div class="panel-head"><h3>Metas</h3></div>
-
-          <div id="metaGrid" class="meta-grid"></div>
-
-          <div style="margin-top:16px;">
-
-            <button id="btnSalvarMetas" class="btn" type="button">Salvar metas</button>
-
-          </div>
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-importar" class="tab-section fade-in">
-
-        <section class="panel">
-
-          <div class="panel-head"><h3>Importar planilha de despesas</h3></div>
-
-          <input id="fileInput" type="file" accept=".xlsx,.xls">
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-resumo" class="tab-section fade-in">
-
-        <section class="panel table-wrap">
-
-          <div class="panel-head"><h3>Resumo Anual</h3></div>
-
-          <table>
-
-            <thead><tr><th>Mês</th><th>Faturamento</th><th>Gastos</th><th>Saldo</th></tr></thead>
-
-            <tbody id="tabelaResumoAnual"></tbody>
-
-          </table>
-
-        </section>
-
-      </section>
-
-
-      <section id="tab-planejamento" class="tab-section fade-in">
-
-        <section class="panel">
-
-          <div class="panel-head"><h3>Planejamento</h3></div>
-
-          <div class="form-grid">
-
-            <input class="saldo-conta" data-conta="sicoob" placeholder="Sicoob">
-
-            <input class="saldo-conta" data-conta="nubank" placeholder="Nubank">
-
-            <input class="saldo-conta" data-conta="metos" placeholder="Metos">
-
-            <input class="saldo-conta" data-conta="portal" placeholder="Portal Cash (GE)">
-
-            <input class="saldo-conta" data-conta="monkey" placeholder="Monkey (WEG)">
-
-            <input class="saldo-conta" data-conta="citibank" placeholder="Citibank (Hitachi)">
-
-            <input class="saldo-conta" data-conta="dinheiro" placeholder="Dinheiro Físico">
-
-          </div>
-
-          <div style="margin-top:16px;">
-
-            <button id="btnSalvarPlanejamento" class="btn" type="button">Salvar</button>
-
-          </div>
-
-        </section>
-
-
-        <section class="panel table-wrap">
-
-          <table>
-
-            <thead>
-
-              <tr><th>Semana</th><th>Entradas</th><th>Saídas</th><th>Saldo</th></tr>
-
-            </thead>
-
-            <tbody id="tabelaPlanejamento"></tbody>
-
-          </table>
-
-        </section>
-
-      </section>
-
-    </main>
-
-  </section>
-
-
-  <script src="./js/config.js"></script>
-
-  <script src="./js/api/supabase.js"></script>
-
-  <script src="./js/core/utils.js"></script>
-
-  <script src="./js/core/navigation.js"></script>
-
-  <script src="./js/core/auth.js"></script>
-
-  <script src="./js/modules/dashboard.js"></script>
-
-  <script src="./js/modules/contas-pagar.js"></script>
-
-  <script src="./js/modules/contas-pagas.js"></script>
-
-  <script src="./js/modules/contas-receber.js"></script>
-
-  <script src="./js/modules/contas-recebidas.js"></script>
-
-  <script src="./js/modules/faturamento.js"></script>
-
-  <script src="./js/modules/metas.js"></script>
-
-  <script src="./js/modules/importar.js"></script>
-
-  <script src="./js/modules/resumo.js"></script>
-
-  <script src="./js/modules/planejamento.js"></script>
-
-  <script src="./js/app.js"></script>
+      <canvas id="barChart"></canvas>
+      <canvas id="pieChart"></canvas>
+
+      <div id="alertList"></div>
+
+      <table>
+        <tbody id="tabelaResumo"></tbody>
+      </table>
+    </section>
+
+    <!-- CONTAS A PAGAR -->
+    <section id="tab-contas-pagar" class="tab-section">
+      <input id="cpFornecedor">
+      <input id="cpDescricao">
+      <input id="cpCategoria">
+      <input id="cpDocumento">
+      <input id="cpValor">
+      <input id="cpVencimento">
+      <textarea id="cpObservacoes"></textarea>
+      <button id="btnSalvarContaPagar">Salvar</button>
+
+      <table>
+        <tbody id="tabelaContasPagar"></tbody>
+      </table>
+    </section>
+
+    <!-- CONTAS PAGAS -->
+    <section id="tab-contas-pagas" class="tab-section">
+      <table>
+        <tbody id="tabelaContasPagas"></tbody>
+      </table>
+    </section>
+
+    <!-- CONTAS A RECEBER -->
+    <section id="tab-contas-receber" class="tab-section">
+      <input id="crrCliente">
+      <input id="crrDescricao">
+      <input id="crrCategoria">
+      <input id="crrDocumento">
+      <input id="crrValor">
+      <input id="crrVencimento">
+      <textarea id="crrObs"></textarea>
+      <button id="btnSalvarContaReceber">Salvar</button>
+
+      <table>
+        <tbody id="tabelaContasReceber"></tbody>
+      </table>
+    </section>
+
+    <!-- CONTAS RECEBIDAS -->
+    <section id="tab-contas-recebidas" class="tab-section">
+      <table>
+        <tbody id="tabelaContasRecebidas"></tbody>
+      </table>
+    </section>
+
+    <!-- FATURAMENTO -->
+    <section id="tab-faturamento" class="tab-section">
+      <input id="faturamentoInput">
+      <button id="btnSalvarFaturamento">Salvar</button>
+    </section>
+
+    <!-- METAS -->
+    <section id="tab-metas" class="tab-section">
+      <div id="metaGrid"></div>
+      <button id="btnSalvarMetas">Salvar</button>
+    </section>
+
+    <!-- IMPORTAR -->
+    <section id="tab-importar" class="tab-section">
+      <input id="fileInput" type="file">
+    </section>
+
+    <!-- RESUMO -->
+    <section id="tab-resumo" class="tab-section">
+      <table>
+        <tbody id="tabelaResumoAnual"></tbody>
+      </table>
+    </section>
+
+    <!-- PLANEJAMENTO -->
+    <section id="tab-planejamento" class="tab-section">
+
+      <div id="totalDisponivelBadge"></div>
+
+      <input class="saldo-conta">
+      <input class="saldo-conta">
+      <input class="saldo-conta">
+
+      <div id="riskMenorSaldo"></div>
+      <div id="riskSemanasNegativas"></div>
+      <div id="riskMaiorSaida"></div>
+
+      <div id="riskList"></div>
+
+      <canvas id="planejamentoChart"></canvas>
+
+      <table>
+        <tbody id="tabelaPlanejamento"></tbody>
+      </table>
+    </section>
+
+  </main>
+</section>
+
+<!-- SCRIPTS -->
+<script src="./js/config.js"></script>
+<script src="./js/api/supabase.js"></script>
+<script src="./js/core/utils.js"></script>
+<script src="./js/core/navigation.js"></script>
+<script src="./js/core/auth.js"></script>
+
+<script src="./js/modules/dashboard.js"></script>
+<script src="./js/modules/contas-pagar.js"></script>
+<script src="./js/modules/contas-pagas.js"></script>
+<script src="./js/modules/contas-receber.js"></script>
+<script src="./js/modules/contas-recebidas.js"></script>
+<script src="./js/modules/faturamento.js"></script>
+<script src="./js/modules/metas.js"></script>
+<script src="./js/modules/importar.js"></script>
+<script src="./js/modules/resumo.js"></script>
+<script src="./js/modules/planejamento.js"></script>
+
+<script src="./js/app.js"></script>
 
 </body>
-
 </html>
-
