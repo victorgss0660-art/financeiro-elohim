@@ -1,57 +1,117 @@
 window.contasPagarModule = {
-
   async salvarContaPagar() {
-    const { mes, ano } = utils.getMesAno();
+    try {
+      const { mes, ano } = utils.getMesAno();
 
-    await api.restInsert("contas_pagar", [{
-      fornecedor: cpFornecedor.value,
-      descricao: cpDescricao.value,
-      categoria: cpCategoria.value,
-      documento: cpDocumento.value,
-      valor: Number(cpValor.value),
-      vencimento: cpVencimento.value,
-      status: "pendente",
-      mes,
-      ano
-    }]);
+      const payload = {
+        fornecedor: document.getElementById("cpFornecedor").value.trim(),
+        descricao: document.getElementById("cpDescricao").value.trim(),
+        categoria: document.getElementById("cpCategoria").value.trim(),
+        documento: document.getElementById("cpDocumento").value.trim(),
+        valor: Number(document.getElementById("cpValor").value || 0),
+        vencimento: document.getElementById("cpVencimento").value,
+        observacoes: document.getElementById("cpObservacoes").value.trim(),
+        status: "pendente",
+        mes,
+        ano
+      };
 
-    utils.setAppMsg("Conta salva", "ok");
-    await this.carregarContasPagar();
+      if (!payload.fornecedor || !payload.descricao || !payload.valor || !payload.vencimento) {
+        utils.setAppMsg("Preencha fornecedor, descrição, valor e vencimento.", "err");
+        return;
+      }
+
+      await api.restInsert("contas_pagar", [payload]);
+      utils.setAppMsg("Conta a pagar salva com sucesso.", "ok");
+
+      this.limparFormulario();
+      await this.carregarContasPagar();
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao salvar conta a pagar: " + e.message, "err");
+    }
+  },
+
+  limparFormulario() {
+    [
+      "cpFornecedor",
+      "cpDescricao",
+      "cpCategoria",
+      "cpDocumento",
+      "cpValor",
+      "cpVencimento",
+      "cpObservacoes"
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
   },
 
   async carregarContasPagar() {
-    const { mes, ano } = utils.getMesAno();
+    try {
+      const { mes, ano } = utils.getMesAno();
 
-    const data = await api.restGet("contas_pagar",
-      `select=*&mes=eq.${mes}&ano=eq.${ano}&status=eq.pendente`
-    );
+      const data = await api.restGet(
+        "contas_pagar",
+        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&status=eq.pendente&order=vencimento.asc`
+      );
 
-    const tbody = tabelaContasPagar;
+      const tbody = document.getElementById("tabelaContasPagar");
 
-    tbody.innerHTML = data.map(i => `
-      <tr>
-        <td>${i.fornecedor}</td>
-        <td>${i.descricao}</td>
-        <td>${i.categoria}</td>
-        <td>${i.documento}</td>
-        <td>${utils.moeda(i.valor)}</td>
-        <td>${i.vencimento}</td>
-        <td>${i.status}</td>
-        <td>
-          <button onclick="contasPagarModule.pagar(${i.id})">Pagar</button>
-        </td>
-      </tr>
-    `).join("");
+      if (!data.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="muted">Nenhuma conta a pagar pendente.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = data.map(item => {
+        const hoje = utils.hojeISO();
+        const vencido = item.vencimento && item.vencimento < hoje;
+        const statusExibicao = vencido ? "vencido" : "pendente";
+
+        return `
+          <tr>
+            <td>${item.fornecedor || "-"}</td>
+            <td>${item.descricao || "-"}</td>
+            <td>${item.categoria || "-"}</td>
+            <td>${item.documento || "-"}</td>
+            <td>${utils.moeda(item.valor || 0)}</td>
+            <td>${item.vencimento || "-"}</td>
+            <td>${statusExibicao}</td>
+            <td>
+              <button class="small-btn small-green" onclick="contasPagarModule.pagar(${item.id})">Pagar</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    } catch (e) {
+      utils.setAppMsg("Erro ao carregar contas a pagar: " + e.message, "err");
+    }
   },
 
   async pagar(id) {
-    await api.restPatch("contas_pagar", `id=eq.${id}`, {
-      status: "pago",
-      data_pagamento: utils.hojeISO()
-    });
+    try {
+      await api.restPatch("contas_pagar", `id=eq.${id}`, {
+        status: "pago",
+        data_pagamento: utils.hojeISO()
+      });
 
-    await this.carregarContasPagar();
-    await contasPagasModule.carregarContasPagas();
+      utils.setAppMsg("Conta marcada como paga.", "ok");
+
+      await this.carregarContasPagar();
+      if (window.contasPagasModule?.carregarContasPagas) {
+        await window.contasPagasModule.carregarContasPagas();
+      }
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao pagar conta: " + e.message, "err");
+    }
   }
-
 };
