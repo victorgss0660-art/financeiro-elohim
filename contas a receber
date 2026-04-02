@@ -6,13 +6,13 @@
     </div>
 
     <div class="form-grid">
-      <input id="crCliente" placeholder="Cliente">
-      <input id="crDescricao" placeholder="Descrição">
-      <input id="crDocumento" placeholder="NF / FAT">
-      <input id="crValor" type="number" placeholder="Valor">
-      <input id="crVencimento" type="date">
+<input id="crrCliente" placeholder="Cliente">
+<input id="crrDescricao" placeholder="Descrição">
+<input id="crrDocumento" placeholder="NF / FAT">
+<input id="crrValor" type="number" placeholder="Valor">
+<input id="crrVencimento" type="date">
 
-      <textarea id="crObs" class="full" placeholder="Observações"></textarea>
+<textarea id="crrObs" class="full" placeholder="Observações"></textarea>
     </div>
 
     <button class="btn" onclick="salvarContaReceber()">Salvar</button>
