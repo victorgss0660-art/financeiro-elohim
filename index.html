@@ -266,6 +266,8 @@
 
     .small-blue{background:#1d4ed8}
 
+    .small-yellow{background:#a16207}
+
 
     #loginBtn{width:100%;font-size:15px}
 
@@ -558,7 +560,11 @@
 
     .sim-grid select,
 
-    .modal-content input{
+    .modal-content input,
+
+    .modal-content select,
+
+    .modal-content textarea{
 
       padding:11px 12px;
 
@@ -571,6 +577,8 @@
       color:#fff;
 
       min-width:150px;
+
+      width:100%;
 
     }
 
@@ -896,6 +904,24 @@
     th{color:var(--muted)}
 
 
+    #tabelaContasPagar tr:nth-child(odd),
+
+    #tabelaContasPagas tr:nth-child(odd){
+
+      background:rgba(255,255,255,0.02);
+
+    }
+
+
+    #tabelaContasPagar tr:nth-child(even),
+
+    #tabelaContasPagas tr:nth-child(even){
+
+      background:rgba(255,255,255,0.05);
+
+    }
+
+
     .success{color:var(--green);font-weight:bold}
 
     .danger{color:var(--danger);font-weight:bold}
@@ -1116,7 +1142,7 @@
 
       width:100%;
 
-      max-width:380px;
+      max-width:430px;
 
       background:#111;
 
@@ -1457,7 +1483,7 @@
 
           <div class="card"><div class="card-title">Total Vencido</div><div class="card-value" id="cpVencido">R$ 0,00</div><div class="card-sub">Contas em atraso</div></div>
 
-          <div class="card"><div class="card-title">Qtd. Contas</div><div class="card-value" id="cpQuantidade">0</div><div class="card-sub">Registros no mês/ano</div></div>
+          <div class="card"><div class="card-title">Qtd. Contas</div><div class="card-value" id="cpQuantidade">0</div><div class="card-sub">Registros pendentes/vencidos</div></div>
 
         </section>
 
@@ -1638,6 +1664,8 @@
 
                 <th>Multa</th>
 
+                <th>Desconto</th>
+
                 <th>Total Pago</th>
 
               </tr>
@@ -1646,7 +1674,7 @@
 
             <tbody id="tabelaContasPagas">
 
-              <tr><td colspan="9" class="muted">Nenhuma conta paga.</td></tr>
+              <tr><td colspan="10" class="muted">Nenhuma conta paga.</td></tr>
 
             </tbody>
 
@@ -1936,11 +1964,121 @@
       <input type="number" id="multaPagamento" step="0.01" value="0">
 
 
+      <label for="descontoPagamento">Desconto (R$)</label>
+
+      <input type="number" id="descontoPagamento" step="0.01" value="0">
+
+
       <div class="modal-actions">
 
         <button id="btnConfirmarPagamento" class="btn" type="button">Confirmar</button>
 
         <button id="btnCancelarPagamento" class="secondary-btn" type="button">Cancelar</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div id="modalDuplicar" class="modal hidden">
+
+    <div class="modal-content">
+
+      <h3>Duplicar Conta</h3>
+
+
+      <label for="dupFornecedor">Fornecedor</label>
+
+      <input id="dupFornecedor" type="text">
+
+
+      <label for="dupDescricao">Descrição</label>
+
+      <input id="dupDescricao" type="text">
+
+
+      <label for="dupCategoria">Categoria</label>
+
+      <select id="dupCategoria">
+
+        <option value="">Categoria</option>
+
+        <option value="MC">Materiais de Consumo</option>
+
+        <option value="MP">Matéria-Prima</option>
+
+        <option value="TERC">Terceirizações</option>
+
+        <option value="FRETE">Fretes</option>
+
+        <option value="DESP">Despesas Fixas</option>
+
+        <option value="TAR">Tarifas Bancárias</option>
+
+        <option value="PREST">Prestações de Serviço</option>
+
+        <option value="FOLHA">Folha de Pagamento</option>
+
+        <option value="COMIS">Comissões</option>
+
+        <option value="IMPOS">Impostos</option>
+
+        <option value="RESC">Rescisões</option>
+
+        <option value="MANUT">Manutenções</option>
+
+      </select>
+
+
+      <label for="dupDocumento">Documento</label>
+
+      <input id="dupDocumento" type="text">
+
+
+      <label for="dupValor">Valor</label>
+
+      <input id="dupValor" type="number" step="0.01">
+
+
+      <label for="dupVencimento">Vencimento</label>
+
+      <input id="dupVencimento" type="date">
+
+
+      <label for="dupStatus">Status</label>
+
+      <select id="dupStatus">
+
+        <option value="pendente">Pendente</option>
+
+        <option value="vencido">Vencido</option>
+
+        <option value="pago">Pago</option>
+
+      </select>
+
+
+      <div class="check-row">
+
+        <label><input id="dupBoleto" type="checkbox"> Boleto recebido</label>
+
+        <label><input id="dupNota" type="checkbox"> Nota fiscal recebida</label>
+
+      </div>
+
+
+      <label for="dupObservacoes">Observações</label>
+
+      <textarea id="dupObservacoes"></textarea>
+
+
+      <div class="modal-actions">
+
+        <button id="btnSalvarDuplicacao" class="btn" type="button">Salvar duplicada</button>
+
+        <button id="btnCancelarDuplicacao" class="secondary-btn" type="button">Cancelar</button>
 
       </div>
 
@@ -2013,6 +2151,8 @@
     let contaPagarEditandoId = null;
 
     let contaPagamentoSelecionadaId = null;
+
+    let contaDuplicarBase = null;
 
     let simulacaoAtual = null;
 
@@ -4078,6 +4218,8 @@
 
       document.getElementById("multaPagamento").value = "0";
 
+      document.getElementById("descontoPagamento").value = "0";
+
       document.getElementById("modalPagamento").classList.remove("hidden");
 
     }
@@ -4100,6 +4242,8 @@
 
         const multa = Number(document.getElementById("multaPagamento").value || 0);
 
+        const desconto = Number(document.getElementById("descontoPagamento").value || 0);
+
 
         if (!data) {
 
@@ -4116,7 +4260,9 @@
 
           data_pagamento: data,
 
-          multa_atraso: multa
+          multa_atraso: multa,
+
+          desconto: desconto
 
         });
 
@@ -4135,6 +4281,149 @@
       } catch (erro) {
 
         setAppMsg("Erro ao registrar pagamento: " + erro.message, "err");
+
+      }
+
+    }
+
+
+    function abrirModalDuplicar(itemJson) {
+
+      contaDuplicarBase = JSON.parse(itemJson);
+
+
+      document.getElementById("dupFornecedor").value = contaDuplicarBase.fornecedor || "";
+
+      document.getElementById("dupDescricao").value = contaDuplicarBase.descricao || "";
+
+      document.getElementById("dupCategoria").value = contaDuplicarBase.categoria || "";
+
+      document.getElementById("dupDocumento").value = contaDuplicarBase.documento || "";
+
+      document.getElementById("dupValor").value = contaDuplicarBase.valor || "";
+
+      document.getElementById("dupVencimento").value = contaDuplicarBase.vencimento || "";
+
+      document.getElementById("dupStatus").value = (contaDuplicarBase.status === "pago" ? "pendente" : contaDuplicarBase.status) || "pendente";
+
+      document.getElementById("dupBoleto").checked = !!contaDuplicarBase.boleto;
+
+      document.getElementById("dupNota").checked = !!contaDuplicarBase.nota_fiscal;
+
+      document.getElementById("dupObservacoes").value = contaDuplicarBase.observacoes || "";
+
+
+      document.getElementById("modalDuplicar").classList.remove("hidden");
+
+    }
+
+
+    function fecharModalDuplicar() {
+
+      contaDuplicarBase = null;
+
+      document.getElementById("modalDuplicar").classList.add("hidden");
+
+    }
+
+
+    async function salvarDuplicacao() {
+
+      try {
+
+        const { mes, ano } = getMesAno();
+
+
+        const fornecedor = document.getElementById("dupFornecedor").value.trim();
+
+        const descricao = document.getElementById("dupDescricao").value.trim();
+
+        const categoria = document.getElementById("dupCategoria").value;
+
+        const documento = document.getElementById("dupDocumento").value.trim();
+
+        const valor = Number(document.getElementById("dupValor").value || 0);
+
+        const vencimento = document.getElementById("dupVencimento").value;
+
+        const status = document.getElementById("dupStatus").value;
+
+        const boleto = document.getElementById("dupBoleto").checked;
+
+        const nota_fiscal = document.getElementById("dupNota").checked;
+
+        const observacoes = document.getElementById("dupObservacoes").value.trim();
+
+
+        if (!fornecedor || !descricao || !categoria || !valor || !vencimento) {
+
+          setAppMsg("Preencha fornecedor, descrição, categoria, valor e vencimento na duplicação.", "err");
+
+          return;
+
+        }
+
+
+        const payload = {
+
+          fornecedor,
+
+          descricao,
+
+          categoria,
+
+          documento,
+
+          valor,
+
+          vencimento,
+
+          status,
+
+          boleto,
+
+          nota_fiscal,
+
+          observacoes,
+
+          mes,
+
+          ano,
+
+          data_pagamento: null,
+
+          multa_atraso: 0,
+
+          desconto: 0,
+
+          created_at: new Date().toISOString()
+
+        };
+
+
+        if (status === "pago") {
+
+          payload.status = "pendente";
+
+        }
+
+
+        await restInsert("contas_pagar", [payload]);
+
+
+        fecharModalDuplicar();
+
+        setAppMsg("Conta duplicada com sucesso.", "ok");
+
+        await carregarContasPagar();
+
+        await carregarContasPagas();
+
+        await carregarPlanejamento();
+
+      } catch (erro) {
+
+        setAppMsg("Erro ao duplicar conta: " + erro.message, "err");
 
       }
 
@@ -4168,12 +4457,12 @@
 
           "contas_pagar",
 
-          `select=valor,multa_atraso,status&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
+          `select=valor,multa_atraso,desconto,status&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
 
         );
 
 
-        const totalPago = pagasMes.filter(i => i.status === "pago").reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0), 0);
+        const totalPago = pagasMes.filter(i => i.status === "pago").reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0) - Number(i.desconto || 0), 0);
 
         document.getElementById("cpPendente").textContent = moeda(0);
 
@@ -4238,6 +4527,8 @@
 
                 <button class="small-btn small-blue" onclick="editarContaPagar(decodeURIComponent('${safeItem}'))">Editar</button>
 
+                <button class="small-btn small-yellow" onclick="abrirModalDuplicar(decodeURIComponent('${safeItem}'))">Duplicar</button>
+
                 <button class="small-btn small-green" onclick="abrirModalPagamento(${item.id})">Pagar</button>
 
                 <button class="small-btn small-red" onclick="excluirContaPagar(${item.id})">Excluir</button>
@@ -4257,12 +4548,12 @@
 
         "contas_pagar",
 
-        `select=valor,multa_atraso,status&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
+        `select=valor,multa_atraso,desconto,status&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
 
       );
 
 
-      const totalPago = todasMes.filter(i => i.status === "pago").reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0), 0);
+      const totalPago = todasMes.filter(i => i.status === "pago").reduce((acc, i) => acc + Number(i.valor || 0) + Number(i.multa_atraso || 0) - Number(i.desconto || 0), 0);
 
 
       document.getElementById("cpPendente").textContent = moeda(totalPendente);
@@ -4295,7 +4586,7 @@
 
       if (!data.length) {
 
-        tbody.innerHTML = '<tr><td colspan="9" class="muted">Nenhuma conta paga.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="muted">Nenhuma conta paga.</td></tr>';
 
         return;
 
@@ -4304,7 +4595,7 @@
 
       tbody.innerHTML = data.map(item => {
 
-        const totalPago = Number(item.valor || 0) + Number(item.multa_atraso || 0);
+        const totalPago = Number(item.valor || 0) + Number(item.multa_atraso || 0) - Number(item.desconto || 0);
 
 
         return `
@@ -4326,6 +4617,8 @@
             <td>${item.data_pagamento || "-"}</td>
 
             <td>${moeda(item.multa_atraso || 0)}</td>
+
+            <td>${moeda(item.desconto || 0)}</td>
 
             <td class="success">${moeda(totalPago)}</td>
 
@@ -4400,6 +4693,10 @@
           payload.created_at = new Date().toISOString();
 
           payload.multa_atraso = 0;
+
+          payload.desconto = 0;
+
+          payload.data_pagamento = null;
 
           await restInsert("contas_pagar", [payload]);
 
@@ -4575,6 +4872,8 @@
 
           multa_atraso: 0,
 
+          desconto: 0,
+
           created_at: new Date().toISOString()
 
         };
@@ -4627,6 +4926,8 @@
     window.editarContaPagar = editarContaPagar;
 
     window.abrirModalPagamento = abrirModalPagamento;
+
+    window.abrirModalDuplicar = abrirModalDuplicar;
 
 
     async function carregarDashboard() {
@@ -4980,6 +5281,10 @@
       document.getElementById("btnConfirmarPagamento").addEventListener("click", confirmarPagamento);
 
       document.getElementById("btnCancelarPagamento").addEventListener("click", fecharModalPagamento);
+
+      document.getElementById("btnSalvarDuplicacao").addEventListener("click", salvarDuplicacao);
+
+      document.getElementById("btnCancelarDuplicacao").addEventListener("click", fecharModalDuplicar);
 
 
       document.getElementById("mesSelect").addEventListener("change", async () => {
