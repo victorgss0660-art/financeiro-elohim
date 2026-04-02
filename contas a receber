@@ -1,0 +1,38 @@
+<section id="tab-contas-receber" class="tab-section fade-in">
+
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Cadastrar Conta a Receber</h3>
+    </div>
+
+    <div class="form-grid">
+      <input id="crCliente" placeholder="Cliente">
+      <input id="crDescricao" placeholder="Descrição">
+      <input id="crDocumento" placeholder="NF / FAT">
+      <input id="crValor" type="number" placeholder="Valor">
+      <input id="crVencimento" type="date">
+
+      <textarea id="crObs" class="full" placeholder="Observações"></textarea>
+    </div>
+
+    <button class="btn" onclick="salvarContaReceber()">Salvar</button>
+  </section>
+
+  <section class="panel table-wrap">
+    <h3>Contas a Receber</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Descrição</th>
+          <th>Documento</th>
+          <th>Valor</th>
+          <th>Vencimento</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaContasReceber"></tbody>
+    </table>
+  </section>
+
+</section>
