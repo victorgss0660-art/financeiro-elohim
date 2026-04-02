@@ -1,4 +1,6 @@
 window.planejamentoModule = {
+  planejamentoChart: null,
+
   gerarSemanas() {
     const semanas = [];
     const hoje = new Date();
@@ -30,6 +32,12 @@ window.planejamentoModule = {
     document.querySelectorAll(".saldo-conta").forEach(input => {
       total += Number(input.value || 0);
     });
+
+    const badge = document.getElementById("totalDisponivelBadge");
+    if (badge) {
+      badge.textContent = `Total disponível: ${utils.moeda(total)}`;
+    }
+
     return total;
   },
 
@@ -71,8 +79,20 @@ window.planejamentoModule = {
     });
   },
 
+  calcularSaldos(semanas) {
+    let saldoRodando = this.calcularSaldoInicial();
+
+    semanas.forEach(semana => {
+      saldoRodando += Number(semana.entradas || 0) - Number(semana.saidas || 0);
+      semana.saldo = saldoRodando;
+    });
+
+    return semanas;
+  },
+
   renderTabela(semanas) {
     const tbody = document.getElementById("tabelaPlanejamento");
+    if (!tbody) return;
 
     if (!semanas.length) {
       tbody.innerHTML = `
@@ -86,7 +106,7 @@ window.planejamentoModule = {
     tbody.innerHTML = semanas.map(semana => `
       <tr>
         <td>
-          Semana ${semana.numero}<br>
+          <strong>Semana ${semana.numero}</strong><br>
           <span class="muted">
             ${semana.inicio.toLocaleDateString("pt-BR")} até ${semana.fim.toLocaleDateString("pt-BR")}
           </span>
@@ -98,6 +118,91 @@ window.planejamentoModule = {
     `).join("");
   },
 
+  renderIndicadores(semanas) {
+    if (!semanas.length) return;
+
+    const menorSaldo = Math.min(...semanas.map(s => s.saldo));
+    const semanasNegativas = semanas.filter(s => s.saldo < 0).length;
+    const maiorSaida = Math.max(...semanas.map(s => s.saidas));
+
+    const riskMenorSaldo = document.getElementById("riskMenorSaldo");
+    const riskSemanasNegativas = document.getElementById("riskSemanasNegativas");
+    const riskMaiorSaida = document.getElementById("riskMaiorSaida");
+
+    if (riskMenorSaldo) riskMenorSaldo.textContent = utils.moeda(menorSaldo);
+    if (riskSemanasNegativas) riskSemanasNegativas.textContent = String(semanasNegativas);
+    if (riskMaiorSaida) riskMaiorSaida.textContent = utils.moeda(maiorSaida);
+  },
+
+  renderRiscos(semanas) {
+    const riskList = document.getElementById("riskList");
+    if (!riskList) return;
+
+    const negativos = semanas.filter(s => s.saldo < 0);
+
+    if (!negativos.length) {
+      riskList.innerHTML = `
+        <div class="alert-item ok">
+          <strong>Sem risco crítico.</strong><br>
+          O fluxo projetado está saudável nas próximas 12 semanas.
+        </div>
+      `;
+      return;
+    }
+
+    riskList.innerHTML = negativos.map(semana => `
+      <div class="alert-item">
+        <strong>Semana ${semana.numero}</strong><br>
+        Saldo projetado negativo em ${utils.moeda(semana.saldo)}
+      </div>
+    `).join("");
+  },
+
+  desenharGrafico(semanas) {
+    const canvas = document.getElementById("planejamentoChart");
+    if (!canvas) return;
+
+    const labels = semanas.map(s => `S${s.numero}`);
+    const entradas = semanas.map(s => s.entradas);
+    const saidas = semanas.map(s => s.saidas);
+    const saldos = semanas.map(s => s.saldo);
+
+    if (this.planejamentoChart) {
+      this.planejamentoChart.destroy();
+    }
+
+    this.planejamentoChart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Entradas",
+            data: entradas,
+            borderWidth: 2,
+            tension: 0.35
+          },
+          {
+            label: "Saídas",
+            data: saidas,
+            borderWidth: 2,
+            tension: 0.35
+          },
+          {
+            label: "Saldo Projetado",
+            data: saldos,
+            borderWidth: 3,
+            tension: 0.35
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true
+      }
+    });
+  },
+
   async carregarPlanejamento() {
     try {
       const semanas = this.gerarSemanas();
@@ -105,14 +210,11 @@ window.planejamentoModule = {
       const contasReceber = await this.buscarRecebimentosPendentes();
 
       this.encaixarMovimentosNasSemanas(semanas, contasPagar, contasReceber);
-
-      let saldoRodando = this.calcularSaldoInicial();
-      semanas.forEach(semana => {
-        saldoRodando += semana.entradas - semana.saidas;
-        semana.saldo = saldoRodando;
-      });
-
+      this.calcularSaldos(semanas);
       this.renderTabela(semanas);
+      this.renderIndicadores(semanas);
+      this.renderRiscos(semanas);
+      this.desenharGrafico(semanas);
     } catch (e) {
       utils.setAppMsg("Erro ao carregar planejamento: " + e.message, "err");
     }
