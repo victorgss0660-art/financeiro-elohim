@@ -1,4 +1,6 @@
 <section id="tab-contas-receber" class="tab-section fade-in">
+
+  <!-- FORMULÁRIO -->
   <section class="panel">
     <div class="panel-head">
       <h3>Cadastrar Conta a Receber</h3>
@@ -12,15 +14,15 @@
       <input id="crrValor" type="number" step="0.01" placeholder="Valor">
 
       <input id="crrVencimento" type="date">
-      <input id="crrCategoria" placeholder="Categoria / Tipo">
+      <input id="crrCategoria" placeholder="Categoria">
+
       <textarea id="crrObs" class="full" placeholder="Observações"></textarea>
     </div>
 
-    <div style="margin-top:16px;">
-      <button id="btnSalvarContaReceber" class="btn" type="button">Salvar conta</button>
-    </div>
+    <button class="btn" onclick="salvarContaReceber()">Salvar conta</button>
   </section>
 
+  <!-- TABELA -->
   <section class="panel table-wrap">
     <div class="panel-head">
       <h3>Contas a Receber</h3>
@@ -40,11 +42,13 @@
           <th>Ações</th>
         </tr>
       </thead>
+
       <tbody id="tabelaContasReceber">
         <tr>
-          <td colspan="8" class="muted">Nenhuma conta a receber cadastrada.</td>
+          <td colspan="8" class="muted">Nenhuma conta cadastrada.</td>
         </tr>
       </tbody>
     </table>
   </section>
+
 </section>
