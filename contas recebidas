@@ -1,0 +1,22 @@
+<section id="tab-contas-recebidas" class="tab-section fade-in">
+
+  <section class="panel table-wrap">
+    <h3>Contas Recebidas</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Descrição</th>
+          <th>Documento</th>
+          <th>Valor</th>
+          <th>Recebido em</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaContasRecebidas"></tbody>
+    </table>
+
+  </section>
+
+</section>
