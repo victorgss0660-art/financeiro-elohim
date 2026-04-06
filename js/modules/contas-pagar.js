@@ -7,7 +7,8 @@ window.contasPagarModule = {
     busca: "",
     fornecedor: "",
     categoria: "",
-    status: ""
+    status: "",
+    docs: ""
   },
 
   async salvarContaPagar() {
@@ -22,6 +23,10 @@ window.contasPagarModule = {
         valor: Number(document.getElementById("cpValor").value || 0),
         vencimento: document.getElementById("cpVencimento").value,
         observacoes: document.getElementById("cpObservacoes").value.trim(),
+        numero_nfe: document.getElementById("cpNumeroNfe").value.trim(),
+        numero_boleto: document.getElementById("cpNumeroBoleto").value.trim(),
+        tem_nfe: document.getElementById("cpTemNfe").checked,
+        tem_boleto: document.getElementById("cpTemBoleto").checked,
         status: "pendente",
         mes,
         ano
@@ -33,11 +38,7 @@ window.contasPagarModule = {
       }
 
       if (this.contaEditandoId) {
-        await api.restPatch(
-          "contas_pagar",
-          `id=eq.${this.contaEditandoId}`,
-          payload
-        );
+        await api.restPatch("contas_pagar", `id=eq.${this.contaEditandoId}`, payload);
         utils.setAppMsg("Conta atualizada com sucesso.", "ok");
       } else {
         await api.restInsert("contas_pagar", [payload]);
@@ -56,18 +57,27 @@ window.contasPagarModule = {
   },
 
   limparFormulario() {
-    [
+    const ids = [
       "cpFornecedor",
       "cpDescricao",
       "cpCategoria",
       "cpDocumento",
       "cpValor",
       "cpVencimento",
-      "cpObservacoes"
-    ].forEach(id => {
+      "cpObservacoes",
+      "cpNumeroNfe",
+      "cpNumeroBoleto"
+    ];
+
+    ids.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
+
+    const cpTemNfe = document.getElementById("cpTemNfe");
+    const cpTemBoleto = document.getElementById("cpTemBoleto");
+    if (cpTemNfe) cpTemNfe.checked = false;
+    if (cpTemBoleto) cpTemBoleto.checked = false;
   },
 
   preencherFormulario(item) {
@@ -78,6 +88,10 @@ window.contasPagarModule = {
     document.getElementById("cpValor").value = item.valor || "";
     document.getElementById("cpVencimento").value = item.vencimento || "";
     document.getElementById("cpObservacoes").value = item.observacoes || "";
+    document.getElementById("cpNumeroNfe").value = item.numero_nfe || "";
+    document.getElementById("cpNumeroBoleto").value = item.numero_boleto || "";
+    document.getElementById("cpTemNfe").checked = !!item.tem_nfe;
+    document.getElementById("cpTemBoleto").checked = !!item.tem_boleto;
   },
 
   editar(item) {
@@ -123,6 +137,10 @@ window.contasPagarModule = {
         valor: Number(item.valor || 0),
         vencimento: item.vencimento || "",
         observacoes: item.observacoes || "",
+        numero_nfe: item.numero_nfe || "",
+        numero_boleto: item.numero_boleto || "",
+        tem_nfe: !!item.tem_nfe,
+        tem_boleto: !!item.tem_boleto,
         status: "pendente",
         mes,
         ano
@@ -172,7 +190,9 @@ window.contasPagarModule = {
       const textoBase = [
         item.fornecedor || "",
         item.descricao || "",
-        item.documento || ""
+        item.documento || "",
+        item.numero_nfe || "",
+        item.numero_boleto || ""
       ].join(" ").toLowerCase();
 
       const buscaMatch = !busca || textoBase.includes(busca);
@@ -194,7 +214,13 @@ window.contasPagarModule = {
         !this.filtros.status ||
         status === this.filtros.status;
 
-      return buscaMatch && fornecedorMatch && categoriaMatch && statusMatch;
+      let docsMatch = true;
+      if (this.filtros.docs === "faltando_nfe") docsMatch = !item.tem_nfe;
+      if (this.filtros.docs === "faltando_boleto") docsMatch = !item.tem_boleto;
+      if (this.filtros.docs === "faltando_ambos") docsMatch = !item.tem_nfe && !item.tem_boleto;
+      if (this.filtros.docs === "completos") docsMatch = !!item.tem_nfe && !!item.tem_boleto;
+
+      return buscaMatch && fornecedorMatch && categoriaMatch && statusMatch && docsMatch;
     });
   },
 
@@ -207,7 +233,7 @@ window.contasPagarModule = {
     if (!dados.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" class="muted">Nenhuma conta encontrada.</td>
+          <td colspan="9" class="muted">Nenhuma conta encontrada.</td>
         </tr>
       `;
       return;
@@ -224,21 +250,25 @@ window.contasPagarModule = {
           <td>${item.fornecedor || "-"}</td>
           <td>${item.descricao || "-"}</td>
           <td>${item.categoria || "-"}</td>
+          <td>${item.documento || "-"}</td>
           <td>
-  <div class="doc-tags">
-    ${
-      item.documento && item.documento.toLowerCase().includes("nf")
-        ? `<span class="doc-tag doc-ok">NF-e</span>`
-        : `<span class="doc-tag doc-missing">NF-e</span>`
-    }
-
-    ${
-      item.documento && item.documento.toLowerCase().includes("boleto")
-        ? `<span class="doc-tag doc-ok">Boleto</span>`
-        : `<span class="doc-tag doc-missing">Boleto</span>`
-    }
-  </div>
-</td>
+            <div class="doc-tags">
+              <span class="doc-tag ${item.tem_nfe ? "doc-ok" : "doc-missing"}">
+                ${item.tem_nfe ? "NF-e" : "NF-e pendente"}
+              </span>
+              <span class="doc-tag ${item.tem_boleto ? "doc-ok" : "doc-missing"}">
+                ${item.tem_boleto ? "Boleto" : "Boleto pendente"}
+              </span>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+              <button class="small-btn small-blue" onclick="contasPagarModule.marcarNfe(${item.id}, ${!item.tem_nfe})">
+                ${item.tem_nfe ? "Remover NF-e" : "Recebeu NF-e"}
+              </button>
+              <button class="small-btn small-purple" onclick="contasPagarModule.marcarBoleto(${item.id}, ${!item.tem_boleto})">
+                ${item.tem_boleto ? "Remover boleto" : "Recebeu boleto"}
+              </button>
+            </div>
+          </td>
           <td>${utils.moeda(item.valor || 0)}</td>
           <td>${item.vencimento || "-"}</td>
           <td class="${vencido ? "err" : "ok"}">
@@ -262,6 +292,7 @@ window.contasPagarModule = {
     const fornecedor = document.getElementById("filtroFornecedor");
     const categoria = document.getElementById("filtroCategoria");
     const status = document.getElementById("filtroStatus");
+    const docs = document.getElementById("filtroDocs");
 
     if (busca && !busca.dataset.binded) {
       busca.addEventListener("input", (e) => {
@@ -293,6 +324,32 @@ window.contasPagarModule = {
         this.render();
       });
       status.dataset.binded = "1";
+    }
+
+    if (docs && !docs.dataset.binded) {
+      docs.addEventListener("change", (e) => {
+        this.filtros.docs = e.target.value;
+        this.render();
+      });
+      docs.dataset.binded = "1";
+    }
+  },
+
+  async marcarNfe(id, valor) {
+    try {
+      await api.restPatch("contas_pagar", `id=eq.${id}`, { tem_nfe: valor });
+      await this.carregarContasPagar();
+    } catch (e) {
+      utils.setAppMsg("Erro ao atualizar NF-e: " + e.message, "err");
+    }
+  },
+
+  async marcarBoleto(id, valor) {
+    try {
+      await api.restPatch("contas_pagar", `id=eq.${id}`, { tem_boleto: valor });
+      await this.carregarContasPagar();
+    } catch (e) {
+      utils.setAppMsg("Erro ao atualizar boleto: " + e.message, "err");
     }
   },
 
