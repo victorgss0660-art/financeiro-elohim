@@ -216,6 +216,32 @@ window.contasPagarModule = {
     if (valorVencido) valorVencido.textContent = utils.moeda(totalVencido);
   },
 
+  atualizarSelecionados() {
+    const checkboxes = document.querySelectorAll(".cp-select-item:checked");
+
+    let total = 0;
+    let qtd = 0;
+
+    checkboxes.forEach(cb => {
+      total += Number(cb.dataset.valor || 0);
+      qtd++;
+
+      const tr = cb.closest("tr");
+      if (tr) tr.classList.add("selecionado");
+    });
+
+    document.querySelectorAll(".cp-select-item:not(:checked)").forEach(cb => {
+      const tr = cb.closest("tr");
+      if (tr) tr.classList.remove("selecionado");
+    });
+
+    const elQtd = document.getElementById("cpSelecionadasQtd");
+    const elValor = document.getElementById("cpSelecionadasValor");
+
+    if (elQtd) elQtd.textContent = String(qtd);
+    if (elValor) elValor.textContent = utils.moeda(total);
+  },
+
   aplicarFiltros() {
     return this.lista.filter(item => {
       const busca = this.filtros.busca;
@@ -275,6 +301,34 @@ window.contasPagarModule = {
     });
   },
 
+  registrarEventosSelecao() {
+    const todos = document.getElementById("cpSelecionarTodos");
+
+    if (todos && !todos.dataset.binded) {
+      todos.addEventListener("change", (e) => {
+        const checked = e.target.checked;
+
+        document.querySelectorAll(".cp-select-item").forEach(cb => {
+          cb.checked = checked;
+        });
+
+        this.atualizarSelecionados();
+      });
+
+      todos.dataset.binded = "1";
+    }
+
+    document.querySelectorAll(".cp-select-item").forEach(cb => {
+      if (!cb.dataset.binded) {
+        cb.addEventListener("change", () => {
+          this.atualizarSelecionados();
+        });
+
+        cb.dataset.binded = "1";
+      }
+    });
+  },
+
   render() {
     const tbody = document.getElementById("tabelaContasPagar");
     if (!tbody) return;
@@ -285,9 +339,13 @@ window.contasPagarModule = {
     if (!dados.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" class="muted">Nenhuma conta encontrada.</td>
+          <td colspan="10" class="muted">Nenhuma conta encontrada.</td>
         </tr>
       `;
+
+      const todos = document.getElementById("cpSelecionarTodos");
+      if (todos) todos.checked = false;
+      this.atualizarSelecionados();
       return;
     }
 
@@ -299,12 +357,14 @@ window.contasPagarModule = {
 
       return `
         <tr>
-        <td>
-  <input type="checkbox"
-    class="cp-select-item"
-    data-id="${item.id}"
-    data-valor="${item.valor || 0}">
-</td>
+          <td>
+            <input
+              type="checkbox"
+              class="cp-select-item"
+              data-id="${item.id}"
+              data-valor="${item.valor || 0}"
+            >
+          </td>
           <td>${item.fornecedor || "-"}</td>
           <td>${item.descricao || "-"}</td>
           <td>${item.categoria || "-"}</td>
@@ -349,6 +409,9 @@ window.contasPagarModule = {
         </tr>
       `;
     }).join("");
+
+    this.registrarEventosSelecao();
+    this.atualizarSelecionados();
   },
 
   registrarEventosFiltros() {
