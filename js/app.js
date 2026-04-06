@@ -112,48 +112,44 @@ window.app = {
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
     const btnPagarSelecionadas = document.getElementById("btnPagarSelecionadas");
+
     const btnImportarContasPagar = document.getElementById("btnImportarContasPagar");
     const btnExportarContasPagar = document.getElementById("btnExportarContasPagar");
     const fileInputContasPagar = document.getElementById("fileInputContasPagar");
+
+    const btnImportarContasPagas = document.getElementById("btnImportarContasPagas");
+    const btnExportarContasPagas = document.getElementById("btnExportarContasPagas");
+    const fileInputContasPagas = document.getElementById("fileInputContasPagas");
+
     const fileInput = document.getElementById("fileInput");
 
     if (btnSalvarContaPagar) {
       btnSalvarContaPagar.addEventListener("click", () => {
-        if (window.contasPagarModule?.salvarContaPagar) {
-          window.contasPagarModule.salvarContaPagar();
-        }
+        window.contasPagarModule?.salvarContaPagar?.();
       });
     }
 
     if (btnSalvarContaReceber) {
       btnSalvarContaReceber.addEventListener("click", () => {
-        if (window.contasReceberModule?.salvarContaReceber) {
-          window.contasReceberModule.salvarContaReceber();
-        }
+        window.contasReceberModule?.salvarContaReceber?.();
       });
     }
 
     if (btnSalvarFaturamento) {
       btnSalvarFaturamento.addEventListener("click", () => {
-        if (window.faturamentoModule?.salvarFaturamento) {
-          window.faturamentoModule.salvarFaturamento();
-        }
+        window.faturamentoModule?.salvarFaturamento?.();
       });
     }
 
     if (btnSalvarMetas) {
       btnSalvarMetas.addEventListener("click", () => {
-        if (window.metasModule?.salvarMetas) {
-          window.metasModule.salvarMetas();
-        }
+        window.metasModule?.salvarMetas?.();
       });
     }
 
     if (btnPagarSelecionadas) {
       btnPagarSelecionadas.addEventListener("click", () => {
-        if (window.contasPagarModule?.abrirPopupPagamentoLote) {
-          window.contasPagarModule.abrirPopupPagamentoLote();
-        }
+        window.contasPagarModule?.abrirPopupPagamentoLote?.();
       });
     }
 
@@ -165,45 +161,50 @@ window.app = {
 
     if (btnExportarContasPagar) {
       btnExportarContasPagar.addEventListener("click", () => {
-        if (window.contasPagarModule?.exportarPlanilha) {
-          window.contasPagarModule.exportarPlanilha();
-        }
+        window.contasPagarModule?.exportarPlanilha?.();
       });
     }
 
     if (fileInputContasPagar) {
       fileInputContasPagar.addEventListener("change", async (e) => {
-        if (window.contasPagarModule?.importarPlanilha) {
-          await window.contasPagarModule.importarPlanilha(e);
-        }
+        await window.contasPagarModule?.importarPlanilha?.(e);
+      });
+    }
+
+    if (btnImportarContasPagas) {
+      btnImportarContasPagas.addEventListener("click", () => {
+        fileInputContasPagas?.click();
+      });
+    }
+
+    if (btnExportarContasPagas) {
+      btnExportarContasPagas.addEventListener("click", () => {
+        window.contasPagasModule?.exportarPlanilha?.();
+      });
+    }
+
+    if (fileInputContasPagas) {
+      fileInputContasPagas.addEventListener("change", async (e) => {
+        await window.contasPagasModule?.importarPlanilha?.(e);
       });
     }
 
     if (fileInput) {
       fileInput.addEventListener("change", (e) => {
-        if (window.importarModule?.handleFile) {
-          window.importarModule.handleFile(e);
-        }
+        window.importarModule?.handleFile?.(e);
       });
     }
 
     document.querySelectorAll(".saldo-conta").forEach(input => {
       input.addEventListener("input", async () => {
-        if (window.planejamentoModule?.carregarPlanejamento) {
-          await window.planejamentoModule.carregarPlanejamento();
-        }
+        await window.planejamentoModule?.carregarPlanejamento?.();
       });
     });
   },
 
   initLayout() {
-    if (window.utils?.definirMesAtual) {
-      utils.definirMesAtual();
-    }
-
-    if (window.navigation?.ativarAbas) {
-      navigation.ativarAbas();
-    }
+    utils?.definirMesAtual?.();
+    navigation?.ativarAbas?.();
 
     if (window.navigation?.atualizarVisibilidadeFiltroMesAno) {
       setTimeout(() => {
@@ -213,23 +214,16 @@ window.app = {
   },
 
   initSessao() {
-    if (window.authModule?.restaurarSessao) {
-      authModule.restaurarSessao();
-    }
+    authModule?.restaurarSessao?.();
   },
 
   initFiltros() {
-    if (window.contasPagarModule?.registrarEventosFiltros) {
-      window.contasPagarModule.registrarEventosFiltros();
-    }
+    window.contasPagarModule?.registrarEventosFiltros?.();
   },
 
   initPopups() {
-    const popupPagamento = document.getElementById("popupPagamento");
-    const popupPagamentoLote = document.getElementById("popupPagamentoLote");
-
-    if (popupPagamento) popupPagamento.classList.add("hidden");
-    if (popupPagamentoLote) popupPagamentoLote.classList.add("hidden");
+    document.getElementById("popupPagamento")?.classList.add("hidden");
+    document.getElementById("popupPagamentoLote")?.classList.add("hidden");
   },
 
   init() {
