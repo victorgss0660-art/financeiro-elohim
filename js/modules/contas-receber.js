@@ -134,11 +134,9 @@ window.contasReceberModule = {
 
   async carregarContasReceber() {
     try {
-      const { mes, ano } = utils.getMesAno();
-
       const data = await api.restGet(
         "contas_receber",
-        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&status=neq.recebido&order=vencimento.asc`
+        `select=*&status=neq.recebido&order=vencimento.asc`
       );
 
       const tbody = document.getElementById("tabelaContasReceber");
