@@ -27,6 +27,79 @@ window.planejamentoModule = {
     return semanas;
   },
 
+  async salvarSaldoConta(conta, valor) {
+    try {
+      const existente = await api.restGet(
+        "saldos_bancarios",
+        `select=id,conta,valor&conta=eq.${encodeURIComponent(conta)}&limit=1`
+      );
+
+      if (existente.length) {
+        await api.restPatch(
+          "saldos_bancarios",
+          `conta=eq.${encodeURIComponent(conta)}`,
+          {
+            valor: Number(valor || 0),
+            updated_at: new Date().toISOString()
+          }
+        );
+      } else {
+        await api.restInsert("saldos_bancarios", [{
+          conta,
+          valor: Number(valor || 0),
+          updated_at: new Date().toISOString()
+        }]);
+      }
+    } catch (e) {
+      console.error("Erro ao salvar saldo da conta:", conta, e);
+      utils.setAppMsg("Erro ao salvar saldo bancário: " + e.message, "err");
+    }
+  },
+
+  async carregarSaldosSalvos() {
+    try {
+      const data = await api.restGet(
+        "saldos_bancarios",
+        `select=conta,valor`
+      );
+
+      const mapa = {};
+      data.forEach(item => {
+        mapa[item.conta] = Number(item.valor || 0);
+      });
+
+      document.querySelectorAll(".saldo-conta").forEach(input => {
+        const conta = input.dataset.conta;
+        if (!conta) return;
+
+        if (mapa[conta] !== undefined) {
+          input.value = mapa[conta];
+        }
+      });
+    } catch (e) {
+      console.error("Erro ao carregar saldos bancários:", e);
+      utils.setAppMsg("Erro ao carregar saldos bancários: " + e.message, "err");
+    }
+  },
+
+  registrarEventosSaldos() {
+    document.querySelectorAll(".saldo-conta").forEach(input => {
+      if (!input.dataset.bindedSaldo) {
+        input.addEventListener("change", async () => {
+          const conta = input.dataset.conta;
+          const valor = Number(input.value || 0);
+
+          if (!conta) return;
+
+          await this.salvarSaldoConta(conta, valor);
+          await this.carregarPlanejamento();
+        });
+
+        input.dataset.bindedSaldo = "1";
+      }
+    });
+  },
+
   calcularSaldoInicial() {
     let total = 0;
 
@@ -95,7 +168,9 @@ window.planejamentoModule = {
     const entradasTotais = semanas.reduce((acc, s) => acc + Number(s.entradas || 0), 0);
     const saidasTotais = semanas.reduce((acc, s) => acc + Number(s.saidas || 0), 0);
     const saldoFinal = saldoInicial + entradasTotais - saidasTotais;
-    const menorSaldo = semanas.length ? Math.min(...semanas.map(s => Number(s.saldo || 0))) : saldoInicial;
+    const menorSaldo = semanas.length
+      ? Math.min(...semanas.map(s => Number(s.saldo || 0)))
+      : saldoInicial;
 
     const elSaldoInicial = document.getElementById("cxSaldoInicial");
     const elEntradas = document.getElementById("cxEntradasPrevistas");
@@ -228,6 +303,9 @@ window.planejamentoModule = {
 
   async carregarPlanejamento() {
     try {
+      await this.carregarSaldosSalvos();
+      this.registrarEventosSaldos();
+
       const semanas = this.gerarSemanas();
       const saldoInicial = this.calcularSaldoInicial();
       const contasPagar = await this.buscarPagamentosPendentes();
