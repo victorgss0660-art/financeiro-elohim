@@ -1,5 +1,6 @@
 window.contasPagarModule = {
   contaEditandoId: null,
+  pagandoId: null,
 
   async salvarContaPagar() {
     try {
@@ -132,13 +133,67 @@ window.contasPagarModule = {
     }
   },
 
+  abrirPopupPagamento(id) {
+    this.pagandoId = id;
+
+    const popup = document.getElementById("popupPagamento");
+    const pgData = document.getElementById("pgData");
+    const pgMulta = document.getElementById("pgMulta");
+    const pgDesconto = document.getElementById("pgDesconto");
+
+    if (pgData) pgData.value = utils.hojeISO();
+    if (pgMulta) pgMulta.value = "";
+    if (pgDesconto) pgDesconto.value = "";
+
+    if (popup) popup.classList.remove("hidden");
+  },
+
+  fecharPopup() {
+    const popup = document.getElementById("popupPagamento");
+    if (popup) popup.classList.add("hidden");
+    this.pagandoId = null;
+  },
+
+  async confirmarPagamento() {
+    try {
+      if (!this.pagandoId) {
+        utils.setAppMsg("Nenhuma conta selecionada para pagamento.", "err");
+        return;
+      }
+
+      const data = document.getElementById("pgData")?.value || utils.hojeISO();
+      const multa = Number(document.getElementById("pgMulta")?.value || 0);
+      const desconto = Number(document.getElementById("pgDesconto")?.value || 0);
+
+      await api.restPatch("contas_pagar", `id=eq.${this.pagandoId}`, {
+        status: "pago",
+        data_pagamento: data,
+        multa: multa,
+        desconto: desconto
+      });
+
+      this.fecharPopup();
+      utils.setAppMsg("Conta paga com sucesso.", "ok");
+
+      await this.carregarContasPagar();
+
+      if (window.contasPagasModule?.carregarContasPagas) {
+        await window.contasPagasModule.carregarContasPagas();
+      }
+
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao pagar conta: " + e.message, "err");
+    }
+  },
+
   async carregarContasPagar() {
     try {
-      const { mes, ano } = utils.getMesAno();
-
       const data = await api.restGet(
         "contas_pagar",
-        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&status=eq.pendente&order=vencimento.asc`
+        `select=*&status=eq.pendente&order=vencimento.asc`
       );
 
       const tbody = document.getElementById("tabelaContasPagar");
@@ -171,7 +226,7 @@ window.contasPagarModule = {
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="small-btn small-blue" onclick="contasPagarModule.editar(JSON.parse(decodeURIComponent('${itemJson}')))">Editar</button>
                 <button class="small-btn small-yellow" onclick="contasPagarModule.duplicar(JSON.parse(decodeURIComponent('${itemJson}')))">Duplicar</button>
-                <button class="small-btn small-green" onclick="contasPagarModule.pagar(${item.id})">Pagar</button>
+                <button class="small-btn small-green" onclick="contasPagarModule.abrirPopupPagamento(${item.id})">Pagar</button>
                 <button class="small-btn small-red" onclick="contasPagarModule.excluir(${item.id})">Excluir</button>
               </div>
             </td>
@@ -180,29 +235,6 @@ window.contasPagarModule = {
       }).join("");
     } catch (e) {
       utils.setAppMsg("Erro ao carregar contas a pagar: " + e.message, "err");
-    }
-  },
-
-  async pagar(id) {
-    try {
-      await api.restPatch("contas_pagar", `id=eq.${id}`, {
-        status: "pago",
-        data_pagamento: utils.hojeISO()
-      });
-
-      utils.setAppMsg("Conta marcada como paga.", "ok");
-
-      await this.carregarContasPagar();
-
-      if (window.contasPagasModule?.carregarContasPagas) {
-        await window.contasPagasModule.carregarContasPagas();
-      }
-
-      if (window.planejamentoModule?.carregarPlanejamento) {
-        await window.planejamentoModule.carregarPlanejamento();
-      }
-    } catch (e) {
-      utils.setAppMsg("Erro ao pagar conta: " + e.message, "err");
     }
   }
 };
