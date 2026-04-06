@@ -825,5 +825,51 @@ tbody tr:hover td{
 .doc-missing{
   background:rgba(239,68,68,.15);
   color:#ef4444;
+  .doc-tags{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.doc-tag{
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+
+.doc-ok{
+  background:rgba(34,197,94,.14);
+  color:#22c55e;
+  border:1px solid rgba(34,197,94,.22);
+}
+
+.doc-missing{
+  background:rgba(239,68,68,.14);
+  color:#ef4444;
+  border:1px solid rgba(239,68,68,.22);
+}
+
+.check-card{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:48px;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.04);
+  color:#fff;
+}
+
+.check-card input{
+  width:auto;
+  margin:0;
+}
+
+.small-purple{
+  background:#7c3aed;
+}
 }
 }
