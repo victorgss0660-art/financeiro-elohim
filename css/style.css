@@ -698,43 +698,62 @@ tbody tr:hover td{
 
 /* POPUP */
 
+.hidden{
+  display:none !important;
+}
+
 .popup{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.6);
+  background:rgba(0,0,0,.65);
   display:flex;
   align-items:center;
   justify-content:center;
-  z-index:999;
+  z-index:9999;
+  padding:20px;
 }
 
 .popup-box{
   width:100%;
-  max-width:360px;
-  background:#111c2d;
-  padding:24px;
-  border-radius:18px;
+  max-width:420px;
+  background:linear-gradient(180deg, rgba(17,24,39,.98), rgba(15,23,42,.98));
   border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 24px 60px rgba(0,0,0,.4);
+  border-radius:20px;
+  padding:24px;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
 }
 
 .popup-box h3{
-  margin-top:0;
-  margin-bottom:16px;
+  margin:0 0 18px 0;
+  font-size:24px;
+  font-weight:800;
 }
 
-.popup-box label{
+.popup-field{
+  margin-bottom:14px;
+}
+
+.popup-field label{
   display:block;
-  margin-top:12px;
   margin-bottom:6px;
-  color:var(--muted);
   font-size:14px;
+  color:var(--muted);
+  font-weight:600;
+}
+
+.popup-field input{
+  width:100%;
 }
 
 .popup-actions{
   display:flex;
   gap:10px;
   margin-top:18px;
+}
+
+.popup-actions .btn,
+.popup-actions .secondary-btn{
+  flex:1;
 }
 
 /* TABS */
