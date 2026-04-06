@@ -12,7 +12,8 @@
 </head>
 <body>
 
-  <section id="loginScreen" class="login-screen">F
+  <!-- LOGIN -->
+  <section id="loginScreen" class="login-screen">
     <div class="login-card">
       <div class="login-logo">
         <img src="./logo-elohim.png" alt="Elohim">
@@ -29,6 +30,7 @@
     </div>
   </section>
 
+  <!-- APP -->
   <section id="appShell" class="app hidden">
     <aside class="sidebar">
       <div class="sidebar-logo">
@@ -70,7 +72,7 @@
         </button>
 
         <button class="menu-btn" data-tab="importar" type="button">
-          <span class="icon">📂</span><span>Importar</span>
+          <span class="icon">📂</span><span>Importar Despesas</span>
         </button>
 
         <button class="menu-btn" data-tab="resumo" type="button">
@@ -124,6 +126,7 @@
 
       <div id="appMsg" class="info"></div>
 
+      <!-- DASHBOARD -->
       <section id="tab-dashboard" class="tab-section active fade-in">
         <section class="panel executive-panel">
           <div class="executive-header">
@@ -283,148 +286,149 @@
         </section>
       </section>
 
-<section id="tab-contas-pagar" class="tab-section fade-in">
+      <!-- CONTAS A PAGAR -->
+      <section id="tab-contas-pagar" class="tab-section fade-in">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Cadastrar Conta a Pagar</h3>
+            <div class="badge">Financeiro</div>
+          </div>
 
-  <section class="panel">
-    <div class="panel-head">
-      <h3>Cadastrar Conta a Pagar</h3>
-      <div class="badge">Financeiro</div>
-    </div>
+          <div class="form-grid">
+            <input id="cpFornecedor" placeholder="Fornecedor">
+            <input id="cpDescricao" placeholder="Descrição">
+            <input id="cpCategoria" placeholder="Categoria">
 
-    <div class="form-grid">
-      <input id="cpFornecedor" placeholder="Fornecedor">
-      <input id="cpDescricao" placeholder="Descrição">
-      <input id="cpCategoria" placeholder="Categoria">
+            <input id="cpDocumento" placeholder="Documento interno">
+            <input id="cpValor" type="number" step="0.01" placeholder="Valor">
+            <input id="cpVencimento" type="date">
 
-      <input id="cpDocumento" placeholder="Documento interno">
-      <input id="cpValor" type="number" step="0.01" placeholder="Valor">
-      <input id="cpVencimento" type="date">
+            <input id="cpNumeroNfe" placeholder="Número da NF-e">
+            <input id="cpNumeroBoleto" placeholder="Número do boleto">
 
-      <input id="cpNumeroNfe" placeholder="Número da NF-e">
-      <input id="cpNumeroBoleto" placeholder="Número do boleto">
+            <label class="check-card">
+              <input id="cpTemBoleto" type="checkbox">
+              <span>Boleto já recebido</span>
+            </label>
 
-      <label class="check-card">
-        <input id="cpTemBoleto" type="checkbox">
-        <span>Boleto já recebido</span>
-      </label>
+            <label class="check-card">
+              <input id="cpTemNfe" type="checkbox">
+              <span>NF-e já recebida</span>
+            </label>
 
-      <label class="check-card">
-        <input id="cpTemNfe" type="checkbox">
-        <span>NF-e já recebida</span>
-      </label>
+            <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
+          </div>
 
-      <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
-    </div>
+          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
+            <button id="btnImportarContasPagar" class="secondary-btn" type="button">Importar planilha</button>
+            <button id="btnExportarContasPagar" class="secondary-btn" type="button">Exportar planilha</button>
+            <input id="fileInputContasPagar" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+          </div>
+        </section>
 
-    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-      <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
-      <button id="btnImportarContasPagar" class="secondary-btn" type="button">Importar planilha</button>
-      <button id="btnExportarContasPagar" class="secondary-btn" type="button">Exportar planilha</button>
-      <input id="fileInputContasPagar" type="file" accept=".xlsx,.xls,.csv" class="hidden">
-    </div>
-  </section>
+        <section class="panel table-wrap">
+          <div class="panel-head">
+            <h3>Contas a Pagar</h3>
+            <div class="badge">Pendentes</div>
+          </div>
 
-  <section class="panel table-wrap">
-    <div class="panel-head">
-      <h3>Contas a Pagar</h3>
-      <div class="badge">Pendentes</div>
-    </div>
+          <div class="row-actions">
+            <input id="filtroBusca" placeholder="Buscar por fornecedor, descrição, documento, NF-e ou boleto">
 
-    <div class="row-actions">
-      <input id="filtroBusca" placeholder="Buscar por fornecedor, descrição, documento, NF-e ou boleto">
+            <select id="filtroFornecedor">
+              <option value="">Fornecedor</option>
+            </select>
 
-      <select id="filtroFornecedor">
-        <option value="">Fornecedor</option>
-      </select>
+            <select id="filtroCategoria">
+              <option value="">Categoria</option>
+            </select>
 
-      <select id="filtroCategoria">
-        <option value="">Categoria</option>
-      </select>
+            <select id="filtroStatus">
+              <option value="">Status</option>
+              <option value="aberto">Em aberto</option>
+              <option value="vencido">Vencido</option>
+            </select>
 
-      <select id="filtroStatus">
-        <option value="">Status</option>
-        <option value="aberto">Em aberto</option>
-        <option value="vencido">Vencido</option>
-      </select>
+            <select id="filtroDocs">
+              <option value="">Documentos</option>
+              <option value="faltando_nfe">Faltando NF-e</option>
+              <option value="faltando_boleto">Faltando boleto</option>
+              <option value="faltando_ambos">Faltando ambos</option>
+              <option value="completos">Completos</option>
+            </select>
 
-      <select id="filtroDocs">
-        <option value="">Documentos</option>
-        <option value="faltando_nfe">Faltando NF-e</option>
-        <option value="faltando_boleto">Faltando boleto</option>
-        <option value="faltando_ambos">Faltando ambos</option>
-        <option value="completos">Completos</option>
-      </select>
+            <input id="filtroDataInicio" type="date">
+            <input id="filtroDataFim" type="date">
+          </div>
 
-      <input id="filtroDataInicio" type="date">
-      <input id="filtroDataFim" type="date">
-    </div>
+          <div class="table-total-bar">
+            <div class="table-total-item">
+              <span class="table-total-label">Qtd. de contas</span>
+              <strong id="cpTotalQuantidade">0</strong>
+            </div>
 
-    <div class="table-total-bar">
-      <div class="table-total-item">
-        <span class="table-total-label">Qtd. de contas</span>
-        <strong id="cpTotalQuantidade">0</strong>
-      </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Total filtrado</span>
+              <strong id="cpTotalValor">R$ 0,00</strong>
+            </div>
 
-      <div class="table-total-item">
-        <span class="table-total-label">Total filtrado</span>
-        <strong id="cpTotalValor">R$ 0,00</strong>
-      </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Vencidas</span>
+              <strong id="cpTotalVencidas">0</strong>
+            </div>
 
-      <div class="table-total-item">
-        <span class="table-total-label">Vencidas</span>
-        <strong id="cpTotalVencidas">0</strong>
-      </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Valor vencido</span>
+              <strong id="cpTotalValorVencido">R$ 0,00</strong>
+            </div>
+          </div>
 
-      <div class="table-total-item">
-        <span class="table-total-label">Valor vencido</span>
-        <strong id="cpTotalValorVencido">R$ 0,00</strong>
-      </div>
-    </div>
+          <div class="table-total-bar" style="margin-top:8px;">
+            <div class="table-total-item">
+              <span class="table-total-label">Selecionadas</span>
+              <strong id="cpSelecionadasQtd">0</strong>
+            </div>
 
-    <div class="table-total-bar" style="margin-top:8px;">
-      <div class="table-total-item">
-        <span class="table-total-label">Selecionadas</span>
-        <strong id="cpSelecionadasQtd">0</strong>
-      </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Total selecionado</span>
+              <strong id="cpSelecionadasValor">R$ 0,00</strong>
+            </div>
 
-      <div class="table-total-item">
-        <span class="table-total-label">Total selecionado</span>
-        <strong id="cpSelecionadasValor">R$ 0,00</strong>
-      </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Ação em lote</span>
+              <button id="btnPagarSelecionadas" class="btn" type="button">Pagar selecionadas</button>
+            </div>
+          </div>
 
-      <div class="table-total-item">
-        <span class="table-total-label">Ação em lote</span>
-        <button id="btnPagarSelecionadas" class="btn" type="button">Pagar selecionadas</button>
-      </div>
-    </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;">
+                  <input type="checkbox" id="cpSelecionarTodos">
+                </th>
+                <th>Fornecedor</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Documento</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Documentos</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
 
-    <table>
-      <thead>
-        <tr>
-          <th style="width:40px;">
-            <input type="checkbox" id="cpSelecionarTodos">
-          </th>
-          <th>Fornecedor</th>
-          <th>Descrição</th>
-          <th>Categoria</th>
-          <th>Documento</th>
-          <th>Valor</th>
-          <th>Vencimento</th>
-          <th>Status</th>
-          <th>Documentos</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
+            <tbody id="tabelaContasPagar">
+              <tr>
+                <td colspan="10" class="muted">Nenhuma conta encontrada.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
 
-      <tbody id="tabelaContasPagar">
-        <tr>
-          <td colspan="10" class="muted">Nenhuma conta encontrada.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-</section>
-
+      <!-- CONTAS PAGAS -->
       <section id="tab-contas-pagas" class="tab-section fade-in">
         <section class="panel table-wrap">
           <div class="panel-head">
@@ -455,6 +459,7 @@
         </section>
       </section>
 
+      <!-- CONTAS A RECEBER -->
       <section id="tab-contas-receber" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -505,6 +510,7 @@
         </section>
       </section>
 
+      <!-- CONTAS RECEBIDAS -->
       <section id="tab-contas-recebidas" class="tab-section fade-in">
         <section class="panel table-wrap">
           <div class="panel-head">
@@ -533,6 +539,7 @@
         </section>
       </section>
 
+      <!-- FATURAMENTO -->
       <section id="tab-faturamento" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -547,6 +554,7 @@
         </section>
       </section>
 
+      <!-- METAS -->
       <section id="tab-metas" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -562,6 +570,7 @@
         </section>
       </section>
 
+      <!-- IMPORTAR DESPESAS -->
       <section id="tab-importar" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -579,6 +588,7 @@
         </section>
       </section>
 
+      <!-- RESUMO -->
       <section id="tab-resumo" class="tab-section fade-in">
         <section class="panel table-wrap">
           <div class="panel-head">
@@ -604,6 +614,7 @@
         </section>
       </section>
 
+      <!-- PLANEJAMENTO -->
       <section id="tab-planejamento" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -624,32 +635,33 @@
           <div style="margin-top:16px;">
             <div id="totalDisponivelBadge" class="badge">Total disponível: R$ 0,00</div>
           </div>
+
           <div class="table-total-bar" style="margin-top:16px;">
-  <div class="table-total-item">
-    <span class="table-total-label">Saldo inicial</span>
-    <strong id="cxSaldoInicial">R$ 0,00</strong>
-  </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Saldo inicial</span>
+              <strong id="cxSaldoInicial">R$ 0,00</strong>
+            </div>
 
-  <div class="table-total-item">
-    <span class="table-total-label">Entradas previstas</span>
-    <strong id="cxEntradasPrevistas">R$ 0,00</strong>
-  </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Entradas previstas</span>
+              <strong id="cxEntradasPrevistas">R$ 0,00</strong>
+            </div>
 
-  <div class="table-total-item">
-    <span class="table-total-label">Saídas previstas</span>
-    <strong id="cxSaidasPrevistas">R$ 0,00</strong>
-  </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Saídas previstas</span>
+              <strong id="cxSaidasPrevistas">R$ 0,00</strong>
+            </div>
 
-  <div class="table-total-item">
-    <span class="table-total-label">Saldo final projetado</span>
-    <strong id="cxSaldoFinal">R$ 0,00</strong>
-  </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Saldo final projetado</span>
+              <strong id="cxSaldoFinal">R$ 0,00</strong>
+            </div>
 
-  <div class="table-total-item">
-    <span class="table-total-label">Menor saldo previsto</span>
-    <strong id="cxMenorSaldo">R$ 0,00</strong>
-  </div>
-</div>
+            <div class="table-total-item">
+              <span class="table-total-label">Menor saldo previsto</span>
+              <strong id="cxMenorSaldo">R$ 0,00</strong>
+            </div>
+          </div>
         </section>
 
         <section class="grid">
@@ -718,31 +730,71 @@
     </main>
   </section>
 
-<div id="popupPagamento" class="popup hidden">
-  <div class="popup-box">
-    <h3>Confirmar Pagamento</h3>
+  <!-- POPUP PAGAMENTO INDIVIDUAL -->
+  <div id="popupPagamento" class="popup hidden">
+    <div class="popup-box">
+      <h3>Confirmar Pagamento</h3>
 
-    <div class="popup-field">
-      <label for="pgData">Data do pagamento</label>
-      <input type="date" id="pgData">
-    </div>
+      <div class="popup-field">
+        <label for="pgData">Data do pagamento</label>
+        <input type="date" id="pgData">
+      </div>
 
-    <div class="popup-field">
-      <label for="pgMulta">Multa / Juros (R$)</label>
-      <input type="number" id="pgMulta" step="0.01" placeholder="0,00">
-    </div>
+      <div class="popup-field">
+        <label for="pgMulta">Multa / Juros (R$)</label>
+        <input type="number" id="pgMulta" step="0.01" placeholder="0,00">
+      </div>
 
-    <div class="popup-field">
-      <label for="pgDesconto">Desconto (R$)</label>
-      <input type="number" id="pgDesconto" step="0.01" placeholder="0,00">
-    </div>
+      <div class="popup-field">
+        <label for="pgDesconto">Desconto (R$)</label>
+        <input type="number" id="pgDesconto" step="0.01" placeholder="0,00">
+      </div>
 
-    <div class="popup-actions">
-      <button class="btn" onclick="contasPagarModule.confirmarPagamento()">Confirmar</button>
-      <button class="secondary-btn" onclick="contasPagarModule.fecharPopup()">Cancelar</button>
+      <div class="popup-actions">
+        <button class="btn" onclick="contasPagarModule.confirmarPagamento()">Confirmar</button>
+        <button class="secondary-btn" onclick="contasPagarModule.fecharPopup()">Cancelar</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- POPUP PAGAMENTO EM LOTE -->
+  <div id="popupPagamentoLote" class="popup hidden">
+    <div class="popup-box">
+      <h3>Pagar contas selecionadas</h3>
+
+      <div class="popup-field">
+        <label for="pgLoteQtd">Quantidade selecionada</label>
+        <input type="text" id="pgLoteQtd" readonly>
+      </div>
+
+      <div class="popup-field">
+        <label for="pgLoteTotal">Valor total selecionado</label>
+        <input type="text" id="pgLoteTotal" readonly>
+      </div>
+
+      <div class="popup-field">
+        <label for="pgLoteData">Data do pagamento</label>
+        <input type="date" id="pgLoteData">
+      </div>
+
+      <div class="popup-field">
+        <label for="pgLoteMulta">Multa / Juros total (R$)</label>
+        <input type="number" id="pgLoteMulta" step="0.01" placeholder="0,00">
+      </div>
+
+      <div class="popup-field">
+        <label for="pgLoteDesconto">Desconto total (R$)</label>
+        <input type="number" id="pgLoteDesconto" step="0.01" placeholder="0,00">
+      </div>
+
+      <div class="popup-actions">
+        <button class="btn" onclick="contasPagarModule.confirmarPagamentoLote()">Confirmar</button>
+        <button class="secondary-btn" onclick="contasPagarModule.fecharPopupLote()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
   <script src="./js/config.js"></script>
   <script src="./js/api/supabase.js"></script>
   <script src="./js/core/utils.js"></script>
@@ -761,40 +813,5 @@
   <script src="./js/modules/planejamento.js"></script>
 
   <script src="./js/app.js"></script>
-  <div id="popupPagamentoLote" class="popup hidden">
-  <div class="popup-box">
-    <h3>Pagar contas selecionadas</h3>
-
-    <div class="popup-field">
-      <label for="pgLoteQtd">Quantidade selecionada</label>
-      <input type="text" id="pgLoteQtd" readonly>
-    </div>
-
-    <div class="popup-field">
-      <label for="pgLoteTotal">Valor total selecionado</label>
-      <input type="text" id="pgLoteTotal" readonly>
-    </div>
-
-    <div class="popup-field">
-      <label for="pgLoteData">Data do pagamento</label>
-      <input type="date" id="pgLoteData">
-    </div>
-
-    <div class="popup-field">
-      <label for="pgLoteMulta">Multa / Juros total (R$)</label>
-      <input type="number" id="pgLoteMulta" step="0.01" placeholder="0,00">
-    </div>
-
-    <div class="popup-field">
-      <label for="pgLoteDesconto">Desconto total (R$)</label>
-      <input type="number" id="pgLoteDesconto" step="0.01" placeholder="0,00">
-    </div>
-
-    <div class="popup-actions">
-      <button class="btn" onclick="contasPagarModule.confirmarPagamentoLote()">Confirmar</button>
-      <button class="secondary-btn" onclick="contasPagarModule.fecharPopupLote()">Cancelar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
