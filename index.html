@@ -285,7 +285,6 @@
 
 <section id="tab-contas-pagar" class="tab-section fade-in">
 
-  <!-- FORMULÁRIO -->
   <section class="panel">
     <div class="panel-head">
       <h3>Cadastrar Conta a Pagar</h3>
@@ -317,19 +316,20 @@
       <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
     </div>
 
-    <div style="margin-top:16px;">
+    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
       <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
+      <button id="btnImportarContasPagar" class="secondary-btn" type="button">Importar planilha</button>
+      <button id="btnExportarContasPagar" class="secondary-btn" type="button">Exportar planilha</button>
+      <input id="fileInputContasPagar" type="file" accept=".xlsx,.xls,.csv" class="hidden">
     </div>
   </section>
 
-  <!-- LISTA -->
   <section class="panel table-wrap">
     <div class="panel-head">
       <h3>Contas a Pagar</h3>
       <div class="badge">Pendentes</div>
     </div>
 
-    <!-- FILTROS -->
     <div class="row-actions">
       <input id="filtroBusca" placeholder="Buscar por fornecedor, descrição, documento, NF-e ou boleto">
 
@@ -359,7 +359,6 @@
       <input id="filtroDataFim" type="date">
     </div>
 
-    <!-- TOTAIS GERAIS -->
     <div class="table-total-bar">
       <div class="table-total-item">
         <span class="table-total-label">Qtd. de contas</span>
@@ -382,25 +381,23 @@
       </div>
     </div>
 
-    <!-- TOTAIS SELECIONADOS -->
-<div class="table-total-bar" style="margin-top:8px;">
-  <div class="table-total-item">
-    <span class="table-total-label">Selecionadas</span>
-    <strong id="cpSelecionadasQtd">0</strong>
-  </div>
+    <div class="table-total-bar" style="margin-top:8px;">
+      <div class="table-total-item">
+        <span class="table-total-label">Selecionadas</span>
+        <strong id="cpSelecionadasQtd">0</strong>
+      </div>
 
-  <div class="table-total-item">
-    <span class="table-total-label">Total selecionado</span>
-    <strong id="cpSelecionadasValor">R$ 0,00</strong>
-  </div>
+      <div class="table-total-item">
+        <span class="table-total-label">Total selecionado</span>
+        <strong id="cpSelecionadasValor">R$ 0,00</strong>
+      </div>
 
-  <div class="table-total-item">
-    <span class="table-total-label">Ação em lote</span>
-    <button id="btnPagarSelecionadas" class="btn" type="button">Pagar selecionadas</button>
-  </div>
-</div>
+      <div class="table-total-item">
+        <span class="table-total-label">Ação em lote</span>
+        <button id="btnPagarSelecionadas" class="btn" type="button">Pagar selecionadas</button>
+      </div>
+    </div>
 
-    <!-- TABELA -->
     <table>
       <thead>
         <tr>
