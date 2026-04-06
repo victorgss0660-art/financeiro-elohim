@@ -130,6 +130,7 @@ window.app = {
     const btnSalvarContaReceber = document.getElementById("btnSalvarContaReceber");
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
+    const btnPagarSelecionadas = document.getElementById("btnPagarSelecionadas");
     const fileInput = document.getElementById("fileInput");
 
     if (btnSalvarContaPagar) {
@@ -160,6 +161,14 @@ window.app = {
       btnSalvarMetas.addEventListener("click", () => {
         if (window.metasModule?.salvarMetas) {
           window.metasModule.salvarMetas();
+        }
+      });
+    }
+
+    if (btnPagarSelecionadas) {
+      btnPagarSelecionadas.addEventListener("click", () => {
+        if (window.contasPagarModule?.abrirPopupPagamentoLote) {
+          window.contasPagarModule.abrirPopupPagamentoLote();
         }
       });
     }
@@ -209,10 +218,16 @@ window.app = {
     }
   },
 
-  initPopup() {
+  initPopups() {
     const popupPagamento = document.getElementById("popupPagamento");
+    const popupPagamentoLote = document.getElementById("popupPagamentoLote");
+
     if (popupPagamento) {
       popupPagamento.classList.add("hidden");
+    }
+
+    if (popupPagamentoLote) {
+      popupPagamentoLote.classList.add("hidden");
     }
   },
 
@@ -222,7 +237,7 @@ window.app = {
     this.initLayout();
     this.initSessao();
     this.initFiltros();
-    this.initPopup();
+    this.initPopups();
   }
 };
 
