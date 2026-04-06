@@ -1,4 +1,6 @@
 window.contasPagarModule = {
+  contaEditandoId: null,
+
   async salvarContaPagar() {
     try {
       const { mes, ano } = utils.getMesAno();
@@ -21,11 +23,21 @@ window.contasPagarModule = {
         return;
       }
 
-      await api.restInsert("contas_pagar", [payload]);
-      utils.setAppMsg("Conta a pagar salva com sucesso.", "ok");
+      if (this.contaEditandoId) {
+        await api.restPatch(
+          "contas_pagar",
+          `id=eq.${this.contaEditandoId}`,
+          payload
+        );
+        utils.setAppMsg("Conta atualizada com sucesso.", "ok");
+      } else {
+        await api.restInsert("contas_pagar", [payload]);
+        utils.setAppMsg("Conta a pagar salva com sucesso.", "ok");
+      }
 
-      this.limparFormulario();
+      this.cancelarEdicao();
       await this.carregarContasPagar();
+
       if (window.planejamentoModule?.carregarPlanejamento) {
         await window.planejamentoModule.carregarPlanejamento();
       }
@@ -47,6 +59,77 @@ window.contasPagarModule = {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
+  },
+
+  preencherFormulario(item) {
+    document.getElementById("cpFornecedor").value = item.fornecedor || "";
+    document.getElementById("cpDescricao").value = item.descricao || "";
+    document.getElementById("cpCategoria").value = item.categoria || "";
+    document.getElementById("cpDocumento").value = item.documento || "";
+    document.getElementById("cpValor").value = item.valor || "";
+    document.getElementById("cpVencimento").value = item.vencimento || "";
+    document.getElementById("cpObservacoes").value = item.observacoes || "";
+  },
+
+  editar(item) {
+    this.contaEditandoId = item.id;
+    this.preencherFormulario(item);
+    utils.setAppMsg("Modo edição ativado.", "info");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  },
+
+  cancelarEdicao() {
+    this.contaEditandoId = null;
+    this.limparFormulario();
+  },
+
+  async excluir(id) {
+    try {
+      await api.restDelete("contas_pagar", `id=eq.${id}`);
+      utils.setAppMsg("Conta excluída com sucesso.", "ok");
+
+      if (this.contaEditandoId === id) {
+        this.cancelarEdicao();
+      }
+
+      await this.carregarContasPagar();
+
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao excluir conta: " + e.message, "err");
+    }
+  },
+
+  async duplicar(item) {
+    try {
+      const { mes, ano } = utils.getMesAno();
+
+      const payload = {
+        fornecedor: item.fornecedor || "",
+        descricao: item.descricao || "",
+        categoria: item.categoria || "",
+        documento: item.documento || "",
+        valor: Number(item.valor || 0),
+        vencimento: item.vencimento || "",
+        observacoes: item.observacoes || "",
+        status: "pendente",
+        mes,
+        ano
+      };
+
+      await api.restInsert("contas_pagar", [payload]);
+      utils.setAppMsg("Conta duplicada com sucesso.", "ok");
+
+      await this.carregarContasPagar();
+
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao duplicar conta: " + e.message, "err");
+    }
   },
 
   async carregarContasPagar() {
@@ -73,6 +156,7 @@ window.contasPagarModule = {
         const hoje = utils.hojeISO();
         const vencido = item.vencimento && item.vencimento < hoje;
         const statusExibicao = vencido ? "vencido" : "pendente";
+        const itemJson = encodeURIComponent(JSON.stringify(item));
 
         return `
           <tr>
@@ -84,7 +168,12 @@ window.contasPagarModule = {
             <td>${item.vencimento || "-"}</td>
             <td>${statusExibicao}</td>
             <td>
-              <button class="small-btn small-green" onclick="contasPagarModule.pagar(${item.id})">Pagar</button>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="small-btn small-blue" onclick="contasPagarModule.editar(JSON.parse(decodeURIComponent('${itemJson}')))">Editar</button>
+                <button class="small-btn small-yellow" onclick="contasPagarModule.duplicar(JSON.parse(decodeURIComponent('${itemJson}')))">Duplicar</button>
+                <button class="small-btn small-green" onclick="contasPagarModule.pagar(${item.id})">Pagar</button>
+                <button class="small-btn small-red" onclick="contasPagarModule.excluir(${item.id})">Excluir</button>
+              </div>
             </td>
           </tr>
         `;
@@ -104,9 +193,11 @@ window.contasPagarModule = {
       utils.setAppMsg("Conta marcada como paga.", "ok");
 
       await this.carregarContasPagar();
+
       if (window.contasPagasModule?.carregarContasPagas) {
         await window.contasPagasModule.carregarContasPagas();
       }
+
       if (window.planejamentoModule?.carregarPlanejamento) {
         await window.planejamentoModule.carregarPlanejamento();
       }
