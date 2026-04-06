@@ -27,35 +27,6 @@ window.planejamentoModule = {
     return semanas;
   },
 
-  async salvarSaldoConta(conta, valor) {
-    try {
-      const existente = await api.restGet(
-        "saldos_bancarios",
-        `select=id,conta,valor&conta=eq.${encodeURIComponent(conta)}&limit=1`
-      );
-
-      if (existente.length) {
-        await api.restPatch(
-          "saldos_bancarios",
-          `conta=eq.${encodeURIComponent(conta)}`,
-          {
-            valor: Number(valor || 0),
-            updated_at: new Date().toISOString()
-          }
-        );
-      } else {
-        await api.restInsert("saldos_bancarios", [{
-          conta,
-          valor: Number(valor || 0),
-          updated_at: new Date().toISOString()
-        }]);
-      }
-    } catch (e) {
-      console.error("Erro ao salvar saldo da conta:", conta, e);
-      utils.setAppMsg("Erro ao salvar saldo bancário: " + e.message, "err");
-    }
-  },
-
   async carregarSaldosSalvos() {
     try {
       const data = await api.restGet(
@@ -82,22 +53,45 @@ window.planejamentoModule = {
     }
   },
 
-  registrarEventosSaldos() {
-    document.querySelectorAll(".saldo-conta").forEach(input => {
-      if (!input.dataset.bindedSaldo) {
-        input.addEventListener("change", async () => {
-          const conta = input.dataset.conta;
-          const valor = Number(input.value || 0);
+  async salvarSaldos() {
+    try {
+      const inputs = Array.from(document.querySelectorAll(".saldo-conta"));
 
-          if (!conta) return;
+      for (const input of inputs) {
+        const conta = input.dataset.conta;
+        const valor = Number(input.value || 0);
 
-          await this.salvarSaldoConta(conta, valor);
-          await this.carregarPlanejamento();
-        });
+        if (!conta) continue;
 
-        input.dataset.bindedSaldo = "1";
+        const existente = await api.restGet(
+          "saldos_bancarios",
+          `select=id,conta,valor&conta=eq.${encodeURIComponent(conta)}&limit=1`
+        );
+
+        if (existente.length) {
+          await api.restPatch(
+            "saldos_bancarios",
+            `conta=eq.${encodeURIComponent(conta)}`,
+            {
+              valor,
+              updated_at: new Date().toISOString()
+            }
+          );
+        } else {
+          await api.restInsert("saldos_bancarios", [{
+            conta,
+            valor,
+            updated_at: new Date().toISOString()
+          }]);
+        }
       }
-    });
+
+      utils.setAppMsg("Saldos bancários salvos com sucesso.", "ok");
+      await this.carregarPlanejamento();
+    } catch (e) {
+      console.error("Erro ao salvar saldos bancários:", e);
+      utils.setAppMsg("Erro ao salvar saldos bancários: " + e.message, "err");
+    }
   },
 
   calcularSaldoInicial() {
@@ -304,7 +298,6 @@ window.planejamentoModule = {
   async carregarPlanejamento() {
     try {
       await this.carregarSaldosSalvos();
-      this.registrarEventosSaldos();
 
       const semanas = this.gerarSemanas();
       const saldoInicial = this.calcularSaldoInicial();
