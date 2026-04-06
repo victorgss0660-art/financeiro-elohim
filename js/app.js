@@ -193,6 +193,11 @@ window.app = {
     this.initEventosModulos();
     this.initLayout();
     this.initSessao();
+
+    const popupPagamento = document.getElementById("popupPagamento");
+if (popupPagamento) {
+  popupPagamento.classList.add("hidden");
+}
   }
 };
 
