@@ -48,14 +48,29 @@ window.app = {
     const statusAtualizacao = document.getElementById("statusAtualizacao");
     const statusSituacao = document.getElementById("statusSituacao");
 
-    if (statusMes && window.utils?.getMesAno) {
+    const statusMesTopo = document.getElementById("statusMesTopo");
+    const statusAtualizacaoTopo = document.getElementById("statusAtualizacaoTopo");
+
+    if (window.utils?.getMesAno) {
       const { mes, ano } = utils.getMesAno();
-      statusMes.textContent = `${mes}/${ano}`;
+
+      if (statusMes) {
+        statusMes.textContent = `${mes}/${ano}`;
+      }
+
+      if (statusMesTopo) {
+        statusMesTopo.textContent = `${mes}/${ano}`;
+      }
     }
 
+    const agora = new Date().toLocaleString("pt-BR");
+
     if (statusAtualizacao) {
-      const agora = new Date();
-      statusAtualizacao.textContent = agora.toLocaleString("pt-BR");
+      statusAtualizacao.textContent = agora;
+    }
+
+    if (statusAtualizacaoTopo) {
+      statusAtualizacaoTopo.textContent = agora;
     }
 
     if (statusSituacao) {
@@ -188,16 +203,26 @@ window.app = {
     }
   },
 
+  initFiltros() {
+    if (window.contasPagarModule?.registrarEventosFiltros) {
+      window.contasPagarModule.registrarEventosFiltros();
+    }
+  },
+
+  initPopup() {
+    const popupPagamento = document.getElementById("popupPagamento");
+    if (popupPagamento) {
+      popupPagamento.classList.add("hidden");
+    }
+  },
+
   init() {
     this.initEventosBasicos();
     this.initEventosModulos();
     this.initLayout();
     this.initSessao();
-
-    const popupPagamento = document.getElementById("popupPagamento");
-if (popupPagamento) {
-  popupPagamento.classList.add("hidden");
-}
+    this.initFiltros();
+    this.initPopup();
   }
 };
 
