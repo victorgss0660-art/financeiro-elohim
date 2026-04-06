@@ -1,29 +1,4 @@
 window.contasPagarModule = {
-  atualizarTotais(dados) {
-  const qtd = document.getElementById("cpTotalQuantidade");
-  const total = document.getElementById("cpTotalValor");
-  const vencidas = document.getElementById("cpTotalVencidas");
-  const valorVencido = document.getElementById("cpTotalValorVencido");
-
-  const hoje = new Date(new Date().toDateString());
-
-  const quantidade = dados.length;
-  const totalValor = dados.reduce((acc, item) => acc + Number(item.valor || 0), 0);
-
-  const listaVencidas = dados.filter(item => {
-    if (!item.vencimento) return false;
-    const venc = new Date(item.vencimento + "T00:00:00");
-    return venc < hoje;
-  });
-
-  const quantidadeVencidas = listaVencidas.length;
-  const totalVencido = listaVencidas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
-
-  if (qtd) qtd.textContent = String(quantidade);
-  if (total) total.textContent = utils.moeda(totalValor);
-  if (vencidas) vencidas.textContent = String(quantidadeVencidas);
-  if (valorVencido) valorVencido.textContent = utils.moeda(totalVencido);
-},
   lista: [],
   pagandoId: null,
   contaEditandoId: null,
@@ -33,7 +8,9 @@ window.contasPagarModule = {
     fornecedor: "",
     categoria: "",
     status: "",
-    docs: ""
+    docs: "",
+    dataInicio: "",
+    dataFim: ""
   },
 
   async salvarContaPagar() {
@@ -213,6 +190,32 @@ window.contasPagarModule = {
     }
   },
 
+  atualizarTotais(dados) {
+    const qtd = document.getElementById("cpTotalQuantidade");
+    const total = document.getElementById("cpTotalValor");
+    const vencidas = document.getElementById("cpTotalVencidas");
+    const valorVencido = document.getElementById("cpTotalValorVencido");
+
+    const hoje = new Date(new Date().toDateString());
+
+    const quantidade = dados.length;
+    const totalValor = dados.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+    const listaVencidas = dados.filter(item => {
+      if (!item.vencimento) return false;
+      const venc = new Date(item.vencimento + "T00:00:00");
+      return venc < hoje;
+    });
+
+    const quantidadeVencidas = listaVencidas.length;
+    const totalVencido = listaVencidas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+    if (qtd) qtd.textContent = String(quantidade);
+    if (total) total.textContent = utils.moeda(totalValor);
+    if (vencidas) vencidas.textContent = String(quantidadeVencidas);
+    if (valorVencido) valorVencido.textContent = utils.moeda(totalVencido);
+  },
+
   aplicarFiltros() {
     return this.lista.filter(item => {
       const busca = this.filtros.busca;
@@ -250,7 +253,25 @@ window.contasPagarModule = {
       if (this.filtros.docs === "faltando_ambos") docsMatch = !item.tem_nfe && !item.tem_boleto;
       if (this.filtros.docs === "completos") docsMatch = !!item.tem_nfe && !!item.tem_boleto;
 
-      return buscaMatch && fornecedorMatch && categoriaMatch && statusMatch && docsMatch;
+      let dataInicioMatch = true;
+      if (this.filtros.dataInicio) {
+        dataInicioMatch = !!item.vencimento && item.vencimento >= this.filtros.dataInicio;
+      }
+
+      let dataFimMatch = true;
+      if (this.filtros.dataFim) {
+        dataFimMatch = !!item.vencimento && item.vencimento <= this.filtros.dataFim;
+      }
+
+      return (
+        buscaMatch &&
+        fornecedorMatch &&
+        categoriaMatch &&
+        statusMatch &&
+        docsMatch &&
+        dataInicioMatch &&
+        dataFimMatch
+      );
     });
   },
 
@@ -259,8 +280,7 @@ window.contasPagarModule = {
     if (!tbody) return;
 
     const dados = this.aplicarFiltros();
-    this.atualizartotais(dados);
-  
+    this.atualizarTotais(dados);
 
     if (!dados.length) {
       tbody.innerHTML = `
@@ -331,6 +351,8 @@ window.contasPagarModule = {
     const categoria = document.getElementById("filtroCategoria");
     const status = document.getElementById("filtroStatus");
     const docs = document.getElementById("filtroDocs");
+    const dataInicio = document.getElementById("filtroDataInicio");
+    const dataFim = document.getElementById("filtroDataFim");
 
     if (busca && !busca.dataset.binded) {
       busca.addEventListener("input", (e) => {
@@ -370,6 +392,22 @@ window.contasPagarModule = {
         this.render();
       });
       docs.dataset.binded = "1";
+    }
+
+    if (dataInicio && !dataInicio.dataset.binded) {
+      dataInicio.addEventListener("change", (e) => {
+        this.filtros.dataInicio = e.target.value;
+        this.render();
+      });
+      dataInicio.dataset.binded = "1";
+    }
+
+    if (dataFim && !dataFim.dataset.binded) {
+      dataFim.addEventListener("change", (e) => {
+        this.filtros.dataFim = e.target.value;
+        this.render();
+      });
+      dataFim.dataset.binded = "1";
     }
   },
 
