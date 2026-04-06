@@ -429,36 +429,42 @@
       </section>
 
       <!-- CONTAS PAGAS -->
-      <section id="tab-contas-pagas" class="tab-section fade-in">
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Contas Pagas</h3>
-            <div class="badge">Histórico</div>
-          </div>
+<section id="tab-contas-pagas" class="tab-section fade-in">
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Contas Pagas</h3>
+      <div class="badge">Histórico</div>
+    </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Fornecedor</th>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Documento</th>
-                <th>Valor</th>
-                <th>Pago em</th>
-                <th>Multa</th>
-                <th>Desconto</th>
-                <th>Total / Ação</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaContasPagas">
-              <tr>
-                <td colspan="9" class="muted">Nenhuma conta paga.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+      <button id="btnImportarContasPagas" class="secondary-btn" type="button">Importar planilha</button>
+      <button id="btnExportarContasPagas" class="secondary-btn" type="button">Exportar planilha</button>
+      <input id="fileInputContasPagas" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+    </div>
 
+    <table>
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>Fornecedor</th>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Documento</th>
+          <th>Valor</th>
+          <th>Pago em</th>
+          <th>Multa</th>
+          <th>Desconto</th>
+          <th>Total / Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaContasPagas">
+        <tr>
+          <td colspan="10" class="muted">Nenhuma conta paga.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
       <!-- CONTAS A RECEBER -->
       <section id="tab-contas-receber" class="tab-section fade-in">
         <section class="panel">
