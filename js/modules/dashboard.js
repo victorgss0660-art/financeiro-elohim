@@ -85,14 +85,21 @@ window.dashboardModule = {
       ? Math.round((totalGastos / totalMetaValor) * 100)
       : 0;
 
-    document.getElementById("fat").textContent = utils.moeda(faturamento);
-    document.getElementById("gas").textContent = utils.moeda(totalGastos);
-    document.getElementById("saldo").textContent = utils.moeda(faturamento - totalGastos);
-    document.getElementById("metaAtingida").textContent = `${atingida}%`;
+    const fat = document.getElementById("fat");
+    const gas = document.getElementById("gas");
+    const saldo = document.getElementById("saldo");
+    const metaAtingida = document.getElementById("metaAtingida");
+
+    if (fat) fat.textContent = utils.moeda(faturamento);
+    if (gas) gas.textContent = utils.moeda(totalGastos);
+    if (saldo) saldo.textContent = utils.moeda(faturamento - totalGastos);
+    if (metaAtingida) metaAtingida.textContent = `${atingida}%`;
   },
 
   montarTabelaResumo(categorias, metasPct, faturamento) {
     const tbody = document.getElementById("tabelaResumo");
+    if (!tbody) return;
+
     const keys = Object.keys(categorias);
 
     if (!keys.length) {
@@ -161,11 +168,22 @@ window.dashboardModule = {
     `).join("");
   },
 
-  desenharGraficos(categorias, metasPct, faturamento) {
-    const barCanvas = document.getElementById("barChart");
-    const pieCanvas = document.getElementById("pieChart");
+  atualizarStatus() {
+    const statusMes = document.getElementById("statusMes");
+    const statusAtualizacao = document.getElementById("statusAtualizacao");
+    const statusSituacao = document.getElementById("statusSituacao");
 
-    if (!barCanvas || !pieCanvas) return;
+    const { mes, ano } = utils.getMesAno();
+    const agora = new Date().toLocaleString("pt-BR");
+
+    if (statusMes) statusMes.textContent = `${mes}/${ano}`;
+    if (statusAtualizacao) statusAtualizacao.textContent = agora;
+    if (statusSituacao) statusSituacao.textContent = "Dados carregados";
+  },
+
+  desenharGraficoBarras(categorias, metasPct, faturamento) {
+    const canvas = document.getElementById("barChart");
+    if (!canvas) return;
 
     const keys = Object.keys(categorias);
     const labels = keys.map(k => this.nomeCategoria(k));
@@ -173,9 +191,8 @@ window.dashboardModule = {
     const metas = keys.map(k => this.calcularMetaValor(metasPct[k] || 0, faturamento));
 
     if (this.barChart) this.barChart.destroy();
-    if (this.pieChart) this.pieChart.destroy();
 
-    this.barChart = new Chart(barCanvas, {
+    this.barChart = new Chart(canvas, {
       type: "bar",
       data: {
         labels,
@@ -183,9 +200,7 @@ window.dashboardModule = {
           {
             label: "Gasto real",
             data: valores,
-            borderRadius: 12,
-            borderSkipped: false,
-            barThickness: 18
+            borderRadius: 10
           },
           {
             type: "line",
@@ -198,38 +213,168 @@ window.dashboardModule = {
         ]
       },
       options: {
-        maintainAspectRatio: false,
         responsive: true,
-        indexAxis: "y"
+        maintainAspectRatio: false
       }
     });
+  },
 
-    this.pieChart = new Chart(pieCanvas, {
+  desenharGraficoPizza(categorias) {
+    const canvas = document.getElementById("pieChart");
+    if (!canvas) return;
+
+    const keys = Object.keys(categorias);
+    const labels = keys.map(k => this.nomeCategoria(k));
+    const valores = keys.map(k => utils.num(categorias[k] || 0));
+
+    if (this.pieChart) this.pieChart.destroy();
+
+    this.pieChart = new Chart(canvas, {
       type: "doughnut",
       data: {
         labels,
         datasets: [{
           data: valores,
           backgroundColor: [
-            "#ff3d3d",
-            "#2563eb",
+            "#ff4d57",
+            "#3b82f6",
             "#22c55e",
-            "#ff8a00",
-            "#a855f7",
-            "#06b6d4",
-            "#ff4ecd",
-            "#b7e000",
             "#f59e0b",
+            "#8b5cf6",
+            "#06b6d4",
+            "#ec4899",
+            "#84cc16",
+            "#f97316",
             "#64748b",
-            "#e11d48",
-            "#14b8a6"
+            "#14b8a6",
+            "#e11d48"
           ]
         }]
       },
       options: {
-        maintainAspectRatio: false,
         responsive: true,
-        cutout: "72%"
+        maintainAspectRatio: false,
+        cutout: "65%"
+      }
+    });
+  },
+
+  async desenharGraficoEvolucaoMensal(ano) {
+    const canvas = document.getElementById("lineChart");
+    if (!canvas) return;
+
+    const mesesData = await api.restGet(
+      "meses",
+      `select=*&ano=eq.${encodeURIComponent(ano)}`
+    );
+
+    const gastosData = await api.restGet(
+      "gastos",
+      `select=*&ano=eq.${encodeURIComponent(ano)}`
+    );
+
+    const ordemMeses = [
+      "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+      "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+    ];
+
+    const mapa = {};
+    ordemMeses.forEach(mes => {
+      mapa[mes] = { faturamento: 0, gastos: 0 };
+    });
+
+    mesesData.forEach(item => {
+      if (mapa[item.mes]) {
+        mapa[item.mes].faturamento = utils.num(item.faturamento || 0);
+      }
+    });
+
+    gastosData.forEach(item => {
+      if (mapa[item.mes]) {
+        mapa[item.mes].gastos += utils.num(item.valor || 0);
+      }
+    });
+
+    const labels = ordemMeses;
+    const faturamento = ordemMeses.map(mes => mapa[mes].faturamento);
+    const gastos = ordemMeses.map(mes => mapa[mes].gastos);
+    const saldos = ordemMeses.map(mes => utils.num(mapa[mes].faturamento - mapa[mes].gastos));
+
+    if (this.lineChart) this.lineChart.destroy();
+
+    this.lineChart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Faturamento",
+            data: faturamento,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: false
+          },
+          {
+            label: "Gastos",
+            data: gastos,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: false
+          },
+          {
+            label: "Saldo",
+            data: saldos,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+  },
+
+  async desenharRankingAnual(ano) {
+    const canvas = document.getElementById("rankingChart");
+    if (!canvas) return;
+
+    const gastosData = await api.restGet(
+      "gastos",
+      `select=*&ano=eq.${encodeURIComponent(ano)}`
+    );
+
+    const acumulado = {};
+
+    gastosData.forEach(item => {
+      const cat = item.categoria || "OUTROS";
+      acumulado[cat] = utils.num((acumulado[cat] || 0) + Number(item.valor || 0));
+    });
+
+    const ordenado = Object.entries(acumulado)
+      .sort((a, b) => b[1] - a[1]);
+
+    const labels = ordenado.map(([cat]) => this.nomeCategoria(cat));
+    const valores = ordenado.map(([, valor]) => valor);
+
+    if (this.rankingChart) this.rankingChart.destroy();
+
+    this.rankingChart = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Ranking anual",
+          data: valores,
+          borderRadius: 10
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
   },
@@ -276,8 +421,12 @@ window.dashboardModule = {
       this.atualizarCards(totalGastos, faturamento, metasPct);
       this.montarTabelaResumo(categorias, metasPct, faturamento);
       this.montarAlertas(categorias, metasPct, faturamento);
-      this.desenharGraficos(categorias, metasPct, faturamento);
+      this.atualizarStatus();
 
+      this.desenharGraficoBarras(categorias, metasPct, faturamento);
+      this.desenharGraficoPizza(categorias);
+      await this.desenharGraficoEvolucaoMensal(ano);
+      await this.desenharRankingAnual(ano);
     } catch (e) {
       utils.setAppMsg("Erro ao carregar dashboard: " + e.message, "err");
     }
