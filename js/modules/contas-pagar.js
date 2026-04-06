@@ -259,6 +259,8 @@ window.contasPagarModule = {
     if (!tbody) return;
 
     const dados = this.aplicarFiltros();
+    this.atualizartotais(dados);
+  
 
     if (!dados.length) {
       tbody.innerHTML = `
