@@ -54,28 +54,15 @@ window.app = {
     if (window.utils?.getMesAno) {
       const { mes, ano } = utils.getMesAno();
 
-      if (statusMes) {
-        statusMes.textContent = `${mes}/${ano}`;
-      }
-
-      if (statusMesTopo) {
-        statusMesTopo.textContent = `${mes}/${ano}`;
-      }
+      if (statusMes) statusMes.textContent = `${mes}/${ano}`;
+      if (statusMesTopo) statusMesTopo.textContent = `${mes}/${ano}`;
     }
 
     const agora = new Date().toLocaleString("pt-BR");
 
-    if (statusAtualizacao) {
-      statusAtualizacao.textContent = agora;
-    }
-
-    if (statusAtualizacaoTopo) {
-      statusAtualizacaoTopo.textContent = agora;
-    }
-
-    if (statusSituacao) {
-      statusSituacao.textContent = "Dados carregados";
-    }
+    if (statusAtualizacao) statusAtualizacao.textContent = agora;
+    if (statusAtualizacaoTopo) statusAtualizacaoTopo.textContent = agora;
+    if (statusSituacao) statusSituacao.textContent = "Dados carregados";
   },
 
   initEventosBasicos() {
@@ -92,9 +79,7 @@ window.app = {
 
     if (loginSenha) {
       loginSenha.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          authModule.login();
-        }
+        if (e.key === "Enter") authModule.login();
       });
     }
 
@@ -110,17 +95,13 @@ window.app = {
 
     if (mesSelect) {
       mesSelect.addEventListener("change", async () => {
-        if (window.authModule?.usuarioAtual) {
-          await this.carregarTudo();
-        }
+        if (window.authModule?.usuarioAtual) await this.carregarTudo();
       });
     }
 
     if (anoSelect) {
       anoSelect.addEventListener("change", async () => {
-        if (window.authModule?.usuarioAtual) {
-          await this.carregarTudo();
-        }
+        if (window.authModule?.usuarioAtual) await this.carregarTudo();
       });
     }
   },
@@ -131,6 +112,9 @@ window.app = {
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
     const btnPagarSelecionadas = document.getElementById("btnPagarSelecionadas");
+    const btnImportarContasPagar = document.getElementById("btnImportarContasPagar");
+    const btnExportarContasPagar = document.getElementById("btnExportarContasPagar");
+    const fileInputContasPagar = document.getElementById("fileInputContasPagar");
     const fileInput = document.getElementById("fileInput");
 
     if (btnSalvarContaPagar) {
@@ -169,6 +153,28 @@ window.app = {
       btnPagarSelecionadas.addEventListener("click", () => {
         if (window.contasPagarModule?.abrirPopupPagamentoLote) {
           window.contasPagarModule.abrirPopupPagamentoLote();
+        }
+      });
+    }
+
+    if (btnImportarContasPagar) {
+      btnImportarContasPagar.addEventListener("click", () => {
+        fileInputContasPagar?.click();
+      });
+    }
+
+    if (btnExportarContasPagar) {
+      btnExportarContasPagar.addEventListener("click", () => {
+        if (window.contasPagarModule?.exportarPlanilha) {
+          window.contasPagarModule.exportarPlanilha();
+        }
+      });
+    }
+
+    if (fileInputContasPagar) {
+      fileInputContasPagar.addEventListener("change", async (e) => {
+        if (window.contasPagarModule?.importarPlanilha) {
+          await window.contasPagarModule.importarPlanilha(e);
         }
       });
     }
@@ -222,13 +228,8 @@ window.app = {
     const popupPagamento = document.getElementById("popupPagamento");
     const popupPagamentoLote = document.getElementById("popupPagamentoLote");
 
-    if (popupPagamento) {
-      popupPagamento.classList.add("hidden");
-    }
-
-    if (popupPagamentoLote) {
-      popupPagamentoLote.classList.add("hidden");
-    }
+    if (popupPagamento) popupPagamento.classList.add("hidden");
+    if (popupPagamentoLote) popupPagamentoLote.classList.add("hidden");
   },
 
   init() {
