@@ -1,4 +1,6 @@
 window.contasReceberModule = {
+  contaEditandoId: null,
+
   async salvarContaReceber() {
     try {
       const { mes, ano } = utils.getMesAno();
@@ -21,11 +23,21 @@ window.contasReceberModule = {
         return;
       }
 
-      await api.restInsert("contas_receber", [payload]);
-      utils.setAppMsg("Conta a receber salva com sucesso.", "ok");
+      if (this.contaEditandoId) {
+        await api.restPatch(
+          "contas_receber",
+          `id=eq.${this.contaEditandoId}`,
+          payload
+        );
+        utils.setAppMsg("Conta a receber atualizada com sucesso.", "ok");
+      } else {
+        await api.restInsert("contas_receber", [payload]);
+        utils.setAppMsg("Conta a receber salva com sucesso.", "ok");
+      }
 
-      this.limpar();
+      this.cancelarEdicao();
       await this.carregarContasReceber();
+
       if (window.planejamentoModule?.carregarPlanejamento) {
         await window.planejamentoModule.carregarPlanejamento();
       }
@@ -47,6 +59,77 @@ window.contasReceberModule = {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
+  },
+
+  preencherFormulario(item) {
+    document.getElementById("crrCliente").value = item.cliente || "";
+    document.getElementById("crrDescricao").value = item.descricao || "";
+    document.getElementById("crrCategoria").value = item.categoria || "";
+    document.getElementById("crrDocumento").value = item.documento || "";
+    document.getElementById("crrValor").value = item.valor || "";
+    document.getElementById("crrVencimento").value = item.vencimento || "";
+    document.getElementById("crrObs").value = item.observacoes || "";
+  },
+
+  editar(item) {
+    this.contaEditandoId = item.id;
+    this.preencherFormulario(item);
+    utils.setAppMsg("Modo edição de conta a receber ativado.", "info");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  },
+
+  cancelarEdicao() {
+    this.contaEditandoId = null;
+    this.limpar();
+  },
+
+  async excluir(id) {
+    try {
+      await api.restDelete("contas_receber", `id=eq.${id}`);
+      utils.setAppMsg("Conta a receber excluída com sucesso.", "ok");
+
+      if (this.contaEditandoId === id) {
+        this.cancelarEdicao();
+      }
+
+      await this.carregarContasReceber();
+
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao excluir conta a receber: " + e.message, "err");
+    }
+  },
+
+  async duplicar(item) {
+    try {
+      const { mes, ano } = utils.getMesAno();
+
+      const payload = {
+        cliente: item.cliente || "",
+        descricao: item.descricao || "",
+        categoria: item.categoria || "",
+        documento: item.documento || "",
+        valor: Number(item.valor || 0),
+        vencimento: item.vencimento || "",
+        observacoes: item.observacoes || "",
+        status: "pendente",
+        mes,
+        ano
+      };
+
+      await api.restInsert("contas_receber", [payload]);
+      utils.setAppMsg("Conta a receber duplicada com sucesso.", "ok");
+
+      await this.carregarContasReceber();
+
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao duplicar conta a receber: " + e.message, "err");
+    }
   },
 
   async carregarContasReceber() {
@@ -73,6 +156,7 @@ window.contasReceberModule = {
         const hoje = utils.hojeISO();
         const vencido = item.vencimento && item.vencimento < hoje;
         const statusExibicao = vencido ? "vencido" : "pendente";
+        const itemJson = encodeURIComponent(JSON.stringify(item));
 
         return `
           <tr>
@@ -84,7 +168,12 @@ window.contasReceberModule = {
             <td>${item.vencimento || "-"}</td>
             <td>${statusExibicao}</td>
             <td>
-              <button class="small-btn small-green" onclick="contasReceberModule.receber(${item.id})">Receber</button>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="small-btn small-blue" onclick="contasReceberModule.editar(JSON.parse(decodeURIComponent('${itemJson}')))">Editar</button>
+                <button class="small-btn small-yellow" onclick="contasReceberModule.duplicar(JSON.parse(decodeURIComponent('${itemJson}')))">Duplicar</button>
+                <button class="small-btn small-green" onclick="contasReceberModule.receber(${item.id})">Receber</button>
+                <button class="small-btn small-red" onclick="contasReceberModule.excluir(${item.id})">Excluir</button>
+              </div>
             </td>
           </tr>
         `;
@@ -104,9 +193,11 @@ window.contasReceberModule = {
       utils.setAppMsg("Conta marcada como recebida.", "ok");
 
       await this.carregarContasReceber();
+
       if (window.contasRecebidasModule?.carregarContasRecebidas) {
         await window.contasRecebidasModule.carregarContasRecebidas();
       }
+
       if (window.planejamentoModule?.carregarPlanejamento) {
         await window.planejamentoModule.carregarPlanejamento();
       }
