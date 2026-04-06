@@ -283,55 +283,73 @@
         </section>
       </section>
 
-      <section id="tab-contas-pagar" class="tab-section fade-in">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Cadastrar Conta a Pagar</h3>
-            <div class="badge">Financeiro</div>
-          </div>
+<section id="tab-contas-pagar" class="tab-section fade-in">
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Cadastrar Conta a Pagar</h3>
+      <div class="badge">Financeiro</div>
+    </div>
 
-          <div class="form-grid">
-            <input id="cpFornecedor" placeholder="Fornecedor">
-            <input id="cpDescricao" placeholder="Descrição">
-            <input id="cpCategoria" placeholder="Categoria">
-            <input id="cpDocumento" placeholder="Documento">
-            <input id="cpValor" type="number" step="0.01" placeholder="Valor">
-            <input id="cpVencimento" type="date">
-            <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
-          </div>
+    <div class="form-grid">
+      <input id="cpFornecedor" placeholder="Fornecedor">
+      <input id="cpDescricao" placeholder="Descrição">
+      <input id="cpCategoria" placeholder="Categoria">
+      <input id="cpDocumento" placeholder="Documento">
+      <input id="cpValor" type="number" step="0.01" placeholder="Valor">
+      <input id="cpVencimento" type="date">
+      <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
+    </div>
 
-          <div style="margin-top:16px;">
-            <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
-          </div>
-        </section>
+    <div style="margin-top:16px;">
+      <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
+    </div>
+  </section>
 
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Contas a Pagar</h3>
-            <div class="badge">Pendentes</div>
-          </div>
+  <section class="panel table-wrap">
+    <div class="panel-head">
+      <h3>Contas a Pagar</h3>
+      <div class="badge">Pendentes</div>
+    </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Fornecedor</th>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Documento</th>
-                <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaContasPagar">
-              <tr>
-                <td colspan="8" class="muted">Nenhuma conta a pagar pendente.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
+    <div class="row-actions">
+      <input id="filtroBusca" placeholder="Buscar por fornecedor, descrição ou documento">
+
+      <select id="filtroFornecedor">
+        <option value="">Fornecedor</option>
+      </select>
+
+      <select id="filtroCategoria">
+        <option value="">Categoria</option>
+      </select>
+
+      <select id="filtroStatus">
+        <option value="">Status</option>
+        <option value="aberto">Em aberto</option>
+        <option value="vencido">Vencido</option>
+      </select>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Fornecedor</th>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Documento</th>
+          <th>Valor</th>
+          <th>Vencimento</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaContasPagar">
+        <tr>
+          <td colspan="8" class="muted">Nenhuma conta a pagar pendente.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
 
       <section id="tab-contas-pagas" class="tab-section fade-in">
         <section class="panel table-wrap">
