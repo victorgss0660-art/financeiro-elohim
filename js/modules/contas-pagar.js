@@ -242,6 +242,17 @@ window.contasPagarModule = {
     if (elValor) elValor.textContent = utils.moeda(total);
   },
 
+  obterSelecionadas() {
+    const selecionadas = [];
+    document.querySelectorAll(".cp-select-item:checked").forEach(cb => {
+      selecionadas.push({
+        id: Number(cb.dataset.id),
+        valor: Number(cb.dataset.valor || 0)
+      });
+    });
+    return selecionadas;
+  },
+
   aplicarFiltros() {
     return this.lista.filter(item => {
       const busca = this.filtros.busca;
@@ -517,6 +528,86 @@ window.contasPagarModule = {
     const popup = document.getElementById("popupPagamento");
     if (popup) popup.classList.add("hidden");
     this.pagandoId = null;
+  },
+
+  abrirPopupPagamentoLote() {
+    const selecionadas = this.obterSelecionadas();
+
+    if (!selecionadas.length) {
+      utils.setAppMsg("Selecione pelo menos uma conta.", "err");
+      return;
+    }
+
+    const qtd = selecionadas.length;
+    const total = selecionadas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+    const popup = document.getElementById("popupPagamentoLote");
+    const pgLoteQtd = document.getElementById("pgLoteQtd");
+    const pgLoteTotal = document.getElementById("pgLoteTotal");
+    const pgLoteData = document.getElementById("pgLoteData");
+    const pgLoteMulta = document.getElementById("pgLoteMulta");
+    const pgLoteDesconto = document.getElementById("pgLoteDesconto");
+
+    if (pgLoteQtd) pgLoteQtd.value = String(qtd);
+    if (pgLoteTotal) pgLoteTotal.value = utils.moeda(total);
+    if (pgLoteData) pgLoteData.value = utils.hojeISO();
+    if (pgLoteMulta) pgLoteMulta.value = "";
+    if (pgLoteDesconto) pgLoteDesconto.value = "";
+
+    if (popup) popup.classList.remove("hidden");
+  },
+
+  fecharPopupLote() {
+    const popup = document.getElementById("popupPagamentoLote");
+    if (popup) popup.classList.add("hidden");
+  },
+
+  async confirmarPagamentoLote() {
+    const selecionadas = this.obterSelecionadas();
+
+    if (!selecionadas.length) {
+      utils.setAppMsg("Selecione pelo menos uma conta.", "err");
+      return;
+    }
+
+    try {
+      const data_pagamento = document.getElementById("pgLoteData")?.value || utils.hojeISO();
+      const multaTotal = Number(document.getElementById("pgLoteMulta")?.value || 0);
+      const descontoTotal = Number(document.getElementById("pgLoteDesconto")?.value || 0);
+
+      const somaBase = selecionadas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+      for (const item of selecionadas) {
+        const proporcao = somaBase > 0 ? Number(item.valor || 0) / somaBase : 0;
+        const multa = Number((multaTotal * proporcao).toFixed(2));
+        const desconto = Number((descontoTotal * proporcao).toFixed(2));
+
+        await api.restPatch("contas_pagar", `id=eq.${item.id}`, {
+          status: "pago",
+          data_pagamento,
+          multa,
+          desconto
+        });
+      }
+
+      utils.setAppMsg("Contas selecionadas pagas com sucesso!", "ok");
+
+      this.fecharPopupLote();
+      await this.carregarContasPagar();
+
+      const selecionarTodos = document.getElementById("cpSelecionarTodos");
+      if (selecionarTodos) selecionarTodos.checked = false;
+
+      if (window.contasPagasModule?.carregarContasPagas) {
+        await window.contasPagasModule.carregarContasPagas();
+      }
+
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao pagar contas selecionadas: " + e.message, "err");
+    }
   },
 
   async confirmarPagamento() {
