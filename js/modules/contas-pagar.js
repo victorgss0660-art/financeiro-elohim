@@ -23,10 +23,10 @@ window.contasPagarModule = {
         valor: Number(document.getElementById("cpValor").value || 0),
         vencimento: document.getElementById("cpVencimento").value,
         observacoes: document.getElementById("cpObservacoes").value.trim(),
-        numero_nfe: document.getElementById("cpNumeroNfe").value.trim(),
-        numero_boleto: document.getElementById("cpNumeroBoleto").value.trim(),
-        tem_nfe: document.getElementById("cpTemNfe").checked,
-        tem_boleto: document.getElementById("cpTemBoleto").checked,
+        numero_nfe: document.getElementById("cpNumeroNfe")?.value.trim() || "",
+        numero_boleto: document.getElementById("cpNumeroBoleto")?.value.trim() || "",
+        tem_nfe: !!document.getElementById("cpTemNfe")?.checked,
+        tem_boleto: !!document.getElementById("cpTemBoleto")?.checked,
         status: "pendente",
         mes,
         ano
@@ -57,7 +57,7 @@ window.contasPagarModule = {
   },
 
   limparFormulario() {
-    const ids = [
+    [
       "cpFornecedor",
       "cpDescricao",
       "cpCategoria",
@@ -67,15 +67,14 @@ window.contasPagarModule = {
       "cpObservacoes",
       "cpNumeroNfe",
       "cpNumeroBoleto"
-    ];
-
-    ids.forEach(id => {
+    ].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = "";
     });
 
     const cpTemNfe = document.getElementById("cpTemNfe");
     const cpTemBoleto = document.getElementById("cpTemBoleto");
+
     if (cpTemNfe) cpTemNfe.checked = false;
     if (cpTemBoleto) cpTemBoleto.checked = false;
   },
@@ -88,10 +87,16 @@ window.contasPagarModule = {
     document.getElementById("cpValor").value = item.valor || "";
     document.getElementById("cpVencimento").value = item.vencimento || "";
     document.getElementById("cpObservacoes").value = item.observacoes || "";
-    document.getElementById("cpNumeroNfe").value = item.numero_nfe || "";
-    document.getElementById("cpNumeroBoleto").value = item.numero_boleto || "";
-    document.getElementById("cpTemNfe").checked = !!item.tem_nfe;
-    document.getElementById("cpTemBoleto").checked = !!item.tem_boleto;
+
+    const cpNumeroNfe = document.getElementById("cpNumeroNfe");
+    const cpNumeroBoleto = document.getElementById("cpNumeroBoleto");
+    const cpTemNfe = document.getElementById("cpTemNfe");
+    const cpTemBoleto = document.getElementById("cpTemBoleto");
+
+    if (cpNumeroNfe) cpNumeroNfe.value = item.numero_nfe || "";
+    if (cpNumeroBoleto) cpNumeroBoleto.value = item.numero_boleto || "";
+    if (cpTemNfe) cpTemNfe.checked = !!item.tem_nfe;
+    if (cpTemBoleto) cpTemBoleto.checked = !!item.tem_boleto;
   },
 
   editar(item) {
@@ -198,21 +203,21 @@ window.contasPagarModule = {
       const buscaMatch = !busca || textoBase.includes(busca);
 
       const fornecedorMatch =
-        !this.filtros.fornecedor ||
-        item.fornecedor === this.filtros.fornecedor;
+        !this.filtros.fornecedor || item.fornecedor === this.filtros.fornecedor;
 
       const categoriaMatch =
-        !this.filtros.categoria ||
-        item.categoria === this.filtros.categoria;
+        !this.filtros.categoria || item.categoria === this.filtros.categoria;
 
       let status = "aberto";
-      if (item.vencimento && new Date(item.vencimento + "T00:00:00") < new Date(new Date().toDateString())) {
+      if (
+        item.vencimento &&
+        new Date(item.vencimento + "T00:00:00") < new Date(new Date().toDateString())
+      ) {
         status = "vencido";
       }
 
       const statusMatch =
-        !this.filtros.status ||
-        status === this.filtros.status;
+        !this.filtros.status || status === this.filtros.status;
 
       let docsMatch = true;
       if (this.filtros.docs === "faltando_nfe") docsMatch = !item.tem_nfe;
@@ -251,28 +256,34 @@ window.contasPagarModule = {
           <td>${item.descricao || "-"}</td>
           <td>${item.categoria || "-"}</td>
           <td>${item.documento || "-"}</td>
-          <td>
-            <div class="doc-tags">
-              <span class="doc-tag ${item.tem_nfe ? "doc-ok" : "doc-missing"}">
-                ${item.tem_nfe ? "NF-e" : "NF-e pendente"}
-              </span>
-              <span class="doc-tag ${item.tem_boleto ? "doc-ok" : "doc-missing"}">
-                ${item.tem_boleto ? "Boleto" : "Boleto pendente"}
-              </span>
-            </div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-              <button class="small-btn small-blue" onclick="contasPagarModule.marcarNfe(${item.id}, ${!item.tem_nfe})">
-                ${item.tem_nfe ? "Remover NF-e" : "Recebeu NF-e"}
-              </button>
-              <button class="small-btn small-purple" onclick="contasPagarModule.marcarBoleto(${item.id}, ${!item.tem_boleto})">
-                ${item.tem_boleto ? "Remover boleto" : "Recebeu boleto"}
-              </button>
-            </div>
-          </td>
           <td>${utils.moeda(item.valor || 0)}</td>
           <td>${item.vencimento || "-"}</td>
           <td class="${vencido ? "err" : "ok"}">
             ${vencido ? "Vencido" : "Em aberto"}
+          </td>
+          <td>
+            <div class="doc-status">
+              <span class="doc-dot ${item.tem_nfe ? "ok" : "pending"}"></span>
+              <span>NF-e</span>
+              <span class="doc-dot ${item.tem_boleto ? "ok" : "pending"}"></span>
+              <span>Boleto</span>
+            </div>
+
+            <div class="doc-actions">
+              <button
+                class="doc-btn nfe ${item.tem_nfe ? "active" : ""}"
+                onclick="contasPagarModule.marcarNfe(${item.id}, ${!item.tem_nfe})"
+              >
+                ${item.tem_nfe ? "NF OK" : "NF"}
+              </button>
+
+              <button
+                class="doc-btn boleto ${item.tem_boleto ? "active" : ""}"
+                onclick="contasPagarModule.marcarBoleto(${item.id}, ${!item.tem_boleto})"
+              >
+                ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+              </button>
+            </div>
           </td>
           <td>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
