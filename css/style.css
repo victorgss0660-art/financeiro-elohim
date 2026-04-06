@@ -804,4 +804,26 @@ tbody tr:hover td{
   .cards{grid-template-columns:1fr}
   .main{padding:16px}
   .topbar h1{font-size:28px}
+  .doc-tags{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.doc-tag{
+  padding:4px 8px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.doc-ok{
+  background:rgba(34,197,94,.15);
+  color:#22c55e;
+}
+
+.doc-missing{
+  background:rgba(239,68,68,.15);
+  color:#ef4444;
+}
 }
