@@ -29,6 +29,7 @@ window.planejamentoModule = {
 
   calcularSaldoInicial() {
     let total = 0;
+
     document.querySelectorAll(".saldo-conta").forEach(input => {
       total += Number(input.value || 0);
     });
@@ -79,8 +80,8 @@ window.planejamentoModule = {
     });
   },
 
-  calcularSaldos(semanas) {
-    let saldoRodando = this.calcularSaldoInicial();
+  calcularSaldos(semanas, saldoInicial) {
+    let saldoRodando = Number(saldoInicial || 0);
 
     semanas.forEach(semana => {
       saldoRodando += Number(semana.entradas || 0) - Number(semana.saidas || 0);
@@ -88,6 +89,25 @@ window.planejamentoModule = {
     });
 
     return semanas;
+  },
+
+  atualizarResumoCaixa(semanas, saldoInicial) {
+    const entradasTotais = semanas.reduce((acc, s) => acc + Number(s.entradas || 0), 0);
+    const saidasTotais = semanas.reduce((acc, s) => acc + Number(s.saidas || 0), 0);
+    const saldoFinal = saldoInicial + entradasTotais - saidasTotais;
+    const menorSaldo = semanas.length ? Math.min(...semanas.map(s => Number(s.saldo || 0))) : saldoInicial;
+
+    const elSaldoInicial = document.getElementById("cxSaldoInicial");
+    const elEntradas = document.getElementById("cxEntradasPrevistas");
+    const elSaidas = document.getElementById("cxSaidasPrevistas");
+    const elSaldoFinal = document.getElementById("cxSaldoFinal");
+    const elMenorSaldo = document.getElementById("cxMenorSaldo");
+
+    if (elSaldoInicial) elSaldoInicial.textContent = utils.moeda(saldoInicial);
+    if (elEntradas) elEntradas.textContent = utils.moeda(entradasTotais);
+    if (elSaidas) elSaidas.textContent = utils.moeda(saidasTotais);
+    if (elSaldoFinal) elSaldoFinal.textContent = utils.moeda(saldoFinal);
+    if (elMenorSaldo) elMenorSaldo.textContent = utils.moeda(menorSaldo);
   },
 
   renderTabela(semanas) {
@@ -209,11 +229,13 @@ window.planejamentoModule = {
   async carregarPlanejamento() {
     try {
       const semanas = this.gerarSemanas();
+      const saldoInicial = this.calcularSaldoInicial();
       const contasPagar = await this.buscarPagamentosPendentes();
       const contasReceber = await this.buscarRecebimentosPendentes();
 
       this.encaixarMovimentosNasSemanas(semanas, contasPagar, contasReceber);
-      this.calcularSaldos(semanas);
+      this.calcularSaldos(semanas, saldoInicial);
+      this.atualizarResumoCaixa(semanas, saldoInicial);
       this.renderTabela(semanas);
       this.renderIndicadores(semanas);
       this.renderRiscos(semanas);
