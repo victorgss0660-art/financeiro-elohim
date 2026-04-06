@@ -299,6 +299,12 @@ window.contasPagarModule = {
 
       return `
         <tr>
+        <td>
+  <input type="checkbox"
+    class="cp-select-item"
+    data-id="${item.id}"
+    data-valor="${item.valor || 0}">
+</td>
           <td>${item.fornecedor || "-"}</td>
           <td>${item.descricao || "-"}</td>
           <td>${item.categoria || "-"}</td>
