@@ -13,6 +13,15 @@ window.contasPagarModule = {
     dataFim: ""
   },
 
+  normalizarBooleano(valor) {
+    if (typeof valor === "boolean") return valor;
+    if (typeof valor === "string") {
+      const v = valor.trim().toLowerCase();
+      return ["true", "sim", "yes", "1", "x"].includes(v);
+    }
+    return !!valor;
+  },
+
   async salvarContaPagar() {
     try {
       const { mes, ano } = utils.getMesAno();
@@ -338,6 +347,89 @@ window.contasPagarModule = {
         cb.dataset.binded = "1";
       }
     });
+  },
+
+  async importarPlanilha(event) {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+      if (!rows.length) {
+        utils.setAppMsg("A planilha está vazia.", "err");
+        return;
+      }
+
+      const { mes, ano } = utils.getMesAno();
+
+      const payload = rows.map(row => ({
+        fornecedor: String(row.fornecedor || row.FORNECEDOR || "").trim(),
+        descricao: String(row.descricao || row.DESCRICAO || row["DESCRIÇÃO"] || "").trim(),
+        categoria: String(row.categoria || row.CATEGORIA || "").trim(),
+        documento: String(row.documento || row.DOCUMENTO || "").trim(),
+        valor: Number(String(row.valor || row.VALOR || 0).replace(/\./g, "").replace(",", ".")) || 0,
+        vencimento: String(row.vencimento || row.VENCIMENTO || "").trim(),
+        observacoes: String(row.observacoes || row.OBSERVACOES || row["OBSERVAÇÕES"] || "").trim(),
+        numero_nfe: String(row.numero_nfe || row["NUMERO_NFE"] || row["NÚMERO_NFE"] || "").trim(),
+        numero_boleto: String(row.numero_boleto || row["NUMERO_BOLETO"] || row["NÚMERO_BOLETO"] || "").trim(),
+        tem_nfe: this.normalizarBooleano(row.tem_nfe || row.TEM_NFE),
+        tem_boleto: this.normalizarBooleano(row.tem_boleto || row.TEM_BOLETO),
+        status: "pendente",
+        mes,
+        ano
+      })).filter(item =>
+        item.fornecedor && item.descricao && item.valor && item.vencimento
+      );
+
+      if (!payload.length) {
+        utils.setAppMsg("Nenhuma linha válida encontrada na planilha.", "err");
+        return;
+      }
+
+      await api.restInsert("contas_pagar", payload);
+      utils.setAppMsg("Planilha importada com sucesso.", "ok");
+
+      event.target.value = "";
+      await this.carregarContasPagar();
+
+      if (window.planejamentoModule?.carregarPlanejamento) {
+        await window.planejamentoModule.carregarPlanejamento();
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao importar planilha: " + e.message, "err");
+    }
+  },
+
+  exportarPlanilha() {
+    try {
+      const dados = this.lista.map(item => ({
+        fornecedor: item.fornecedor || "",
+        descricao: item.descricao || "",
+        categoria: item.categoria || "",
+        documento: item.documento || "",
+        valor: Number(item.valor || 0),
+        vencimento: item.vencimento || "",
+        observacoes: item.observacoes || "",
+        numero_nfe: item.numero_nfe || "",
+        numero_boleto: item.numero_boleto || "",
+        tem_nfe: item.tem_nfe ? "Sim" : "Não",
+        tem_boleto: item.tem_boleto ? "Sim" : "Não",
+        status: item.status || ""
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(dados);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Contas a Pagar");
+
+      const hoje = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `contas_a_pagar_${hoje}.xlsx`);
+    } catch (e) {
+      utils.setAppMsg("Erro ao exportar planilha: " + e.message, "err");
+    }
   },
 
   render() {
