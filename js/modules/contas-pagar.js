@@ -1,4 +1,29 @@
 window.contasPagarModule = {
+  atualizarTotais(dados) {
+  const qtd = document.getElementById("cpTotalQuantidade");
+  const total = document.getElementById("cpTotalValor");
+  const vencidas = document.getElementById("cpTotalVencidas");
+  const valorVencido = document.getElementById("cpTotalValorVencido");
+
+  const hoje = new Date(new Date().toDateString());
+
+  const quantidade = dados.length;
+  const totalValor = dados.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+  const listaVencidas = dados.filter(item => {
+    if (!item.vencimento) return false;
+    const venc = new Date(item.vencimento + "T00:00:00");
+    return venc < hoje;
+  });
+
+  const quantidadeVencidas = listaVencidas.length;
+  const totalVencido = listaVencidas.reduce((acc, item) => acc + Number(item.valor || 0), 0);
+
+  if (qtd) qtd.textContent = String(quantidade);
+  if (total) total.textContent = utils.moeda(totalValor);
+  if (vencidas) vencidas.textContent = String(quantidadeVencidas);
+  if (valorVencido) valorVencido.textContent = utils.moeda(totalVencido);
+},
   lista: [],
   pagandoId: null,
   contaEditandoId: null,
