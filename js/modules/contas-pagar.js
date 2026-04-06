@@ -224,7 +224,21 @@ window.contasPagarModule = {
           <td>${item.fornecedor || "-"}</td>
           <td>${item.descricao || "-"}</td>
           <td>${item.categoria || "-"}</td>
-          <td>${item.documento || "-"}</td>
+          <td>
+  <div class="doc-tags">
+    ${
+      item.documento && item.documento.toLowerCase().includes("nf")
+        ? `<span class="doc-tag doc-ok">NF-e</span>`
+        : `<span class="doc-tag doc-missing">NF-e</span>`
+    }
+
+    ${
+      item.documento && item.documento.toLowerCase().includes("boleto")
+        ? `<span class="doc-tag doc-ok">Boleto</span>`
+        : `<span class="doc-tag doc-missing">Boleto</span>`
+    }
+  </div>
+</td>
           <td>${utils.moeda(item.valor || 0)}</td>
           <td>${item.vencimento || "-"}</td>
           <td class="${vencido ? "err" : "ok"}">
