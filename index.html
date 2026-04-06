@@ -43,16 +43,45 @@
       </div>
 
       <div class="menu">
-        <button class="menu-btn active" data-tab="dashboard" type="button"><span class="icon">📊</span><span>Dashboard</span></button>
-        <button class="menu-btn" data-tab="contas-pagar" type="button"><span class="icon">🧾</span><span>Contas a Pagar</span></button>
-        <button class="menu-btn" data-tab="contas-pagas" type="button"><span class="icon">✅</span><span>Contas Pagas</span></button>
-        <button class="menu-btn" data-tab="contas-receber" type="button"><span class="icon">💵</span><span>Contas a Receber</span></button>
-        <button class="menu-btn" data-tab="contas-recebidas" type="button"><span class="icon">🏦</span><span>Contas Recebidas</span></button>
-        <button class="menu-btn" data-tab="faturamento" type="button"><span class="icon">💰</span><span>Faturamento</span></button>
-        <button class="menu-btn" data-tab="metas" type="button"><span class="icon">🎯</span><span>Metas</span></button>
-        <button class="menu-btn" data-tab="importar" type="button"><span class="icon">📂</span><span>Importar</span></button>
-        <button class="menu-btn" data-tab="resumo" type="button"><span class="icon">📈</span><span>Resumo</span></button>
-        <button class="menu-btn" data-tab="planejamento" type="button"><span class="icon">📅</span><span>Planejamento</span></button>
+        <button class="menu-btn active" data-tab="dashboard" type="button">
+          <span class="icon">📊</span><span>Dashboard</span>
+        </button>
+
+        <button class="menu-btn" data-tab="contas-pagar" type="button">
+          <span class="icon">🧾</span><span>Contas a Pagar</span>
+        </button>
+
+        <button class="menu-btn" data-tab="contas-pagas" type="button">
+          <span class="icon">✅</span><span>Contas Pagas</span>
+        </button>
+
+        <button class="menu-btn" data-tab="contas-receber" type="button">
+          <span class="icon">💵</span><span>Contas a Receber</span>
+        </button>
+
+        <button class="menu-btn" data-tab="contas-recebidas" type="button">
+          <span class="icon">🏦</span><span>Contas Recebidas</span>
+        </button>
+
+        <button class="menu-btn" data-tab="faturamento" type="button">
+          <span class="icon">💰</span><span>Faturamento</span>
+        </button>
+
+        <button class="menu-btn" data-tab="metas" type="button">
+          <span class="icon">🎯</span><span>Metas</span>
+        </button>
+
+        <button class="menu-btn" data-tab="importar" type="button">
+          <span class="icon">📂</span><span>Importar</span>
+        </button>
+
+        <button class="menu-btn" data-tab="resumo" type="button">
+          <span class="icon">📈</span><span>Resumo</span>
+        </button>
+
+        <button class="menu-btn" data-tab="planejamento" type="button">
+          <span class="icon">📅</span><span>Planejamento</span>
+        </button>
       </div>
 
       <button id="btnSair" class="btn logout-btn" type="button">Sair</button>
@@ -100,45 +129,53 @@
       <!-- DASHBOARD -->
       <section id="tab-dashboard" class="tab-section active fade-in">
         <section class="panel executive-panel">
-  <div class="executive-header">
-    <div>
-      <div class="executive-kicker">Visão Executiva</div>
-      <h2 class="executive-title">Resumo Financeiro do Período</h2>
-      <p class="executive-subtitle">Acompanhe rapidamente receita, despesas, saldo e performance da meta.</p>
-    </div>
+          <div class="executive-header">
+            <div>
+              <div class="executive-kicker">Visão Executiva</div>
+              <h2 class="executive-title">Resumo Financeiro do Período</h2>
+              <p class="executive-subtitle">
+                Acompanhe rapidamente receita, despesas, saldo e performance da meta.
+              </p>
+            </div>
 
-    <div class="executive-actions">
-      <div class="executive-chip">
-        <span class="chip-label">Mês atual</span>
-        <span class="chip-value" id="statusMesTopo">-</span>
-      </div>
-      <div class="executive-chip">
-        <span class="chip-label">Atualização</span>
-        <span class="chip-value" id="statusAtualizacaoTopo">-</span>
-      </div>
-    </div>
-  </div>
-</section>
+            <div class="executive-actions">
+              <div class="executive-chip">
+                <span class="chip-label">Mês atual</span>
+                <span class="chip-value" id="statusMesTopo">-</span>
+              </div>
+
+              <div class="executive-chip">
+                <span class="chip-label">Atualização</span>
+                <span class="chip-value" id="statusAtualizacaoTopo">-</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="cards">
-          <div class="card">
+          <div class="card card-highlight">
+            <div class="card-icon">💰</div>
             <div class="card-title">Faturamento</div>
             <div class="card-value" id="fat">R$ 0,00</div>
             <div class="card-sub">Receita do mês selecionado</div>
           </div>
 
           <div class="card">
+            <div class="card-icon">📉</div>
             <div class="card-title">Gastos</div>
             <div class="card-value" id="gas">R$ 0,00</div>
             <div class="card-sub">Total das despesas</div>
           </div>
 
           <div class="card">
+            <div class="card-icon">🏦</div>
             <div class="card-title">Saldo</div>
             <div class="card-value" id="saldo">R$ 0,00</div>
             <div class="card-sub">Faturamento menos gastos</div>
           </div>
 
           <div class="card">
+            <div class="card-icon">🎯</div>
             <div class="card-title">Meta atingida</div>
             <div class="card-value" id="metaAtingida">0%</div>
             <div class="card-sub">Em relação ao limite definido</div>
@@ -183,15 +220,18 @@
               <h3>Status do mês</h3>
               <div class="badge">Resumo</div>
             </div>
+
             <div class="status-grid">
               <div class="status-item">
                 <div class="label">Mês</div>
                 <div class="value" id="statusMes">-</div>
               </div>
+
               <div class="status-item">
                 <div class="label">Atualização</div>
                 <div class="value" id="statusAtualizacao">-</div>
               </div>
+
               <div class="status-item">
                 <div class="label">Situação</div>
                 <div class="value" id="statusSituacao">-</div>
@@ -506,10 +546,12 @@
                 <div class="label">Menor saldo</div>
                 <div class="value" id="riskMenorSaldo">R$ 0,00</div>
               </div>
+
               <div class="status-item">
                 <div class="label">Semanas negativas</div>
                 <div class="value" id="riskSemanasNegativas">0</div>
               </div>
+
               <div class="status-item">
                 <div class="label">Maior saída</div>
                 <div class="value" id="riskMaiorSaida">R$ 0,00</div>
