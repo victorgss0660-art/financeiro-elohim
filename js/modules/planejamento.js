@@ -180,25 +180,28 @@ window.planejamentoModule = {
             label: "Entradas",
             data: entradas,
             borderWidth: 2,
-            tension: 0.35
+            tension: 0.35,
+            fill: false
           },
           {
             label: "Saídas",
             data: saidas,
             borderWidth: 2,
-            tension: 0.35
+            tension: 0.35,
+            fill: false
           },
           {
             label: "Saldo Projetado",
             data: saldos,
             borderWidth: 3,
-            tension: 0.35
+            tension: 0.35,
+            fill: false
           }
         ]
       },
       options: {
-        maintainAspectRatio: false,
-        responsive: true
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
   },
