@@ -15,11 +15,69 @@ window.contasPagarModule = {
 
   normalizarBooleano(valor) {
     if (typeof valor === "boolean") return valor;
+    if (typeof valor === "number") return valor === 1;
     if (typeof valor === "string") {
       const v = valor.trim().toLowerCase();
       return ["true", "sim", "yes", "1", "x"].includes(v);
     }
-    return !!valor;
+    return false;
+  },
+
+  normalizarNumero(valor) {
+    if (typeof valor === "number") return valor;
+    if (valor == null) return 0;
+
+    const texto = String(valor).trim();
+    if (!texto) return 0;
+
+    const semMoeda = texto.replace(/[R$\s]/g, "");
+    const temVirgula = semMoeda.includes(",");
+    const temPonto = semMoeda.includes(".");
+
+    if (temVirgula && temPonto) {
+      return Number(semMoeda.replace(/\./g, "").replace(",", ".")) || 0;
+    }
+
+    if (temVirgula) {
+      return Number(semMoeda.replace(",", ".")) || 0;
+    }
+
+    return Number(semMoeda) || 0;
+  },
+
+  normalizarData(valor) {
+    if (!valor) return "";
+
+    if (typeof valor === "string") {
+      const v = valor.trim();
+      if (!v) return "";
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
+        const [dd, mm, yyyy] = v.split("/");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      const d = new Date(v);
+      if (!Number.isNaN(d.getTime())) {
+        return d.toISOString().slice(0, 10);
+      }
+
+      return "";
+    }
+
+    if (typeof valor === "number") {
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+      const date = new Date(excelEpoch.getTime() + valor * 86400000);
+      return date.toISOString().slice(0, 10);
+    }
+
+    if (valor instanceof Date && !Number.isNaN(valor.getTime())) {
+      return valor.toISOString().slice(0, 10);
+    }
+
+    return "";
   },
 
   async salvarContaPagar() {
@@ -366,31 +424,59 @@ window.contasPagarModule = {
 
       const { mes, ano } = utils.getMesAno();
 
-      const payload = rows.map(row => ({
-        fornecedor: String(row.fornecedor || row.FORNECEDOR || "").trim(),
-        descricao: String(row.descricao || row.DESCRICAO || row["DESCRIÇÃO"] || "").trim(),
-        categoria: String(row.categoria || row.CATEGORIA || "").trim(),
-        documento: String(row.documento || row.DOCUMENTO || "").trim(),
-        valor: Number(String(row.valor || row.VALOR || 0).replace(/\./g, "").replace(",", ".")) || 0,
-        vencimento: String(row.vencimento || row.VENCIMENTO || "").trim(),
-        observacoes: String(row.observacoes || row.OBSERVACOES || row["OBSERVAÇÕES"] || "").trim(),
-        numero_nfe: String(row.numero_nfe || row["NUMERO_NFE"] || row["NÚMERO_NFE"] || "").trim(),
-        numero_boleto: String(row.numero_boleto || row["NUMERO_BOLETO"] || row["NÚMERO_BOLETO"] || "").trim(),
-        tem_nfe: this.normalizarBooleano(row.tem_nfe || row.TEM_NFE),
-        tem_boleto: this.normalizarBooleano(row.tem_boleto || row.TEM_BOLETO),
-        status: "pendente",
-        mes,
-        ano
-      })).filter(item =>
+      const linhas = rows.map(row => {
+        const id = row.id || row.ID || "";
+        return {
+          id: String(id).trim(),
+          fornecedor: String(row.fornecedor || row.FORNECEDOR || "").trim(),
+          descricao: String(row.descricao || row.DESCRICAO || row["DESCRIÇÃO"] || "").trim(),
+          categoria: String(row.categoria || row.CATEGORIA || "").trim(),
+          documento: String(row.documento || row.DOCUMENTO || "").trim(),
+          valor: this.normalizarNumero(row.valor || row.VALOR || 0),
+          vencimento: this.normalizarData(row.vencimento || row.VENCIMENTO || ""),
+          observacoes: String(row.observacoes || row.OBSERVACOES || row["OBSERVAÇÕES"] || "").trim(),
+          numero_nfe: String(row.numero_nfe || row.NUMERO_NFE || row["NÚMERO_NFE"] || "").trim(),
+          numero_boleto: String(row.numero_boleto || row.NUMERO_BOLETO || row["NÚMERO_BOLETO"] || "").trim(),
+          tem_nfe: this.normalizarBooleano(row.tem_nfe || row.TEM_NFE),
+          tem_boleto: this.normalizarBooleano(row.tem_boleto || row.TEM_BOLETO),
+          status: String(row.status || row.STATUS || "pendente").trim().toLowerCase() || "pendente",
+          mes,
+          ano
+        };
+      }).filter(item =>
         item.fornecedor && item.descricao && item.valor && item.vencimento
       );
 
-      if (!payload.length) {
+      if (!linhas.length) {
         utils.setAppMsg("Nenhuma linha válida encontrada na planilha.", "err");
         return;
       }
 
-      await api.restInsert("contas_pagar", payload);
+      for (const item of linhas) {
+        const payload = {
+          fornecedor: item.fornecedor,
+          descricao: item.descricao,
+          categoria: item.categoria,
+          documento: item.documento,
+          valor: item.valor,
+          vencimento: item.vencimento,
+          observacoes: item.observacoes,
+          numero_nfe: item.numero_nfe,
+          numero_boleto: item.numero_boleto,
+          tem_nfe: item.tem_nfe,
+          tem_boleto: item.tem_boleto,
+          status: item.status,
+          mes: item.mes,
+          ano: item.ano
+        };
+
+        if (item.id) {
+          await api.restPatch("contas_pagar", `id=eq.${item.id}`, payload);
+        } else {
+          await api.restInsert("contas_pagar", [payload]);
+        }
+      }
+
       utils.setAppMsg("Planilha importada com sucesso.", "ok");
 
       event.target.value = "";
@@ -407,6 +493,7 @@ window.contasPagarModule = {
   exportarPlanilha() {
     try {
       const dados = this.lista.map(item => ({
+        id: item.id ?? "",
         fornecedor: item.fornecedor || "",
         descricao: item.descricao || "",
         categoria: item.categoria || "",
