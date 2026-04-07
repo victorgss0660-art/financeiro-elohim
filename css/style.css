@@ -357,3 +357,10 @@ input, textarea, select{
     display:none;
   }
 }
+.tab-section{
+  display:none;
+}
+
+.tab-section.active{
+  display:block;
+}
