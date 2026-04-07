@@ -3,6 +3,7 @@ window.dashboardModule = {
   pieChart: null,
   lineChart: null,
   rankingChart: null,
+  fullscreenChart: null,
 
   async carregarDashboard() {
     try {
@@ -30,7 +31,7 @@ window.dashboardModule = {
       });
 
       const metasMap = this.montarMapaMetas(metasAno);
-      const gastosPorCategoria = utils.somarPorCategoria(gastosMes);
+      const gastosPorCategoria = utils.somarPorCategoria(gastosMes, "categoria", "valor");
 
       this.renderTabelaResumo(gastosPorCategoria, metasMap, faturamentoValor);
       this.renderBarChart(gastosPorCategoria, metasMap, faturamentoValor);
@@ -38,27 +39,24 @@ window.dashboardModule = {
       this.renderLineChart(gastosAno);
       this.renderRankingChart(gastosAno);
       this.renderAlertas(gastosPorCategoria, metasMap, faturamentoValor, saldo);
-
+      this.registrarEventosFullscreen();
     } catch (e) {
       utils.setAppMsg("Erro ao carregar dashboard: " + e.message, "err");
     }
   },
 
-  // 🔹 FATURAMENTO = tabela "meses"
   async buscarFaturamentoMes(mes, ano) {
     try {
       const data = await api.restGet(
         "meses",
         `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${ano}&limit=1`
       );
-
       return data?.[0] || { valor: 0 };
     } catch {
       return { valor: 0 };
     }
   },
 
-  // 🔹 GASTOS
   async buscarGastosMes(mes, ano) {
     const data = await api.restGet(
       "gastos",
@@ -72,18 +70,23 @@ window.dashboardModule = {
     }));
   },
 
-  // 🔹 METAS = tabela "metas"
   async buscarMetasAno(ano) {
-    const data = await api.restGet(
-      "metas",
-      `select=*&ano=eq.${ano}`
-    );
+    try {
+      const data = await api.restGet(
+        "metas",
+        `select=*&ano=eq.${ano}`
+      );
 
-    return (data || []).map(item => ({
-      ...item,
-      categoria: utils.categoriaCanonica(item.categoria),
-      percentual_meta: utils.numero(item.percentual_meta)
-    }));
+      return (data || []).map(item => ({
+        ...item,
+        categoria: utils.categoriaCanonica(item.categoria),
+        percentual_meta: utils.numero(
+          item.percentual_meta ?? item.percentual ?? item.meta ?? 0
+        )
+      }));
+    } catch {
+      return [];
+    }
   },
 
   async buscarGastosAno(ano) {
@@ -101,41 +104,50 @@ window.dashboardModule = {
 
   montarMapaMetas(metas) {
     const mapa = {};
-    metas.forEach(item => {
-      mapa[item.categoria] = item.percentual_meta;
+    (metas || []).forEach(item => {
+      mapa[utils.categoriaCanonica(item.categoria)] = utils.numero(item.percentual_meta);
     });
     return mapa;
   },
 
   preencherCards({ faturamento, gastos, saldo, metaAtingida }) {
-    document.getElementById("fat").textContent = utils.moeda(faturamento);
-    document.getElementById("gas").textContent = utils.moeda(gastos);
-    document.getElementById("saldo").textContent = utils.moeda(saldo);
-    document.getElementById("metaAtingida").textContent =
-      `${utils.arredondar(metaAtingida, 0)}%`;
+    const fat = document.getElementById("fat");
+    const gas = document.getElementById("gas");
+    const saldoEl = document.getElementById("saldo");
+    const metaEl = document.getElementById("metaAtingida");
+
+    if (fat) fat.textContent = utils.moeda(faturamento);
+    if (gas) gas.textContent = utils.moeda(gastos);
+    if (saldoEl) saldoEl.textContent = utils.moeda(saldo);
+    if (metaEl) metaEl.textContent = `${utils.arredondar(metaAtingida, 0)}%`;
   },
 
   renderTabelaResumo(gastosPorCategoria, metasMap, faturamento) {
     const tbody = document.getElementById("tabelaResumo");
+    if (!tbody) return;
 
     const categorias = utils.getCategorias();
 
     tbody.innerHTML = categorias.map(cat => {
-      const gasto = gastosPorCategoria[cat] || 0;
-      const metaPerc = metasMap[cat] || 0;
-      const metaValor = faturamento * (metaPerc / 100);
-
-      const dentroMeta = gasto <= metaValor;
+      const gasto = utils.numero(gastosPorCategoria[cat] || 0);
+      const metaPerc = utils.numero(metasMap[cat] || 0);
+      const metaValor = faturamento > 0 ? faturamento * (metaPerc / 100) : 0;
+      const diferenca = metaValor - gasto;
+      const dentroMeta = metaPerc <= 0 ? null : gasto <= metaValor;
 
       return `
         <tr>
           <td>${cat}</td>
           <td>${utils.moeda(gasto)}</td>
-          <td>${metaPerc}%</td>
+          <td>${utils.arredondar(metaPerc, 2)}%</td>
           <td>${utils.moeda(metaValor)}</td>
-          <td>${utils.moeda(metaValor - gasto)}</td>
-          <td class="${dentroMeta ? "ok" : "err"}">
-            ${dentroMeta ? "OK" : "Acima"}
+          <td>${utils.moeda(diferenca)}</td>
+          <td class="${
+            dentroMeta === null ? "muted" : dentroMeta ? "ok" : "err"
+          }">
+            ${
+              dentroMeta === null ? "Sem meta" : dentroMeta ? "OK" : "Acima"
+            }
           </td>
         </tr>
       `;
@@ -144,30 +156,34 @@ window.dashboardModule = {
 
   renderAlertas(gastos, metas, faturamento, saldo) {
     const el = document.getElementById("alertList");
+    if (!el) return;
 
-    let html = "";
+    const alertas = [];
 
     if (saldo < 0) {
-      html += `<div class="alert-item">Saldo negativo</div>`;
+      alertas.push("Saldo negativo no período.");
     }
 
     Object.keys(gastos).forEach(cat => {
-      const gasto = gastos[cat];
-      const meta = metas[cat] || 0;
+      const gasto = utils.numero(gastos[cat]);
+      const meta = utils.numero(metas[cat] || 0);
 
-      if (meta > 0) {
+      if (meta > 0 && faturamento > 0) {
         const limite = faturamento * (meta / 100);
         if (gasto > limite) {
-          html += `<div class="alert-item">${cat} acima da meta</div>`;
+          alertas.push(`${cat} acima da meta.`);
         }
       }
     });
 
-    el.innerHTML = html || `<div class="alert-item ok">Tudo sob controle</div>`;
+    el.innerHTML = alertas.length
+      ? alertas.map(txt => `<div class="alert-item">${txt}</div>`).join("")
+      : `<div class="alert-item ok">Tudo sob controle</div>`;
   },
 
   renderBarChart(gastos, metas, faturamento) {
     const ctx = document.getElementById("barChart");
+    if (!ctx) return;
 
     if (this.barChart) this.barChart.destroy();
 
@@ -180,37 +196,51 @@ window.dashboardModule = {
         datasets: [
           {
             label: "Gastos",
-            data: categorias.map(c => gastos[c] || 0)
+            data: categorias.map(c => utils.numero(gastos[c] || 0)),
+            borderWidth: 1
           },
           {
             label: "Meta",
-            data: categorias.map(c => (faturamento * ((metas[c] || 0) / 100)))
+            data: categorias.map(c => faturamento * (utils.numero(metas[c] || 0) / 100)),
+            borderWidth: 1
           }
         ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
   },
 
   renderPieChart(gastos) {
     const ctx = document.getElementById("pieChart");
+    if (!ctx) return;
 
     if (this.pieChart) this.pieChart.destroy();
 
-    const categorias = Object.keys(gastos);
+    const categorias = Object.keys(gastos).filter(c => utils.numero(gastos[c]) > 0);
 
     this.pieChart = new Chart(ctx, {
       type: "pie",
       data: {
         labels: categorias,
-        datasets: [{
-          data: categorias.map(c => gastos[c])
-        }]
+        datasets: [
+          {
+            data: categorias.map(c => utils.numero(gastos[c]))
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
   },
 
   renderLineChart(gastosAno) {
     const ctx = document.getElementById("lineChart");
+    if (!ctx) return;
 
     if (this.lineChart) this.lineChart.destroy();
 
@@ -220,27 +250,37 @@ window.dashboardModule = {
     ];
 
     const valores = meses.map(m =>
-      utils.totalizar(gastosAno.filter(x => x.mes === m))
+      utils.totalizar(gastosAno.filter(x => x.mes === m), "valor")
     );
 
     this.lineChart = new Chart(ctx, {
       type: "line",
       data: {
         labels: meses,
-        datasets: [{
-          label: "Gastos",
-          data: valores
-        }]
+        datasets: [
+          {
+            label: "Gastos",
+            data: valores,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
   },
 
   renderRankingChart(gastosAno) {
     const ctx = document.getElementById("rankingChart");
+    if (!ctx) return;
 
     if (this.rankingChart) this.rankingChart.destroy();
 
-    const mapa = utils.somarPorCategoria(gastosAno);
+    const mapa = utils.somarPorCategoria(gastosAno, "categoria", "valor");
 
     const ranking = Object.entries(mapa)
       .sort((a, b) => b[1] - a[1]);
@@ -249,13 +289,94 @@ window.dashboardModule = {
       type: "bar",
       data: {
         labels: ranking.map(r => r[0]),
-        datasets: [{
-          data: ranking.map(r => r[1])
-        }]
+        datasets: [
+          {
+            label: "Gasto anual",
+            data: ranking.map(r => r[1]),
+            borderWidth: 1
+          }
+        ]
       },
       options: {
-        indexAxis: "y"
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
+  },
+
+  registrarEventosFullscreen() {
+    document.querySelectorAll(".chart-expand-btn").forEach(btn => {
+      if (btn.dataset.binded) return;
+
+      btn.addEventListener("click", () => {
+        const chartType = btn.dataset.chart;
+        this.abrirGraficoFullscreen(chartType);
+      });
+
+      btn.dataset.binded = "1";
+    });
+
+    const closeBtn = document.getElementById("closeChartFullscreen");
+    if (closeBtn && !closeBtn.dataset.binded) {
+      closeBtn.addEventListener("click", () => this.fecharGraficoFullscreen());
+      closeBtn.dataset.binded = "1";
+    }
+  },
+
+  abrirGraficoFullscreen(chartType) {
+    const modal = document.getElementById("chartFullscreenModal");
+    const title = document.getElementById("chartFullscreenTitle");
+    const canvas = document.getElementById("chartFullscreenCanvas");
+
+    if (!modal || !title || !canvas) return;
+
+    if (this.fullscreenChart) {
+      this.fullscreenChart.destroy();
+      this.fullscreenChart = null;
+    }
+
+    let sourceChart = null;
+    let chartTitle = "";
+
+    if (chartType === "bar") {
+      sourceChart = this.barChart;
+      chartTitle = "Gastos x Meta por Categoria";
+    } else if (chartType === "pie") {
+      sourceChart = this.pieChart;
+      chartTitle = "Distribuição dos Gastos";
+    } else if (chartType === "line") {
+      sourceChart = this.lineChart;
+      chartTitle = "Evolução Mensal";
+    } else if (chartType === "ranking") {
+      sourceChart = this.rankingChart;
+      chartTitle = "Ranking Anual de Categorias";
+    }
+
+    if (!sourceChart) return;
+
+    title.textContent = chartTitle;
+    modal.classList.remove("hidden");
+
+    const clonedData = JSON.parse(JSON.stringify(sourceChart.data));
+    const clonedOptions = JSON.parse(JSON.stringify(sourceChart.options || {}));
+    clonedOptions.responsive = true;
+    clonedOptions.maintainAspectRatio = false;
+
+    this.fullscreenChart = new Chart(canvas, {
+      type: sourceChart.config.type,
+      data: clonedData,
+      options: clonedOptions
+    });
+  },
+
+  fecharGraficoFullscreen() {
+    const modal = document.getElementById("chartFullscreenModal");
+    if (modal) modal.classList.add("hidden");
+
+    if (this.fullscreenChart) {
+      this.fullscreenChart.destroy();
+      this.fullscreenChart = null;
+    }
   }
 };
