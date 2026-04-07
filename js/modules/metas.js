@@ -1,74 +1,41 @@
 window.metasModule = {
-  nomesCategorias: {
-    MC: "Materiais de Consumo",
-    MP: "Matéria-Prima",
-    TERC: "Terceirizações",
-    FRETE: "Fretes",
-    DESP: "Despesas Fixas",
-    TAR: "Tarifas Bancárias",
-    PREST: "Prestações de Serviço",
-    FOLHA: "Folha de Pagamento",
-    COMIS: "Comissões",
-    IMPOS: "Impostos",
-    RESC: "Rescisões",
-    MANUT: "Manutenções"
-    ANTECIPAÇÃO: "Antecipação"
-  },
-
-  metasPadrao: {
-    MC: 20,
-    MP: 18,
-    TERC: 8,
-    FRETE: 5,
-    DESP: 6,
-    TAR: 1,
-    PREST: 4,
-    FOLHA: 15,
-    COMIS: 2,
-    IMPOS: 5,
-    RESC: 1,
-    MANUT: 4
-  },
-
-  nomeCategoria(sigla) {
-    return this.nomesCategorias[sigla] || sigla || "-";
-  },
-
-  async garantirMetas(mes, ano) {
-    const data = await api.restGet(
-      "metas",
-      `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-    );
-
-    if (data.length) return data;
-
-    const payload = Object.keys(this.metasPadrao).map(cat => ({
-      mes,
-      ano,
-      categoria: cat,
-      meta: this.metasPadrao[cat]
-    }));
-
-    await api.restInsert("metas", payload);
-    return payload;
-  },
-
   async carregarMetas() {
     try {
-      const { mes, ano } = utils.getMesAno();
-      const metasData = await this.garantirMetas(mes, ano);
+      const { ano } = utils.getMesAno();
+      const categorias = utils.getCategorias();
+      const grid = document.getElementById("metaGrid");
 
-      const metaGrid = document.getElementById("metaGrid");
-      if (!metaGrid) return;
+      if (!grid) return;
 
-      metaGrid.innerHTML = Object.keys(this.metasPadrao).map(cat => {
-        const registro = metasData.find(item => item.categoria === cat);
-        const valor = registro ? utils.num(registro.meta || 0) : this.metasPadrao[cat];
+      let metas = [];
+      try {
+        metas = await api.restGet(
+          "metas_financeiras",
+          `select=*&ano=eq.${ano}`
+        );
+      } catch (e) {
+        metas = [];
+      }
 
+      const mapa = {};
+      (metas || []).forEach(item => {
+        const categoria = utils.categoriaCanonica(item.categoria || "");
+        mapa[categoria] = item;
+      });
+
+      grid.innerHTML = categorias.map(categoria => {
+        const item = mapa[categoria] || {};
         return `
           <div class="meta-item">
-            <label>${this.nomeCategoria(cat)} (%)</label>
-            <input type="number" step="0.01" data-cat="${cat}" value="${valor}">
+            <label>${categoria}</label>
+            <input
+              type="number"
+              step="0.01"
+              class="meta-input"
+              data-categoria="${categoria}"
+              value="${item.percentual_meta ?? ""}"
+              placeholder="% do faturamento"
+            >
           </div>
         `;
       }).join("");
@@ -77,34 +44,41 @@ window.metasModule = {
     }
   },
 
-  capturarMetasTela() {
-    const metas = {};
-    document.querySelectorAll("#metaGrid input").forEach(input => {
-      metas[input.dataset.cat] = utils.num(input.value || 0);
-    });
-    return metas;
-  },
-
   async salvarMetas() {
     try {
-      const { mes, ano } = utils.getMesAno();
-      const metas = this.capturarMetasTela();
+      const { ano } = utils.getMesAno();
+      const inputs = Array.from(document.querySelectorAll(".meta-input"));
 
-      await api.restDelete(
-        "metas",
-        `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-      );
+      for (const input of inputs) {
+        const categoria = utils.categoriaCanonica(input.dataset.categoria || "");
+        const percentual_meta = Number(input.value || 0);
 
-      const payload = Object.keys(metas).map(cat => ({
-        mes,
-        ano,
-        categoria: cat,
-        meta: utils.num(metas[cat] || 0)
-      }));
+        const existente = await api.restGet(
+          "metas_financeiras",
+          `select=id,categoria,ano&categoria=eq.${encodeURIComponent(categoria)}&ano=eq.${ano}&limit=1`
+        );
 
-      await api.restInsert("metas", payload);
+        if (existente.length) {
+          await api.restPatch(
+            "metas_financeiras",
+            `id=eq.${existente[0].id}`,
+            {
+              categoria,
+              ano,
+              percentual_meta
+            }
+          );
+        } else {
+          await api.restInsert("metas_financeiras", [{
+            categoria,
+            ano,
+            percentual_meta
+          }]);
+        }
+      }
 
       utils.setAppMsg("Metas salvas com sucesso.", "ok");
+      await this.carregarMetas();
 
       if (window.dashboardModule?.carregarDashboard) {
         await window.dashboardModule.carregarDashboard();
