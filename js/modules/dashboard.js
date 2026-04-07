@@ -488,83 +488,140 @@ window.dashboardModule = {
     });
   },
 
-  renderLineChart(gastosAno) {
-    const ctx = document.getElementById("lineChart");
-    if (!ctx) return;
-    if (this.lineChart) this.lineChart.destroy();
+renderLineChart(gastosAno) {
+  const ctx = document.getElementById("lineChart");
+  if (!ctx) return;
+  if (this.lineChart) this.lineChart.destroy();
 
-    const valores = this.mesesOrdem.map(mes =>
-      utils.totalizar(gastosAno.filter(x => x.mes === mes), "valor")
+  const chartCtx = ctx.getContext("2d");
+
+  const gradGastos = chartCtx.createLinearGradient(0, 0, 0, 400);
+  gradGastos.addColorStop(0, "rgba(239,68,68,0.30)");
+  gradGastos.addColorStop(1, "rgba(239,68,68,0.02)");
+
+  const gradFaturamento = chartCtx.createLinearGradient(0, 0, 0, 400);
+  gradFaturamento.addColorStop(0, "rgba(34,197,94,0.22)");
+  gradFaturamento.addColorStop(1, "rgba(34,197,94,0.02)");
+
+  const mesesLabels = this.mesesCurtos;
+  const mesesCompletos = this.mesesOrdem;
+
+  const gastosPorMes = mesesCompletos.map(mes =>
+    utils.totalizar(
+      gastosAno.filter(item => String(item.mes || "").trim() === mes),
+      "valor"
+    )
+  );
+
+  const faturamentosPorMes = mesesCompletos.map(mes => {
+    const item = (this.cacheMeses || []).find(row =>
+      String(row.mes || row.nome_mes || "").trim() === mes
     );
 
-    const chartCtx = ctx.getContext("2d");
-    const gradient = chartCtx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, "rgba(59,130,246,0.38)");
-    gradient.addColorStop(1, "rgba(59,130,246,0.02)");
+    return item ? this.extrairValorMes(item) : 0;
+  });
 
-    this.lineChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: this.mesesCurtos,
-        datasets: [{
-          label: "Gastos ao longo do ano",
-          data: valores,
-          borderColor: "#3b82f6",
-          backgroundColor: gradient,
+  const lucrosPorMes = mesesCompletos.map((mes, i) => {
+    return utils.numero(faturamentosPorMes[i]) - utils.numero(gastosPorMes[i]);
+  });
+
+  this.lineChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: mesesLabels,
+      datasets: [
+        {
+          label: "Faturamento",
+          data: faturamentosPorMes,
+          borderColor: "#22c55e",
+          backgroundColor: gradFaturamento,
           fill: true,
-          tension: 0.42,
+          tension: 0.38,
           borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: "#ffffff",
+          pointBorderColor: "#22c55e",
+          pointBorderWidth: 2,
+          pointHoverRadius: 7
+        },
+        {
+          label: "Gastos",
+          data: gastosPorMes,
+          borderColor: "#ef4444",
+          backgroundColor: gradGastos,
+          fill: true,
+          tension: 0.38,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: "#ffffff",
+          pointBorderColor: "#ef4444",
+          pointBorderWidth: 2,
+          pointHoverRadius: 7
+        },
+        {
+          label: "Lucro / Saldo",
+          data: lucrosPorMes,
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59,130,246,0)",
+          fill: false,
+          tension: 0.38,
+          borderWidth: 3,
+          borderDash: [0],
           pointRadius: 4,
           pointBackgroundColor: "#ffffff",
           pointBorderColor: "#3b82f6",
           pointBorderWidth: 2,
-          pointHoverRadius: 7,
-          pointHoverBackgroundColor: "#3b82f6",
-          pointHoverBorderColor: "#ffffff",
-          pointHoverBorderWidth: 2
-        }]
+          pointHoverRadius: 7
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: "index",
-          intersect: false
-        },
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return `Gasto: ${utils.moeda(context.raw)}`;
-              }
-            }
+      plugins: {
+        legend: {
+          display: true,
+          position: "top",
+          labels: {
+            color: "#334155",
+            usePointStyle: true,
+            boxWidth: 12
           }
         },
-        scales: {
-          x: {
-            ticks: {
-              color: "#475569",
-              font: { weight: "600" }
-            },
-            grid: { display: false }
-          },
-          y: {
-            beginAtZero: true,
-            ticks: {
-              color: "#475569",
-              callback: value => Number(value).toLocaleString("pt-BR")
-            },
-            grid: {
-              color: "rgba(148,163,184,0.15)"
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: ${utils.moeda(context.raw)}`;
             }
           }
         }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#475569",
+            font: { weight: "600" }
+          },
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#475569",
+            callback: value => Number(value).toLocaleString("pt-BR")
+          },
+          grid: {
+            color: "rgba(148,163,184,0.15)"
+          }
+        }
       }
-    });
-  },
+    }
+  });
+}
 
   renderRankingChart(gastosAno) {
     const ctx = document.getElementById("rankingChart");
