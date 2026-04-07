@@ -1190,3 +1190,18 @@ tr.selecionado{
   border-color:#22c55e;
   color:#bbf7d0;
 }
+.alert-clickable{
+  width:100%;
+  text-align:left;
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+.alert-clickable:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.04);
+}
+
+.alert-clickable:active{
+  transform:translateY(0);
+}
