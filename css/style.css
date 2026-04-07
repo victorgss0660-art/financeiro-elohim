@@ -1017,4 +1017,265 @@ tr.selecionado{
   .card-value{
     font-size:24px;
   }
+  /* =========================
+   MICROANIMAÇÕES PREMIUM
+   ========================= */
+
+@keyframes floatUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
+@keyframes softPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59,130,246,.22);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59,130,246,0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59,130,246,0);
+  }
+}
+
+@keyframes glowDanger {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239,68,68,.20);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(239,68,68,0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239,68,68,0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.topbar,
+.executive-panel,
+.cards,
+.grid,
+.panel{
+  animation: floatUp .28s ease;
+}
+
+.cards .card{
+  animation: floatUp .32s ease;
+}
+
+.cards .card:nth-child(2){ animation-delay: .03s; }
+.cards .card:nth-child(3){ animation-delay: .06s; }
+.cards .card:nth-child(4){ animation-delay: .09s; }
+.cards .card:nth-child(5){ animation-delay: .12s; }
+.cards .card:nth-child(6){ animation-delay: .15s; }
+
+.card:hover{
+  transform: translateY(-4px) scale(1.01);
+}
+
+.card-highlight{
+  position: relative;
+  overflow: hidden;
+}
+
+.card-highlight::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,0) 30%,
+    rgba(255,255,255,.16) 50%,
+    rgba(255,255,255,0) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3.2s linear infinite;
+  pointer-events: none;
+}
+
+.menu-btn{
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-btn::after{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:0;
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,0));
+  transition: width .18s ease;
+  pointer-events:none;
+}
+
+.menu-btn:hover::after{
+  width:100%;
+}
+
+.menu-btn.active{
+  animation: softPulse 2.6s infinite;
+}
+
+.btn,
+.secondary-btn,
+.small-btn,
+.doc-btn,
+.chart-expand-btn{
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    filter .16s ease,
+    background .16s ease;
+}
+
+.btn:hover,
+.secondary-btn:hover,
+.chart-expand-btn:hover{
+  transform: translateY(-1px);
+}
+
+.btn:active,
+.secondary-btn:active,
+.small-btn:active,
+.doc-btn:active,
+.chart-expand-btn:active{
+  transform: translateY(0) scale(.98);
+}
+
+.alert-item{
+  transition:
+    transform .16s ease,
+    filter .16s ease,
+    box-shadow .16s ease;
+}
+
+.alert-item.critico{
+  animation: glowDanger 2.8s infinite;
+}
+
+.alert-clickable:hover{
+  transform: translateY(-2px) scale(1.005);
+}
+
+.status-item,
+.meta-item,
+.table-total-item{
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+.status-item:hover,
+.meta-item:hover,
+.table-total-item:hover{
+  transform: translateY(-2px);
+  border-color: rgba(59,130,246,.28);
+  background: rgba(255,255,255,.045);
+}
+
+input,
+textarea,
+select{
+  transition:
+    border-color .16s ease,
+    box-shadow .16s ease,
+    background .16s ease,
+    transform .16s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+  transform: translateY(-1px);
+}
+
+tbody tr{
+  transition: background .14s ease, transform .14s ease;
+}
+
+tbody tr:hover{
+  transform: scale(1.002);
+}
+
+.badge{
+  transition: transform .16s ease, filter .16s ease;
+}
+
+.badge:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.chart-wrap,
+.panel,
+.popup-box{
+  transition:
+    box-shadow .18s ease,
+    transform .18s ease,
+    border-color .18s ease;
+}
+
+.chart-wrap:hover,
+.panel:hover{
+  border-color: rgba(255,255,255,.12);
+}
+
+.popup{
+  animation: floatUp .18s ease;
+}
+
+.popup-box{
+  animation: floatUp .22s ease;
+}
+
+/* Loading skeleton opcional */
+.skeleton{
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,.06);
+  border-radius: 12px;
+}
+
+.skeleton::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,0) 30%,
+    rgba(255,255,255,.14) 50%,
+    rgba(255,255,255,0) 70%
+  );
+  background-size:200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Reduz animações se o sistema pedir */
+@media (prefers-reduced-motion: reduce){
+  *,
+  *::before,
+  *::after{
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+}
+
