@@ -12,7 +12,6 @@
 </head>
 <body>
 
-  <!-- LOGIN -->
   <section id="loginScreen" class="login-screen">
     <div class="login-card">
       <div class="login-logo">
@@ -30,7 +29,6 @@
     </div>
   </section>
 
-  <!-- APP -->
   <section id="appShell" class="app hidden">
     <aside class="sidebar">
       <div class="sidebar-logo">
@@ -126,7 +124,6 @@
 
       <div id="appMsg" class="info"></div>
 
-      <!-- DASHBOARD -->
       <section id="tab-dashboard" class="tab-section active fade-in">
         <section class="panel executive-panel">
           <div class="executive-header">
@@ -186,7 +183,10 @@
           <div class="panel">
             <div class="panel-head">
               <h3>Gastos x Meta por Categoria</h3>
-              <div class="badge">Dashboard</div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <button class="secondary-btn chart-expand-btn" data-chart="bar" type="button">Tela cheia</button>
+                <div class="badge">Dashboard</div>
+              </div>
             </div>
             <div class="chart-wrap">
               <canvas id="barChart"></canvas>
@@ -196,7 +196,10 @@
           <div class="panel">
             <div class="panel-head">
               <h3>Distribuição dos Gastos</h3>
-              <div class="badge">Pizza</div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <button class="secondary-btn chart-expand-btn" data-chart="pie" type="button">Tela cheia</button>
+                <div class="badge">Pizza</div>
+              </div>
             </div>
             <div class="chart-wrap">
               <canvas id="pieChart"></canvas>
@@ -207,7 +210,10 @@
         <section class="panel">
           <div class="panel-head">
             <h3>Evolução Mensal</h3>
-            <div class="badge">Ano</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="secondary-btn chart-expand-btn" data-chart="line" type="button">Tela cheia</button>
+              <div class="badge">Ano</div>
+            </div>
           </div>
           <div class="chart-wrap">
             <canvas id="lineChart"></canvas>
@@ -217,7 +223,10 @@
         <section class="panel">
           <div class="panel-head">
             <h3>Ranking Anual de Categorias</h3>
-            <div class="badge">Top gastos</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="secondary-btn chart-expand-btn" data-chart="ranking" type="button">Tela cheia</button>
+              <div class="badge">Top gastos</div>
+            </div>
           </div>
           <div class="chart-wrap">
             <canvas id="rankingChart"></canvas>
@@ -286,7 +295,6 @@
         </section>
       </section>
 
-      <!-- CONTAS A PAGAR -->
       <section id="tab-contas-pagar" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -428,44 +436,43 @@
         </section>
       </section>
 
-      <!-- CONTAS PAGAS -->
-<section id="tab-contas-pagas" class="tab-section fade-in">
-  <section class="panel">
-    <div class="panel-head">
-      <h3>Contas Pagas</h3>
-      <div class="badge">Histórico</div>
-    </div>
+      <section id="tab-contas-pagas" class="tab-section fade-in">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Contas Pagas</h3>
+            <div class="badge">Histórico</div>
+          </div>
 
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-      <button id="btnImportarContasPagas" class="secondary-btn" type="button">Importar planilha</button>
-      <button id="btnExportarContasPagas" class="secondary-btn" type="button">Exportar planilha</button>
-      <input id="fileInputContasPagas" type="file" accept=".xlsx,.xls,.csv" class="hidden">
-    </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+            <button id="btnImportarContasPagas" class="secondary-btn" type="button">Importar planilha</button>
+            <button id="btnExportarContasPagas" class="secondary-btn" type="button">Exportar planilha</button>
+            <input id="fileInputContasPagas" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+          </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>Fornecedor</th>
-          <th>Descrição</th>
-          <th>Categoria</th>
-          <th>Documento</th>
-          <th>Valor</th>
-          <th>Pago em</th>
-          <th>Multa</th>
-          <th>Desconto</th>
-          <th>Total / Ação</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaContasPagas">
-        <tr>
-          <td colspan="10" class="muted">Nenhuma conta paga.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-</section>
-      <!-- CONTAS A RECEBER -->
+          <table>
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>Fornecedor</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Documento</th>
+                <th>Valor</th>
+                <th>Pago em</th>
+                <th>Multa</th>
+                <th>Desconto</th>
+                <th>Total / Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaContasPagas">
+              <tr>
+                <td colspan="10" class="muted">Nenhuma conta paga.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+
       <section id="tab-contas-receber" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -516,7 +523,6 @@
         </section>
       </section>
 
-      <!-- CONTAS RECEBIDAS -->
       <section id="tab-contas-recebidas" class="tab-section fade-in">
         <section class="panel table-wrap">
           <div class="panel-head">
@@ -545,7 +551,6 @@
         </section>
       </section>
 
-      <!-- FATURAMENTO -->
       <section id="tab-faturamento" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -560,7 +565,6 @@
         </section>
       </section>
 
-      <!-- METAS -->
       <section id="tab-metas" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -576,7 +580,6 @@
         </section>
       </section>
 
-      <!-- IMPORTAR DESPESAS -->
       <section id="tab-importar" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -594,7 +597,6 @@
         </section>
       </section>
 
-      <!-- RESUMO -->
       <section id="tab-resumo" class="tab-section fade-in">
         <section class="panel table-wrap">
           <div class="panel-head">
@@ -620,7 +622,6 @@
         </section>
       </section>
 
-      <!-- PLANEJAMENTO -->
       <section id="tab-planejamento" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -637,9 +638,10 @@
             <input class="saldo-conta" data-conta="citibank" placeholder="Citibank (Hitachi)">
             <input class="saldo-conta" data-conta="dinheiro" placeholder="Dinheiro Físico">
           </div>
+
           <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-  <button id="btnSalvarSaldosBancarios" class="btn" type="button">Salvar saldos bancários</button>
-</div>
+            <button id="btnSalvarSaldosBancarios" class="btn" type="button">Salvar saldos bancários</button>
+          </div>
 
           <div style="margin-top:16px;">
             <div id="totalDisponivelBadge" class="badge">Total disponível: R$ 0,00</div>
@@ -739,7 +741,6 @@
     </main>
   </section>
 
-  <!-- POPUP PAGAMENTO INDIVIDUAL -->
   <div id="popupPagamento" class="popup hidden">
     <div class="popup-box">
       <h3>Confirmar Pagamento</h3>
@@ -766,7 +767,6 @@
     </div>
   </div>
 
-  <!-- POPUP PAGAMENTO EM LOTE -->
   <div id="popupPagamentoLote" class="popup hidden">
     <div class="popup-box">
       <h3>Pagar contas selecionadas</h3>
@@ -803,7 +803,19 @@
     </div>
   </div>
 
-  <!-- SCRIPTS -->
+  <div id="chartFullscreenModal" class="popup hidden">
+    <div class="popup-box chart-fullscreen-box">
+      <div class="panel-head" style="margin-bottom:16px;">
+        <h3 id="chartFullscreenTitle">Gráfico</h3>
+        <button id="closeChartFullscreen" class="secondary-btn" type="button">Fechar</button>
+      </div>
+
+      <div class="chart-fullscreen-wrap">
+        <canvas id="chartFullscreenCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
   <script src="./js/config.js"></script>
   <script src="./js/api/supabase.js"></script>
   <script src="./js/core/utils.js"></script>
