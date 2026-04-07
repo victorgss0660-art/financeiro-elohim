@@ -383,46 +383,122 @@ window.dashboardModule = {
     }).join("");
   },
 
-  renderAlertas(gastos, metas, faturamento, saldo) {
-    const el = document.getElementById("alertList");
-    if (!el) return;
+renderAlertas(gastos, metas, faturamento, saldo, contasPagar = []) {
+  const el = document.getElementById("alertList");
+  if (!el) return;
 
-    const alertas = [];
+  const alertas = [];
 
-    if (saldo < 0) {
+  // 🔴 SALDO NEGATIVO
+  if (saldo < 0) {
+    alertas.push({
+      tipo: "critico",
+      titulo: "Saldo negativo",
+      texto: `Saldo atual: ${utils.moeda(saldo)}`
+    });
+  }
+
+  // 🔴 CONTAS VENCIDAS / HOJE / 7 DIAS
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+
+  const em7 = new Date(hoje);
+  em7.setDate(hoje.getDate() + 7);
+
+  let vencidas = 0;
+  let hojeCount = 0;
+  let proximas = 0;
+
+  (contasPagar || []).forEach(c => {
+    if (!c.vencimento || c.status === "pago") return;
+
+    const data = new Date(c.vencimento + "T00:00:00");
+
+    if (data < hoje) vencidas++;
+    else if (data.getTime() === hoje.getTime()) hojeCount++;
+    else if (data <= em7) proximas++;
+  });
+
+  if (vencidas > 0) {
+    alertas.push({
+      tipo: "critico",
+      titulo: "Contas vencidas",
+      texto: `${vencidas} contas em atraso`
+    });
+  }
+
+  if (hojeCount > 0) {
+    alertas.push({
+      tipo: "atencao",
+      titulo: "Vencem hoje",
+      texto: `${hojeCount} contas vencem hoje`
+    });
+  }
+
+  if (proximas > 0) {
+    alertas.push({
+      tipo: "atencao",
+      titulo: "Próximos 7 dias",
+      texto: `${proximas} contas a vencer`
+    });
+  }
+
+  // 📊 METAS
+  Object.keys(gastos || {}).forEach(cat => {
+    const gasto = utils.numero(gastos[cat]);
+    const meta = utils.numero(metas[cat] || 0);
+
+    if (meta > 0 && faturamento > 0) {
+      const limite = faturamento * (meta / 100);
+      const perc = (gasto / limite) * 100;
+
+      if (perc > 100) {
+        alertas.push({
+          tipo: "critico",
+          titulo: `${cat} acima da meta`,
+          texto: `${utils.arredondar(perc,1)}% da meta`
+        });
+      } else if (perc >= 80) {
+        alertas.push({
+          tipo: "atencao",
+          titulo: `${cat} em atenção`,
+          texto: `${utils.arredondar(perc,1)}% da meta`
+        });
+      } else {
+        alertas.push({
+          tipo: "ok",
+          titulo: `${cat} dentro da meta`,
+          texto: `${utils.arredondar(perc,1)}%`
+        });
+      }
+    }
+  });
+
+  // 📉 FATURAMENTO CAIU
+  const varFatEl = document.getElementById("varFat");
+  if (varFatEl) {
+    const txt = varFatEl.textContent.replace("%","");
+    const val = Number(txt);
+
+    if (!isNaN(val) && val < 0) {
       alertas.push({
-        titulo: "Saldo negativo",
-        texto: `O período está com saldo de ${utils.moeda(saldo)}.`
+        tipo: "atencao",
+        titulo: "Faturamento em queda",
+        texto: `${val}% vs mês anterior`
       });
     }
+  }
 
-    Object.keys(gastos || {}).forEach(cat => {
-      const gasto = utils.numero(gastos[cat]);
-      const meta = utils.numero(metas[cat] || 0);
-
-      if (meta > 0 && faturamento > 0) {
-        const limite = faturamento * (meta / 100);
-        const zona = limite * 0.8;
-
-        if (gasto > limite) {
-          alertas.push({
-            titulo: `${cat} acima da meta`,
-            texto: `Gasto de ${utils.moeda(gasto)} para uma meta de ${utils.moeda(limite)}.`
-          });
-        } else if (gasto >= zona) {
-          alertas.push({
-            titulo: `${cat} em atenção`,
-            texto: `A categoria já consumiu ${utils.arredondar((gasto / limite) * 100, 1)}% da meta.`
-          });
-        }
-      }
-    });
-
-    el.innerHTML = alertas.length
-      ? alertas.map(a => `<div class="alert-item"><strong>${a.titulo}</strong><br>${a.texto}</div>`).join("")
-      : `<div class="alert-item ok">Tudo sob controle</div>`;
-  },
-
+  // 🎯 RENDER
+  el.innerHTML = alertas.map(a => {
+    return `
+      <div class="alert-item ${a.tipo}">
+        <strong>${a.titulo}</strong><br>
+        ${a.texto}
+      </div>
+    `;
+  }).join("");
+}
   renderBarChart(gastos, metas, faturamento) {
     const ctx = document.getElementById("barChart");
     if (!ctx) return;
