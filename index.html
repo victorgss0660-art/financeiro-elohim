@@ -124,6 +124,7 @@
 
       <div id="appMsg" class="info"></div>
 
+      <!-- DASHBOARD -->
       <section id="tab-dashboard" class="tab-section active fade-in">
         <section class="panel executive-panel">
           <div class="executive-header">
@@ -131,7 +132,7 @@
               <div class="executive-kicker">Visão Executiva</div>
               <h2 class="executive-title">Resumo Financeiro do Período</h2>
               <p class="executive-subtitle">
-                Acompanhe rapidamente receita, despesas, saldo e performance da meta.
+                Acompanhe rapidamente receita, despesas, saldo, metas, vencimentos e maiores movimentações.
               </p>
             </div>
 
@@ -175,7 +176,37 @@
             <div class="card-icon">🎯</div>
             <div class="card-title">Meta atingida</div>
             <div class="card-value" id="metaAtingida">0%</div>
-            <div class="card-sub">Em relação ao limite definido</div>
+            <div class="card-sub">Consumo total vs. faturamento</div>
+          </div>
+        </section>
+
+        <section class="cards">
+          <div class="card">
+            <div class="card-icon">🚨</div>
+            <div class="card-title">Contas vencidas</div>
+            <div class="card-value" id="cardVencidas">0</div>
+            <div class="card-sub">Títulos já vencidos</div>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">📅</div>
+            <div class="card-title">Vencem hoje</div>
+            <div class="card-value" id="cardHoje">0</div>
+            <div class="card-sub">Pagamentos do dia</div>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">⏳</div>
+            <div class="card-title">Próximos 7 dias</div>
+            <div class="card-value" id="card7dias">0</div>
+            <div class="card-sub">Contas a vencer</div>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">📈</div>
+            <div class="card-title">Variação faturamento</div>
+            <div class="card-value" id="varFat">0%</div>
+            <div class="card-sub">Comparado ao mês anterior</div>
           </div>
         </section>
 
@@ -230,6 +261,28 @@
           </div>
           <div class="chart-wrap">
             <canvas id="rankingChart"></canvas>
+          </div>
+        </section>
+
+        <section class="grid">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Top 5 Contas a Pagar</h3>
+              <div class="badge">Maiores valores</div>
+            </div>
+            <div id="topPagar" class="alert-list">
+              <div class="muted">Nenhuma conta encontrada.</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Top 5 Contas a Receber</h3>
+              <div class="badge">Maiores valores</div>
+            </div>
+            <div id="topReceber" class="alert-list">
+              <div class="muted">Nenhuma conta encontrada.</div>
+            </div>
           </div>
         </section>
 
@@ -295,6 +348,7 @@
         </section>
       </section>
 
+      <!-- CONTAS A PAGAR -->
       <section id="tab-contas-pagar" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -436,6 +490,7 @@
         </section>
       </section>
 
+      <!-- CONTAS PAGAS -->
       <section id="tab-contas-pagas" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -473,6 +528,7 @@
         </section>
       </section>
 
+      <!-- CONTAS A RECEBER -->
       <section id="tab-contas-receber" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -523,6 +579,7 @@
         </section>
       </section>
 
+      <!-- CONTAS RECEBIDAS -->
       <section id="tab-contas-recebidas" class="tab-section fade-in">
         <section class="panel table-wrap">
           <div class="panel-head">
@@ -551,6 +608,7 @@
         </section>
       </section>
 
+      <!-- FATURAMENTO -->
       <section id="tab-faturamento" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -565,6 +623,7 @@
         </section>
       </section>
 
+      <!-- METAS -->
       <section id="tab-metas" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -580,6 +639,7 @@
         </section>
       </section>
 
+      <!-- IMPORTAR DESPESAS -->
       <section id="tab-importar" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -597,6 +657,7 @@
         </section>
       </section>
 
+      <!-- RESUMO -->
       <section id="tab-resumo" class="tab-section fade-in">
         <section class="panel table-wrap">
           <div class="panel-head">
@@ -622,6 +683,7 @@
         </section>
       </section>
 
+      <!-- PLANEJAMENTO -->
       <section id="tab-planejamento" class="tab-section fade-in">
         <section class="panel">
           <div class="panel-head">
@@ -741,6 +803,7 @@
     </main>
   </section>
 
+  <!-- POPUP PAGAMENTO INDIVIDUAL -->
   <div id="popupPagamento" class="popup hidden">
     <div class="popup-box">
       <h3>Confirmar Pagamento</h3>
@@ -767,6 +830,7 @@
     </div>
   </div>
 
+  <!-- POPUP PAGAMENTO EM LOTE -->
   <div id="popupPagamentoLote" class="popup hidden">
     <div class="popup-box">
       <h3>Pagar contas selecionadas</h3>
@@ -803,6 +867,7 @@
     </div>
   </div>
 
+  <!-- MODAL GRÁFICO TELA CHEIA -->
   <div id="chartFullscreenModal" class="popup hidden">
     <div class="popup-box chart-fullscreen-box">
       <div class="panel-head" style="margin-bottom:16px;">
