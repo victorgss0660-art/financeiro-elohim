@@ -18,7 +18,9 @@ window.dashboardModule = {
       const faturamentoValor = faturamento?.valor || 0;
       const totalGastos = utils.totalizar(gastosMes, "valor");
       const saldo = faturamentoValor - totalGastos;
-      const metaAtingida = faturamentoValor > 0 ? (totalGastos / faturamentoValor) * 100 : 0;
+      const metaAtingida = faturamentoValor > 0
+        ? (totalGastos / faturamentoValor) * 100
+        : 0;
 
       this.preencherCards({
         faturamento: faturamentoValor,
@@ -28,7 +30,7 @@ window.dashboardModule = {
       });
 
       const metasMap = this.montarMapaMetas(metasAno);
-      const gastosPorCategoria = utils.somarPorCategoria(gastosMes, "categoria", "valor");
+      const gastosPorCategoria = utils.somarPorCategoria(gastosMes);
 
       this.renderTabelaResumo(gastosPorCategoria, metasMap, faturamentoValor);
       this.renderBarChart(gastosPorCategoria, metasMap, faturamentoValor);
@@ -36,24 +38,27 @@ window.dashboardModule = {
       this.renderLineChart(gastosAno);
       this.renderRankingChart(gastosAno);
       this.renderAlertas(gastosPorCategoria, metasMap, faturamentoValor, saldo);
+
     } catch (e) {
       utils.setAppMsg("Erro ao carregar dashboard: " + e.message, "err");
     }
   },
 
+  // 🔹 FATURAMENTO = tabela "meses"
   async buscarFaturamentoMes(mes, ano) {
     try {
       const data = await api.restGet(
-        "faturamento",
+        "meses",
         `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${ano}&limit=1`
       );
 
       return data?.[0] || { valor: 0 };
-    } catch (e) {
+    } catch {
       return { valor: 0 };
     }
   },
 
+  // 🔹 GASTOS
   async buscarGastosMes(mes, ano) {
     const data = await api.restGet(
       "gastos",
@@ -67,21 +72,18 @@ window.dashboardModule = {
     }));
   },
 
+  // 🔹 METAS = tabela "metas"
   async buscarMetasAno(ano) {
-    try {
-      const data = await api.restGet(
-        "metas_financeiras",
-        `select=*&ano=eq.${ano}`
-      );
+    const data = await api.restGet(
+      "metas",
+      `select=*&ano=eq.${ano}`
+    );
 
-      return (data || []).map(item => ({
-        ...item,
-        categoria: utils.categoriaCanonica(item.categoria),
-        percentual_meta: utils.numero(item.percentual_meta)
-      }));
-    } catch (e) {
-      return [];
-    }
+    return (data || []).map(item => ({
+      ...item,
+      categoria: utils.categoriaCanonica(item.categoria),
+      percentual_meta: utils.numero(item.percentual_meta)
+    }));
   },
 
   async buscarGastosAno(ano) {
@@ -99,244 +101,160 @@ window.dashboardModule = {
 
   montarMapaMetas(metas) {
     const mapa = {};
-    (metas || []).forEach(item => {
-      mapa[utils.categoriaCanonica(item.categoria)] = utils.numero(item.percentual_meta);
+    metas.forEach(item => {
+      mapa[item.categoria] = item.percentual_meta;
     });
     return mapa;
   },
 
   preencherCards({ faturamento, gastos, saldo, metaAtingida }) {
-    const fat = document.getElementById("fat");
-    const gas = document.getElementById("gas");
-    const saldoEl = document.getElementById("saldo");
-    const metaEl = document.getElementById("metaAtingida");
-
-    if (fat) fat.textContent = utils.moeda(faturamento);
-    if (gas) gas.textContent = utils.moeda(gastos);
-    if (saldoEl) saldoEl.textContent = utils.moeda(saldo);
-    if (metaEl) metaEl.textContent = `${utils.arredondar(metaAtingida, 0)}%`;
+    document.getElementById("fat").textContent = utils.moeda(faturamento);
+    document.getElementById("gas").textContent = utils.moeda(gastos);
+    document.getElementById("saldo").textContent = utils.moeda(saldo);
+    document.getElementById("metaAtingida").textContent =
+      `${utils.arredondar(metaAtingida, 0)}%`;
   },
 
   renderTabelaResumo(gastosPorCategoria, metasMap, faturamento) {
     const tbody = document.getElementById("tabelaResumo");
-    if (!tbody) return;
 
     const categorias = utils.getCategorias();
 
-    const linhas = categorias.map(categoria => {
-      const gasto = utils.numero(gastosPorCategoria[categoria] || 0);
-      const metaPercentual = utils.numero(metasMap[categoria] || 0);
-      const metaValor = faturamento > 0 ? (faturamento * metaPercentual) / 100 : 0;
-      const diferenca = metaValor - gasto;
+    tbody.innerHTML = categorias.map(cat => {
+      const gasto = gastosPorCategoria[cat] || 0;
+      const metaPerc = metasMap[cat] || 0;
+      const metaValor = faturamento * (metaPerc / 100);
 
-      let situacao = "Sem meta";
-      let situacaoClasse = "muted";
-
-      if (metaPercentual > 0) {
-        if (gasto <= metaValor) {
-          situacao = "Dentro da meta";
-          situacaoClasse = "ok";
-        } else {
-          situacao = "Acima da meta";
-          situacaoClasse = "err";
-        }
-      }
+      const dentroMeta = gasto <= metaValor;
 
       return `
         <tr>
-          <td>${categoria}</td>
+          <td>${cat}</td>
           <td>${utils.moeda(gasto)}</td>
-          <td>${utils.arredondar(metaPercentual, 2)}%</td>
+          <td>${metaPerc}%</td>
           <td>${utils.moeda(metaValor)}</td>
-          <td>${utils.moeda(diferenca)}</td>
-          <td class="${situacaoClasse}">${situacao}</td>
+          <td>${utils.moeda(metaValor - gasto)}</td>
+          <td class="${dentroMeta ? "ok" : "err"}">
+            ${dentroMeta ? "OK" : "Acima"}
+          </td>
         </tr>
       `;
-    });
-
-    tbody.innerHTML = linhas.join("");
+    }).join("");
   },
 
-  renderAlertas(gastosPorCategoria, metasMap, faturamento, saldo) {
-    const alertList = document.getElementById("alertList");
-    if (!alertList) return;
+  renderAlertas(gastos, metas, faturamento, saldo) {
+    const el = document.getElementById("alertList");
 
-    const alertas = [];
+    let html = "";
 
     if (saldo < 0) {
-      alertas.push({
-        tipo: "err",
-        titulo: "Saldo negativo",
-        texto: `O mês está com saldo de ${utils.moeda(saldo)}.`
-      });
+      html += `<div class="alert-item">Saldo negativo</div>`;
     }
 
-    Object.keys(gastosPorCategoria).forEach(categoria => {
-      const gasto = utils.numero(gastosPorCategoria[categoria] || 0);
-      const metaPercentual = utils.numero(metasMap[categoria] || 0);
+    Object.keys(gastos).forEach(cat => {
+      const gasto = gastos[cat];
+      const meta = metas[cat] || 0;
 
-      if (faturamento > 0 && metaPercentual > 0) {
-        const metaValor = (faturamento * metaPercentual) / 100;
-        if (gasto > metaValor) {
-          alertas.push({
-            tipo: "err",
-            titulo: `${categoria} acima da meta`,
-            texto: `Gasto de ${utils.moeda(gasto)} para uma meta de ${utils.moeda(metaValor)}.`
-          });
+      if (meta > 0) {
+        const limite = faturamento * (meta / 100);
+        if (gasto > limite) {
+          html += `<div class="alert-item">${cat} acima da meta</div>`;
         }
       }
     });
 
-    if (!alertas.length) {
-      alertList.innerHTML = `
-        <div class="alert-item ok">
-          <strong>Sem alertas críticos.</strong><br>
-          O desempenho financeiro está dentro do esperado.
-        </div>
-      `;
-      return;
-    }
-
-    alertList.innerHTML = alertas.map(alerta => `
-      <div class="alert-item ${alerta.tipo === "ok" ? "ok" : ""}">
-        <strong>${alerta.titulo}</strong><br>
-        ${alerta.texto}
-      </div>
-    `).join("");
+    el.innerHTML = html || `<div class="alert-item ok">Tudo sob controle</div>`;
   },
 
-  renderBarChart(gastosPorCategoria, metasMap, faturamento) {
-    const canvas = document.getElementById("barChart");
-    if (!canvas) return;
-
-    const categorias = utils.getCategorias();
-    const gastos = categorias.map(cat => utils.numero(gastosPorCategoria[cat] || 0));
-    const metas = categorias.map(cat => {
-      const percentual = utils.numero(metasMap[cat] || 0);
-      return faturamento > 0 ? (faturamento * percentual) / 100 : 0;
-    });
+  renderBarChart(gastos, metas, faturamento) {
+    const ctx = document.getElementById("barChart");
 
     if (this.barChart) this.barChart.destroy();
 
-    this.barChart = new Chart(canvas, {
+    const categorias = utils.getCategorias();
+
+    this.barChart = new Chart(ctx, {
       type: "bar",
       data: {
         labels: categorias,
         datasets: [
           {
-            label: "Gasto real",
-            data: gastos,
-            borderWidth: 1
+            label: "Gastos",
+            data: categorias.map(c => gastos[c] || 0)
           },
           {
             label: "Meta",
-            data: metas,
-            borderWidth: 1
+            data: categorias.map(c => (faturamento * ((metas[c] || 0) / 100)))
           }
         ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
       }
     });
   },
 
-  renderPieChart(gastosPorCategoria) {
-    const canvas = document.getElementById("pieChart");
-    if (!canvas) return;
-
-    const categorias = Object.keys(gastosPorCategoria).filter(cat => utils.numero(gastosPorCategoria[cat]) > 0);
-    const valores = categorias.map(cat => utils.numero(gastosPorCategoria[cat]));
+  renderPieChart(gastos) {
+    const ctx = document.getElementById("pieChart");
 
     if (this.pieChart) this.pieChart.destroy();
 
-    this.pieChart = new Chart(canvas, {
+    const categorias = Object.keys(gastos);
+
+    this.pieChart = new Chart(ctx, {
       type: "pie",
       data: {
         labels: categorias,
-        datasets: [
-          {
-            data: valores,
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
+        datasets: [{
+          data: categorias.map(c => gastos[c])
+        }]
       }
     });
   },
 
   renderLineChart(gastosAno) {
-    const canvas = document.getElementById("lineChart");
-    if (!canvas) return;
-
-    const meses = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
-
-    const totaisPorMes = meses.map(mes => {
-      const lista = gastosAno.filter(item => item.mes === mes);
-      return utils.totalizar(lista, "valor");
-    });
+    const ctx = document.getElementById("lineChart");
 
     if (this.lineChart) this.lineChart.destroy();
 
-    this.lineChart = new Chart(canvas, {
+    const meses = [
+      "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+      "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+    ];
+
+    const valores = meses.map(m =>
+      utils.totalizar(gastosAno.filter(x => x.mes === m))
+    );
+
+    this.lineChart = new Chart(ctx, {
       type: "line",
       data: {
         labels: meses,
-        datasets: [
-          {
-            label: "Gastos mensais",
-            data: totaisPorMes,
-            borderWidth: 3,
-            tension: 0.35,
-            fill: false
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
+        datasets: [{
+          label: "Gastos",
+          data: valores
+        }]
       }
     });
   },
 
   renderRankingChart(gastosAno) {
-    const canvas = document.getElementById("rankingChart");
-    if (!canvas) return;
-
-    const mapa = utils.somarPorCategoria(gastosAno, "categoria", "valor");
-
-    const ranking = Object.entries(mapa)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
-
-    const labels = ranking.map(item => item[0]);
-    const valores = ranking.map(item => item[1]);
+    const ctx = document.getElementById("rankingChart");
 
     if (this.rankingChart) this.rankingChart.destroy();
 
-    this.rankingChart = new Chart(canvas, {
+    const mapa = utils.somarPorCategoria(gastosAno);
+
+    const ranking = Object.entries(mapa)
+      .sort((a, b) => b[1] - a[1]);
+
+    this.rankingChart = new Chart(ctx, {
       type: "bar",
       data: {
-        labels,
-        datasets: [
-          {
-            label: "Gasto anual",
-            data: valores,
-            borderWidth: 1
-          }
-        ]
+        labels: ranking.map(r => r[0]),
+        datasets: [{
+          data: ranking.map(r => r[1])
+        }]
       },
       options: {
-        indexAxis: "y",
-        responsive: true,
-        maintainAspectRatio: false
+        indexAxis: "y"
       }
     });
   }
