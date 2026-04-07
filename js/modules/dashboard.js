@@ -5,6 +5,16 @@ window.dashboardModule = {
   rankingChart: null,
   fullscreenChart: null,
 
+  mesesOrdem: [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ],
+
+  mesesCurtos: [
+    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+  ],
+
   extrairValorMes(item) {
     return utils.numero(
       item?.valor ??
@@ -67,12 +77,10 @@ window.dashboardModule = {
   async buscarFaturamentoMes(mes, ano) {
     try {
       const data = await api.restGet("meses", "select=*");
-
       const item = (data || []).find(row =>
         String(row.mes || row.nome_mes || "").trim() === String(mes).trim() &&
         Number(row.ano || row.exercicio || 0) === Number(ano)
       );
-
       return { valor: item ? this.extrairValorMes(item) : 0 };
     } catch {
       return { valor: 0 };
@@ -208,7 +216,7 @@ window.dashboardModule = {
         } else if (gasto >= zonaAtencao) {
           alertas.push({
             tipo: "warn",
-            titulo: `${cat} em zona de atenção`,
+            titulo: `${cat} em atenção`,
             texto: `A categoria já consumiu ${utils.arredondar((gasto / limite) * 100, 1)}% da meta.`
           });
         }
@@ -235,20 +243,33 @@ window.dashboardModule = {
     if (this.barChart) this.barChart.destroy();
 
     const categorias = utils.getCategorias();
-
     const dadosGastos = categorias.map(c => utils.numero(gastos[c] || 0));
-    const dadosMeta = categorias.map(c =>
-      faturamento * (utils.numero(metas[c] || 0) / 100)
-    );
+    const dadosMeta = categorias.map(c => faturamento * (utils.numero(metas[c] || 0) / 100));
     const dadosAlerta = dadosMeta.map(v => v * 0.8);
-
-    const pontosStatus = categorias.map((c, i) => dadosGastos[i]);
 
     const coresPontos = categorias.map((c, i) => {
       const gasto = dadosGastos[i];
       const meta = dadosMeta[i];
       if (meta <= 0) return "#94a3b8";
-      return gasto > meta ? "#ef4444" : "#22c55e";
+      return gasto > meta ? "#ef4444" : gasto >= meta * 0.8 ? "#f59e0b" : "#22c55e";
+    });
+
+    const coresBarras = categorias.map((c, i) => {
+      const gasto = dadosGastos[i];
+      const meta = dadosMeta[i];
+      if (meta <= 0) return "rgba(59,130,246,0.45)";
+      if (gasto > meta) return "rgba(239,68,68,0.45)";
+      if (gasto >= meta * 0.8) return "rgba(245,158,11,0.45)";
+      return "rgba(59,130,246,0.45)";
+    });
+
+    const bordasBarras = categorias.map((c, i) => {
+      const gasto = dadosGastos[i];
+      const meta = dadosMeta[i];
+      if (meta <= 0) return "rgba(59,130,246,0.95)";
+      if (gasto > meta) return "rgba(239,68,68,0.95)";
+      if (gasto >= meta * 0.8) return "rgba(245,158,11,0.95)";
+      return "rgba(59,130,246,0.95)";
     });
 
     const consumoTexto = categorias.map((c, i) => {
@@ -267,20 +288,20 @@ window.dashboardModule = {
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
 
-        const metaDatasetIndex = chart.data.datasets.findIndex(ds => ds.label === "Status");
-        if (metaDatasetIndex === -1) {
+        const statusIndex = chart.data.datasets.findIndex(ds => ds.label === "Status");
+        if (statusIndex === -1) {
           ctx.restore();
           return;
         }
 
-        const metaMeta = chart.getDatasetMeta(metaDatasetIndex);
+        const metaStatus = chart.getDatasetMeta(statusIndex);
 
-        metaMeta.data.forEach((point, index) => {
+        metaStatus.data.forEach((point, index) => {
           const texto = consumoTexto[index];
           if (!texto) return;
 
           ctx.fillStyle = coresPontos[index];
-          ctx.fillText(texto, point.x, point.y - 10);
+          ctx.fillText(texto, point.x, point.y - 12);
         });
 
         ctx.restore();
@@ -296,11 +317,11 @@ window.dashboardModule = {
             type: "bar",
             label: "Gastos",
             data: dadosGastos,
-            backgroundColor: "rgba(59,130,246,0.45)",
-            borderColor: "rgba(59,130,246,0.95)",
+            backgroundColor: coresBarras,
+            borderColor: bordasBarras,
             borderWidth: 1.5,
-            borderRadius: 10,
-            maxBarThickness: 40
+            borderRadius: 12,
+            maxBarThickness: 42
           },
           {
             type: "line",
@@ -328,7 +349,7 @@ window.dashboardModule = {
           {
             type: "line",
             label: "Status",
-            data: pontosStatus,
+            data: dadosGastos,
             borderColor: "transparent",
             backgroundColor: coresPontos,
             pointBackgroundColor: coresPontos,
@@ -365,17 +386,18 @@ window.dashboardModule = {
               },
               afterBody: function(items) {
                 if (!items.length) return "";
-
                 const index = items[0].dataIndex;
                 const gasto = dadosGastos[index];
                 const meta = dadosMeta[index];
 
-                if (meta <= 0) {
-                  return "Sem meta definida";
-                }
+                if (meta <= 0) return "Sem meta definida";
 
                 const percentual = (gasto / meta) * 100;
-                const status = gasto > meta ? "Acima da meta" : "Dentro da meta";
+                const status = gasto > meta
+                  ? "Acima da meta"
+                  : gasto >= meta * 0.8
+                    ? "Zona de atenção"
+                    : "Dentro da meta";
 
                 return [
                   `Status: ${status}`,
@@ -389,13 +411,9 @@ window.dashboardModule = {
           x: {
             ticks: {
               color: "#475569",
-              font: {
-                weight: "600"
-              }
+              font: { weight: "600" }
             },
-            grid: {
-              display: false
-            }
+            grid: { display: false }
           },
           y: {
             beginAtZero: true,
@@ -415,141 +433,138 @@ window.dashboardModule = {
     });
   },
 
- renderPieChart(gastos) {
-  const ctx = document.getElementById("pieChart");
-  if (!ctx) return;
+  renderPieChart(gastos) {
+    const ctx = document.getElementById("pieChart");
+    if (!ctx) return;
+    if (this.pieChart) this.pieChart.destroy();
 
-  if (this.pieChart) this.pieChart.destroy();
+    const categorias = Object.keys(gastos).filter(c => utils.numero(gastos[c]) > 0);
+    const valores = categorias.map(c => utils.numero(gastos[c]));
+    const total = valores.reduce((a, b) => a + b, 0);
 
-  const categorias = Object.keys(gastos).filter(c => utils.numero(gastos[c]) > 0);
-  const valores = categorias.map(c => utils.numero(gastos[c]));
+    const cores = [
+      "#3b82f6", "#22c55e", "#f59e0b", "#ef4444",
+      "#8b5cf6", "#06b6d4", "#84cc16", "#f97316",
+      "#ec4899", "#14b8a6", "#6366f1", "#a855f7"
+    ];
 
-  const total = valores.reduce((a, b) => a + b, 0);
-
-  const cores = [
-    "#3b82f6", "#22c55e", "#f59e0b", "#ef4444",
-    "#8b5cf6", "#06b6d4", "#84cc16", "#f97316",
-    "#ec4899", "#14b8a6", "#6366f1", "#a855f7"
-  ];
-
-  this.pieChart = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: categorias,
-      datasets: [{
-        data: valores,
-        backgroundColor: cores,
-        borderWidth: 2,
-        borderColor: "#ffffff"
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "60%",
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            color: "#334155",
-            padding: 15,
-            usePointStyle: true
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const valor = context.raw;
-              const percentual = ((valor / total) * 100).toFixed(1);
-
-              return `${context.label}: ${utils.moeda(valor)} (${percentual}%)`;
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
- renderLineChart(gastosAno) {
-  const ctx = document.getElementById("lineChart");
-  if (!ctx) return;
-
-  if (this.lineChart) this.lineChart.destroy();
-
-  const meses = [
-    "Jan","Fev","Mar","Abr","Mai","Jun",
-    "Jul","Ago","Set","Out","Nov","Dez"
-  ];
-
-  const valores = meses.map((m, i) =>
-    utils.totalizar(
-      gastosAno.filter(x => x.mes === utils.getCategoriasMes?.(i) || x.mes === m),
-      "valor"
-    )
-  );
-
-  // gradiente
-  const gradient = ctx.getContext("2d").createLinearGradient(0, 0, 0, 400);
-  gradient.addColorStop(0, "rgba(59,130,246,0.4)");
-  gradient.addColorStop(1, "rgba(59,130,246,0)");
-
-  this.lineChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: meses,
-      datasets: [{
-        label: "Gastos ao longo do ano",
-        data: valores,
-        borderColor: "#3b82f6",
-        backgroundColor: gradient,
-        fill: true,
-        tension: 0.4,
-        borderWidth: 3,
-        pointRadius: 4,
-        pointBackgroundColor: "#ffffff",
-        pointBorderColor: "#3b82f6",
-        pointBorderWidth: 2,
-        pointHoverRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return utils.moeda(context.raw);
-            }
-          }
-        }
+    this.pieChart = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: categorias,
+        datasets: [{
+          data: valores,
+          backgroundColor: cores,
+          borderWidth: 3,
+          borderColor: "#ffffff",
+          hoverOffset: 10
+        }]
       },
-      scales: {
-        x: {
-          ticks: {
-            color: "#475569",
-            font: { weight: "600" }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "62%",
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              color: "#334155",
+              padding: 16,
+              usePointStyle: true,
+              boxWidth: 12
+            }
           },
-          grid: { display: false }
-        },
-        y: {
-          beginAtZero: true,
-          ticks: {
-            color: "#475569",
-            callback: value => Number(value).toLocaleString("pt-BR")
-          },
-          grid: {
-            color: "rgba(148,163,184,0.15)"
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const valor = context.raw;
+                const percentual = total > 0 ? ((valor / total) * 100).toFixed(1) : "0.0";
+                return `${context.label}: ${utils.moeda(valor)} (${percentual}%)`;
+              }
+            }
           }
         }
       }
-    }
-  });
-}
+    });
+  },
+
+  renderLineChart(gastosAno) {
+    const ctx = document.getElementById("lineChart");
+    if (!ctx) return;
+    if (this.lineChart) this.lineChart.destroy();
+
+    const valores = this.mesesOrdem.map(mes =>
+      utils.totalizar(gastosAno.filter(x => x.mes === mes), "valor")
+    );
+
+    const chartCtx = ctx.getContext("2d");
+    const gradient = chartCtx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, "rgba(59,130,246,0.38)");
+    gradient.addColorStop(1, "rgba(59,130,246,0.02)");
+
+    this.lineChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: this.mesesCurtos,
+        datasets: [{
+          label: "Gastos ao longo do ano",
+          data: valores,
+          borderColor: "#3b82f6",
+          backgroundColor: gradient,
+          fill: true,
+          tension: 0.42,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: "#ffffff",
+          pointBorderColor: "#3b82f6",
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+          pointHoverBackgroundColor: "#3b82f6",
+          pointHoverBorderColor: "#ffffff",
+          pointHoverBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: "index",
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `Gasto: ${utils.moeda(context.raw)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: "#475569",
+              font: { weight: "600" }
+            },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: "#475569",
+              callback: value => Number(value).toLocaleString("pt-BR")
+            },
+            grid: {
+              color: "rgba(148,163,184,0.15)"
+            }
+          }
+        }
+      }
+    });
+  },
 
   renderRankingChart(gastosAno) {
     const ctx = document.getElementById("rankingChart");
@@ -557,19 +572,19 @@ window.dashboardModule = {
     if (this.rankingChart) this.rankingChart.destroy();
 
     const mapa = utils.somarPorCategoria(gastosAno, "categoria", "valor");
-    const ranking = Object.entries(mapa).sort((a, b) => b[1] - a[1]);
+    const ranking = Object.entries(mapa)
+      .sort((a, b) => b[1] - a[1]);
 
     this.rankingChart = new Chart(ctx, {
       type: "bar",
       data: {
         labels: ranking.map(r => r[0]),
-        datasets: [
-          {
-            label: "Gasto anual",
-            data: ranking.map(r => r[1]),
-            borderWidth: 1
-          }
-        ]
+        datasets: [{
+          label: "Gasto anual",
+          data: ranking.map(r => r[1]),
+          borderWidth: 1,
+          borderRadius: 10
+        }]
       },
       options: {
         indexAxis: "y",
