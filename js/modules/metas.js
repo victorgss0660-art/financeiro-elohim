@@ -10,7 +10,7 @@ window.metasModule = {
       let metas = [];
       try {
         metas = await api.restGet(
-          "metas_financeiras",
+          "metas",
           `select=*&ano=eq.${ano}`
         );
       } catch (e) {
@@ -69,7 +69,7 @@ window.metasModule = {
             }
           );
         } else {
-          await api.restInsert("metas_financeiras", [{
+          await api.restInsert("metas", [{
             categoria,
             ano,
             percentual_meta
