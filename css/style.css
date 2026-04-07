@@ -172,9 +172,8 @@ body{
 }
 
 .menu-btn.active{
-  background:linear-gradient(90deg, var(--primary), var(--primary-strong));
-  color:#fff;
-  box-shadow:0 10px 22px rgba(37,99,235,.35);
+  background:linear-gradient(90deg, #ef4444, #dc2626);
+  box-shadow:0 10px 22px rgba(239,68,68,.35);
 }
 
 .icon{
@@ -450,8 +449,8 @@ input, textarea, select{
 }
 
 input:focus, textarea:focus, select:focus{
-  border-color:rgba(59,130,246,.55);
-  box-shadow:0 0 0 4px rgba(59,130,246,.12);
+  border-color:rgba(239,68,68,.6);
+  box-shadow:0 0 0 4px rgba(239,68,68,.15);
 }
 
 input::placeholder,
@@ -571,8 +570,8 @@ tbody tr:hover{
 }
 
 tr.selecionado{
-  background:rgba(59,130,246,.10) !important;
-  outline:1px solid rgba(59,130,246,.18);
+  background:rgba(239,68,68,.12) !important;
+  outline:1px solid rgba(239,68,68,.25);
 }
 
 /* TOTAL BAR */
@@ -665,8 +664,7 @@ tr.selecionado{
 }
 
 .alert-item.critico{
-  background:rgba(239,68,68,.20);
-  border-color:#ef4444;
+  background:rgba(239,68,68,.22);
 }
 
 .alert-item.atencao{
