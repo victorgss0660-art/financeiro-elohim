@@ -170,24 +170,60 @@ window.dashboardModule = {
   },
 
   renderBarChart(gastos, metas, faturamento) {
-    const ctx = document.getElementById("barChart");
-    if (!ctx) return;
-    if (this.barChart) this.barChart.destroy();
+  const ctx = document.getElementById("barChart");
+  if (!ctx) return;
 
-    const categorias = utils.getCategorias();
+  if (this.barChart) this.barChart.destroy();
 
-    this.barChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: categorias,
-        datasets: [
-          { label: "Gastos", data: categorias.map(c => utils.numero(gastos[c] || 0)), borderWidth: 1 },
-          { label: "Meta", data: categorias.map(c => faturamento * (utils.numero(metas[c] || 0) / 100)), borderWidth: 1 }
-        ]
+  const categorias = utils.getCategorias();
+
+  const dadosGastos = categorias.map(c => utils.numero(gastos[c] || 0));
+  const dadosMeta = categorias.map(c =>
+    faturamento * (utils.numero(metas[c] || 0) / 100)
+  );
+
+  this.barChart = new Chart(ctx, {
+    data: {
+      labels: categorias,
+      datasets: [
+        {
+          type: "bar",
+          label: "Gastos",
+          data: dadosGastos,
+          borderWidth: 1,
+          borderRadius: 8
+        },
+        {
+          type: "line",
+          label: "Meta",
+          data: dadosMeta,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false
       },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
-  },
+      plugins: {
+        legend: {
+          position: "top"
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
 
   renderPieChart(gastos) {
     const ctx = document.getElementById("pieChart");
