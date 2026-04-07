@@ -110,11 +110,11 @@ window.dashboardModule = {
       const metasMap = this.montarMapaMetas(metasAno);
       const gastosPorCategoria = utils.somarPorCategoria(gastosMes, "categoria", "valor");
 
-      this.renderComparativo(mes, ano, faturamentoValor, totalGastos);
+      this.renderComparativo(mes, ano, faturamentoValor);
       this.renderVencimentos(contasPagar || []);
       this.renderTopContas(contasPagar || [], contasReceber || []);
       this.renderTabelaResumo(gastosPorCategoria, metasMap, faturamentoValor);
-      this.renderAlertas(gastosPorCategoria, metasMap, faturamentoValor, saldo, contasPagar);
+      this.renderAlertas(gastosPorCategoria, metasMap, faturamentoValor, saldo, contasPagar || []);
       this.renderBarChart(gastosPorCategoria, metasMap, faturamentoValor);
       this.renderPieChart(gastosPorCategoria);
       this.renderLineChart(gastosAno, this.cacheMeses);
@@ -383,122 +383,222 @@ window.dashboardModule = {
     }).join("");
   },
 
-renderAlertas(gastos, metas, faturamento, saldo, contasPagar = []) {
-  const el = document.getElementById("alertList");
-  if (!el) return;
+  renderAlertas(gastos, metas, faturamento, saldo, contasPagar = []) {
+    const el = document.getElementById("alertList");
+    if (!el) return;
 
-  const alertas = [];
+    const alertas = [];
 
-  // 🔴 SALDO NEGATIVO
-  if (saldo < 0) {
-    alertas.push({
-      tipo: "critico",
-      titulo: "Saldo negativo",
-      texto: `Saldo atual: ${utils.moeda(saldo)}`
+    if (saldo < 0) {
+      alertas.push({
+        tipo: "critico",
+        titulo: "Saldo negativo",
+        texto: `Saldo atual: ${utils.moeda(saldo)}`,
+        acao: ""
+      });
+    }
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const em7 = new Date(hoje);
+    em7.setDate(hoje.getDate() + 7);
+
+    let vencidas = 0;
+    let hojeCount = 0;
+    let proximas = 0;
+
+    (contasPagar || []).forEach(c => {
+      if (!c.vencimento || c.status === "pago") return;
+
+      const data = new Date(c.vencimento + "T00:00:00");
+
+      if (data < hoje) vencidas++;
+      else if (data.getTime() === hoje.getTime()) hojeCount++;
+      else if (data <= em7) proximas++;
     });
-  }
 
-  // 🔴 CONTAS VENCIDAS / HOJE / 7 DIAS
-  const hoje = new Date();
-  hoje.setHours(0,0,0,0);
+    if (vencidas > 0) {
+      alertas.push({
+        tipo: "critico",
+        titulo: "Contas vencidas",
+        texto: `${vencidas} contas em atraso`,
+        acao: "vencidas"
+      });
+    }
 
-  const em7 = new Date(hoje);
-  em7.setDate(hoje.getDate() + 7);
+    if (hojeCount > 0) {
+      alertas.push({
+        tipo: "atencao",
+        titulo: "Vencem hoje",
+        texto: `${hojeCount} contas vencem hoje`,
+        acao: "hoje"
+      });
+    }
 
-  let vencidas = 0;
-  let hojeCount = 0;
-  let proximas = 0;
+    if (proximas > 0) {
+      alertas.push({
+        tipo: "atencao",
+        titulo: "Próximos 7 dias",
+        texto: `${proximas} contas a vencer`,
+        acao: "7dias"
+      });
+    }
 
-  (contasPagar || []).forEach(c => {
-    if (!c.vencimento || c.status === "pago") return;
+    Object.keys(gastos || {}).forEach(cat => {
+      const gasto = utils.numero(gastos[cat]);
+      const meta = utils.numero(metas[cat] || 0);
 
-    const data = new Date(c.vencimento + "T00:00:00");
+      if (meta > 0 && faturamento > 0) {
+        const limite = faturamento * (meta / 100);
+        const perc = (gasto / limite) * 100;
 
-    if (data < hoje) vencidas++;
-    else if (data.getTime() === hoje.getTime()) hojeCount++;
-    else if (data <= em7) proximas++;
-  });
-
-  if (vencidas > 0) {
-    alertas.push({
-      tipo: "critico",
-      titulo: "Contas vencidas",
-      texto: `${vencidas} contas em atraso`
+        if (perc > 100) {
+          alertas.push({
+            tipo: "critico",
+            titulo: `${cat} acima da meta`,
+            texto: `${utils.arredondar(perc, 1)}% da meta`,
+            acao: `categoria:${cat}`
+          });
+        } else if (perc >= 80) {
+          alertas.push({
+            tipo: "atencao",
+            titulo: `${cat} em atenção`,
+            texto: `${utils.arredondar(perc, 1)}% da meta`,
+            acao: `categoria:${cat}`
+          });
+        }
+      }
     });
-  }
 
-  if (hojeCount > 0) {
-    alertas.push({
-      tipo: "atencao",
-      titulo: "Vencem hoje",
-      texto: `${hojeCount} contas vencem hoje`
-    });
-  }
+    const varFatEl = document.getElementById("varFat");
+    if (varFatEl) {
+      const txt = String(varFatEl.textContent || "").replace("%", "").replace(",", ".");
+      const val = Number(txt);
 
-  if (proximas > 0) {
-    alertas.push({
-      tipo: "atencao",
-      titulo: "Próximos 7 dias",
-      texto: `${proximas} contas a vencer`
-    });
-  }
-
-  // 📊 METAS
-  Object.keys(gastos || {}).forEach(cat => {
-    const gasto = utils.numero(gastos[cat]);
-    const meta = utils.numero(metas[cat] || 0);
-
-    if (meta > 0 && faturamento > 0) {
-      const limite = faturamento * (meta / 100);
-      const perc = (gasto / limite) * 100;
-
-      if (perc > 100) {
-        alertas.push({
-          tipo: "critico",
-          titulo: `${cat} acima da meta`,
-          texto: `${utils.arredondar(perc,1)}% da meta`
-        });
-      } else if (perc >= 80) {
+      if (!isNaN(val) && val < 0) {
         alertas.push({
           tipo: "atencao",
-          titulo: `${cat} em atenção`,
-          texto: `${utils.arredondar(perc,1)}% da meta`
-        });
-      } else {
-        alertas.push({
-          tipo: "ok",
-          titulo: `${cat} dentro da meta`,
-          texto: `${utils.arredondar(perc,1)}%`
+          titulo: "Faturamento em queda",
+          texto: `${utils.arredondar(val, 1)}% vs mês anterior`,
+          acao: "faturamento"
         });
       }
     }
-  });
 
-  // 📉 FATURAMENTO CAIU
-  const varFatEl = document.getElementById("varFat");
-  if (varFatEl) {
-    const txt = varFatEl.textContent.replace("%","");
-    const val = Number(txt);
-
-    if (!isNaN(val) && val < 0) {
-      alertas.push({
-        tipo: "atencao",
-        titulo: "Faturamento em queda",
-        texto: `${val}% vs mês anterior`
-      });
+    if (!alertas.length) {
+      el.innerHTML = `<div class="alert-item ok"><strong>Tudo sob controle</strong><br>Sem alertas críticos no momento.</div>`;
+      return;
     }
-  }
 
-  // 🎯 RENDER
-  el.innerHTML = alertas.map(a => {
-    return `
-      <div class="alert-item ${a.tipo}">
+    el.innerHTML = alertas.map((a, i) => `
+      <button
+        type="button"
+        class="alert-item ${a.tipo} alert-clickable"
+        data-alerta="${a.acao || ""}"
+        data-index="${i}"
+      >
         <strong>${a.titulo}</strong><br>
         ${a.texto}
-      </div>
-    `;
-  }).join("");
-}
+      </button>
+    `).join("");
+
+    this.registrarEventosAlerta();
+  },
+
+  registrarEventosAlerta() {
+    document.querySelectorAll(".alert-clickable").forEach(btn => {
+      if (btn.dataset.binded) return;
+
+      btn.addEventListener("click", () => {
+        const acao = btn.dataset.alerta || "";
+        this.executarAcaoAlerta(acao);
+      });
+
+      btn.dataset.binded = "1";
+    });
+  },
+
+  executarAcaoAlerta(acao) {
+    if (!acao) return;
+
+    if (acao === "vencidas") {
+      this.abrirContasPagarComFiltro({ status: "vencido" });
+      return;
+    }
+
+    if (acao === "hoje") {
+      const hoje = new Date().toISOString().slice(0, 10);
+      this.abrirContasPagarComFiltro({ dataInicio: hoje, dataFim: hoje });
+      return;
+    }
+
+    if (acao === "7dias") {
+      const hoje = new Date();
+      const inicio = hoje.toISOString().slice(0, 10);
+
+      const em7 = new Date();
+      em7.setDate(hoje.getDate() + 7);
+      const fim = em7.toISOString().slice(0, 10);
+
+      this.abrirContasPagarComFiltro({ dataInicio: inicio, dataFim: fim });
+      return;
+    }
+
+    if (acao.startsWith("categoria:")) {
+      const categoria = acao.split(":")[1] || "";
+      this.abrirImportacaoOuCategoria(categoria);
+      return;
+    }
+
+    if (acao === "faturamento") {
+      this.irParaAba("faturamento");
+    }
+  },
+
+  irParaAba(nomeAba) {
+    document.querySelectorAll(".menu-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.tab === nomeAba);
+    });
+
+    document.querySelectorAll(".tab-section").forEach(sec => {
+      sec.classList.remove("active");
+    });
+
+    const alvo = document.getElementById(`tab-${nomeAba}`);
+    if (alvo) alvo.classList.add("active");
+
+    if (window.navigation?.atualizarVisibilidadeFiltroMesAno) {
+      navigation.atualizarVisibilidadeFiltroMesAno();
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  },
+
+  abrirContasPagarComFiltro({ status = "", dataInicio = "", dataFim = "" }) {
+    this.irParaAba("contas-pagar");
+
+    const filtroStatus = document.getElementById("filtroStatus");
+    const filtroDataInicio = document.getElementById("filtroDataInicio");
+    const filtroDataFim = document.getElementById("filtroDataFim");
+
+    if (filtroStatus) filtroStatus.value = status || "";
+    if (filtroDataInicio) filtroDataInicio.value = dataInicio || "";
+    if (filtroDataFim) filtroDataFim.value = dataFim || "";
+
+    if (window.contasPagarModule) {
+      window.contasPagarModule.filtros.status = status || "";
+      window.contasPagarModule.filtros.dataInicio = dataInicio || "";
+      window.contasPagarModule.filtros.dataFim = dataFim || "";
+      window.contasPagarModule.render?.();
+    }
+  },
+
+  abrirImportacaoOuCategoria(categoria) {
+    this.irParaAba("importar");
+    utils.setAppMsg(`Categoria em alerta: ${categoria}`, "info");
+  },
+
   renderBarChart(gastos, metas, faturamento) {
     const ctx = document.getElementById("barChart");
     if (!ctx) return;
