@@ -986,3 +986,19 @@ tr.selecionado{
     grid-template-columns:1fr;
   }
 }
+.chart-fullscreen-box{
+  max-width:1200px !important;
+  width:95vw !important;
+}
+
+.chart-fullscreen-wrap{
+  height:75vh;
+  min-height:500px;
+  background:linear-gradient(180deg,#f8fafc,#eef2f7);
+  border-radius:20px;
+  padding:16px;
+}
+
+.chart-expand-btn{
+  padding:10px 14px;
+}
