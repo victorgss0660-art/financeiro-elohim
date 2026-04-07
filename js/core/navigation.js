@@ -1,44 +1,67 @@
-
-
 window.navigation = {
   ativarAbas() {
     const botoes = document.querySelectorAll(".menu-btn");
     const abas = document.querySelectorAll(".tab-section");
 
-    botoes.forEach(botao => {
-      botao.addEventListener("click", () => {
-        botoes.forEach(b => b.classList.remove("active"));
-        abas.forEach(a => a.classList.remove("active", "fade-in"));
+    if (!botoes.length || !abas.length) return;
 
-        botao.classList.add("active");
-
-        const tab = botao.dataset.tab;
-        const secao = document.getElementById(`tab-${tab}`);
-        if (secao) {
-          secao.classList.add("active");
-          requestAnimationFrame(() => secao.classList.add("fade-in"));
-        }
-
-        this.atualizarVisibilidadeFiltroMesAno();
+    const abrirAba = (nomeAba) => {
+      botoes.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === nomeAba);
       });
+
+      abas.forEach(aba => {
+        aba.classList.remove("active");
+      });
+
+      const abaAlvo = document.getElementById(`tab-${nomeAba}`);
+      if (abaAlvo) {
+        abaAlvo.classList.add("active");
+      }
+
+      this.atualizarVisibilidadeFiltroMesAno(nomeAba);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    botoes.forEach(btn => {
+      if (btn.dataset.bindedTab === "1") return;
+
+      btn.addEventListener("click", () => {
+        const nomeAba = btn.dataset.tab;
+        abrirAba(nomeAba);
+      });
+
+      btn.dataset.bindedTab = "1";
     });
+
+    const botaoAtivo = document.querySelector(".menu-btn.active");
+    const abaInicial = botaoAtivo?.dataset.tab || "dashboard";
+    abrirAba(abaInicial);
   },
 
-  atualizarVisibilidadeFiltroMesAno() {
+  atualizarVisibilidadeFiltroMesAno(nomeAbaAtual = null) {
     const bloco = document.getElementById("blocoFiltroMesAno");
-    const abaAtiva = document.querySelector(".tab-section.active");
-    if (!bloco || !abaAtiva) return;
+    if (!bloco) return;
 
-    const tabsSemFiltro = [
-      "tab-contas-pagar",
-      "tab-contas-pagas",
-      "tab-contas-receber",
-      "tab-contas-recebidas",
-      "tab-planejamento"
+    let aba = nomeAbaAtual;
+
+    if (!aba) {
+      const btnAtivo = document.querySelector(".menu-btn.active");
+      aba = btnAtivo?.dataset.tab || "dashboard";
+    }
+
+    const abasSemFiltro = [
+      "contas-pagar",
+      "contas-pagas",
+      "contas-receber",
+      "contas-recebidas",
+      "planejamento"
     ];
 
-    if (tabsSemFiltro.includes(abaAtiva.id)) bloco.classList.add("hidden");
-    else bloco.classList.remove("hidden");
+    if (abasSemFiltro.includes(aba)) {
+      bloco.classList.add("hidden");
+    } else {
+      bloco.classList.remove("hidden");
+    }
   }
 };
-
