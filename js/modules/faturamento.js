@@ -1,16 +1,22 @@
 window.faturamentoModule = {
-  async garantirMes(mes, ano) {
-    const data = await api.restGet(
-      "meses",
-      `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=1`
-    );
+  async carregarFaturamento() {
+    try {
+      const { mes, ano } = utils.getMesAno();
+      const input = document.getElementById("faturamentoInput");
+      if (!input) return;
 
-    if (!data.length) {
-      await api.restInsert("meses", [{
-        mes,
-        ano,
-        faturamento: 0
-      }]);
+      const data = await api.restGet(
+        "meses",
+        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${ano}&limit=1`
+      );
+
+      if (data && data.length) {
+        input.value = Number(data[0].valor || 0);
+      } else {
+        input.value = "";
+      }
+    } catch (e) {
+      utils.setAppMsg("Erro ao carregar faturamento: " + e.message, "err");
     }
   },
 
@@ -18,21 +24,28 @@ window.faturamentoModule = {
     try {
       const { mes, ano } = utils.getMesAno();
       const input = document.getElementById("faturamentoInput");
+      if (!input) return;
 
-      if (!input) {
-        utils.setAppMsg("Campo de faturamento não encontrado.", "err");
-        return;
-      }
+      const valor = Number(input.value || 0);
 
-      const valor = utils.num(input.value || 0);
-
-      await this.garantirMes(mes, ano);
-
-      await api.restPatch(
+      const existente = await api.restGet(
         "meses",
-        `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`,
-        { faturamento: valor }
+        `select=id,mes,ano&mes=eq.${encodeURIComponent(mes)}&ano=eq.${ano}&limit=1`
       );
+
+      if (existente.length) {
+        await api.restPatch(
+          "meses",
+          `id=eq.${existente[0].id}`,
+          { mes, ano, valor }
+        );
+      } else {
+        await api.restInsert("meses", [{
+          mes,
+          ano,
+          valor
+        }]);
+      }
 
       utils.setAppMsg("Faturamento salvo com sucesso.", "ok");
 
