@@ -364,3 +364,15 @@ input, textarea, select{
 .tab-section.active{
   display:block;
 }
+.tab-section{
+  display:none;
+  opacity:0;
+  transform:translateY(10px);
+  transition:.25s ease;
+}
+
+.tab-section.active{
+  display:block;
+  opacity:1;
+  transform:translateY(0);
+}
