@@ -246,3 +246,13 @@ window.utils = {
 };
 
 window.utils.num = window.utils.numero;
+window.loading = {
+  show() {
+    const el = document.getElementById("loadingGlobal");
+    if (el) el.classList.remove("hidden");
+  },
+  hide() {
+    const el = document.getElementById("loadingGlobal");
+    if (el) el.classList.add("hidden");
+  }
+};
