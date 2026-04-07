@@ -471,40 +471,85 @@ window.dashboardModule = {
   });
 }
 
-  renderLineChart(gastosAno) {
-    const ctx = document.getElementById("lineChart");
-    if (!ctx) return;
-    if (this.lineChart) this.lineChart.destroy();
+ renderLineChart(gastosAno) {
+  const ctx = document.getElementById("lineChart");
+  if (!ctx) return;
 
-    const meses = [
-      "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-      "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-    ];
+  if (this.lineChart) this.lineChart.destroy();
 
-    const valores = meses.map(m =>
-      utils.totalizar(gastosAno.filter(x => x.mes === m), "valor")
-    );
+  const meses = [
+    "Jan","Fev","Mar","Abr","Mai","Jun",
+    "Jul","Ago","Set","Out","Nov","Dez"
+  ];
 
-    this.lineChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: meses,
-        datasets: [
-          {
-            label: "Gastos",
-            data: valores,
-            borderWidth: 3,
-            tension: 0.35,
-            fill: false
+  const valores = meses.map((m, i) =>
+    utils.totalizar(
+      gastosAno.filter(x => x.mes === utils.getCategoriasMes?.(i) || x.mes === m),
+      "valor"
+    )
+  );
+
+  // gradiente
+  const gradient = ctx.getContext("2d").createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, "rgba(59,130,246,0.4)");
+  gradient.addColorStop(1, "rgba(59,130,246,0)");
+
+  this.lineChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: meses,
+      datasets: [{
+        label: "Gastos ao longo do ano",
+        data: valores,
+        borderColor: "#3b82f6",
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.4,
+        borderWidth: 3,
+        pointRadius: 4,
+        pointBackgroundColor: "#ffffff",
+        pointBorderColor: "#3b82f6",
+        pointBorderWidth: 2,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return utils.moeda(context.raw);
+            }
           }
-        ]
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
+      scales: {
+        x: {
+          ticks: {
+            color: "#475569",
+            font: { weight: "600" }
+          },
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#475569",
+            callback: value => Number(value).toLocaleString("pt-BR")
+          },
+          grid: {
+            color: "rgba(148,163,184,0.15)"
+          }
+        }
       }
-    });
-  },
+    }
+  });
+}
 
   renderRankingChart(gastosAno) {
     const ctx = document.getElementById("rankingChart");
