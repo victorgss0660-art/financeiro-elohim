@@ -1,86 +1,74 @@
 window.importarModule = {
-  categoriasValidas: [
-    "MC", "MP", "TERC", "FRETE", "DESP", "TAR",
-    "PREST", "FOLHA", "COMIS", "IMPOS", "RESC", "MANUT"
-  ],
-
-  normalizarCategoria(valor) {
-    return String(valor || "").trim().toUpperCase();
-  },
-
-  tratarValor(valor) {
-    if (valor === undefined || valor === null || valor === "") return 0;
-    if (typeof valor === "number") return valor;
-
-    let texto = String(valor).trim();
-    texto = texto.replace("R$", "").replace(/\s/g, "");
-
-    if (texto.includes(",") && texto.includes(".")) {
-      texto = texto.replace(/\./g, "").replace(",", ".");
-    } else if (texto.includes(",")) {
-      texto = texto.replace(",", ".");
-    }
-
-    const numero = parseFloat(texto);
-    return isNaN(numero) ? 0 : numero;
-  },
-
-  validarLinha(row, indice) {
-    const categoria = this.normalizarCategoria(row["CATEGORIA"]);
-    const valor = this.tratarValor(row["VALOR"]);
-
-    if (!categoria || !this.categoriasValidas.includes(categoria)) {
-      return `Linha ${indice}: categoria inválida (${row["CATEGORIA"]})`;
-    }
-
-    if (valor <= 0) {
-      return `Linha ${indice}: valor inválido`;
-    }
-
-    return null;
-  },
-
-  async importarPayload(payload) {
-    const { mes, ano } = utils.getMesAno();
-
-    await api.restDelete(
-      "gastos",
-      `mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-    );
-
-    await api.restInsert("gastos", payload);
-  },
-
-  async processarPlanilha(json) {
+  async handleFile(event) {
     try {
-      if (!json || !json.length) {
-        utils.setAppMsg("Planilha vazia.", "err");
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+      if (!rows.length) {
+        utils.setAppMsg("A planilha está vazia.", "err");
         return;
       }
 
       const { mes, ano } = utils.getMesAno();
       const erros = [];
+      const linhasValidas = [];
 
-      json.forEach((row, index) => {
-        const erro = this.validarLinha(row, index + 2);
-        if (erro) erros.push(erro);
+      rows.forEach((row, index) => {
+        const linhaExcel = index + 2;
+
+        const categoriaBruta =
+          row.CATEGORIA ??
+          row.categoria ??
+          row.Categoria ??
+          "";
+
+        const valorBruto =
+          row.VALOR ??
+          row.valor ??
+          row.Valor ??
+          "";
+
+        const categoria = utils.categoriaCanonica(categoriaBruta);
+        const valor = utils.numero(valorBruto);
+
+        if (!utils.categoriaValida(categoriaBruta)) {
+          erros.push(`Linha ${linhaExcel}: categoria inválida (${categoriaBruta})`);
+          return;
+        }
+
+        if (!valor || valor <= 0) {
+          erros.push(`Linha ${linhaExcel}: valor inválido (${valorBruto})`);
+          return;
+        }
+
+        linhasValidas.push({
+          categoria,
+          valor,
+          mes,
+          ano
+        });
       });
 
       if (erros.length) {
-        utils.setAppMsg(erros.slice(0, 8).join("\n"), "err");
+        utils.setAppMsg(erros.join("\n"), "err");
         return;
       }
 
-      const payload = json.map(row => ({
-        categoria: this.normalizarCategoria(row["CATEGORIA"]),
-        valor: this.tratarValor(row["VALOR"]),
-        mes,
-        ano
-      }));
+      if (!linhasValidas.length) {
+        utils.setAppMsg("Nenhuma linha válida encontrada para importar.", "err");
+        return;
+      }
 
-      await this.importarPayload(payload);
+      await api.restInsert("despesas_financeiras", linhasValidas);
 
-      utils.setAppMsg("Planilha importada com sucesso.", "ok");
+      utils.setAppMsg("Despesas importadas com sucesso.", "ok");
+
+      event.target.value = "";
 
       if (window.dashboardModule?.carregarDashboard) {
         await window.dashboardModule.carregarDashboard();
@@ -92,27 +80,5 @@ window.importarModule = {
     } catch (e) {
       utils.setAppMsg("Erro ao importar planilha: " + e.message, "err");
     }
-  },
-
-  handleFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = async (evt) => {
-      try {
-        const data = new Uint8Array(evt.target.result);
-        const wb = XLSX.read(data, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(ws, { defval: "" });
-
-        await this.processarPlanilha(json);
-      } catch (e) {
-        utils.setAppMsg("Erro ao ler arquivo: " + e.message, "err");
-      }
-    };
-
-    reader.readAsArrayBuffer(file);
   }
 };
