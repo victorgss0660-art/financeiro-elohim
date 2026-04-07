@@ -7,15 +7,10 @@ window.metasModule = {
 
       if (!grid) return;
 
-      let metas = [];
-      try {
-        metas = await api.restGet(
-          "metas",
-          `select=*&ano=eq.${ano}`
-        );
-      } catch (e) {
-        metas = [];
-      }
+      const metas = await api.restGet(
+        "metas",
+        `select=*&ano=eq.${ano}`
+      );
 
       const mapa = {};
       (metas || []).forEach(item => {
@@ -25,6 +20,12 @@ window.metasModule = {
 
       grid.innerHTML = categorias.map(categoria => {
         const item = mapa[categoria] || {};
+        const valor =
+          item.percentual_meta ??
+          item.percentual ??
+          item.meta ??
+          "";
+
         return `
           <div class="meta-item">
             <label>${categoria}</label>
@@ -33,7 +34,7 @@ window.metasModule = {
               step="0.01"
               class="meta-input"
               data-categoria="${categoria}"
-              value="${item.percentual_meta ?? ""}"
+              value="${valor}"
               placeholder="% do faturamento"
             >
           </div>
@@ -54,30 +55,29 @@ window.metasModule = {
         const percentual_meta = Number(input.value || 0);
 
         const existente = await api.restGet(
-          "metas_financeiras",
+          "metas",
           `select=id,categoria,ano&categoria=eq.${encodeURIComponent(categoria)}&ano=eq.${ano}&limit=1`
         );
 
+        const payload = {
+          categoria,
+          ano,
+          percentual_meta
+        };
+
         if (existente.length) {
           await api.restPatch(
-            "metas_financeiras",
+            "metas",
             `id=eq.${existente[0].id}`,
-            {
-              categoria,
-              ano,
-              percentual_meta
-            }
+            payload
           );
         } else {
-          await api.restInsert("metas", [{
-            categoria,
-            ano,
-            percentual_meta
-          }]);
+          await api.restInsert("metas", [payload]);
         }
       }
 
       utils.setAppMsg("Metas salvas com sucesso.", "ok");
+
       await this.carregarMetas();
 
       if (window.dashboardModule?.carregarDashboard) {
