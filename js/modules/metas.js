@@ -1,31 +1,35 @@
 window.metasModule = {
+  extrairPercentual(item) {
+    return utils.numero(
+      item?.percentual_meta ??
+      item?.percentual ??
+      item?.meta ??
+      item?.valor ??
+      0
+    );
+  },
+
   async carregarMetas() {
     try {
       const { ano } = utils.getMesAno();
       const categorias = utils.getCategorias();
       const grid = document.getElementById("metaGrid");
-
       if (!grid) return;
 
-      const metas = await api.restGet(
-        "metas",
-        `select=*&ano=eq.${ano}`
+      const metas = await api.restGet("metas", "select=*");
+
+      const metasAno = (metas || []).filter(item =>
+        Number(item.ano || item.exercicio || 0) === Number(ano)
       );
 
       const mapa = {};
-      (metas || []).forEach(item => {
-        const categoria = utils.categoriaCanonica(item.categoria || "");
+      metasAno.forEach(item => {
+        const categoria = utils.categoriaCanonica(item.categoria || item.nome || "");
         mapa[categoria] = item;
       });
 
       grid.innerHTML = categorias.map(categoria => {
         const item = mapa[categoria] || {};
-        const valor =
-          item.percentual_meta ??
-          item.percentual ??
-          item.meta ??
-          "";
-
         return `
           <div class="meta-item">
             <label>${categoria}</label>
@@ -34,7 +38,7 @@ window.metasModule = {
               step="0.01"
               class="meta-input"
               data-categoria="${categoria}"
-              value="${valor}"
+              value="${this.extrairPercentual(item)}"
               placeholder="% do faturamento"
             >
           </div>
@@ -49,14 +53,15 @@ window.metasModule = {
     try {
       const { ano } = utils.getMesAno();
       const inputs = Array.from(document.querySelectorAll(".meta-input"));
+      const metas = await api.restGet("metas", "select=*");
 
       for (const input of inputs) {
         const categoria = utils.categoriaCanonica(input.dataset.categoria || "");
         const percentual_meta = Number(input.value || 0);
 
-        const existente = await api.restGet(
-          "metas",
-          `select=id,categoria,ano&categoria=eq.${encodeURIComponent(categoria)}&ano=eq.${ano}&limit=1`
+        const existente = (metas || []).find(item =>
+          utils.categoriaCanonica(item.categoria || item.nome || "") === categoria &&
+          Number(item.ano || item.exercicio || 0) === Number(ano)
         );
 
         const payload = {
@@ -65,24 +70,16 @@ window.metasModule = {
           percentual_meta
         };
 
-        if (existente.length) {
-          await api.restPatch(
-            "metas",
-            `id=eq.${existente[0].id}`,
-            payload
-          );
+        if (existente?.id) {
+          await api.restPatch("metas", `id=eq.${existente.id}`, payload);
         } else {
           await api.restInsert("metas", [payload]);
         }
       }
 
       utils.setAppMsg("Metas salvas com sucesso.", "ok");
-
       await this.carregarMetas();
-
-      if (window.dashboardModule?.carregarDashboard) {
-        await window.dashboardModule.carregarDashboard();
-      }
+      await window.dashboardModule?.carregarDashboard?.();
     } catch (e) {
       utils.setAppMsg("Erro ao salvar metas: " + e.message, "err");
     }
