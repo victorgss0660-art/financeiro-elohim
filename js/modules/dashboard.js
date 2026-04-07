@@ -114,7 +114,7 @@ window.dashboardModule = {
       this.renderVencimentos(contasPagar || []);
       this.renderTopContas(contasPagar || [], contasReceber || []);
       this.renderTabelaResumo(gastosPorCategoria, metasMap, faturamentoValor);
-      this.renderAlertas(gastosPorCategoria, metasMap, faturamentoValor, saldo);
+      this.renderAlertas(gastosPorCategoria, metasMap, faturamentoValor, saldo, contasPagar);
       this.renderBarChart(gastosPorCategoria, metasMap, faturamentoValor);
       this.renderPieChart(gastosPorCategoria);
       this.renderLineChart(gastosAno, this.cacheMeses);
