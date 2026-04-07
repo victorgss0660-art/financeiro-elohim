@@ -12,6 +12,7 @@ window.metasModule = {
     IMPOS: "Impostos",
     RESC: "Rescisões",
     MANUT: "Manutenções"
+    ANTECIPAÇÃO: "Antecipação"
   },
 
   metasPadrao: {
