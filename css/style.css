@@ -1002,3 +1002,166 @@ tr.selecionado{
 .chart-expand-btn{
   padding:10px 14px;
 }
+/* =========================
+   DASHBOARD PREMIUM MÁXIMO
+   ========================= */
+
+.chart-wrap{
+  position:relative;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,245,249,.96));
+  border-radius:22px;
+  padding:18px;
+  min-height:340px;
+  height:340px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.65),
+    0 12px 30px rgba(15,23,42,.06);
+  border:1px solid rgba(148,163,184,.14);
+}
+
+.chart-wrap canvas{
+  width:100% !important;
+  height:100% !important;
+}
+
+.chart-expand-btn{
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:700;
+  background:linear-gradient(180deg,#ffffff,#eef2f7);
+  color:#334155;
+  border:1px solid rgba(148,163,184,.28);
+  box-shadow:0 8px 18px rgba(15,23,42,.08);
+  transition:.18s ease;
+}
+
+.chart-expand-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 22px rgba(15,23,42,.12);
+}
+
+.chart-expand-btn:active{
+  transform:translateY(0);
+}
+
+.chart-fullscreen-box{
+  max-width:1280px !important;
+  width:96vw !important;
+  padding:26px !important;
+  border-radius:28px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98)) !important;
+  border:1px solid rgba(148,163,184,.22) !important;
+  box-shadow:
+    0 30px 90px rgba(2,6,23,.28),
+    inset 0 1px 0 rgba(255,255,255,.7) !important;
+}
+
+.chart-fullscreen-wrap{
+  height:78vh;
+  min-height:520px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(241,245,249,.98));
+  border-radius:22px;
+  padding:18px;
+  border:1px solid rgba(148,163,184,.16);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+.chart-fullscreen-wrap canvas{
+  width:100% !important;
+  height:100% !important;
+}
+
+#chartFullscreenTitle{
+  color:#0f172a;
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:-.03em;
+}
+
+#chartFullscreenModal .secondary-btn{
+  background:linear-gradient(180deg,#ffffff,#eef2f7);
+  color:#334155;
+  border:1px solid rgba(148,163,184,.28);
+  box-shadow:0 8px 18px rgba(15,23,42,.08);
+}
+
+#chartFullscreenModal .secondary-btn:hover{
+  transform:translateY(-1px);
+}
+
+#tab-dashboard .panel-head h3{
+  color:#e2e8f0;
+}
+
+#tab-dashboard .badge{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  color:#e2e8f0;
+}
+
+#tab-dashboard .panel{
+  overflow:hidden;
+}
+
+#tab-dashboard .table-wrap table thead tr th{
+  background:rgba(255,255,255,.04);
+}
+
+#tab-dashboard .table-wrap tbody tr:hover{
+  background:rgba(255,255,255,.045);
+}
+
+#tab-dashboard .status-item{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+#tab-dashboard .alert-item{
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+}
+
+#tab-dashboard .alert-item.ok{
+  border-left-color:#22c55e;
+}
+
+@media (max-width: 900px){
+  .chart-fullscreen-box{
+    width:98vw !important;
+    padding:18px !important;
+    border-radius:20px !important;
+  }
+
+  .chart-fullscreen-wrap{
+    height:68vh;
+    min-height:420px;
+    padding:12px;
+  }
+
+  #chartFullscreenTitle{
+    font-size:20px;
+  }
+}
+
+@media (max-width: 640px){
+  .chart-wrap{
+    min-height:300px;
+    height:300px;
+    padding:12px;
+    border-radius:18px;
+  }
+
+  .chart-fullscreen-wrap{
+    height:62vh;
+    min-height:340px;
+  }
+
+  .chart-expand-btn{
+    padding:9px 12px;
+    font-size:11px;
+  }
+}
