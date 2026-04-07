@@ -1,6 +1,9 @@
 window.app = {
   async carregarTudo() {
     try {
+      if (window.faturamentoModule?.carregarFaturamento) {
+        await window.faturamentoModule.carregarFaturamento();
+      }
       if (window.dashboardModule?.carregarDashboard) {
         await window.dashboardModule.carregarDashboard();
       }
