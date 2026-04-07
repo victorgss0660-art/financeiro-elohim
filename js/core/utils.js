@@ -12,7 +12,6 @@ window.utils = {
     "IMPOS",
     "RESC",
     "MANUT",
-    "ANTECIPAÇÃO"
   ],
 
   normalizarTexto(valor) {
