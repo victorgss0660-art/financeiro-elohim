@@ -415,29 +415,61 @@ window.dashboardModule = {
     });
   },
 
-  renderPieChart(gastos) {
-    const ctx = document.getElementById("pieChart");
-    if (!ctx) return;
-    if (this.pieChart) this.pieChart.destroy();
+ renderPieChart(gastos) {
+  const ctx = document.getElementById("pieChart");
+  if (!ctx) return;
 
-    const categorias = Object.keys(gastos).filter(c => utils.numero(gastos[c]) > 0);
+  if (this.pieChart) this.pieChart.destroy();
 
-    this.pieChart = new Chart(ctx, {
-      type: "pie",
-      data: {
-        labels: categorias,
-        datasets: [
-          {
-            data: categorias.map(c => utils.numero(gastos[c]))
+  const categorias = Object.keys(gastos).filter(c => utils.numero(gastos[c]) > 0);
+  const valores = categorias.map(c => utils.numero(gastos[c]));
+
+  const total = valores.reduce((a, b) => a + b, 0);
+
+  const cores = [
+    "#3b82f6", "#22c55e", "#f59e0b", "#ef4444",
+    "#8b5cf6", "#06b6d4", "#84cc16", "#f97316",
+    "#ec4899", "#14b8a6", "#6366f1", "#a855f7"
+  ];
+
+  this.pieChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: categorias,
+      datasets: [{
+        data: valores,
+        backgroundColor: cores,
+        borderWidth: 2,
+        borderColor: "#ffffff"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "60%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: "#334155",
+            padding: 15,
+            usePointStyle: true
           }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const valor = context.raw;
+              const percentual = ((valor / total) * 100).toFixed(1);
+
+              return `${context.label}: ${utils.moeda(valor)} (${percentual}%)`;
+            }
+          }
+        }
       }
-    });
-  },
+    }
+  });
+}
 
   renderLineChart(gastosAno) {
     const ctx = document.getElementById("lineChart");
