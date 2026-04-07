@@ -64,7 +64,7 @@ window.importarModule = {
         return;
       }
 
-      await api.restInsert("despesas_financeiras", linhasValidas);
+      await api.restInsert("gastos", linhasValidas);
 
       utils.setAppMsg("Despesas importadas com sucesso.", "ok");
 
