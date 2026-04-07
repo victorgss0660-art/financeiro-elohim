@@ -25,12 +25,17 @@ window.utils = {
 
   categoriaValida(categoria) {
     const cat = this.normalizarTexto(categoria);
-    return this.CATEGORIAS.map(c => this.normalizarTexto(c)).includes(cat);
+    return this.CATEGORIAS
+      .map(item => this.normalizarTexto(item))
+      .includes(cat);
   },
 
   categoriaCanonica(categoria) {
     const cat = this.normalizarTexto(categoria);
-    const encontrada = this.CATEGORIAS.find(c => this.normalizarTexto(c) === cat);
+    const encontrada = this.CATEGORIAS.find(
+      item => this.normalizarTexto(item) === cat
+    );
+
     return encontrada || String(categoria || "").trim().toUpperCase();
   },
 
@@ -47,24 +52,36 @@ window.utils = {
 
   numero(valor) {
     if (typeof valor === "number") return valor;
-    if (valor == null) return 0;
+    if (valor === null || valor === undefined) return 0;
 
-    const texto = String(valor).trim();
+    let texto = String(valor).trim();
     if (!texto) return 0;
 
-    const limpo = texto.replace(/[R$\s]/g, "");
-    const temVirgula = limpo.includes(",");
-    const temPonto = limpo.includes(".");
+    texto = texto.replace(/R\$/gi, "").replace(/\s/g, "");
+
+    const temVirgula = texto.includes(",");
+    const temPonto = texto.includes(".");
 
     if (temVirgula && temPonto) {
-      return Number(limpo.replace(/\./g, "").replace(",", ".")) || 0;
+      texto = texto.replace(/\./g, "").replace(",", ".");
+      return Number(texto) || 0;
     }
 
     if (temVirgula) {
-      return Number(limpo.replace(",", ".")) || 0;
+      texto = texto.replace(",", ".");
+      return Number(texto) || 0;
     }
 
-    return Number(limpo) || 0;
+    return Number(texto) || 0;
+  },
+
+  arredondar(valor, casas = 2) {
+    return Number(Number(valor || 0).toFixed(casas));
+  },
+
+  percentual(valor, total) {
+    if (!Number(total)) return 0;
+    return (Number(valor || 0) / Number(total)) * 100;
   },
 
   hojeISO() {
@@ -85,22 +102,75 @@ window.utils = {
     return d.toLocaleDateString("pt-BR");
   },
 
+  normalizarDataISO(valor) {
+    if (!valor) return "";
+
+    if (typeof valor === "string") {
+      const v = valor.trim();
+      if (!v) return "";
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
+        const [dd, mm, yyyy] = v.split("/");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      const d = new Date(v);
+      if (!Number.isNaN(d.getTime())) {
+        return d.toISOString().slice(0, 10);
+      }
+
+      return "";
+    }
+
+    if (typeof valor === "number") {
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+      const date = new Date(excelEpoch.getTime() + valor * 86400000);
+      return date.toISOString().slice(0, 10);
+    }
+
+    if (valor instanceof Date && !Number.isNaN(valor.getTime())) {
+      return valor.toISOString().slice(0, 10);
+    }
+
+    return "";
+  },
+
   definirMesAtual() {
     const mesSelect = document.getElementById("mesSelect");
     const anoSelect = document.getElementById("anoSelect");
 
     const agora = new Date();
-    const mesAtual = agora.toLocaleString("pt-BR", { month: "long" });
-    const mesFormatado = mesAtual.charAt(0).toUpperCase() + mesAtual.slice(1);
+    const meses = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
+    ];
+
+    const mesAtual = meses[agora.getMonth()];
     const anoAtual = String(agora.getFullYear());
 
     if (mesSelect) {
-      const existeMes = Array.from(mesSelect.options).some(opt => opt.text === mesFormatado);
-      if (existeMes) mesSelect.value = mesFormatado;
+      const existeMes = Array.from(mesSelect.options).some(
+        opt => opt.value === mesAtual || opt.text === mesAtual
+      );
+      if (existeMes) mesSelect.value = mesAtual;
     }
 
     if (anoSelect) {
-      const existeAno = Array.from(anoSelect.options).some(opt => opt.text === anoAtual);
+      const existeAno = Array.from(anoSelect.options).some(
+        opt => opt.value === anoAtual || opt.text === anoAtual
+      );
       if (existeAno) anoSelect.value = anoAtual;
     }
   },
@@ -109,10 +179,10 @@ window.utils = {
     const mesSelect = document.getElementById("mesSelect");
     const anoSelect = document.getElementById("anoSelect");
 
-    const mes = mesSelect ? mesSelect.value : "";
-    const ano = anoSelect ? Number(anoSelect.value || 0) : 0;
-
-    return { mes, ano };
+    return {
+      mes: mesSelect ? mesSelect.value : "",
+      ano: anoSelect ? Number(anoSelect.value || 0) : 0
+    };
   },
 
   setAppMsg(msg, tipo = "info") {
@@ -142,6 +212,7 @@ window.utils = {
   limparMsgApp() {
     const el = document.getElementById("appMsg");
     if (!el) return;
+
     el.textContent = "";
     el.classList.remove("info", "ok", "err");
   },
@@ -149,6 +220,7 @@ window.utils = {
   limparMsgLogin() {
     const el = document.getElementById("loginMsg");
     if (!el) return;
+
     el.textContent = "";
     el.classList.remove("info", "ok", "err");
   },
@@ -167,12 +239,11 @@ window.utils = {
     return mapa;
   },
 
-  percentual(valor, total) {
-    if (!total) return 0;
-    return (Number(valor || 0) / Number(total || 0)) * 100;
-  },
-
-  arredondar(valor, casas = 2) {
-    return Number(Number(valor || 0).toFixed(casas));
+  totalizar(lista, campoValor = "valor") {
+    return (lista || []).reduce((acc, item) => {
+      return acc + Number(item?.[campoValor] || 0);
+    }, 0);
   }
 };
+
+window.utils.num = window.utils.numero;
