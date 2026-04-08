@@ -1332,6 +1332,22 @@ tr.selecionado{
   *::after{
     animation:none !important;
     transition:none !important;
+    #loadingGlobal.hidden {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.loading-overlay.hidden {
+  display: none !important;
+  pointer-events: none !important;
+}
+    .loading-overlay {
+  pointer-events: auto;
+}
+
+.loading-overlay.hidden {
+  pointer-events: none;
+}
     scroll-behavior:auto !important;
   }
 }
