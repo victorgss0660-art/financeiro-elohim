@@ -13,8 +13,15 @@ window.app = {
   async init() {
     try {
       this.bindEventosGlobais();
+      this.bindLogin();
       window.navigation?.ativarAbas?.();
-      await this.inicializarSistema();
+
+      const logado = await this.verificarSessao();
+      if (logado) {
+        await this.entrarNoSistema(logado);
+      } else {
+        this.mostrarLogin();
+      }
     } catch (e) {
       console.error("Erro ao iniciar app:", e);
       utils?.setAppMsg?.("Erro ao iniciar sistema: " + e.message, "err");
@@ -33,16 +40,7 @@ window.app = {
     const btnSair = document.getElementById("btnSair");
     if (btnSair && !btnSair.dataset.binded) {
       btnSair.addEventListener("click", async () => {
-        try {
-          if (window.auth?.logout) {
-            await window.auth.logout();
-          } else {
-            localStorage.removeItem("elohim_user");
-            location.reload();
-          }
-        } catch (e) {
-          console.error("Erro ao sair:", e);
-        }
+        await this.sairDoSistema();
       });
       btnSair.dataset.binded = "1";
     }
@@ -63,8 +61,7 @@ window.app = {
       btnSalvarMetas.dataset.binded = "1";
     }
 
-    const menuBtns = document.querySelectorAll(".menu-btn");
-    menuBtns.forEach(btn => {
+    document.querySelectorAll(".menu-btn").forEach(btn => {
       if (btn.dataset.bindedReload === "1") return;
 
       btn.addEventListener("click", async () => {
@@ -76,30 +73,138 @@ window.app = {
     });
   },
 
-  async inicializarSistema() {
+  bindLogin() {
+    const btnLogin = document.getElementById("loginBtn");
+    const emailInput = document.getElementById("loginEmail");
+    const senhaInput = document.getElementById("loginSenha");
+
+    if (btnLogin && !btnLogin.dataset.binded) {
+      btnLogin.addEventListener("click", async () => {
+        await this.fazerLogin();
+      });
+      btnLogin.dataset.binded = "1";
+    }
+
+    [emailInput, senhaInput].forEach(input => {
+      if (!input || input.dataset.bindedEnter === "1") return;
+
+      input.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          await this.fazerLogin();
+        }
+      });
+
+      input.dataset.bindedEnter = "1";
+    });
+  },
+
+  async verificarSessao() {
+    try {
+      if (window.auth?.getCurrentUser) {
+        const user = await window.auth.getCurrentUser();
+        if (user) return user;
+      }
+
+      const salvo = localStorage.getItem("elohim_user");
+      if (salvo) return JSON.parse(salvo);
+
+      return null;
+    } catch (e) {
+      console.error("Erro ao verificar sessão:", e);
+      return null;
+    }
+  },
+
+  async fazerLogin() {
+    const email = document.getElementById("loginEmail")?.value?.trim() || "";
+    const senha = document.getElementById("loginSenha")?.value || "";
+    const loginMsg = document.getElementById("loginMsg");
+
+    if (!email || !senha) {
+      if (loginMsg) loginMsg.textContent = "Informe e-mail e senha.";
+      return;
+    }
+
     loading.show();
 
     try {
-      await this.preencherPerfil();
-      await this.recarregarTudo();
+      let user = null;
+
+      if (window.auth?.login) {
+        user = await window.auth.login(email, senha);
+      } else if (window.auth?.signIn) {
+        user = await window.auth.signIn(email, senha);
+      } else {
+        user = {
+          email,
+          perfil: "Administrador"
+        };
+      }
+
+      if (!user) {
+        throw new Error("Login não retornou usuário.");
+      }
+
+      localStorage.setItem("elohim_user", JSON.stringify(user));
+
+      if (loginMsg) loginMsg.textContent = "Login realizado com sucesso.";
+      await this.entrarNoSistema(user);
+    } catch (e) {
+      console.error("Erro no login:", e);
+      if (loginMsg) loginMsg.textContent = "Erro ao entrar: " + e.message;
     } finally {
       loading.hide();
     }
   },
 
-  async preencherPerfil() {
+  async sairDoSistema() {
     try {
-      let user = null;
+      loading.show();
 
-      if (window.auth?.getCurrentUser) {
+      if (window.auth?.logout) {
+        await window.auth.logout();
+      }
+
+      localStorage.removeItem("elohim_user");
+      this.mostrarLogin();
+    } catch (e) {
+      console.error("Erro ao sair:", e);
+    } finally {
+      loading.hide();
+    }
+  },
+
+  mostrarLogin() {
+    const loginScreen = document.getElementById("loginScreen");
+    const appShell = document.getElementById("appShell");
+
+    if (loginScreen) loginScreen.classList.remove("hidden");
+    if (appShell) appShell.classList.add("hidden");
+  },
+
+  async entrarNoSistema(user) {
+    const loginScreen = document.getElementById("loginScreen");
+    const appShell = document.getElementById("appShell");
+
+    if (loginScreen) loginScreen.classList.add("hidden");
+    if (appShell) appShell.classList.remove("hidden");
+
+    await this.preencherPerfil(user);
+    await this.recarregarTudo();
+  },
+
+  async preencherPerfil(userRecebido = null) {
+    try {
+      let user = userRecebido;
+
+      if (!user && window.auth?.getCurrentUser) {
         user = await window.auth.getCurrentUser();
       }
 
       if (!user) {
         const salvo = localStorage.getItem("elohim_user");
-        if (salvo) {
-          user = JSON.parse(salvo);
-        }
+        if (salvo) user = JSON.parse(salvo);
       }
 
       const userEmail = document.getElementById("userEmail");
@@ -225,16 +330,15 @@ window.app = {
         return;
       }
 
+      statusSituacao.classList.remove("ok", "err");
+
       if (saldo < 0) {
         statusSituacao.textContent = "Crítico";
-        statusSituacao.classList.remove("ok");
         statusSituacao.classList.add("err");
       } else if (saldo === 0) {
         statusSituacao.textContent = "Neutro";
-        statusSituacao.classList.remove("ok", "err");
       } else {
         statusSituacao.textContent = "Saudável";
-        statusSituacao.classList.remove("err");
         statusSituacao.classList.add("ok");
       }
     } catch (e) {
