@@ -1351,3 +1351,8 @@ tr.selecionado{
     scroll-behavior:auto !important;
   }
 }
+.loading-overlay.hidden,
+#loadingGlobal.hidden{
+  display:none !important;
+  pointer-events:none !important;
+}
