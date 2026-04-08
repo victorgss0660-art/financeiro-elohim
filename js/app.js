@@ -14,26 +14,7 @@ window.app = {
     try {
       this.bindEventosGlobais();
       this.bindLogin();
-bindDelegacaoInput() {
-  if (document.body.dataset.bindedDelegacaoInput === "1") return;
 
-  document.addEventListener("input", (e) => {
-    const target = e.target;
-
-    try {
-      if (target.id === "filtroBusca") {
-        window.contasPagarModule.filtros.busca = String(target.value || "").toLowerCase();
-        window.contasPagarModule?.render?.();
-        return;
-      }
-    } catch (err) {
-      console.error("Erro em input delegado:", err);
-      window.utils?.setAppMsg?.("Erro ao filtrar: " + err.message, "err");
-    }
-  });
-
-  document.body.dataset.bindedDelegacaoInput = "1";
-},
       if (window.navigation?.ativarAbas) {
         window.navigation.ativarAbas();
       }
@@ -101,7 +82,6 @@ bindDelegacaoInput() {
       if (!target) return;
 
       try {
-        // CONTAS A PAGAR
         if (target.id === "btnSalvarContaPagar") {
           e.preventDefault();
           await window.contasPagarModule?.salvarContaPagar?.();
@@ -126,7 +106,6 @@ bindDelegacaoInput() {
           return;
         }
 
-        // CONTAS PAGAS
         if (target.id === "btnImportarContasPagas") {
           e.preventDefault();
           document.getElementById("fileInputContasPagas")?.click();
@@ -139,28 +118,30 @@ bindDelegacaoInput() {
           return;
         }
 
-        // FATURAMENTO
+        if (target.id === "btnSalvarContaReceber") {
+          e.preventDefault();
+          await window.contasReceberModule?.salvarContaReceber?.();
+          return;
+        }
+
         if (target.id === "btnSalvarFaturamento") {
           e.preventDefault();
           await window.faturamentoModule?.salvarFaturamento?.();
           return;
         }
 
-        // METAS
         if (target.id === "btnSalvarMetas") {
           e.preventDefault();
           await window.metasModule?.salvarMetas?.();
           return;
         }
 
-        // PLANEJAMENTO
         if (target.id === "btnSalvarSaldosBancarios") {
           e.preventDefault();
           await window.planejamentoModule?.salvarSaldosBancarios?.();
           return;
         }
 
-        // POPUPS
         if (
           typeof target.getAttribute("onclick") === "string" &&
           target.getAttribute("onclick").includes("contasPagarModule.confirmarPagamento()")
@@ -197,7 +178,6 @@ bindDelegacaoInput() {
           return;
         }
 
-        // FECHAR MODAL GRÁFICO
         if (target.id === "closeChartFullscreen") {
           e.preventDefault();
           window.dashboardModule?.fecharGraficoFullscreen?.();
@@ -212,90 +192,106 @@ bindDelegacaoInput() {
     document.body.dataset.bindedDelegacaoClick = "1";
   },
 
-bindDelegacaoChange() {
-  if (document.body.dataset.bindedDelegacaoChange === "1") return;
+  bindDelegacaoInput() {
+    if (document.body.dataset.bindedDelegacaoInput === "1") return;
 
-  document.addEventListener("change", async (e) => {
-    const target = e.target;
+    document.addEventListener("input", (e) => {
+      const target = e.target;
 
-    try {
-      // IMPORTAÇÃO CONTAS A PAGAR
-      if (target.id === "fileInputContasPagar") {
-        await window.contasPagarModule?.importarPlanilha?.({ target });
-        return;
+      try {
+        if (target.id === "filtroBusca") {
+          window.contasPagarModule.filtros.busca = String(target.value || "").toLowerCase();
+          window.contasPagarModule?.render?.();
+          return;
+        }
+      } catch (err) {
+        console.error("Erro em input delegado:", err);
+        window.utils?.setAppMsg?.("Erro ao filtrar: " + err.message, "err");
       }
+    });
 
-      // IMPORTAÇÃO CONTAS PAGAS
-      if (target.id === "fileInputContasPagas") {
-        await window.contasPagasModule?.importarPlanilha?.({ target });
-        return;
+    document.body.dataset.bindedDelegacaoInput = "1";
+  },
+
+  bindDelegacaoChange() {
+    if (document.body.dataset.bindedDelegacaoChange === "1") return;
+
+    document.addEventListener("change", async (e) => {
+      const target = e.target;
+
+      try {
+        if (target.id === "fileInputContasPagar") {
+          await window.contasPagarModule?.importarPlanilha?.({ target });
+          return;
+        }
+
+        if (target.id === "fileInputContasPagas") {
+          await window.contasPagasModule?.importarPlanilha?.({ target });
+          return;
+        }
+
+        if (target.id === "fileInput") {
+          await window.importarModule?.importarPlanilha?.({ target });
+          return;
+        }
+
+        if (target.id === "filtroFornecedor") {
+          window.contasPagarModule.filtros.fornecedor = target.value || "";
+          window.contasPagarModule?.render?.();
+          return;
+        }
+
+        if (target.id === "filtroCategoria") {
+          window.contasPagarModule.filtros.categoria = target.value || "";
+          window.contasPagarModule?.render?.();
+          return;
+        }
+
+        if (target.id === "filtroStatus") {
+          window.contasPagarModule.filtros.status = target.value || "";
+          window.contasPagarModule?.render?.();
+          return;
+        }
+
+        if (target.id === "filtroDocs") {
+          window.contasPagarModule.filtros.docs = target.value || "";
+          window.contasPagarModule?.render?.();
+          return;
+        }
+
+        if (target.id === "filtroDataInicio") {
+          window.contasPagarModule.filtros.dataInicio = target.value || "";
+          window.contasPagarModule?.render?.();
+          return;
+        }
+
+        if (target.id === "filtroDataFim") {
+          window.contasPagarModule.filtros.dataFim = target.value || "";
+          window.contasPagarModule?.render?.();
+          return;
+        }
+
+        if (target.id === "cpSelecionarTodos") {
+          document.querySelectorAll(".cp-select-item").forEach(cb => {
+            cb.checked = !!target.checked;
+          });
+          window.contasPagarModule?.atualizarSelecionados?.();
+          return;
+        }
+
+        if (target.classList?.contains("cp-select-item")) {
+          window.contasPagarModule?.atualizarSelecionados?.();
+          return;
+        }
+      } catch (err) {
+        console.error("Erro em change delegado:", err);
+        window.utils?.setAppMsg?.("Erro ao atualizar campo: " + err.message, "err");
       }
+    });
 
-      // IMPORTAR DESPESAS
-      if (target.id === "fileInput") {
-        await window.importarModule?.importarPlanilha?.({ target });
-        return;
-      }
+    document.body.dataset.bindedDelegacaoChange = "1";
+  },
 
-      // FILTROS CONTAS A PAGAR
-      if (target.id === "filtroFornecedor") {
-        window.contasPagarModule.filtros.fornecedor = target.value || "";
-        window.contasPagarModule?.render?.();
-        return;
-      }
-
-      if (target.id === "filtroCategoria") {
-        window.contasPagarModule.filtros.categoria = target.value || "";
-        window.contasPagarModule?.render?.();
-        return;
-      }
-
-      if (target.id === "filtroStatus") {
-        window.contasPagarModule.filtros.status = target.value || "";
-        window.contasPagarModule?.render?.();
-        return;
-      }
-
-      if (target.id === "filtroDocs") {
-        window.contasPagarModule.filtros.docs = target.value || "";
-        window.contasPagarModule?.render?.();
-        return;
-      }
-
-      if (target.id === "filtroDataInicio") {
-        window.contasPagarModule.filtros.dataInicio = target.value || "";
-        window.contasPagarModule?.render?.();
-        return;
-      }
-
-      if (target.id === "filtroDataFim") {
-        window.contasPagarModule.filtros.dataFim = target.value || "";
-        window.contasPagarModule?.render?.();
-        return;
-      }
-
-      // CHECKBOX GERAL
-      if (target.id === "cpSelecionarTodos") {
-        document.querySelectorAll(".cp-select-item").forEach(cb => {
-          cb.checked = !!target.checked;
-        });
-        window.contasPagarModule?.atualizarSelecionados?.();
-        return;
-      }
-
-      // CHECKBOX ITEM
-      if (target.classList?.contains("cp-select-item")) {
-        window.contasPagarModule?.atualizarSelecionados?.();
-        return;
-      }
-    } catch (err) {
-      console.error("Erro em change delegado:", err);
-      window.utils?.setAppMsg?.("Erro ao atualizar campo: " + err.message, "err");
-    }
-  });
-
-  document.body.dataset.bindedDelegacaoChange = "1";
-},
   bindLogin() {
     const btnLogin = document.getElementById("loginBtn");
     const emailInput = document.getElementById("loginEmail");
