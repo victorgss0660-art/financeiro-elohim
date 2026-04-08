@@ -10,6 +10,19 @@ window.loading = window.loading || {
 };
 
 window.app = {
+  modulosInicializados: {
+    dashboard: false,
+    contasPagar: false,
+    contasPagas: false,
+    contasReceber: false,
+    contasRecebidas: false,
+    faturamento: false,
+    metas: false,
+    importar: false,
+    resumo: false,
+    planejamento: false
+  },
+
   async init() {
     try {
       this.bindEventosGlobais();
@@ -49,31 +62,14 @@ window.app = {
       btnSair.dataset.binded = "1";
     }
 
-    const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
-    if (btnSalvarFaturamento && btnSalvarFaturamento.dataset.binded !== "1") {
-      btnSalvarFaturamento.addEventListener("click", async () => {
-        await window.faturamentoModule?.salvarFaturamento?.();
-      });
-      btnSalvarFaturamento.dataset.binded = "1";
-    }
-
-    const btnSalvarMetas = document.getElementById("btnSalvarMetas");
-    if (btnSalvarMetas && btnSalvarMetas.dataset.binded !== "1") {
-      btnSalvarMetas.addEventListener("click", async () => {
-        await window.metasModule?.salvarMetas?.();
-      });
-      btnSalvarMetas.dataset.binded = "1";
-    }
-
     document.querySelectorAll(".menu-btn").forEach(btn => {
-      if (btn.dataset.bindedReload === "1") return;
-
-      btn.addEventListener("click", async () => {
-        const aba = btn.dataset.tab || "";
-        await this.onTrocaDeAba(aba);
-      });
-
-      btn.dataset.bindedReload = "1";
+      if (btn.dataset.bindedMenu !== "1") {
+        btn.addEventListener("click", async () => {
+          const aba = btn.dataset.tab || "";
+          await this.onTrocaDeAba(aba);
+        });
+        btn.dataset.bindedMenu = "1";
+      }
     });
   },
 
@@ -245,76 +241,6 @@ window.app = {
     }
   },
 
-  async recarregarTudo() {
-    loading.show();
-
-    try {
-      this.atualizarStatusCabecalho();
-
-      if (window.faturamentoModule?.carregarFaturamento) {
-        await window.faturamentoModule.carregarFaturamento();
-      }
-
-      if (window.metasModule?.carregarMetas) {
-        await window.metasModule.carregarMetas();
-      }
-
-      if (window.dashboardModule?.carregarDashboard) {
-        await window.dashboardModule.carregarDashboard();
-      }
-
-      if (window.resumoModule?.carregarResumoAnual) {
-        await window.resumoModule.carregarResumoAnual();
-      }
-
-      if (window.contasPagarModule?.init) {
-        await window.contasPagarModule.init();
-      } else if (window.contasPagarModule?.carregarContasPagar) {
-        await window.contasPagarModule.carregarContasPagar();
-      } else if (window.contasPagarModule?.carregar) {
-        await window.contasPagarModule.carregar();
-      } else if (window.contasPagarModule?.render) {
-        await window.contasPagarModule.render();
-      }
-
-      if (window.contasPagasModule?.init) {
-        await window.contasPagasModule.init();
-      } else if (window.contasPagasModule?.carregar) {
-        await window.contasPagasModule.carregar();
-      }
-
-      if (window.contasReceberModule?.init) {
-        await window.contasReceberModule.init();
-      } else if (window.contasReceberModule?.carregar) {
-        await window.contasReceberModule.carregar();
-      }
-
-      if (window.contasRecebidasModule?.init) {
-        await window.contasRecebidasModule.init();
-      } else if (window.contasRecebidasModule?.carregar) {
-        await window.contasRecebidasModule.carregar();
-      }
-
-      if (window.importarModule?.init) {
-        await window.importarModule.init();
-      }
-
-      if (window.planejamentoModule?.init) {
-        await window.planejamentoModule.init();
-      } else {
-        await window.planejamentoModule?.carregarSaldosBancarios?.();
-        await window.planejamentoModule?.carregarPlanejamento?.();
-      }
-
-      this.atualizarSituacaoMes();
-    } catch (e) {
-      console.error("Erro ao recarregar sistema:", e);
-      window.utils?.setAppMsg?.("Erro ao recarregar dados: " + e.message, "err");
-    } finally {
-      loading.hide();
-    }
-  },
-
   atualizarSituacaoMes() {
     try {
       const statusSituacao = document.getElementById("statusSituacao");
@@ -328,14 +254,11 @@ window.app = {
 
       const saldo = Number(textoSaldo || 0);
 
-      if (Number.isNaN(saldo)) {
-        statusSituacao.textContent = "-";
-        return;
-      }
-
       statusSituacao.classList.remove("ok", "err");
 
-      if (saldo < 0) {
+      if (Number.isNaN(saldo)) {
+        statusSituacao.textContent = "-";
+      } else if (saldo < 0) {
         statusSituacao.textContent = "Crítico";
         statusSituacao.classList.add("err");
       } else if (saldo === 0) {
@@ -349,6 +272,155 @@ window.app = {
     }
   },
 
+  async recarregarTudo() {
+    loading.show();
+
+    try {
+      this.atualizarStatusCabecalho();
+
+      await this.inicializarModuloDashboard();
+      await this.inicializarModuloContasPagar();
+      await this.inicializarModuloContasPagas();
+      await this.inicializarModuloContasReceber();
+      await this.inicializarModuloContasRecebidas();
+      await this.inicializarModuloFaturamento();
+      await this.inicializarModuloMetas();
+      await this.inicializarModuloImportar();
+      await this.inicializarModuloResumo();
+      await this.inicializarModuloPlanejamento();
+
+      this.atualizarSituacaoMes();
+    } catch (e) {
+      console.error("Erro ao recarregar sistema:", e);
+      window.utils?.setAppMsg?.("Erro ao recarregar dados: " + e.message, "err");
+    } finally {
+      loading.hide();
+    }
+  },
+
+  async inicializarModuloDashboard() {
+    if (window.dashboardModule?.carregarDashboard) {
+      await window.dashboardModule.carregarDashboard();
+      this.modulosInicializados.dashboard = true;
+    }
+  },
+
+  async inicializarModuloContasPagar() {
+    if (window.contasPagarModule?.init) {
+      await window.contasPagarModule.init();
+      this.modulosInicializados.contasPagar = true;
+      return;
+    }
+
+    if (window.contasPagarModule?.carregarContasPagar) {
+      await window.contasPagarModule.carregarContasPagar();
+      this.modulosInicializados.contasPagar = true;
+    }
+  },
+
+  async inicializarModuloContasPagas() {
+    if (window.contasPagasModule?.init) {
+      await window.contasPagasModule.init();
+      this.modulosInicializados.contasPagas = true;
+      return;
+    }
+
+    if (window.contasPagasModule?.carregarContasPagas) {
+      await window.contasPagasModule.carregarContasPagas();
+      this.modulosInicializados.contasPagas = true;
+      return;
+    }
+
+    if (window.contasPagasModule?.carregar) {
+      await window.contasPagasModule.carregar();
+      this.modulosInicializados.contasPagas = true;
+    }
+  },
+
+  async inicializarModuloContasReceber() {
+    if (window.contasReceberModule?.init) {
+      await window.contasReceberModule.init();
+      this.modulosInicializados.contasReceber = true;
+      return;
+    }
+
+    if (window.contasReceberModule?.carregarContasReceber) {
+      await window.contasReceberModule.carregarContasReceber();
+      this.modulosInicializados.contasReceber = true;
+      return;
+    }
+
+    if (window.contasReceberModule?.carregar) {
+      await window.contasReceberModule.carregar();
+      this.modulosInicializados.contasReceber = true;
+    }
+  },
+
+  async inicializarModuloContasRecebidas() {
+    if (window.contasRecebidasModule?.init) {
+      await window.contasRecebidasModule.init();
+      this.modulosInicializados.contasRecebidas = true;
+      return;
+    }
+
+    if (window.contasRecebidasModule?.carregarContasRecebidas) {
+      await window.contasRecebidasModule.carregarContasRecebidas();
+      this.modulosInicializados.contasRecebidas = true;
+      return;
+    }
+
+    if (window.contasRecebidasModule?.carregar) {
+      await window.contasRecebidasModule.carregar();
+      this.modulosInicializados.contasRecebidas = true;
+    }
+  },
+
+  async inicializarModuloFaturamento() {
+    if (window.faturamentoModule?.carregarFaturamento) {
+      await window.faturamentoModule.carregarFaturamento();
+      this.modulosInicializados.faturamento = true;
+    }
+  },
+
+  async inicializarModuloMetas() {
+    if (window.metasModule?.carregarMetas) {
+      await window.metasModule.carregarMetas();
+      this.modulosInicializados.metas = true;
+    }
+  },
+
+  async inicializarModuloImportar() {
+    if (window.importarModule?.init) {
+      await window.importarModule.init();
+      this.modulosInicializados.importar = true;
+    }
+  },
+
+  async inicializarModuloResumo() {
+    if (window.resumoModule?.carregarResumoAnual) {
+      await window.resumoModule.carregarResumoAnual();
+      this.modulosInicializados.resumo = true;
+    }
+  },
+
+  async inicializarModuloPlanejamento() {
+    if (window.planejamentoModule?.init) {
+      await window.planejamentoModule.init();
+      this.modulosInicializados.planejamento = true;
+      return;
+    }
+
+    if (window.planejamentoModule?.carregarSaldosBancarios) {
+      await window.planejamentoModule.carregarSaldosBancarios();
+    }
+
+    if (window.planejamentoModule?.carregarPlanejamento) {
+      await window.planejamentoModule.carregarPlanejamento();
+    }
+
+    this.modulosInicializados.planejamento = true;
+  },
+
   async onTrocaDeAba(aba) {
     try {
       if (window.navigation?.atualizarVisibilidadeFiltroMesAno) {
@@ -356,73 +428,52 @@ window.app = {
       }
 
       if (aba === "dashboard") {
-        await window.dashboardModule?.carregarDashboard?.();
+        await this.inicializarModuloDashboard();
         return;
       }
 
       if (aba === "contas-pagar") {
-        if (window.contasPagarModule?.init) {
-          await window.contasPagarModule.init();
-        } else if (window.contasPagarModule?.carregarContasPagar) {
-          await window.contasPagarModule.carregarContasPagar();
-        } else if (window.contasPagarModule?.carregar) {
-          await window.contasPagarModule.carregar();
-        } else {
-          await window.contasPagarModule?.render?.();
-        }
+        await this.inicializarModuloContasPagar();
         return;
       }
 
       if (aba === "contas-pagas") {
-        if (window.contasPagasModule?.init) {
-          await window.contasPagasModule.init();
-        } else {
-          await window.contasPagasModule?.carregar?.();
-        }
+        await this.inicializarModuloContasPagas();
         return;
       }
 
       if (aba === "contas-receber") {
-        if (window.contasReceberModule?.init) {
-          await window.contasReceberModule.init();
-        } else {
-          await window.contasReceberModule?.carregar?.();
-        }
+        await this.inicializarModuloContasReceber();
         return;
       }
 
       if (aba === "contas-recebidas") {
-        if (window.contasRecebidasModule?.init) {
-          await window.contasRecebidasModule.init();
-        } else {
-          await window.contasRecebidasModule?.carregar?.();
-        }
+        await this.inicializarModuloContasRecebidas();
         return;
       }
 
       if (aba === "faturamento") {
-        await window.faturamentoModule?.carregarFaturamento?.();
+        await this.inicializarModuloFaturamento();
         return;
       }
 
       if (aba === "metas") {
-        await window.metasModule?.carregarMetas?.();
+        await this.inicializarModuloMetas();
         return;
       }
 
       if (aba === "importar") {
-        await window.importarModule?.init?.();
+        await this.inicializarModuloImportar();
         return;
       }
 
       if (aba === "resumo") {
-        await window.resumoModule?.carregarResumoAnual?.();
+        await this.inicializarModuloResumo();
         return;
       }
 
       if (aba === "planejamento") {
-        await window.planejamentoModule?.carregarSaldosBancarios?.();
-        await window.planejamentoModule?.carregarPlanejamento?.();
+        await this.inicializarModuloPlanejamento();
       }
     } catch (e) {
       console.error(`Erro ao abrir aba ${aba}:`, e);
