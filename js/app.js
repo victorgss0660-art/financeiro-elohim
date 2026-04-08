@@ -266,13 +266,13 @@ window.app = {
         await window.resumoModule.carregarResumoAnual();
       }
 
-      if (window.contasPagarModule?.init) {
-        await window.contasPagarModule.init();
-      } else if (window.contasPagarModule?.carregar) {
-        await window.contasPagarModule.carregar();
-      } else if (window.contasPagarModule?.render) {
-        await window.contasPagarModule.render();
-      }
+if (window.contasPagarModule?.carregarContasPagar) {
+  await window.contasPagarModule.carregarContasPagar();
+} else if (window.contasPagarModule?.carregar) {
+  await window.contasPagarModule.carregar();
+} else if (window.contasPagarModule?.render) {
+  await window.contasPagarModule.render();
+}
 
       if (window.contasPagasModule?.init) {
         await window.contasPagasModule.init();
