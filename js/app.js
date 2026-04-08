@@ -37,6 +37,7 @@ window.app = {
     this.bindLogout();
     this.bindMenuAbas();
     this.bindDelegacaoCliques();
+    this.bindDelegacaoInput();
     this.bindDelegacaoChange();
   },
 
