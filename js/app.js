@@ -357,14 +357,16 @@ if (window.contasPagarModule?.carregarContasPagar) {
         return;
       }
 
-      if (aba === "contas-pagar") {
-        if (window.contasPagarModule?.carregar) {
-          await window.contasPagarModule.carregar();
-        } else {
-          await window.contasPagarModule?.render?.();
-        }
-        return;
-      }
+if (aba === "contas-pagar") {
+  if (window.contasPagarModule?.carregarContasPagar) {
+    await window.contasPagarModule.carregarContasPagar();
+  } else if (window.contasPagarModule?.carregar) {
+    await window.contasPagarModule.carregar();
+  } else {
+    await window.contasPagarModule?.render?.();
+  }
+  return;
+}
 
       if (aba === "contas-pagas") {
         await window.contasPagasModule?.carregar?.();
