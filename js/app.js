@@ -480,7 +480,8 @@ window.app = {
     }
   }
 };
-
+console.log("app.js carregado");
+console.log("contasPagarModule:", window.contasPagarModule);
 document.addEventListener("DOMContentLoaded", async () => {
   await window.app.init();
 });
