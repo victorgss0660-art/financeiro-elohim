@@ -14,7 +14,26 @@ window.app = {
     try {
       this.bindEventosGlobais();
       this.bindLogin();
+bindDelegacaoInput() {
+  if (document.body.dataset.bindedDelegacaoInput === "1") return;
 
+  document.addEventListener("input", (e) => {
+    const target = e.target;
+
+    try {
+      if (target.id === "filtroBusca") {
+        window.contasPagarModule.filtros.busca = String(target.value || "").toLowerCase();
+        window.contasPagarModule?.render?.();
+        return;
+      }
+    } catch (err) {
+      console.error("Erro em input delegado:", err);
+      window.utils?.setAppMsg?.("Erro ao filtrar: " + err.message, "err");
+    }
+  });
+
+  document.body.dataset.bindedDelegacaoInput = "1";
+},
       if (window.navigation?.ativarAbas) {
         window.navigation.ativarAbas();
       }
