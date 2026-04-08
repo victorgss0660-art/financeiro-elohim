@@ -151,12 +151,14 @@ body{
 }
 
 .sidebar-logo{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-  border:1px solid var(--line);
+  background:#ffffff;
+  border:1px solid rgba(255,255,255,.25);
   border-radius:22px;
   padding:18px;
   box-shadow:var(--shadow-md);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .sidebar-logo img{
