@@ -1,9 +1,158 @@
+window.loading = window.loading || {
+  show() {
+    const el = document.getElementById("loadingGlobal");
+    if (el) el.classList.remove("hidden");
+  },
+  hide() {
+    const el = document.getElementById("loadingGlobal");
+    if (el) el.classList.add("hidden");
+  }
+};
+
 window.app = {
-  async carregarTudo() {
+  async init() {
     try {
+      this.bindEventosGlobais();
+      window.navigation?.ativarAbas?.();
+      await this.inicializarSistema();
+    } catch (e) {
+      console.error("Erro ao iniciar app:", e);
+      utils?.setAppMsg?.("Erro ao iniciar sistema: " + e.message, "err");
+    }
+  },
+
+  bindEventosGlobais() {
+    const btnCarregarMes = document.getElementById("btnCarregarMes");
+    if (btnCarregarMes && !btnCarregarMes.dataset.binded) {
+      btnCarregarMes.addEventListener("click", async () => {
+        await this.recarregarTudo();
+      });
+      btnCarregarMes.dataset.binded = "1";
+    }
+
+    const btnSair = document.getElementById("btnSair");
+    if (btnSair && !btnSair.dataset.binded) {
+      btnSair.addEventListener("click", async () => {
+        try {
+          if (window.auth?.logout) {
+            await window.auth.logout();
+          } else {
+            localStorage.removeItem("elohim_user");
+            location.reload();
+          }
+        } catch (e) {
+          console.error("Erro ao sair:", e);
+        }
+      });
+      btnSair.dataset.binded = "1";
+    }
+
+    const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
+    if (btnSalvarFaturamento && !btnSalvarFaturamento.dataset.binded) {
+      btnSalvarFaturamento.addEventListener("click", async () => {
+        await window.faturamentoModule?.salvarFaturamento?.();
+      });
+      btnSalvarFaturamento.dataset.binded = "1";
+    }
+
+    const btnSalvarMetas = document.getElementById("btnSalvarMetas");
+    if (btnSalvarMetas && !btnSalvarMetas.dataset.binded) {
+      btnSalvarMetas.addEventListener("click", async () => {
+        await window.metasModule?.salvarMetas?.();
+      });
+      btnSalvarMetas.dataset.binded = "1";
+    }
+
+    const menuBtns = document.querySelectorAll(".menu-btn");
+    menuBtns.forEach(btn => {
+      if (btn.dataset.bindedReload === "1") return;
+
+      btn.addEventListener("click", async () => {
+        const aba = btn.dataset.tab || "";
+        await this.onTrocaDeAba(aba);
+      });
+
+      btn.dataset.bindedReload = "1";
+    });
+  },
+
+  async inicializarSistema() {
+    loading.show();
+
+    try {
+      await this.preencherPerfil();
+      await this.recarregarTudo();
+    } finally {
+      loading.hide();
+    }
+  },
+
+  async preencherPerfil() {
+    try {
+      let user = null;
+
+      if (window.auth?.getCurrentUser) {
+        user = await window.auth.getCurrentUser();
+      }
+
+      if (!user) {
+        const salvo = localStorage.getItem("elohim_user");
+        if (salvo) {
+          user = JSON.parse(salvo);
+        }
+      }
+
+      const userEmail = document.getElementById("userEmail");
+      const userPerfil = document.getElementById("userPerfil");
+      const perfilBadge = document.getElementById("perfilBadge");
+
+      if (userEmail) userEmail.textContent = user?.email || "-";
+      if (userPerfil) userPerfil.textContent = (user?.perfil || user?.role || "ADMIN").toUpperCase();
+      if (perfilBadge) perfilBadge.textContent = user?.perfil || user?.role || "Administrador";
+    } catch (e) {
+      console.error("Erro ao preencher perfil:", e);
+    }
+  },
+
+  atualizarStatusCabecalho() {
+    try {
+      const { mes, ano } = utils.getMesAno();
+      const texto = `${mes}/${ano}`;
+      const agora = new Date();
+
+      const statusMes = document.getElementById("statusMes");
+      const statusMesTopo = document.getElementById("statusMesTopo");
+      const statusAtualizacao = document.getElementById("statusAtualizacao");
+      const statusAtualizacaoTopo = document.getElementById("statusAtualizacaoTopo");
+
+      const hora = agora.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      if (statusMes) statusMes.textContent = texto;
+      if (statusMesTopo) statusMesTopo.textContent = texto;
+      if (statusAtualizacao) statusAtualizacao.textContent = hora;
+      if (statusAtualizacaoTopo) statusAtualizacaoTopo.textContent = hora;
+    } catch (e) {
+      console.error("Erro ao atualizar status:", e);
+    }
+  },
+
+  async recarregarTudo() {
+    loading.show();
+
+    try {
+      this.atualizarStatusCabecalho();
+
       if (window.faturamentoModule?.carregarFaturamento) {
         await window.faturamentoModule.carregarFaturamento();
       }
+
+      if (window.metasModule?.carregarMetas) {
+        await window.metasModule.carregarMetas();
+      }
+
       if (window.dashboardModule?.carregarDashboard) {
         await window.dashboardModule.carregarDashboard();
       }
@@ -12,233 +161,152 @@ window.app = {
         await window.resumoModule.carregarResumoAnual();
       }
 
-      if (window.metasModule?.carregarMetas) {
-        await window.metasModule.carregarMetas();
+      if (window.contasPagarModule?.init) {
+        await window.contasPagarModule.init();
+      } else if (window.contasPagarModule?.carregar) {
+        await window.contasPagarModule.carregar();
+      } else if (window.contasPagarModule?.render) {
+        await window.contasPagarModule.render();
       }
 
-      if (window.contasPagarModule?.carregarContasPagar) {
-        await window.contasPagarModule.carregarContasPagar();
+      if (window.contasPagasModule?.init) {
+        await window.contasPagasModule.init();
+      } else if (window.contasPagasModule?.carregar) {
+        await window.contasPagasModule.carregar();
       }
 
-      if (window.contasPagasModule?.carregarContasPagas) {
-        await window.contasPagasModule.carregarContasPagas();
+      if (window.contasReceberModule?.init) {
+        await window.contasReceberModule.init();
+      } else if (window.contasReceberModule?.carregar) {
+        await window.contasReceberModule.carregar();
       }
 
-      if (window.contasReceberModule?.carregarContasReceber) {
-        await window.contasReceberModule.carregarContasReceber();
+      if (window.contasRecebidasModule?.init) {
+        await window.contasRecebidasModule.init();
+      } else if (window.contasRecebidasModule?.carregar) {
+        await window.contasRecebidasModule.carregar();
       }
 
-      if (window.contasRecebidasModule?.carregarContasRecebidas) {
-        await window.contasRecebidasModule.carregarContasRecebidas();
+      if (window.importarModule?.init) {
+        await window.importarModule.init();
       }
 
-      if (window.planejamentoModule?.carregarPlanejamento) {
-        await window.planejamentoModule.carregarPlanejamento();
-      }
-
-      this.atualizarStatusMes();
-    } catch (e) {
-      if (window.utils?.setAppMsg) {
-        utils.setAppMsg("Erro ao carregar sistema: " + e.message, "err");
+      if (window.planejamentoModule?.init) {
+        await window.planejamentoModule.init();
       } else {
-        console.error(e);
-      }
-    }
-  },
-
-  atualizarStatusMes() {
-    const statusMes = document.getElementById("statusMes");
-    const statusAtualizacao = document.getElementById("statusAtualizacao");
-    const statusSituacao = document.getElementById("statusSituacao");
-
-    const statusMesTopo = document.getElementById("statusMesTopo");
-    const statusAtualizacaoTopo = document.getElementById("statusAtualizacaoTopo");
-
-    if (window.utils?.getMesAno) {
-      const { mes, ano } = utils.getMesAno();
-
-      if (statusMes) statusMes.textContent = `${mes}/${ano}`;
-      if (statusMesTopo) statusMesTopo.textContent = `${mes}/${ano}`;
-    }
-
-    const agora = new Date().toLocaleString("pt-BR");
-
-    if (statusAtualizacao) statusAtualizacao.textContent = agora;
-    if (statusAtualizacaoTopo) statusAtualizacaoTopo.textContent = agora;
-    if (statusSituacao) statusSituacao.textContent = "Dados carregados";
-  },
-
-  initEventosBasicos() {
-    const loginBtn = document.getElementById("loginBtn");
-    const loginSenha = document.getElementById("loginSenha");
-    const btnSair = document.getElementById("btnSair");
-    const btnCarregarMes = document.getElementById("btnCarregarMes");
-    const mesSelect = document.getElementById("mesSelect");
-    const anoSelect = document.getElementById("anoSelect");
-
-    if (loginBtn) {
-      loginBtn.addEventListener("click", () => authModule.login());
-    }
-
-    if (loginSenha) {
-      loginSenha.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") authModule.login();
-      });
-    }
-
-    if (btnSair) {
-      btnSair.addEventListener("click", () => authModule.logout());
-    }
-
-    if (btnCarregarMes) {
-      btnCarregarMes.addEventListener("click", async () => {
-        await this.carregarTudo();
-      });
-    }
-
-    if (mesSelect) {
-      mesSelect.addEventListener("change", async () => {
-        if (window.authModule?.usuarioAtual) await this.carregarTudo();
-      });
-    }
-
-    if (anoSelect) {
-      anoSelect.addEventListener("change", async () => {
-        if (window.authModule?.usuarioAtual) await this.carregarTudo();
-      });
-    }
-  },
-
-  initEventosModulos() {
-    const btnSalvarContaPagar = document.getElementById("btnSalvarContaPagar");
-    const btnSalvarContaReceber = document.getElementById("btnSalvarContaReceber");
-    const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
-    const btnSalvarMetas = document.getElementById("btnSalvarMetas");
-    const btnPagarSelecionadas = document.getElementById("btnPagarSelecionadas");
-
-    const btnImportarContasPagar = document.getElementById("btnImportarContasPagar");
-    const btnExportarContasPagar = document.getElementById("btnExportarContasPagar");
-    const fileInputContasPagar = document.getElementById("fileInputContasPagar");
-
-    const btnImportarContasPagas = document.getElementById("btnImportarContasPagas");
-    const btnExportarContasPagas = document.getElementById("btnExportarContasPagas");
-    const fileInputContasPagas = document.getElementById("fileInputContasPagas");
-
-    const fileInput = document.getElementById("fileInput");
-
-    if (btnSalvarContaPagar) {
-      btnSalvarContaPagar.addEventListener("click", () => {
-        window.contasPagarModule?.salvarContaPagar?.();
-      });
-    }
-
-    if (btnSalvarContaReceber) {
-      btnSalvarContaReceber.addEventListener("click", () => {
-        window.contasReceberModule?.salvarContaReceber?.();
-      });
-    }
-
-    if (btnSalvarFaturamento) {
-      btnSalvarFaturamento.addEventListener("click", () => {
-        window.faturamentoModule?.salvarFaturamento?.();
-      });
-    }
-
-    if (btnSalvarMetas) {
-      btnSalvarMetas.addEventListener("click", () => {
-        window.metasModule?.salvarMetas?.();
-      });
-    }
-
-    if (btnPagarSelecionadas) {
-      btnPagarSelecionadas.addEventListener("click", () => {
-        window.contasPagarModule?.abrirPopupPagamentoLote?.();
-      });
-    }
-
-    if (btnImportarContasPagar) {
-      btnImportarContasPagar.addEventListener("click", () => {
-        fileInputContasPagar?.click();
-      });
-    }
-
-    if (btnExportarContasPagar) {
-      btnExportarContasPagar.addEventListener("click", () => {
-        window.contasPagarModule?.exportarPlanilha?.();
-      });
-    }
-
-    if (fileInputContasPagar) {
-      fileInputContasPagar.addEventListener("change", async (e) => {
-        await window.contasPagarModule?.importarPlanilha?.(e);
-      });
-    }
-
-    if (btnImportarContasPagas) {
-      btnImportarContasPagas.addEventListener("click", () => {
-        fileInputContasPagas?.click();
-      });
-    }
-
-    if (btnExportarContasPagas) {
-      btnExportarContasPagas.addEventListener("click", () => {
-        window.contasPagasModule?.exportarPlanilha?.();
-      });
-    }
-
-    if (fileInputContasPagas) {
-      fileInputContasPagas.addEventListener("change", async (e) => {
-        await window.contasPagasModule?.importarPlanilha?.(e);
-      });
-    }
-
-    if (fileInput) {
-      fileInput.addEventListener("change", (e) => {
-        window.importarModule?.handleFile?.(e);
-      });
-    }
-
-    document.querySelectorAll(".saldo-conta").forEach(input => {
-      input.addEventListener("input", async () => {
+        await window.planejamentoModule?.carregarSaldosBancarios?.();
         await window.planejamentoModule?.carregarPlanejamento?.();
-      });
-    });
-  },
+      }
 
-  initLayout() {
-    utils?.definirMesAtual?.();
-    navigation?.ativarAbas?.();
-
-    if (window.navigation?.atualizarVisibilidadeFiltroMesAno) {
-      setTimeout(() => {
-        navigation.atualizarVisibilidadeFiltroMesAno();
-      }, 100);
+      this.atualizarSituacaoMes();
+    } catch (e) {
+      console.error("Erro ao recarregar sistema:", e);
+      utils?.setAppMsg?.("Erro ao recarregar dados: " + e.message, "err");
+    } finally {
+      loading.hide();
     }
   },
 
-  initSessao() {
-    authModule?.restaurarSessao?.();
+  atualizarSituacaoMes() {
+    try {
+      const statusSituacao = document.getElementById("statusSituacao");
+      const saldoEl = document.getElementById("saldo");
+
+      if (!statusSituacao || !saldoEl) return;
+
+      const textoSaldo = String(saldoEl.textContent || "0")
+        .replace(/[R$\s.]/g, "")
+        .replace(",", ".");
+
+      const saldo = Number(textoSaldo || 0);
+
+      if (Number.isNaN(saldo)) {
+        statusSituacao.textContent = "-";
+        return;
+      }
+
+      if (saldo < 0) {
+        statusSituacao.textContent = "Crítico";
+        statusSituacao.classList.remove("ok");
+        statusSituacao.classList.add("err");
+      } else if (saldo === 0) {
+        statusSituacao.textContent = "Neutro";
+        statusSituacao.classList.remove("ok", "err");
+      } else {
+        statusSituacao.textContent = "Saudável";
+        statusSituacao.classList.remove("err");
+        statusSituacao.classList.add("ok");
+      }
+    } catch (e) {
+      console.error("Erro ao atualizar situação do mês:", e);
+    }
   },
 
-  initFiltros() {
-    window.contasPagarModule?.registrarEventosFiltros?.();
-  },
+  async onTrocaDeAba(aba) {
+    try {
+      if (window.navigation?.atualizarVisibilidadeFiltroMesAno) {
+        navigation.atualizarVisibilidadeFiltroMesAno(aba);
+      }
 
-  initPopups() {
-    document.getElementById("popupPagamento")?.classList.add("hidden");
-    document.getElementById("popupPagamentoLote")?.classList.add("hidden");
-  },
+      if (aba === "dashboard") {
+        await window.dashboardModule?.carregarDashboard?.();
+        return;
+      }
 
-  init() {
-    this.initEventosBasicos();
-    this.initEventosModulos();
-    this.initLayout();
-    this.initSessao();
-    this.initFiltros();
-    this.initPopups();
+      if (aba === "contas-pagar") {
+        if (window.contasPagarModule?.carregar) {
+          await window.contasPagarModule.carregar();
+        } else {
+          await window.contasPagarModule?.render?.();
+        }
+        return;
+      }
+
+      if (aba === "contas-pagas") {
+        await window.contasPagasModule?.carregar?.();
+        return;
+      }
+
+      if (aba === "contas-receber") {
+        await window.contasReceberModule?.carregar?.();
+        return;
+      }
+
+      if (aba === "contas-recebidas") {
+        await window.contasRecebidasModule?.carregar?.();
+        return;
+      }
+
+      if (aba === "faturamento") {
+        await window.faturamentoModule?.carregarFaturamento?.();
+        return;
+      }
+
+      if (aba === "metas") {
+        await window.metasModule?.carregarMetas?.();
+        return;
+      }
+
+      if (aba === "importar") {
+        await window.importarModule?.init?.();
+        return;
+      }
+
+      if (aba === "resumo") {
+        await window.resumoModule?.carregarResumoAnual?.();
+        return;
+      }
+
+      if (aba === "planejamento") {
+        await window.planejamentoModule?.carregarSaldosBancarios?.();
+        await window.planejamentoModule?.carregarPlanejamento?.();
+      }
+    } catch (e) {
+      console.error(`Erro ao abrir aba ${aba}:`, e);
+    }
   }
 };
 
-window.addEventListener("DOMContentLoaded", () => {
-  window.app.init();
+document.addEventListener("DOMContentLoaded", async () => {
+  await window.app.init();
 });
