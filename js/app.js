@@ -14,23 +14,27 @@ window.app = {
     try {
       this.bindEventosGlobais();
       this.bindLogin();
-      window.navigation?.ativarAbas?.();
 
-      const logado = await this.verificarSessao();
-      if (logado) {
-        await this.entrarNoSistema(logado);
+      if (window.navigation?.ativarAbas) {
+        window.navigation.ativarAbas();
+      }
+
+      const user = await this.verificarSessao();
+
+      if (user) {
+        await this.entrarNoSistema(user);
       } else {
         this.mostrarLogin();
       }
     } catch (e) {
       console.error("Erro ao iniciar app:", e);
-      utils?.setAppMsg?.("Erro ao iniciar sistema: " + e.message, "err");
+      window.utils?.setAppMsg?.("Erro ao iniciar sistema: " + e.message, "err");
     }
   },
 
   bindEventosGlobais() {
     const btnCarregarMes = document.getElementById("btnCarregarMes");
-    if (btnCarregarMes && !btnCarregarMes.dataset.binded) {
+    if (btnCarregarMes && btnCarregarMes.dataset.binded !== "1") {
       btnCarregarMes.addEventListener("click", async () => {
         await this.recarregarTudo();
       });
@@ -38,7 +42,7 @@ window.app = {
     }
 
     const btnSair = document.getElementById("btnSair");
-    if (btnSair && !btnSair.dataset.binded) {
+    if (btnSair && btnSair.dataset.binded !== "1") {
       btnSair.addEventListener("click", async () => {
         await this.sairDoSistema();
       });
@@ -46,7 +50,7 @@ window.app = {
     }
 
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
-    if (btnSalvarFaturamento && !btnSalvarFaturamento.dataset.binded) {
+    if (btnSalvarFaturamento && btnSalvarFaturamento.dataset.binded !== "1") {
       btnSalvarFaturamento.addEventListener("click", async () => {
         await window.faturamentoModule?.salvarFaturamento?.();
       });
@@ -54,7 +58,7 @@ window.app = {
     }
 
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
-    if (btnSalvarMetas && !btnSalvarMetas.dataset.binded) {
+    if (btnSalvarMetas && btnSalvarMetas.dataset.binded !== "1") {
       btnSalvarMetas.addEventListener("click", async () => {
         await window.metasModule?.salvarMetas?.();
       });
@@ -78,7 +82,7 @@ window.app = {
     const emailInput = document.getElementById("loginEmail");
     const senhaInput = document.getElementById("loginSenha");
 
-    if (btnLogin && !btnLogin.dataset.binded) {
+    if (btnLogin && btnLogin.dataset.binded !== "1") {
       btnLogin.addEventListener("click", async () => {
         await this.fazerLogin();
       });
@@ -136,10 +140,7 @@ window.app = {
       } else if (window.auth?.signIn) {
         user = await window.auth.signIn(email, senha);
       } else {
-        user = {
-          email,
-          perfil: "Administrador"
-        };
+        user = { email, perfil: "Administrador" };
       }
 
       if (!user) {
@@ -221,7 +222,7 @@ window.app = {
 
   atualizarStatusCabecalho() {
     try {
-      const { mes, ano } = utils.getMesAno();
+      const { mes, ano } = window.utils.getMesAno();
       const texto = `${mes}/${ano}`;
       const agora = new Date();
 
@@ -266,13 +267,15 @@ window.app = {
         await window.resumoModule.carregarResumoAnual();
       }
 
-if (window.contasPagarModule?.carregarContasPagar) {
-  await window.contasPagarModule.carregarContasPagar();
-} else if (window.contasPagarModule?.carregar) {
-  await window.contasPagarModule.carregar();
-} else if (window.contasPagarModule?.render) {
-  await window.contasPagarModule.render();
-}
+      if (window.contasPagarModule?.init) {
+        await window.contasPagarModule.init();
+      } else if (window.contasPagarModule?.carregarContasPagar) {
+        await window.contasPagarModule.carregarContasPagar();
+      } else if (window.contasPagarModule?.carregar) {
+        await window.contasPagarModule.carregar();
+      } else if (window.contasPagarModule?.render) {
+        await window.contasPagarModule.render();
+      }
 
       if (window.contasPagasModule?.init) {
         await window.contasPagasModule.init();
@@ -306,7 +309,7 @@ if (window.contasPagarModule?.carregarContasPagar) {
       this.atualizarSituacaoMes();
     } catch (e) {
       console.error("Erro ao recarregar sistema:", e);
-      utils?.setAppMsg?.("Erro ao recarregar dados: " + e.message, "err");
+      window.utils?.setAppMsg?.("Erro ao recarregar dados: " + e.message, "err");
     } finally {
       loading.hide();
     }
@@ -349,7 +352,7 @@ if (window.contasPagarModule?.carregarContasPagar) {
   async onTrocaDeAba(aba) {
     try {
       if (window.navigation?.atualizarVisibilidadeFiltroMesAno) {
-        navigation.atualizarVisibilidadeFiltroMesAno(aba);
+        window.navigation.atualizarVisibilidadeFiltroMesAno(aba);
       }
 
       if (aba === "dashboard") {
@@ -357,29 +360,43 @@ if (window.contasPagarModule?.carregarContasPagar) {
         return;
       }
 
-if (aba === "contas-pagar") {
-  if (window.contasPagarModule?.carregarContasPagar) {
-    await window.contasPagarModule.carregarContasPagar();
-  } else if (window.contasPagarModule?.carregar) {
-    await window.contasPagarModule.carregar();
-  } else {
-    await window.contasPagarModule?.render?.();
-  }
-  return;
-}
+      if (aba === "contas-pagar") {
+        if (window.contasPagarModule?.init) {
+          await window.contasPagarModule.init();
+        } else if (window.contasPagarModule?.carregarContasPagar) {
+          await window.contasPagarModule.carregarContasPagar();
+        } else if (window.contasPagarModule?.carregar) {
+          await window.contasPagarModule.carregar();
+        } else {
+          await window.contasPagarModule?.render?.();
+        }
+        return;
+      }
 
       if (aba === "contas-pagas") {
-        await window.contasPagasModule?.carregar?.();
+        if (window.contasPagasModule?.init) {
+          await window.contasPagasModule.init();
+        } else {
+          await window.contasPagasModule?.carregar?.();
+        }
         return;
       }
 
       if (aba === "contas-receber") {
-        await window.contasReceberModule?.carregar?.();
+        if (window.contasReceberModule?.init) {
+          await window.contasReceberModule.init();
+        } else {
+          await window.contasReceberModule?.carregar?.();
+        }
         return;
       }
 
       if (aba === "contas-recebidas") {
-        await window.contasRecebidasModule?.carregar?.();
+        if (window.contasRecebidasModule?.init) {
+          await window.contasRecebidasModule.init();
+        } else {
+          await window.contasRecebidasModule?.carregar?.();
+        }
         return;
       }
 
