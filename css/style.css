@@ -151,7 +151,7 @@ body{
 }
 
 .sidebar-logo{
-  background:#ffffff;
+  background:linear-gradient(180deg, #ffffff, #f8fafc);
   border:1px solid rgba(255,255,255,.25);
   border-radius:22px;
   padding:18px;
@@ -164,6 +164,7 @@ body{
 .sidebar-logo img{
   width:150px;
   display:block;
+  object-fit:contain;
 }
 
 .user-box{
