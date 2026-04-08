@@ -212,95 +212,90 @@ bindDelegacaoInput() {
     document.body.dataset.bindedDelegacaoClick = "1";
   },
 
-  bindDelegacaoChange() {
-    if (document.body.dataset.bindedDelegacaoChange === "1") return;
+bindDelegacaoChange() {
+  if (document.body.dataset.bindedDelegacaoChange === "1") return;
 
-    document.addEventListener("change", async (e) => {
-      const target = e.target;
+  document.addEventListener("change", async (e) => {
+    const target = e.target;
 
-      try {
-        // IMPORTAÇÃO CONTAS A PAGAR
-        if (target.id === "fileInputContasPagar") {
-          await window.contasPagarModule?.importarPlanilha?.({ target });
-          return;
-        }
-
-        // IMPORTAÇÃO CONTAS PAGAS
-        if (target.id === "fileInputContasPagas") {
-          await window.contasPagasModule?.importarPlanilha?.({ target });
-          return;
-        }
-
-        // IMPORTAR DESPESAS
-        if (target.id === "fileInput") {
-          await window.importarModule?.importarPlanilha?.({ target });
-          return;
-        }
-
-        // FILTROS CONTAS A PAGAR
-        if (target.id === "filtroBusca") {
-          window.contasPagarModule.filtros.busca = String(target.value || "").toLowerCase();
-          window.contasPagarModule?.render?.();
-          return;
-        }
-
-        if (target.id === "filtroFornecedor") {
-          window.contasPagarModule.filtros.fornecedor = target.value || "";
-          window.contasPagarModule?.render?.();
-          return;
-        }
-
-        if (target.id === "filtroCategoria") {
-          window.contasPagarModule.filtros.categoria = target.value || "";
-          window.contasPagarModule?.render?.();
-          return;
-        }
-
-        if (target.id === "filtroStatus") {
-          window.contasPagarModule.filtros.status = target.value || "";
-          window.contasPagarModule?.render?.();
-          return;
-        }
-
-        if (target.id === "filtroDocs") {
-          window.contasPagarModule.filtros.docs = target.value || "";
-          window.contasPagarModule?.render?.();
-          return;
-        }
-
-        if (target.id === "filtroDataInicio") {
-          window.contasPagarModule.filtros.dataInicio = target.value || "";
-          window.contasPagarModule?.render?.();
-          return;
-        }
-
-        if (target.id === "filtroDataFim") {
-          window.contasPagarModule.filtros.dataFim = target.value || "";
-          window.contasPagarModule?.render?.();
-          return;
-        }
-
-        if (target.id === "cpSelecionarTodos") {
-          document.querySelectorAll(".cp-select-item").forEach(cb => {
-            cb.checked = !!target.checked;
-          });
-          window.contasPagarModule?.atualizarSelecionados?.();
-          return;
-        }
-
-        if (target.classList?.contains("cp-select-item")) {
-          window.contasPagarModule?.atualizarSelecionados?.();
-          return;
-        }
-      } catch (err) {
-        console.error("Erro em change delegado:", err);
-        window.utils?.setAppMsg?.("Erro ao atualizar campo: " + err.message, "err");
+    try {
+      // IMPORTAÇÃO CONTAS A PAGAR
+      if (target.id === "fileInputContasPagar") {
+        await window.contasPagarModule?.importarPlanilha?.({ target });
+        return;
       }
-    });
 
-    document.body.dataset.bindedDelegacaoChange = "1";
-  },
+      // IMPORTAÇÃO CONTAS PAGAS
+      if (target.id === "fileInputContasPagas") {
+        await window.contasPagasModule?.importarPlanilha?.({ target });
+        return;
+      }
 
+      // IMPORTAR DESPESAS
+      if (target.id === "fileInput") {
+        await window.importarModule?.importarPlanilha?.({ target });
+        return;
+      }
+
+      // FILTROS CONTAS A PAGAR
+      if (target.id === "filtroFornecedor") {
+        window.contasPagarModule.filtros.fornecedor = target.value || "";
+        window.contasPagarModule?.render?.();
+        return;
+      }
+
+      if (target.id === "filtroCategoria") {
+        window.contasPagarModule.filtros.categoria = target.value || "";
+        window.contasPagarModule?.render?.();
+        return;
+      }
+
+      if (target.id === "filtroStatus") {
+        window.contasPagarModule.filtros.status = target.value || "";
+        window.contasPagarModule?.render?.();
+        return;
+      }
+
+      if (target.id === "filtroDocs") {
+        window.contasPagarModule.filtros.docs = target.value || "";
+        window.contasPagarModule?.render?.();
+        return;
+      }
+
+      if (target.id === "filtroDataInicio") {
+        window.contasPagarModule.filtros.dataInicio = target.value || "";
+        window.contasPagarModule?.render?.();
+        return;
+      }
+
+      if (target.id === "filtroDataFim") {
+        window.contasPagarModule.filtros.dataFim = target.value || "";
+        window.contasPagarModule?.render?.();
+        return;
+      }
+
+      // CHECKBOX GERAL
+      if (target.id === "cpSelecionarTodos") {
+        document.querySelectorAll(".cp-select-item").forEach(cb => {
+          cb.checked = !!target.checked;
+        });
+        window.contasPagarModule?.atualizarSelecionados?.();
+        return;
+      }
+
+      // CHECKBOX ITEM
+      if (target.classList?.contains("cp-select-item")) {
+        window.contasPagarModule?.atualizarSelecionados?.();
+        return;
+      }
+    } catch (err) {
+      console.error("Erro em change delegado:", err);
+      window.utils?.setAppMsg?.("Erro ao atualizar campo: " + err.message, "err");
+    }
+  });
+
+  document.body.dataset.bindedDelegacaoChange = "1";
+},
   bindLogin() {
     const btnLogin = document.getElementById("loginBtn");
     const emailInput = document.getElementById("loginEmail");
