@@ -449,3 +449,22 @@ window.app = {
 document.addEventListener("DOMContentLoaded", async () => {
   await window.app.init();
 });
+document.addEventListener("click", function(e){
+
+  if(e.target.id === "btnSalvarContaPagar"){
+    window.contasPagarModule?.salvarContaPagar()
+  }
+
+  if(e.target.id === "btnExportarContasPagar"){
+    window.contasPagarModule?.exportarPlanilha()
+  }
+
+  if(e.target.id === "btnImportarContasPagar"){
+    document.getElementById("fileInputContasPagar")?.click()
+  }
+
+  if(e.target.id === "btnPagarSelecionadas"){
+    window.contasPagarModule?.abrirPopupPagamentoLote()
+  }
+
+})
