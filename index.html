@@ -210,6 +210,45 @@
           </div>
         </section>
 
+        <!-- CENTRO DE INTELIGÊNCIA FINANCEIRA -->
+        <section class="inteligencia-financeira">
+          <div class="inteligencia-cards">
+            <div class="intel-card">
+              <div class="intel-title">Saúde Financeira</div>
+              <div id="intelSaude" class="intel-value">-</div>
+              <div id="intelSaudeDesc" class="intel-desc"></div>
+            </div>
+
+            <div class="intel-card">
+              <div class="intel-title">Saldo Projetado</div>
+              <div id="intelSaldoProjetado" class="intel-value">R$ 0,00</div>
+              <div class="intel-desc">Previsão até o fim do mês</div>
+            </div>
+
+            <div class="intel-card">
+              <div class="intel-title">Risco Principal</div>
+              <div id="intelRisco" class="intel-value">-</div>
+              <div id="intelRiscoDesc" class="intel-desc"></div>
+            </div>
+
+            <div class="intel-card">
+              <div class="intel-title">Pressão de Caixa</div>
+              <div id="intelPressao" class="intel-value">-</div>
+              <div id="intelPressaoDesc" class="intel-desc"></div>
+            </div>
+          </div>
+
+          <div class="intel-box">
+            <div class="intel-box-title">Alertas Inteligentes</div>
+            <div id="intelAlertas" class="intel-list"></div>
+          </div>
+
+          <div class="intel-box">
+            <div class="intel-box-title">Recomendações</div>
+            <div id="intelRecomendacoes" class="intel-list"></div>
+          </div>
+        </section>
+
         <section class="grid">
           <div class="panel">
             <div class="panel-head">
@@ -705,9 +744,8 @@
             <input class="saldo-conta" data-conta="dinheiro" placeholder="Dinheiro Físico">
           </div>
 
-<button id="btnSalvarSaldosBancarios" class="btn">
-  Salvar saldos bancários
-</button>
+          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnSalvarSaldosBancarios" class="btn" type="button">Salvar saldos bancários</button>
           </div>
 
           <div style="margin-top:16px;">
@@ -829,8 +867,8 @@
       </div>
 
       <div class="popup-actions">
-        <button class="btn" onclick="contasPagarModule.confirmarPagamento()">Confirmar</button>
-        <button class="secondary-btn" onclick="contasPagarModule.fecharPopup()">Cancelar</button>
+        <button class="btn" onclick="contasPagarModule.confirmarPagamento()" type="button">Confirmar</button>
+        <button class="secondary-btn" onclick="contasPagarModule.fecharPopup()" type="button">Cancelar</button>
       </div>
     </div>
   </div>
@@ -866,8 +904,8 @@
       </div>
 
       <div class="popup-actions">
-        <button class="btn" onclick="contasPagarModule.confirmarPagamentoLote()">Confirmar</button>
-        <button class="secondary-btn" onclick="contasPagarModule.fecharPopupLote()">Cancelar</button>
+        <button class="btn" onclick="contasPagarModule.confirmarPagamentoLote()" type="button">Confirmar</button>
+        <button class="secondary-btn" onclick="contasPagarModule.fecharPopupLote()" type="button">Cancelar</button>
       </div>
     </div>
   </div>
