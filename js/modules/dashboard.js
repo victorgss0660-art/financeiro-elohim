@@ -608,154 +608,232 @@ window.dashboardModule = {
     utils.setAppMsg(`Categoria em alerta: ${categoria}`, "info");
   },
 
-  renderCentroInteligencia({
-    faturamentoValor,
-    totalGastos,
-    saldo,
-    contasPagar,
-    contasReceber,
-    gastosPorCategoria,
-    metasMap
-  }) {
-    const elSaude = document.getElementById("intelSaude");
-    const elSaudeDesc = document.getElementById("intelSaudeDesc");
-    const elSaldoProjetado = document.getElementById("intelSaldoProjetado");
-    const elRisco = document.getElementById("intelRisco");
-    const elRiscoDesc = document.getElementById("intelRiscoDesc");
-    const elPressao = document.getElementById("intelPressao");
-    const elPressaoDesc = document.getElementById("intelPressaoDesc");
-    const elAlertas = document.getElementById("intelAlertas");
-    const elRecomendacoes = document.getElementById("intelRecomendacoes");
+renderCentroInteligencia({
+  faturamentoValor,
+  totalGastos,
+  saldo,
+  contasPagar,
+  contasReceber,
+  gastosPorCategoria,
+  metasMap
+}) {
+  const elScore = document.getElementById("intelScore");
+  const elScoreFill = document.getElementById("intelScoreFill");
+  const elScoreDesc = document.getElementById("intelScoreDesc");
 
-    const pendentesPagar = (contasPagar || []).filter(i => String(i.status || "").toLowerCase() !== "pago");
-    const pendentesReceber = (contasReceber || []).filter(i => String(i.status || "").toLowerCase() !== "recebido");
+  const elSaude = document.getElementById("intelSaude");
+  const elSaudeDesc = document.getElementById("intelSaudeDesc");
+  const elSaldoProjetado = document.getElementById("intelSaldoProjetado");
+  const elRisco = document.getElementById("intelRisco");
+  const elRiscoDesc = document.getElementById("intelRiscoDesc");
+  const elPressao = document.getElementById("intelPressao");
+  const elPressaoDesc = document.getElementById("intelPressaoDesc");
+  const elAlertas = document.getElementById("intelAlertas");
+  const elRecomendacoes = document.getElementById("intelRecomendacoes");
 
-    const totalPagar = pendentesPagar.reduce((acc, i) => acc + utils.numero(i.valor), 0);
-    const totalReceber = pendentesReceber.reduce((acc, i) => acc + utils.numero(i.valor), 0);
+  const pendentesPagar = (contasPagar || []).filter(i => String(i.status || "").toLowerCase() !== "pago");
+  const pendentesReceber = (contasReceber || []).filter(i => String(i.status || "").toLowerCase() !== "recebido");
 
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+  const totalPagar = pendentesPagar.reduce((acc, i) => acc + utils.numero(i.valor), 0);
+  const totalReceber = pendentesReceber.reduce((acc, i) => acc + utils.numero(i.valor), 0);
 
-    const contasVencidas = pendentesPagar.filter(i => {
-      if (!i.vencimento) return false;
-      const d = new Date(i.vencimento + "T00:00:00");
-      return d < hoje;
-    }).length;
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
 
-    const maiorContaPagar = pendentesPagar.reduce((max, i) => {
-      const valor = utils.numero(i.valor);
-      return valor > max ? valor : max;
-    }, 0);
+  const contasVencidasLista = pendentesPagar.filter(i => {
+    if (!i.vencimento) return false;
+    const d = new Date(i.vencimento + "T00:00:00");
+    return d < hoje;
+  });
 
-    const saldoProjetado = saldo + totalReceber - totalPagar;
+  const contasVencidas = contasVencidasLista.length;
 
-    let saude = "Saudável";
-    let saudeDesc = "Situação equilibrada do caixa.";
-    let saudeClass = "ok";
+  const maiorContaPagarObj = [...pendentesPagar].sort((a, b) => utils.numero(b.valor) - utils.numero(a.valor))[0];
+  const maiorContaPagar = maiorContaPagarObj ? utils.numero(maiorContaPagarObj.valor) : 0;
 
-    if (saldoProjetado < 0) {
-      saude = "Crítico";
-      saudeDesc = "O saldo projetado do mês está negativo.";
-      saudeClass = "err";
-    } else if (contasVencidas > 0 || totalPagar > totalReceber) {
-      saude = "Atenção";
-      saudeDesc = "Existem sinais de pressão financeira no período.";
-      saudeClass = "";
-    }
+  const saldoProjetado = saldo + totalReceber - totalPagar;
 
-    if (elSaude) {
-      elSaude.textContent = saude;
-      elSaude.className = `intel-value ${saudeClass}`.trim();
-    }
-    if (elSaudeDesc) elSaudeDesc.textContent = saudeDesc;
+  const categoriasAcimaMeta = Object.keys(gastosPorCategoria || {}).filter(cat => {
+    const gasto = utils.numero(gastosPorCategoria[cat] || 0);
+    const meta = utils.numero(metasMap[cat] || 0);
+    if (!meta || !faturamentoValor) return false;
+    const limite = faturamentoValor * (meta / 100);
+    return gasto > limite;
+  });
 
-    if (elSaldoProjetado) {
-      elSaldoProjetado.textContent = utils.moeda(saldoProjetado);
-      elSaldoProjetado.className = `intel-value ${saldoProjetado < 0 ? "err" : "ok"}`;
-    }
+  const categoriasEmAtencao = Object.keys(gastosPorCategoria || {}).filter(cat => {
+    const gasto = utils.numero(gastosPorCategoria[cat] || 0);
+    const meta = utils.numero(metasMap[cat] || 0);
+    if (!meta || !faturamentoValor) return false;
+    const limite = faturamentoValor * (meta / 100);
+    return gasto >= limite * 0.8 && gasto <= limite;
+  });
 
-    let risco = "Controlado";
-    let riscoDesc = "Sem risco financeiro relevante agora.";
+  /* SCORE */
+  let score = 100;
 
-    if (maiorContaPagar > 0) {
-      risco = "Alta saída";
-      riscoDesc = `Maior conta pendente: ${utils.moeda(maiorContaPagar)}.`;
-    }
+  if (saldoProjetado < 0) score -= 35;
+  if (saldo < 0) score -= 20;
+  if (contasVencidas > 0) score -= Math.min(20, contasVencidas * 5);
+  if (totalPagar > totalReceber) score -= 10;
+  if (categoriasAcimaMeta.length) score -= Math.min(20, categoriasAcimaMeta.length * 6);
+  if (categoriasEmAtencao.length) score -= Math.min(10, categoriasEmAtencao.length * 3);
 
-    if (contasVencidas > 0) {
-      risco = "Contas vencidas";
-      riscoDesc = `${contasVencidas} conta(s) já estão em atraso.`;
-    }
+  score = Math.max(0, Math.min(100, score));
 
-    if (elRisco) elRisco.textContent = risco;
-    if (elRiscoDesc) elRiscoDesc.textContent = riscoDesc;
+  let scoreTexto = "Excelente";
+  let scoreClass = "ok";
 
-    let pressao = "Baixa";
-    let pressaoDesc = "Entradas cobrem bem as saídas previstas.";
+  if (score < 40) {
+    scoreTexto = "Crítico";
+    scoreClass = "err";
+  } else if (score < 60) {
+    scoreTexto = "Atenção";
+    scoreClass = "";
+  } else if (score < 80) {
+    scoreTexto = "Bom";
+    scoreClass = "ok";
+  }
 
-    if (totalPagar > totalReceber) {
-      pressao = "Alta";
-      pressaoDesc = "As saídas previstas estão maiores que as entradas.";
-    } else if (totalPagar > 0 && totalReceber > 0 && totalPagar >= totalReceber * 0.85) {
-      pressao = "Moderada";
-      pressaoDesc = "O caixa está com margem reduzida no período.";
-    }
+  if (elScore) {
+    elScore.textContent = score;
+    elScore.className = `intel-score-value ${scoreClass}`.trim();
+  }
 
-    if (elPressao) elPressao.textContent = pressao;
-    if (elPressaoDesc) elPressaoDesc.textContent = pressaoDesc;
+  if (elScoreFill) {
+    elScoreFill.style.width = `${score}%`;
+  }
 
-    const alertas = [];
+  if (elScoreDesc) {
+    elScoreDesc.textContent = `Classificação: ${scoreTexto}`;
+  }
 
-    if (contasVencidas > 0) {
-      alertas.push(`<div class="intel-item critico">Existem ${contasVencidas} conta(s) vencida(s).</div>`);
-    }
+  /* SAÚDE */
+  let saude = "Saudável";
+  let saudeDesc = "Situação equilibrada do caixa.";
+  let saudeClass = "ok";
 
-    if (saldoProjetado < 0) {
-      alertas.push(`<div class="intel-item critico">O saldo projetado do mês pode fechar negativo.</div>`);
-    }
+  if (saldoProjetado < 0) {
+    saude = "Crítico";
+    saudeDesc = "O saldo projetado do mês está negativo.";
+    saudeClass = "err";
+  } else if (contasVencidas > 0 || totalPagar > totalReceber || categoriasAcimaMeta.length) {
+    saude = "Atenção";
+    saudeDesc = "Há pressão financeira no período.";
+    saudeClass = "";
+  }
 
-    if (totalPagar > totalReceber) {
-      alertas.push(`<div class="intel-item alerta">As saídas pendentes superam os recebimentos pendentes.</div>`);
-    }
+  if (elSaude) {
+    elSaude.textContent = saude;
+    elSaude.className = `intel-value ${saudeClass}`.trim();
+  }
+  if (elSaudeDesc) elSaudeDesc.textContent = saudeDesc;
 
-    const categoriasAcimaMeta = Object.keys(gastosPorCategoria || {}).filter(cat => {
-      const gasto = utils.numero(gastosPorCategoria[cat] || 0);
-      const meta = utils.numero(metasMap[cat] || 0);
-      if (!meta || !faturamentoValor) return false;
-      const limite = faturamentoValor * (meta / 100);
-      return gasto > limite;
-    });
+  /* SALDO PROJETADO */
+  if (elSaldoProjetado) {
+    elSaldoProjetado.textContent = utils.moeda(saldoProjetado);
+    elSaldoProjetado.className = `intel-value ${saldoProjetado < 0 ? "err" : "ok"}`;
+  }
 
-    if (categoriasAcimaMeta.length) {
-      alertas.push(`<div class="intel-item alerta">Categoria(s) acima da meta: ${categoriasAcimaMeta.join(", ")}.</div>`);
-    }
+  /* RISCO PRINCIPAL */
+  let risco = "Controlado";
+  let riscoDesc = "Sem risco financeiro dominante.";
 
-    if (!alertas.length) {
-      alertas.push(`<div class="intel-item ok">Nenhum alerta crítico identificado no momento.</div>`);
-    }
+  if (contasVencidas > 0) {
+    risco = "Contas vencidas";
+    riscoDesc = `${contasVencidas} conta(s) em atraso exigem atenção imediata.`;
+  } else if (categoriasAcimaMeta.length) {
+    risco = "Meta estourada";
+    riscoDesc = `Categoria(s) acima da meta: ${categoriasAcimaMeta.join(", ")}.`;
+  } else if (maiorContaPagar > 0) {
+    risco = "Alta saída";
+    riscoDesc = `Maior conta pendente: ${utils.moeda(maiorContaPagar)}.`;
+  }
 
-    if (elAlertas) elAlertas.innerHTML = alertas.join("");
+  if (elRisco) elRisco.textContent = risco;
+  if (elRiscoDesc) elRiscoDesc.textContent = riscoDesc;
 
-    const recomendacoes = [];
+  /* PRESSÃO DE CAIXA */
+  let pressao = "Baixa";
+  let pressaoDesc = "Entradas cobrem bem as saídas.";
 
-    if (saldoProjetado < 0) {
-      recomendacoes.push(`<div class="intel-item alerta">Revise gastos e antecipe recebimentos para evitar fechamento negativo.</div>`);
-    }
+  if (totalPagar > totalReceber) {
+    pressao = "Alta";
+    pressaoDesc = "Saídas pendentes maiores que recebimentos pendentes.";
+  } else if (totalPagar >= totalReceber * 0.85 && totalPagar > 0) {
+    pressao = "Moderada";
+    pressaoDesc = "Margem de caixa reduzida para o período.";
+  }
 
-    if (contasVencidas > 0) {
-      recomendacoes.push(`<div class="intel-item alerta">Priorize o pagamento das contas vencidas para reduzir risco financeiro.</div>`);
-    }
+  if (elPressao) elPressao.textContent = pressao;
+  if (elPressaoDesc) elPressaoDesc.textContent = pressaoDesc;
 
-    if (totalReceber > totalPagar && saldoProjetado > 0) {
-      recomendacoes.push(`<div class="intel-item ok">O fluxo projetado está positivo. Há espaço para organizar pagamentos estratégicos.</div>`);
-    }
+  /* ALERTAS CLICÁVEIS */
+  const alertas = [];
 
-    if (!recomendacoes.length) {
-      recomendacoes.push(`<div class="intel-item ok">Mantenha o acompanhamento das metas e do fluxo para preservar a saúde financeira.</div>`);
-    }
+  if (contasVencidas > 0) {
+    alertas.push(`
+      <button type="button" class="intel-item critico alert-clickable" onclick="dashboardModule.executarAcaoAlerta('vencidas')">
+        Existem ${contasVencidas} conta(s) vencida(s).
+      </button>
+    `);
+  }
 
-    if (elRecomendacoes) elRecomendacoes.innerHTML = recomendacoes.join("");
-  },
+  if (saldoProjetado < 0) {
+    alertas.push(`
+      <div class="intel-item critico">
+        O saldo projetado do mês pode fechar negativo.
+      </div>
+    `);
+  }
+
+  if (totalPagar > totalReceber) {
+    alertas.push(`
+      <div class="intel-item alerta">
+        As saídas pendentes superam os recebimentos pendentes.
+      </div>
+    `);
+  }
+
+  categoriasAcimaMeta.forEach(cat => {
+    alertas.push(`
+      <button type="button" class="intel-item alerta alert-clickable" onclick="dashboardModule.executarAcaoAlerta('categoria:${cat}')">
+        ${cat} está acima da meta.
+      </button>
+    `);
+  });
+
+  if (!alertas.length) {
+    alertas.push(`<div class="intel-item ok">Nenhum alerta crítico identificado no momento.</div>`);
+  }
+
+  if (elAlertas) elAlertas.innerHTML = alertas.join("");
+
+  /* RECOMENDAÇÕES */
+  const recomendacoes = [];
+
+  if (saldoProjetado < 0) {
+    recomendacoes.push(`<div class="intel-item alerta">Reduza gastos ou antecipe recebimentos para evitar fechamento negativo.</div>`);
+  }
+
+  if (contasVencidas > 0) {
+    recomendacoes.push(`<button type="button" class="intel-item alerta alert-clickable" onclick="dashboardModule.executarAcaoAlerta('vencidas')">Priorize o pagamento das contas vencidas imediatamente.</button>`);
+  }
+
+  if (categoriasAcimaMeta.length) {
+    recomendacoes.push(`<div class="intel-item alerta">Reveja despesas das categorias acima da meta para aliviar o caixa.</div>`);
+  }
+
+  if (totalReceber > totalPagar && saldoProjetado > 0) {
+    recomendacoes.push(`<div class="intel-item ok">O fluxo projetado está positivo. Há espaço para organizar pagamentos estratégicos.</div>`);
+  }
+
+  if (!recomendacoes.length) {
+    recomendacoes.push(`<div class="intel-item ok">Mantenha o ritmo atual e continue monitorando metas e vencimentos.</div>`);
+  }
+
+  if (elRecomendacoes) elRecomendacoes.innerHTML = recomendacoes.join("");
+},
 
   renderBarChart(gastos, metas, faturamento) {
     const ctx = document.getElementById("barChart");
