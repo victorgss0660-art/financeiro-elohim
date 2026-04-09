@@ -531,104 +531,77 @@ body{
 }
 
 /* CENTRO DE INTELIGÊNCIA */
-.inteligencia-financeira{
-  margin-top:20px;
-  margin-bottom:20px;
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-  animation:floatUp .28s ease;
-}
+<section class="inteligencia-financeira">
+  <div class="inteligencia-cards">
+    <div class="intel-card intel-score-card">
+      <div class="intel-title">Score Financeiro</div>
+      <div id="intelScore" class="intel-score-value">0</div>
+      <div class="intel-score-bar">
+        <div id="intelScoreFill" class="intel-score-fill"></div>
+      </div>
+      <div id="intelScoreDesc" class="intel-desc">-</div>
+    </div>
 
-.inteligencia-cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:12px;
-}
+    <div class="intel-card">
+      <div class="intel-title">Saúde Financeira</div>
+      <div id="intelSaude" class="intel-value">-</div>
+      <div id="intelSaudeDesc" class="intel-desc"></div>
+    </div>
 
-.intel-card{
-  background:linear-gradient(135deg,#121826,#1a2235);
-  border-radius:16px;
-  padding:16px;
-  border:1px solid rgba(255,255,255,.05);
-  box-shadow:var(--shadow-sm);
-  transition:transform .18s ease, border-color .18s ease, background .18s ease;
-}
+    <div class="intel-card">
+      <div class="intel-title">Saldo Projetado</div>
+      <div id="intelSaldoProjetado" class="intel-value">R$ 0,00</div>
+      <div class="intel-desc">Previsão até o fim do mês</div>
+    </div>
 
-.intel-card:hover{
-  transform:translateY(-2px);
-  border-color:rgba(239,68,68,.22);
-  background:linear-gradient(135deg,#141d2e,#1d2740);
-}
+    <div class="intel-card">
+      <div class="intel-title">Tendência do Mês</div>
+      <div id="intelTendencia" class="intel-value">-</div>
+      <div id="intelTendenciaDesc" class="intel-desc"></div>
+    </div>
 
-.intel-title{
-  font-size:12px;
-  opacity:.72;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  color:#cbd5e1;
-  font-weight:700;
-}
+    <div class="intel-card">
+      <div class="intel-title">Risco Principal</div>
+      <div id="intelRisco" class="intel-value">-</div>
+      <div id="intelRiscoDesc" class="intel-desc"></div>
+    </div>
 
-.intel-value{
-  font-size:22px;
-  font-weight:800;
-  margin-top:8px;
-  color:#fff;
-  letter-spacing:-.02em;
-}
+    <div class="intel-card">
+      <div class="intel-title">Pressão de Caixa</div>
+      <div id="intelPressao" class="intel-value">-</div>
+      <div id="intelPressaoDesc" class="intel-desc"></div>
+    </div>
+  </div>
 
-.intel-desc{
-  font-size:11px;
-  opacity:.75;
-  margin-top:6px;
-  color:#94a3b8;
-  line-height:1.4;
-}
+  <div class="intel-grid-2">
+    <div class="intel-box">
+      <div class="intel-box-title">Alertas Inteligentes</div>
+      <div id="intelAlertas" class="intel-list"></div>
+    </div>
 
-.intel-box{
-  background:#121826;
-  border-radius:16px;
-  padding:16px;
-  border:1px solid rgba(255,255,255,.05);
-  box-shadow:var(--shadow-sm);
-}
+    <div class="intel-box">
+      <div class="intel-box-title">Recomendações</div>
+      <div id="intelRecomendacoes" class="intel-list"></div>
+    </div>
+  </div>
 
-.intel-box-title{
-  font-weight:800;
-  margin-bottom:12px;
-  color:#fff;
-  font-size:16px;
-}
+  <div class="intel-grid-3">
+    <div class="intel-box">
+      <div class="intel-box-title">Comparação vs mês anterior</div>
+      <div id="intelComparativo" class="intel-list"></div>
+    </div>
 
-.intel-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
+    <div class="intel-box">
+      <div class="intel-box-title">Maiores impactos</div>
+      <div id="intelImpactos" class="intel-list"></div>
+    </div>
 
-.intel-item{
-  padding:11px 12px;
-  border-radius:12px;
-  font-size:13px;
-  color:#e5edf7;
-  line-height:1.45;
-}
-
-.intel-item.critico{
-  background:rgba(239,68,68,0.12);
-  border:1px solid rgba(239,68,68,0.26);
-}
-
-.intel-item.alerta{
-  background:rgba(245,158,11,0.12);
-  border:1px solid rgba(245,158,11,0.26);
-}
-
-.intel-item.ok{
-  background:rgba(34,197,94,0.12);
-  border:1px solid rgba(34,197,94,0.24);
-}
+    <div class="intel-box">
+      <div class="intel-box-title">Pressão por categoria</div>
+      <div id="intelCategorias" class="intel-list"></div>
+    </div>
+  </div>
+</section>
 
 /* GRID */
 .grid{
