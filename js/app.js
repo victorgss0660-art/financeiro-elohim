@@ -639,9 +639,9 @@ window.addEventListener("load", () => {
 
   setTimeout(() => {
     splash.classList.add("hide");
-  }, 1600);
+  }, 1800);
 
   setTimeout(() => {
     splash.remove();
-  }, 2200);
+  }, 2500);
 });
