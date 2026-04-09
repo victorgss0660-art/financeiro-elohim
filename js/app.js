@@ -632,3 +632,11 @@ window.app = {
 document.addEventListener("DOMContentLoaded", async () => {
   await window.app.init();
 });
+window.addEventListener("load", () => {
+  const splash = document.getElementById("splashScreen");
+  if (!splash) return;
+
+  setTimeout(() => {
+    splash.classList.add("hide");
+  }, 1400);
+});
