@@ -6,23 +6,28 @@
 
   <title>Elohim Financeiro</title>
 
+  <!-- PWA -->
   <meta name="theme-color" content="#ef4444">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Elohim">
 
-  <!-- ESSA LINHA É A MAIS IMPORTANTE -->
-  <link rel="apple-touch-icon" href="/icons/icon-180.png">
-
-  <!-- extras -->
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png">
-  <link rel="icon" sizes="192x192" href="/icons/icon-192.png">
-
   <link rel="manifest" href="/manifest.json">
 
+  <!-- Ícones -->
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png">
+  <link rel="icon" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="icon" sizes="512x512" href="/icons/icon-512.png">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="./css/style.css">
+
 </head>
+
 <body>
+
+<!-- ================= SPLASH ULTRA PREMIUM ================= -->
 <div id="splashScreen" class="splash-screen ultra">
   <div class="splash-bg-gradient"></div>
   <div class="splash-bg-orb splash-orb-1"></div>
@@ -36,7 +41,7 @@
       <div class="splash-logo-ring"></div>
       <div class="splash-logo-ring ring-2"></div>
       <div class="splash-logo-glow"></div>
-      <img src="/icons/icon-512.png" alt="Elohim" class="splash-logo ultra">
+      <img src="/icons/icon-512.png" class="splash-logo ultra">
     </div>
 
     <div class="splash-brand ultra">
@@ -51,990 +56,103 @@
     </div>
   </div>
 </div>
-  <!-- LOGIN -->
-  <section id="loginScreen" class="login-screen">
-    <div class="login-card">
-      <div class="login-logo">
-        <img src="./logo-elohim.png" alt="Elohim">
-      </div>
 
-      <h2>Entrar</h2>
-      <p>Acesse o sistema financeiro da Elohim</p>
+<!-- ================= APP ================= -->
+<div id="app">
 
-      <input id="loginEmail" type="email" placeholder="Seu e-mail">
-      <input id="loginSenha" type="password" placeholder="Sua senha">
-
-      <button id="loginBtn" class="btn" type="button">Entrar</button>
-      <div id="loginMsg" class="info">Pronto para login.</div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-box">
+      <img src="./logo-elohim.png" class="logo">
     </div>
-  </section>
 
-  <!-- APP -->
-  <section id="appShell" class="app hidden">
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <img src="./logo-elohim.png" alt="Elohim">
-      </div>
-
-      <div class="user-box">
-        <div class="user-email" id="userEmail">-</div>
-        <div class="user-role" id="userPerfil">-</div>
-      </div>
-
-      <div class="menu">
-        <button class="menu-btn active" data-tab="dashboard" type="button">
-          <span class="icon">📊</span><span>Dashboard</span>
-        </button>
-
-        <button class="menu-btn" data-tab="contas-pagar" type="button">
-          <span class="icon">🧾</span><span>Contas a Pagar</span>
-        </button>
-
-        <button class="menu-btn" data-tab="contas-pagas" type="button">
-          <span class="icon">✅</span><span>Contas Pagas</span>
-        </button>
-
-        <button class="menu-btn" data-tab="contas-receber" type="button">
-          <span class="icon">💵</span><span>Contas a Receber</span>
-        </button>
-
-        <button class="menu-btn" data-tab="contas-recebidas" type="button">
-          <span class="icon">🏦</span><span>Contas Recebidas</span>
-        </button>
-
-        <button class="menu-btn" data-tab="faturamento" type="button">
-          <span class="icon">💰</span><span>Faturamento</span>
-        </button>
-
-        <button class="menu-btn" data-tab="metas" type="button">
-          <span class="icon">🎯</span><span>Metas</span>
-        </button>
-
-        <button class="menu-btn" data-tab="importar" type="button">
-          <span class="icon">📂</span><span>Importar Despesas</span>
-        </button>
-
-        <button class="menu-btn" data-tab="resumo" type="button">
-          <span class="icon">📈</span><span>Resumo</span>
-        </button>
-
-        <button class="menu-btn" data-tab="planejamento" type="button">
-          <span class="icon">📅</span><span>Planejamento</span>
-        </button>
-      </div>
-
-      <button id="btnSair" class="btn logout-btn" type="button">Sair</button>
-    </aside>
-
-    <main class="main">
-      <div class="topbar">
-        <div>
-          <h1>Sistema Financeiro Elohim</h1>
-          <p>Controle financeiro mensal com visão estratégica</p>
-        </div>
-        <div class="badge" id="perfilBadge">Perfil</div>
-      </div>
-
-      <div id="blocoFiltroMesAno">
-        <div class="top-filters">
-          <select id="mesSelect">
-            <option>Janeiro</option>
-            <option>Fevereiro</option>
-            <option>Março</option>
-            <option>Abril</option>
-            <option>Maio</option>
-            <option>Junho</option>
-            <option>Julho</option>
-            <option>Agosto</option>
-            <option>Setembro</option>
-            <option>Outubro</option>
-            <option>Novembro</option>
-            <option>Dezembro</option>
-          </select>
-
-          <select id="anoSelect">
-            <option>2024</option>
-            <option>2025</option>
-            <option selected>2026</option>
-            <option>2027</option>
-          </select>
-
-          <button id="btnCarregarMes" class="btn" type="button">Carregar</button>
-        </div>
-      </div>
-
-      <div id="appMsg" class="info"></div>
-
-      <!-- DASHBOARD -->
-      <section id="tab-dashboard" class="tab-section active fade-in">
-        <section class="panel executive-panel">
-          <div class="executive-header">
-            <div>
-              <div class="executive-kicker">Visão Executiva</div>
-              <h2 class="executive-title">Resumo Financeiro do Período</h2>
-              <p class="executive-subtitle">
-                Acompanhe rapidamente receita, despesas, saldo, metas, vencimentos e maiores movimentações.
-              </p>
-            </div>
-
-            <div class="executive-actions">
-              <div class="executive-chip">
-                <span class="chip-label">Mês atual</span>
-                <span class="chip-value" id="statusMesTopo">-</span>
-              </div>
-
-              <div class="executive-chip">
-                <span class="chip-label">Atualização</span>
-                <span class="chip-value" id="statusAtualizacaoTopo">-</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="cards">
-          <div class="card card-highlight">
-            <div class="card-icon">💰</div>
-            <div class="card-title">Faturamento</div>
-            <div class="card-value" id="fat">R$ 0,00</div>
-            <div class="card-sub">Receita do mês selecionado</div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">📉</div>
-            <div class="card-title">Gastos</div>
-            <div class="card-value" id="gas">R$ 0,00</div>
-            <div class="card-sub">Total das despesas</div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">🏦</div>
-            <div class="card-title">Saldo</div>
-            <div class="card-value" id="saldo">R$ 0,00</div>
-            <div class="card-sub">Faturamento menos gastos</div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">🎯</div>
-            <div class="card-title">Meta atingida</div>
-            <div class="card-value" id="metaAtingida">0%</div>
-            <div class="card-sub">Consumo total vs. faturamento</div>
-          </div>
-        </section>
-
-        <section class="cards">
-          <div class="card">
-            <div class="card-icon">🚨</div>
-            <div class="card-title">Contas vencidas</div>
-            <div class="card-value" id="cardVencidas">0</div>
-            <div class="card-sub">Títulos já vencidos</div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">📅</div>
-            <div class="card-title">Vencem hoje</div>
-            <div class="card-value" id="cardHoje">0</div>
-            <div class="card-sub">Pagamentos do dia</div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">⏳</div>
-            <div class="card-title">Próximos 7 dias</div>
-            <div class="card-value" id="card7dias">0</div>
-            <div class="card-sub">Contas a vencer</div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">📈</div>
-            <div class="card-title">Variação faturamento</div>
-            <div class="card-value" id="varFat">0%</div>
-            <div class="card-sub">Comparado ao mês anterior</div>
-          </div>
-        </section>
-
-        <!-- CENTRO DE INTELIGÊNCIA FINANCEIRA NÍVEL 3 -->
-        <section class="inteligencia-financeira">
-          <div class="inteligencia-cards">
-            <div class="intel-card intel-score-card">
-              <div class="intel-title">Score Financeiro</div>
-              <div id="intelScore" class="intel-score-value">0</div>
-              <div class="intel-score-bar">
-                <div id="intelScoreFill" class="intel-score-fill"></div>
-              </div>
-              <div id="intelScoreDesc" class="intel-desc">-</div>
-            </div>
-
-            <div class="intel-card">
-              <div class="intel-title">Saúde Financeira</div>
-              <div id="intelSaude" class="intel-value">-</div>
-              <div id="intelSaudeDesc" class="intel-desc"></div>
-            </div>
-
-            <div class="intel-card">
-              <div class="intel-title">Saldo Projetado</div>
-              <div id="intelSaldoProjetado" class="intel-value">R$ 0,00</div>
-              <div class="intel-desc">Previsão até o fim do mês</div>
-            </div>
-
-            <div class="intel-card">
-              <div class="intel-title">Tendência do Mês</div>
-              <div id="intelTendencia" class="intel-value">-</div>
-              <div id="intelTendenciaDesc" class="intel-desc"></div>
-            </div>
-
-            <div class="intel-card">
-              <div class="intel-title">Risco Principal</div>
-              <div id="intelRisco" class="intel-value">-</div>
-              <div id="intelRiscoDesc" class="intel-desc"></div>
-            </div>
-
-            <div class="intel-card">
-              <div class="intel-title">Pressão de Caixa</div>
-              <div id="intelPressao" class="intel-value">-</div>
-              <div id="intelPressaoDesc" class="intel-desc"></div>
-            </div>
-          </div>
-
-          <div class="intel-grid-2">
-            <div class="intel-box">
-              <div class="intel-box-title">Alertas Inteligentes</div>
-              <div id="intelAlertas" class="intel-list"></div>
-            </div>
-
-            <div class="intel-box">
-              <div class="intel-box-title">Recomendações</div>
-              <div id="intelRecomendacoes" class="intel-list"></div>
-            </div>
-          </div>
-
-          <div class="intel-grid-3">
-            <div class="intel-box">
-              <div class="intel-box-title">Comparação vs mês anterior</div>
-              <div id="intelComparativo" class="intel-list"></div>
-            </div>
-
-            <div class="intel-box">
-              <div class="intel-box-title">Maiores impactos</div>
-              <div id="intelImpactos" class="intel-list"></div>
-            </div>
-
-            <div class="intel-box">
-              <div class="intel-box-title">Pressão por categoria</div>
-              <div id="intelCategorias" class="intel-list"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="grid">
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Gastos x Meta por Categoria</h3>
-              <div style="display:flex; gap:10px; align-items:center;">
-                <button class="secondary-btn chart-expand-btn" data-chart="bar" type="button">Tela cheia</button>
-                <div class="badge">Dashboard</div>
-              </div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="barChart"></canvas>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Distribuição dos Gastos</h3>
-              <div style="display:flex; gap:10px; align-items:center;">
-                <button class="secondary-btn chart-expand-btn" data-chart="pie" type="button">Tela cheia</button>
-                <div class="badge">Pizza</div>
-              </div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="pieChart"></canvas>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Evolução Mensal</h3>
-            <div style="display:flex; gap:10px; align-items:center;">
-              <button class="secondary-btn chart-expand-btn" data-chart="line" type="button">Tela cheia</button>
-              <div class="badge">Ano</div>
-            </div>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="lineChart"></canvas>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Ranking Anual de Categorias</h3>
-            <div style="display:flex; gap:10px; align-items:center;">
-              <button class="secondary-btn chart-expand-btn" data-chart="ranking" type="button">Tela cheia</button>
-              <div class="badge">Top gastos</div>
-            </div>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="rankingChart"></canvas>
-          </div>
-        </section>
-
-        <section class="grid">
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Top 5 Contas a Pagar</h3>
-              <div class="badge">Maiores valores</div>
-            </div>
-            <div id="topPagar" class="alert-list">
-              <div class="muted">Nenhuma conta encontrada.</div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Top 5 Contas a Receber</h3>
-              <div class="badge">Maiores valores</div>
-            </div>
-            <div id="topReceber" class="alert-list">
-              <div class="muted">Nenhuma conta encontrada.</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="grid">
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Alertas</h3>
-              <div class="badge">Automático</div>
-            </div>
-            <div id="alertList" class="alert-list">
-              <div class="muted">Nenhum alerta disponível.</div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Status do mês</h3>
-              <div class="badge">Resumo</div>
-            </div>
-
-            <div class="status-grid">
-              <div class="status-item">
-                <div class="label">Mês</div>
-                <div class="value" id="statusMes">-</div>
-              </div>
-
-              <div class="status-item">
-                <div class="label">Atualização</div>
-                <div class="value" id="statusAtualizacao">-</div>
-              </div>
-
-              <div class="status-item">
-                <div class="label">Situação</div>
-                <div class="value" id="statusSituacao">-</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Resumo por Categoria</h3>
-            <div class="badge">Detalhado</div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Categoria</th>
-                <th>Gasto</th>
-                <th>Meta %</th>
-                <th>Meta R$</th>
-                <th>Diferença</th>
-                <th>Situação</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaResumo">
-              <tr>
-                <td colspan="6" class="muted">Nenhum dado carregado.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-
-      <!-- CONTAS A PAGAR -->
-      <section id="tab-contas-pagar" class="tab-section fade-in">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Cadastrar Conta a Pagar</h3>
-            <div class="badge">Financeiro</div>
-          </div>
-
-          <div class="form-grid">
-            <input id="cpFornecedor" placeholder="Fornecedor">
-            <input id="cpDescricao" placeholder="Descrição">
-            <input id="cpCategoria" placeholder="Categoria">
-
-            <input id="cpDocumento" placeholder="Documento interno">
-            <input id="cpValor" type="number" step="0.01" placeholder="Valor">
-            <input id="cpVencimento" type="date">
-
-            <input id="cpNumeroNfe" placeholder="Número da NF-e">
-            <input id="cpNumeroBoleto" placeholder="Número do boleto">
-
-            <label class="check-card">
-              <input id="cpTemBoleto" type="checkbox">
-              <span>Boleto já recebido</span>
-            </label>
-
-            <label class="check-card">
-              <input id="cpTemNfe" type="checkbox">
-              <span>NF-e já recebida</span>
-            </label>
-
-            <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
-          </div>
-
-          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
-            <button id="btnImportarContasPagar" class="secondary-btn" type="button">Importar planilha</button>
-            <button id="btnExportarContasPagar" class="secondary-btn" type="button">Exportar planilha</button>
-            <input id="fileInputContasPagar" type="file" accept=".xlsx,.xls,.csv" class="hidden">
-          </div>
-        </section>
-
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Contas a Pagar</h3>
-            <div class="badge">Pendentes</div>
-          </div>
-
-          <div class="filtros-linha">
-            <input id="filtroBusca" class="busca" placeholder="Buscar por fornecedor, descrição, documento, NF-e ou boleto">
-
-            <select id="filtroFornecedor">
-              <option value="">Fornecedor</option>
-            </select>
-
-            <select id="filtroCategoria">
-              <option value="">Categoria</option>
-            </select>
-
-            <select id="filtroStatus">
-              <option value="">Status</option>
-              <option value="aberto">Em aberto</option>
-              <option value="vencido">Vencido</option>
-            </select>
-
-            <select id="filtroDocs">
-              <option value="">Documentos</option>
-              <option value="faltando_nfe">Faltando NF-e</option>
-              <option value="faltando_boleto">Faltando boleto</option>
-              <option value="faltando_ambos">Faltando ambos</option>
-              <option value="completos">Completos</option>
-            </select>
-
-            <input id="filtroDataInicio" class="data" type="date">
-            <input id="filtroDataFim" class="data" type="date">
-          </div>
-
-          <div class="table-total-bar">
-            <div class="table-total-item">
-              <span class="table-total-label">Qtd. de contas</span>
-              <strong id="cpTotalQuantidade">0</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Total filtrado</span>
-              <strong id="cpTotalValor">R$ 0,00</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Vencidas</span>
-              <strong id="cpTotalVencidas">0</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Valor vencido</span>
-              <strong id="cpTotalValorVencido">R$ 0,00</strong>
-            </div>
-          </div>
-
-          <div class="table-total-bar" style="margin-top:8px;">
-            <div class="table-total-item">
-              <span class="table-total-label">Selecionadas</span>
-              <strong id="cpSelecionadasQtd">0</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Total selecionado</span>
-              <strong id="cpSelecionadasValor">R$ 0,00</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Ação em lote</span>
-              <button id="btnPagarSelecionadas" class="btn" type="button">Pagar selecionadas</button>
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th style="width:40px;">
-                  <input type="checkbox" id="cpSelecionarTodos">
-                </th>
-                <th>Fornecedor</th>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Documento</th>
-                <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Status</th>
-                <th>Documentos</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-
-            <tbody id="tabelaContasPagar">
-              <tr>
-                <td colspan="10" class="muted">Nenhuma conta encontrada.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-
-      <!-- CONTAS PAGAS -->
-      <section id="tab-contas-pagas" class="tab-section fade-in">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Contas Pagas</h3>
-            <div class="badge">Histórico</div>
-          </div>
-
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-            <button id="btnImportarContasPagas" class="secondary-btn" type="button">Importar planilha</button>
-            <button id="btnExportarContasPagas" class="secondary-btn" type="button">Exportar planilha</button>
-            <input id="fileInputContasPagas" type="file" accept=".xlsx,.xls,.csv" class="hidden">
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>id</th>
-                <th>Fornecedor</th>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Documento</th>
-                <th>Valor</th>
-                <th>Pago em</th>
-                <th>Multa</th>
-                <th>Desconto</th>
-                <th>Total / Ação</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaContasPagas">
-              <tr>
-                <td colspan="10" class="muted">Nenhuma conta paga.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-
-      <!-- CONTAS A RECEBER -->
-      <section id="tab-contas-receber" class="tab-section fade-in">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Cadastrar Conta a Receber</h3>
-            <div class="badge">Recebíveis</div>
-          </div>
-
-          <div class="form-grid">
-            <input id="crrCliente" placeholder="Cliente">
-            <input id="crrDescricao" placeholder="Descrição">
-            <input id="crrCategoria" placeholder="Categoria / Tipo">
-            <input id="crrDocumento" placeholder="NF / FAT / Pedido">
-            <input id="crrValor" type="number" step="0.01" placeholder="Valor">
-            <input id="crrVencimento" type="date">
-            <textarea id="crrObs" class="full" placeholder="Observações"></textarea>
-          </div>
-
-          <div style="margin-top:16px;">
-            <button id="btnSalvarContaReceber" class="btn" type="button">Salvar conta</button>
-          </div>
-        </section>
-
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Contas a Receber</h3>
-            <div class="badge">Pendentes</div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Descrição</th>
-                <th>Documento</th>
-                <th>Categoria</th>
-                <th>Valor</th>
-                <th>Vencimento</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaContasReceber">
-              <tr>
-                <td colspan="8" class="muted">Nenhuma conta a receber pendente.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-
-      <!-- CONTAS RECEBIDAS -->
-      <section id="tab-contas-recebidas" class="tab-section fade-in">
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Contas Recebidas</h3>
-            <div class="badge">Histórico</div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Descrição</th>
-                <th>Documento</th>
-                <th>Categoria</th>
-                <th>Valor</th>
-                <th>Recebido em</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaContasRecebidas">
-              <tr>
-                <td colspan="7" class="muted">Nenhuma conta recebida.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-
-      <!-- FATURAMENTO -->
-      <section id="tab-faturamento" class="tab-section fade-in">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Faturamento do mês</h3>
-            <div class="badge">Receita</div>
-          </div>
-
-          <div class="top-filters">
-            <input id="faturamentoInput" type="number" step="0.01" placeholder="Faturamento do mês">
-            <button id="btnSalvarFaturamento" class="btn" type="button">Salvar faturamento</button>
-          </div>
-        </section>
-      </section>
-
-      <!-- METAS -->
-      <section id="tab-metas" class="tab-section fade-in">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Metas por categoria</h3>
-            <div class="badge">Percentual</div>
-          </div>
-
-          <div id="metaGrid" class="meta-grid"></div>
-
-          <div style="margin-top:16px;">
-            <button id="btnSalvarMetas" class="btn" type="button">Salvar metas</button>
-          </div>
-        </section>
-      </section>
-
-      <!-- IMPORTAR -->
-      <section id="tab-importar" class="tab-section fade-in">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Importar planilha de despesas</h3>
-            <div class="badge">Excel</div>
-          </div>
-
-          <input id="fileInput" type="file" accept=".xlsx,.xls">
-
-          <div class="import-help">
-            <div><strong>Colunas aceitas:</strong> CATEGORIA, VALOR</div>
-            <div><strong>CATEGORIA:</strong> MC, MP, TERC, FRETE, DESP, TAR, PREST, FOLHA, COMIS, IMPOS, RESC, MANUT</div>
-            <div><strong>VALOR:</strong> aceita 1500, 1500,50, 1500.50, R$ 1.500,50</div>
-          </div>
-        </section>
-      </section>
-
-      <!-- RESUMO -->
-      <section id="tab-resumo" class="tab-section fade-in">
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Resumo Anual</h3>
-            <div class="badge">Ano</div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Mês</th>
-                <th>Faturamento</th>
-                <th>Gastos</th>
-                <th>Saldo</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaResumoAnual">
-              <tr>
-                <td colspan="4" class="muted">Nenhum dado anual carregado.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-
-      <!-- PLANEJAMENTO -->
-      <section id="tab-planejamento" class="tab-section fade-in">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Planejamento Financeiro (12 semanas)</h3>
-            <div class="badge">Fluxo</div>
-          </div>
-
-          <div class="form-grid">
-            <input class="saldo-conta" data-conta="sicoob" placeholder="Sicoob">
-            <input class="saldo-conta" data-conta="nubank" placeholder="Nubank">
-            <input class="saldo-conta" data-conta="metos" placeholder="Metos">
-            <input class="saldo-conta" data-conta="portal" placeholder="Portal Cash (GE)">
-            <input class="saldo-conta" data-conta="monkey" placeholder="Monkey (WEG)">
-            <input class="saldo-conta" data-conta="citibank" placeholder="Citibank (Hitachi)">
-            <input class="saldo-conta" data-conta="dinheiro" placeholder="Dinheiro Físico">
-          </div>
-
-          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btnSalvarSaldosBancarios" class="btn" type="button">Salvar saldos bancários</button>
-          </div>
-
-          <div style="margin-top:16px;">
-            <div id="totalDisponivelBadge" class="badge">Total disponível: R$ 0,00</div>
-          </div>
-
-          <div class="table-total-bar" style="margin-top:16px;">
-            <div class="table-total-item">
-              <span class="table-total-label">Saldo inicial</span>
-              <strong id="cxSaldoInicial">R$ 0,00</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Entradas previstas</span>
-              <strong id="cxEntradasPrevistas">R$ 0,00</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Saídas previstas</span>
-              <strong id="cxSaidasPrevistas">R$ 0,00</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Saldo final projetado</span>
-              <strong id="cxSaldoFinal">R$ 0,00</strong>
-            </div>
-
-            <div class="table-total-item">
-              <span class="table-total-label">Menor saldo previsto</span>
-              <strong id="cxMenorSaldo">R$ 0,00</strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="grid">
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Fluxo Projetado</h3>
-              <div class="badge">12 semanas</div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="planejamentoChart"></canvas>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Riscos</h3>
-              <div class="badge">Automático</div>
-            </div>
-
-            <div class="status-grid">
-              <div class="status-item">
-                <div class="label">Menor saldo</div>
-                <div class="value" id="riskMenorSaldo">R$ 0,00</div>
-              </div>
-
-              <div class="status-item">
-                <div class="label">Semanas negativas</div>
-                <div class="value" id="riskSemanasNegativas">0</div>
-              </div>
-
-              <div class="status-item">
-                <div class="label">Maior saída</div>
-                <div class="value" id="riskMaiorSaida">R$ 0,00</div>
-              </div>
-            </div>
-
-            <div id="riskList" class="alert-list" style="margin-top:16px;">
-              <div class="muted">Nenhum risco calculado.</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Tabela de Planejamento</h3>
-            <div class="badge">Detalhado</div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Semana</th>
-                <th>Entradas</th>
-                <th>Saídas</th>
-                <th>Saldo</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaPlanejamento">
-              <tr>
-                <td colspan="4" class="muted">Nenhum planejamento disponível.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-    </main>
-  </section>
-
-  <!-- POPUP PAGAMENTO INDIVIDUAL -->
-  <div id="popupPagamento" class="popup hidden">
-    <div class="popup-box">
-      <h3>Confirmar Pagamento</h3>
-
-      <div class="popup-field">
-        <label for="pgData">Data do pagamento</label>
-        <input type="date" id="pgData">
-      </div>
-
-      <div class="popup-field">
-        <label for="pgMulta">Multa / Juros (R$)</label>
-        <input type="number" id="pgMulta" step="0.01" placeholder="0,00">
-      </div>
-
-      <div class="popup-field">
-        <label for="pgDesconto">Desconto (R$)</label>
-        <input type="number" id="pgDesconto" step="0.01" placeholder="0,00">
-      </div>
-
-      <div class="popup-actions">
-        <button class="btn" onclick="contasPagarModule.confirmarPagamento()" type="button">Confirmar</button>
-        <button class="secondary-btn" onclick="contasPagarModule.fecharPopup()" type="button">Cancelar</button>
-      </div>
+    <div class="user-box">
+      <strong id="userEmail"></strong>
+      <span>ADMIN</span>
     </div>
-  </div>
 
-  <!-- POPUP PAGAMENTO EM LOTE -->
-  <div id="popupPagamentoLote" class="popup hidden">
-    <div class="popup-box">
-      <h3>Pagar contas selecionadas</h3>
+    <nav>
+      <button onclick="app.navigate('dashboard')">Dashboard</button>
+      <button onclick="app.navigate('contas-pagar')">Contas a Pagar</button>
+      <button onclick="app.navigate('contas-pagas')">Contas Pagas</button>
+      <button onclick="app.navigate('contas-receber')">Contas a Receber</button>
+      <button onclick="app.navigate('contas-recebidas')">Contas Recebidas</button>
+      <button onclick="app.navigate('faturamento')">Faturamento</button>
+      <button onclick="app.navigate('metas')">Metas</button>
+      <button onclick="app.navigate('importar')">Importar</button>
+      <button onclick="app.navigate('resumo')">Resumo</button>
+      <button onclick="app.navigate('planejamento')">Planejamento</button>
+    </nav>
+  </aside>
 
-      <div class="popup-field">
-        <label for="pgLoteQtd">Quantidade selecionada</label>
-        <input type="text" id="pgLoteQtd" readonly>
-      </div>
+  <!-- MAIN -->
+  <main id="mainContent"></main>
 
-      <div class="popup-field">
-        <label for="pgLoteTotal">Valor total selecionado</label>
-        <input type="text" id="pgLoteTotal" readonly>
-      </div>
+</div>
 
-      <div class="popup-field">
-        <label for="pgLoteData">Data do pagamento</label>
-        <input type="date" id="pgLoteData">
-      </div>
+<!-- ================= SCRIPTS ================= -->
 
-      <div class="popup-field">
-        <label for="pgLoteMulta">Multa / Juros total (R$)</label>
-        <input type="number" id="pgLoteMulta" step="0.01" placeholder="0,00">
-      </div>
+<!-- 🔥 IMPORTANTE: Chart primeiro -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      <div class="popup-field">
-        <label for="pgLoteDesconto">Desconto total (R$)</label>
-        <input type="number" id="pgLoteDesconto" step="0.01" placeholder="0,00">
-      </div>
+<!-- XLSX -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-      <div class="popup-actions">
-        <button class="btn" onclick="contasPagarModule.confirmarPagamentoLote()" type="button">Confirmar</button>
-        <button class="secondary-btn" onclick="contasPagarModule.fecharPopupLote()" type="button">Cancelar</button>
-      </div>
-    </div>
-  </div>
+<!-- CONFIG / CORE -->
+<script src="./js/config.js"></script>
+<script src="./js/api/supabase.js"></script>
+<script src="./js/core/utils.js"></script>
+<script src="./js/core/navigation.js"></script>
+<script src="./js/core/auth.js"></script>
 
-  <!-- MODAL GRÁFICO TELA CHEIA -->
-  <div id="chartFullscreenModal" class="popup hidden">
-    <div class="popup-box chart-fullscreen-box">
-      <div class="panel-head" style="margin-bottom:16px;">
-        <h3 id="chartFullscreenTitle">Gráfico</h3>
-        <button id="closeChartFullscreen" class="secondary-btn" type="button">Fechar</button>
-      </div>
+<!-- MÓDULOS -->
+<script src="./js/modules/dashboard.js"></script>
+<script src="./js/modules/contas-pagar.js"></script>
+<script src="./js/modules/contas-pagas.js"></script>
+<script src="./js/modules/contas-receber.js"></script>
+<script src="./js/modules/contas-recebidas.js"></script>
+<script src="./js/modules/faturamento.js"></script>
+<script src="./js/modules/metas.js"></script>
+<script src="./js/modules/importar.js"></script>
+<script src="./js/modules/resumo.js"></script>
+<script src="./js/modules/planejamento.js"></script>
 
-      <div class="chart-fullscreen-wrap">
-        <canvas id="chartFullscreenCanvas"></canvas>
-      </div>
-    </div>
-  </div>
+<!-- APP PRINCIPAL -->
+<script src="./js/app.js"></script>
 
-  <!-- LOADING -->
-  <div id="loadingGlobal" class="loading-overlay hidden">
-    <div class="loading-box">
-      <div class="spinner"></div>
-      <span>Carregando dados...</span>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="./js/config.js"></script>
-  <script src="./js/api/supabase.js"></script>
-  <script src="./js/core/utils.js"></script>
-  <script src="./js/core/navigation.js"></script>
-  <script src="./js/core/auth.js"></script>
-
-  <script src="./js/modules/dashboard.js"></script>
-  <script src="./js/modules/contas-pagar.js"></script>
-  <script src="./js/modules/contas-pagas.js"></script>
-  <script src="./js/modules/contas-receber.js"></script>
-  <script src="./js/modules/contas-recebidas.js"></script>
-  <script src="./js/modules/faturamento.js"></script>
-  <script src="./js/modules/metas.js"></script>
-  <script src="./js/modules/importar.js"></script>
-  <script src="./js/modules/resumo.js"></script>
-  <script src="./js/modules/planejamento.js"></script>
-
-  <script src="./js/app.js"></script>
-  
+<!-- ================= SPLASH CONTROL ================= -->
 <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js")
-        .then(() => {
-          console.log("Service Worker registrado com sucesso.");
-        })
-        .catch(err => {
-          console.error("Erro ao registrar Service Worker:", err);
-        });
-    });
+window.addEventListener("load", () => {
+  const splash = document.getElementById("splashScreen");
+  if (!splash) return;
+
+  const jaViu = sessionStorage.getItem("splashShown");
+
+  if (jaViu) {
+    splash.remove();
+    return;
   }
+
+  sessionStorage.setItem("splashShown", "1");
+
+  setTimeout(() => {
+    splash.classList.add("hide");
+  }, 1800);
+
+  setTimeout(() => {
+    splash.remove();
+  }, 2500);
+});
 </script>
+
+<!-- ================= SERVICE WORKER ================= -->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js");
+  });
+}
+</script>
+
 </body>
 </html>
