@@ -1351,3 +1351,14 @@ tr.selecionado{
   background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);
   transition:width .35s ease;
 }
+.intel-item.alert-clickable{
+  width:100%;
+  text-align:left;
+  cursor:pointer;
+  transition:.16s ease;
+}
+
+.intel-item.alert-clickable:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.04);
+}
