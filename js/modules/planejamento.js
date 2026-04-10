@@ -1,5 +1,6 @@
 window.planejamentoModule = {
   planejamentoChart: null,
+
   saldos: {
     sicoob: 0,
     nubank: 0,
@@ -12,25 +13,29 @@ window.planejamentoModule = {
 
   async carregarSaldosBancarios() {
     try {
-      const { mes, ano } = utils.getMesAno();
-
       const data = await api.restGet(
         "saldos_bancarios",
-        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${ano}&order=id.desc&limit=1`
+        "select=*"
       );
 
-      const item = Array.isArray(data) && data.length ? data[0] : null;
-
-      this.saldos = {
-        sicoob: utils.numero(item?.sicoob || 0),
-        nubank: utils.numero(item?.nubank || 0),
-        metos: utils.numero(item?.metos || 0),
-        portal: utils.numero(item?.portal || 0),
-        monkey: utils.numero(item?.monkey || 0),
-        citibank: utils.numero(item?.citibank || 0),
-        dinheiro: utils.numero(item?.dinheiro || 0)
+      const mapa = {
+        sicoob: 0,
+        nubank: 0,
+        metos: 0,
+        portal: 0,
+        monkey: 0,
+        citibank: 0,
+        dinheiro: 0
       };
 
+      (data || []).forEach(item => {
+        const conta = String(item.conta || "").trim().toLowerCase();
+        if (conta in mapa) {
+          mapa[conta] = utils.numero(item.saldo || 0);
+        }
+      });
+
+      this.saldos = mapa;
       this.preencherCamposSaldos();
       this.atualizarTotalDisponivel();
     } catch (e) {
@@ -48,22 +53,23 @@ window.planejamentoModule = {
   },
 
   lerCamposSaldos() {
-    const novosSaldos = {};
+    const novos = {
+      sicoob: 0,
+      nubank: 0,
+      metos: 0,
+      portal: 0,
+      monkey: 0,
+      citibank: 0,
+      dinheiro: 0
+    };
+
     document.querySelectorAll(".saldo-conta").forEach(input => {
       const conta = input.dataset.conta;
       if (!conta) return;
-      novosSaldos[conta] = utils.numero(input.value || 0);
+      novos[conta] = utils.numero(input.value || 0);
     });
 
-    this.saldos = {
-      sicoob: utils.numero(novosSaldos.sicoob || 0),
-      nubank: utils.numero(novosSaldos.nubank || 0),
-      metos: utils.numero(novosSaldos.metos || 0),
-      portal: utils.numero(novosSaldos.portal || 0),
-      monkey: utils.numero(novosSaldos.monkey || 0),
-      citibank: utils.numero(novosSaldos.citibank || 0),
-      dinheiro: utils.numero(novosSaldos.dinheiro || 0)
-    };
+    this.saldos = novos;
   },
 
   getSaldoInicial() {
@@ -82,32 +88,27 @@ window.planejamentoModule = {
       this.lerCamposSaldos();
       this.atualizarTotalDisponivel();
 
-      const { mes, ano } = utils.getMesAno();
+      const existentes = await api.restGet("saldos_bancarios", "select=*");
 
-      const payload = {
-        mes,
-        ano,
-        sicoob: this.saldos.sicoob,
-        nubank: this.saldos.nubank,
-        metos: this.saldos.metos,
-        portal: this.saldos.portal,
-        monkey: this.saldos.monkey,
-        citibank: this.saldos.citibank,
-        dinheiro: this.saldos.dinheiro
-      };
+      for (const [conta, saldo] of Object.entries(this.saldos)) {
+        const registroExistente = (existentes || []).find(item =>
+          String(item.conta || "").trim().toLowerCase() === conta
+        );
 
-      const existentes = await api.restGet(
-        "saldos_bancarios",
-        `select=id&mes=eq.${encodeURIComponent(mes)}&ano=eq.${ano}&order=id.desc&limit=1`
-      );
+        const payload = {
+          conta,
+          saldo: utils.numero(saldo)
+        };
 
-      if (Array.isArray(existentes) && existentes.length) {
-        await api.restPatch("saldos_bancarios", `id=eq.${existentes[0].id}`, payload);
-      } else {
-        await api.restInsert("saldos_bancarios", [payload]);
+        if (registroExistente?.id) {
+          await api.restPatch("saldos_bancarios", `id=eq.${registroExistente.id}`, payload);
+        } else {
+          await api.restInsert("saldos_bancarios", [payload]);
+        }
       }
 
       utils.setAppMsg("Saldos bancários salvos com sucesso.", "ok");
+      await this.carregarSaldosBancarios();
       await this.carregarPlanejamento();
     } catch (e) {
       console.error("Erro ao salvar saldos bancários:", e);
@@ -127,7 +128,11 @@ window.planejamentoModule = {
         this.buscarContasReceberPendentes()
       ]);
 
-      const semanas = this.montarPlanejamento12Semanas(contasPagar, contasReceber, saldoInicial);
+      const semanas = this.montarPlanejamento12Semanas(
+        contasPagar,
+        contasReceber,
+        saldoInicial
+      );
 
       this.renderResumoPlanejamento(semanas, saldoInicial);
       this.renderTabelaPlanejamento(semanas);
@@ -146,7 +151,10 @@ window.planejamentoModule = {
 
   async buscarContasPagarPendentes() {
     try {
-      const data = await api.restGet("contas_pagar", "select=*&status=neq.pago&order=vencimento.asc");
+      const data = await api.restGet(
+        "contas_pagar",
+        "select=*&status=neq.pago&order=vencimento.asc"
+      );
       return Array.isArray(data) ? data : [];
     } catch (e) {
       console.error("Erro ao buscar contas a pagar:", e);
@@ -156,7 +164,10 @@ window.planejamentoModule = {
 
   async buscarContasReceberPendentes() {
     try {
-      const data = await api.restGet("contas_receber", "select=*&status=neq.recebido&order=vencimento.asc");
+      const data = await api.restGet(
+        "contas_receber",
+        "select=*&status=neq.recebido&order=vencimento.asc"
+      );
       return Array.isArray(data) ? data : [];
     } catch (e) {
       console.error("Erro ao buscar contas a receber:", e);
@@ -190,8 +201,15 @@ window.planejamentoModule = {
         return d >= inicio && d <= fim;
       });
 
-      const entradas = entradasLista.reduce((acc, item) => acc + utils.numero(item.valor || 0), 0);
-      const saidas = saidasLista.reduce((acc, item) => acc + utils.numero(item.valor || 0), 0);
+      const entradas = entradasLista.reduce(
+        (acc, item) => acc + utils.numero(item.valor || 0),
+        0
+      );
+
+      const saidas = saidasLista.reduce(
+        (acc, item) => acc + utils.numero(item.valor || 0),
+        0
+      );
 
       saldoCorrente = saldoCorrente + entradas - saidas;
 
@@ -215,8 +233,12 @@ window.planejamentoModule = {
 
     const totalEntradas = semanas.reduce((acc, s) => acc + utils.numero(s.entradas), 0);
     const totalSaidas = semanas.reduce((acc, s) => acc + utils.numero(s.saidas), 0);
-    const saldoFinal = semanas.length ? utils.numero(semanas[semanas.length - 1].saldo) : utils.numero(saldoInicial);
-    const menorSaldo = semanas.length ? Math.min(...semanas.map(s => utils.numero(s.saldo))) : utils.numero(saldoInicial);
+    const saldoFinal = semanas.length
+      ? utils.numero(semanas[semanas.length - 1].saldo)
+      : utils.numero(saldoInicial);
+    const menorSaldo = semanas.length
+      ? Math.min(...semanas.map(s => utils.numero(s.saldo)))
+      : utils.numero(saldoInicial);
 
     if (elSaldoInicial) elSaldoInicial.textContent = utils.moeda(saldoInicial);
     if (elEntradas) elEntradas.textContent = utils.moeda(totalEntradas);
@@ -230,7 +252,11 @@ window.planejamentoModule = {
     if (!tbody) return;
 
     if (!semanas.length) {
-      tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum planejamento disponível.</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="muted">Nenhum planejamento disponível.</td>
+        </tr>
+      `;
       return;
     }
 
@@ -251,7 +277,9 @@ window.planejamentoModule = {
     const riskList = document.getElementById("riskList");
 
     if (!semanas.length) {
-      if (riskList) riskList.innerHTML = `<div class="muted">Nenhum risco calculado.</div>`;
+      if (riskList) {
+        riskList.innerHTML = `<div class="muted">Nenhum risco calculado.</div>`;
+      }
       return;
     }
 
@@ -276,7 +304,12 @@ window.planejamentoModule = {
       });
 
       if (!riscos.length) {
-        riscos.push(`<div class="alert-item ok"><strong>Planejamento saudável</strong><br>Nenhum risco relevante identificado.</div>`);
+        riscos.push(`
+          <div class="alert-item ok">
+            <strong>Planejamento saudável</strong><br>
+            Nenhum risco relevante identificado.
+          </div>
+        `);
       }
 
       riskList.innerHTML = riscos.join("");
