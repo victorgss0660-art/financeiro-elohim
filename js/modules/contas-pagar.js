@@ -821,18 +821,19 @@ window.contasPagarModule = {
     }
   },
 
-  async carregarContasPagar() {
-    try {
-      const data = await api.restGet(
-        "contas_pagar",
-        `select=*&status=eq.pendente&order=vencimento.asc`
-      );
+async carregarContasPagar() {
+  try {
+    const data = await api.restGet(
+      "contas_pagar",
+      "select=*&status=eq.pendente&order=vencimento.asc"
+    );
 
-      this.lista = data || [];
-      this.preencherFiltros();
-      this.render();
-    } catch (e) {
-      utils.setAppMsg("Erro ao carregar contas a pagar: " + e.message, "err");
-    }
+    this.lista = Array.isArray(data) ? data : [];
+    this.preencherFiltros();
+    this.registrarEventosFiltros();
+    this.render();
+  } catch (e) {
+    utils.setAppMsg("Erro ao carregar contas a pagar: " + e.message, "err");
   }
+}
 };
