@@ -103,8 +103,7 @@ window.planejamentoModule = {
       );
 
       if (Array.isArray(existentes) && existentes.length) {
-        const id = existentes[0].id;
-        await api.restPatch("saldos_bancarios", `id=eq.${id}`, payload);
+        await api.restPatch("saldos_bancarios", `id=eq.${existentes[0].id}`, payload);
       } else {
         await api.restInsert("saldos_bancarios", [payload]);
       }
@@ -131,7 +130,12 @@ window.planejamentoModule = {
       this.renderResumoPlanejamento(semanas, saldoInicial);
       this.renderTabelaPlanejamento(semanas);
       this.renderRiscos(semanas);
-      this.renderPlanejamentoChart(semanas);
+
+      if (typeof Chart !== "undefined") {
+        this.renderPlanejamentoChart(semanas);
+      } else {
+        console.warn("Chart.js ainda não carregado. Pulando gráfico do planejamento.");
+      }
     } catch (e) {
       console.error("Erro ao carregar planejamento:", e);
       utils.setAppMsg("Erro ao carregar planejamento: " + e.message, "err");
@@ -140,10 +144,7 @@ window.planejamentoModule = {
 
   async buscarContasPagarPendentes() {
     try {
-      const data = await api.restGet(
-        "contas_pagar",
-        "select=*&status=neq.pago&order=vencimento.asc"
-      );
+      const data = await api.restGet("contas_pagar", "select=*&status=neq.pago&order=vencimento.asc");
       return Array.isArray(data) ? data : [];
     } catch (e) {
       console.error("Erro ao buscar contas a pagar:", e);
@@ -153,10 +154,7 @@ window.planejamentoModule = {
 
   async buscarContasReceberPendentes() {
     try {
-      const data = await api.restGet(
-        "contas_receber",
-        "select=*&status=neq.recebido&order=vencimento.asc"
-      );
+      const data = await api.restGet("contas_receber", "select=*&status=neq.recebido&order=vencimento.asc");
       return Array.isArray(data) ? data : [];
     } catch (e) {
       console.error("Erro ao buscar contas a receber:", e);
@@ -201,9 +199,7 @@ window.planejamentoModule = {
         fim: new Date(fim),
         entradas,
         saidas,
-        saldo: saldoCorrente,
-        entradasLista,
-        saidasLista
+        saldo: saldoCorrente
       });
     }
 
@@ -220,21 +216,13 @@ window.planejamentoModule = {
     const totalEntradas = semanas.reduce((acc, s) => acc + utils.numero(s.entradas), 0);
     const totalSaidas = semanas.reduce((acc, s) => acc + utils.numero(s.saidas), 0);
     const saldoFinal = semanas.length ? utils.numero(semanas[semanas.length - 1].saldo) : utils.numero(saldoInicial);
-    const menorSaldo = semanas.length
-      ? Math.min(...semanas.map(s => utils.numero(s.saldo)))
-      : utils.numero(saldoInicial);
+    const menorSaldo = semanas.length ? Math.min(...semanas.map(s => utils.numero(s.saldo))) : utils.numero(saldoInicial);
 
     if (elSaldoInicial) elSaldoInicial.textContent = utils.moeda(saldoInicial);
     if (elEntradas) elEntradas.textContent = utils.moeda(totalEntradas);
     if (elSaidas) elSaidas.textContent = utils.moeda(totalSaidas);
-    if (elSaldoFinal) {
-      elSaldoFinal.textContent = utils.moeda(saldoFinal);
-      elSaldoFinal.className = saldoFinal < 0 ? "err" : "";
-    }
-    if (elMenorSaldo) {
-      elMenorSaldo.textContent = utils.moeda(menorSaldo);
-      elMenorSaldo.className = menorSaldo < 0 ? "err" : "";
-    }
+    if (elSaldoFinal) elSaldoFinal.textContent = utils.moeda(saldoFinal);
+    if (elMenorSaldo) elMenorSaldo.textContent = utils.moeda(menorSaldo);
   },
 
   renderTabelaPlanejamento(semanas) {
@@ -242,25 +230,18 @@ window.planejamentoModule = {
     if (!tbody) return;
 
     if (!semanas.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="4" class="muted">Nenhum planejamento disponível.</td>
-        </tr>
-      `;
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum planejamento disponível.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = semanas.map(semana => {
-      const periodo = `${this.formatarDataCurta(semana.inicio)} a ${this.formatarDataCurta(semana.fim)}`;
-      return `
-        <tr>
-          <td>Semana ${semana.numero}<br><span class="muted">${periodo}</span></td>
-          <td>${utils.moeda(semana.entradas)}</td>
-          <td>${utils.moeda(semana.saidas)}</td>
-          <td class="${semana.saldo < 0 ? "err" : "ok"}">${utils.moeda(semana.saldo)}</td>
-        </tr>
-      `;
-    }).join("");
+    tbody.innerHTML = semanas.map(semana => `
+      <tr>
+        <td>Semana ${semana.numero}</td>
+        <td>${utils.moeda(semana.entradas)}</td>
+        <td>${utils.moeda(semana.saidas)}</td>
+        <td class="${semana.saldo < 0 ? "err" : "ok"}">${utils.moeda(semana.saldo)}</td>
+      </tr>
+    `).join("");
   },
 
   renderRiscos(semanas) {
@@ -270,9 +251,7 @@ window.planejamentoModule = {
     const riskList = document.getElementById("riskList");
 
     if (!semanas.length) {
-      if (riskList) {
-        riskList.innerHTML = `<div class="muted">Nenhum risco calculado.</div>`;
-      }
+      if (riskList) riskList.innerHTML = `<div class="muted">Nenhum risco calculado.</div>`;
       return;
     }
 
@@ -280,44 +259,21 @@ window.planejamentoModule = {
     const semanasNegativas = semanas.filter(s => utils.numero(s.saldo) < 0);
     const maiorSaida = Math.max(...semanas.map(s => utils.numero(s.saidas)));
 
-    if (elMenorSaldo) {
-      elMenorSaldo.textContent = utils.moeda(menorSaldo);
-      elMenorSaldo.className = `value ${menorSaldo < 0 ? "err" : ""}`.trim();
-    }
-
-    if (elSemanasNegativas) {
-      elSemanasNegativas.textContent = String(semanasNegativas.length);
-      elSemanasNegativas.className = `value ${semanasNegativas.length > 0 ? "err" : ""}`.trim();
-    }
-
-    if (elMaiorSaida) {
-      elMaiorSaida.textContent = utils.moeda(maiorSaida);
-      elMaiorSaida.className = "value";
-    }
+    if (elMenorSaldo) elMenorSaldo.textContent = utils.moeda(menorSaldo);
+    if (elSemanasNegativas) elSemanasNegativas.textContent = String(semanasNegativas.length);
+    if (elMaiorSaida) elMaiorSaida.textContent = utils.moeda(maiorSaida);
 
     if (riskList) {
       const riscos = [];
 
-      if (semanasNegativas.length) {
-        semanasNegativas.forEach(semana => {
-          riscos.push(`
-            <div class="alert-item critico">
-              <strong>Semana ${semana.numero}</strong><br>
-              Saldo projetado negativo em ${utils.moeda(semana.saldo)}
-            </div>
-          `);
-        });
-      }
-
-      const semanaMaiorSaida = semanas.find(s => utils.numero(s.saidas) === maiorSaida);
-      if (semanaMaiorSaida && maiorSaida > 0) {
+      semanasNegativas.forEach(semana => {
         riscos.push(`
-          <div class="alert-item atencao">
-            <strong>Maior saída prevista</strong><br>
-            Semana ${semanaMaiorSaida.numero} com ${utils.moeda(maiorSaida)}
+          <div class="alert-item critico">
+            <strong>Semana ${semana.numero}</strong><br>
+            Saldo projetado negativo em ${utils.moeda(semana.saldo)}
           </div>
         `);
-      }
+      });
 
       if (!riscos.length) {
         riscos.push(`<div class="alert-item ok"><strong>Planejamento saudável</strong><br>Nenhum risco relevante identificado.</div>`);
@@ -330,11 +286,7 @@ window.planejamentoModule = {
   renderPlanejamentoChart(semanas) {
     const canvas = document.getElementById("planejamentoChart");
     if (!canvas) return;
-
-    if (typeof Chart === "undefined") {
-      console.warn("Chart ainda não carregado, tentando novamente...");
-      return setTimeout(() => this.renderPlanejamentoChart(semanas), 200);
-    }
+    if (typeof Chart === "undefined") return;
 
     if (this.planejamentoChart) {
       this.planejamentoChart.destroy();
@@ -357,12 +309,7 @@ window.planejamentoModule = {
             borderColor: "#22c55e",
             backgroundColor: "rgba(34,197,94,0.15)",
             fill: true,
-            tension: 0.35,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: "#ffffff",
-            pointBorderColor: "#22c55e",
-            pointBorderWidth: 2
+            tension: 0.35
           },
           {
             label: "Saídas",
@@ -370,12 +317,7 @@ window.planejamentoModule = {
             borderColor: "#ef4444",
             backgroundColor: "rgba(239,68,68,0.15)",
             fill: true,
-            tension: 0.35,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: "#ffffff",
-            pointBorderColor: "#ef4444",
-            pointBorderWidth: 2
+            tension: 0.35
           },
           {
             label: "Saldo Projetado",
@@ -383,59 +325,14 @@ window.planejamentoModule = {
             borderColor: "#facc15",
             backgroundColor: "rgba(250,204,21,0)",
             fill: false,
-            tension: 0.35,
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: "#ffffff",
-            pointBorderColor: "#facc15",
-            pointBorderWidth: 2
+            tension: 0.35
           }
         ]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: "index", intersect: false },
-        plugins: {
-          legend: {
-            display: true,
-            position: "top",
-            labels: {
-              color: "#334155",
-              usePointStyle: true,
-              boxWidth: 12
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return `${context.dataset.label}: ${utils.moeda(context.raw || 0)}`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ticks: { color: "#475569", font: { weight: "600" } },
-            grid: { display: false }
-          },
-          y: {
-            ticks: {
-              color: "#475569",
-              callback: value => Number(value).toLocaleString("pt-BR")
-            },
-            grid: { color: "rgba(148,163,184,0.15)" }
-          }
-        }
+        maintainAspectRatio: false
       }
-    });
-  },
-
-  formatarDataCurta(data) {
-    if (!(data instanceof Date) || Number.isNaN(data.getTime())) return "-";
-    return data.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit"
     });
   }
 };
