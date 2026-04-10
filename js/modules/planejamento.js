@@ -1,195 +1,239 @@
 window.planejamentoModule = {
-  chart: null,
-
-  async init() {
-    this.bindEvents();
-    await this.carregarSaldosBancarios();
-    await this.carregarPlanejamento();
-  },
-
-  bindEvents() {
-    const btnSalvar = document.getElementById("btnSalvarSaldosBancarios");
-
-    if (btnSalvar && btnSalvar.dataset.binded !== "1") {
-      btnSalvar.addEventListener("click", async () => {
-        await this.salvarSaldosBancarios();
-      });
-      btnSalvar.dataset.binded = "1";
-    }
-  },
-
-  getSaldoInputs() {
-    return Array.from(document.querySelectorAll(".saldo-conta"));
-  },
-
-  normalizarConta(conta) {
-    return String(conta || "").trim();
-  },
-
-  async salvarSaldosBancarios() {
-    try {
-      window.loading?.show?.();
-
-      const inputs = this.getSaldoInputs();
-
-      if (!inputs.length) {
-        utils.setAppMsg("Nenhum campo de saldo encontrado.", "err");
-        return;
-      }
-
-      for (const input of inputs) {
-        const conta = this.normalizarConta(input.dataset.conta);
-        const saldo = utils.numero(input.value || 0);
-
-        if (!conta) continue;
-
-        const existente = await api.restGet(
-          "saldos_bancarios",
-          `select=id,conta&conta=eq.${encodeURIComponent(conta)}&limit=1`
-        );
-
-        const payload = {
-          conta,
-          saldo,
-          updated_at: new Date().toISOString()
-        };
-
-        if (existente && existente.length > 0) {
-          await api.restPatch(
-            "saldos_bancarios",
-            `id=eq.${existente[0].id}`,
-            payload
-          );
-        } else {
-          await api.restInsert("saldos_bancarios", [payload]);
-        }
-      }
-
-      await this.carregarSaldosBancarios();
-      await this.carregarPlanejamento();
-
-      utils.setAppMsg("Saldos bancários salvos com sucesso.", "ok");
-    } catch (e) {
-      console.error("Erro ao salvar saldos bancários:", e);
-      utils.setAppMsg("Erro ao salvar saldos bancários: " + e.message, "err");
-    } finally {
-      window.loading?.hide?.();
-    }
+  planejamentoChart: null,
+  saldos: {
+    sicoob: 0,
+    nubank: 0,
+    metos: 0,
+    portal: 0,
+    monkey: 0,
+    citibank: 0,
+    dinheiro: 0
   },
 
   async carregarSaldosBancarios() {
     try {
-      const registros = await api.restGet("saldos_bancarios", "select=*");
+      const { mes, ano } = utils.getMesAno();
 
-      const mapa = {};
-      (registros || []).forEach(item => {
-        mapa[this.normalizarConta(item.conta)] = utils.numero(item.saldo);
-      });
+      const data = await api.restGet(
+        "saldos_bancarios",
+        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${ano}&order=id.desc&limit=1`
+      );
 
-      let total = 0;
+      const item = Array.isArray(data) && data.length ? data[0] : null;
 
-      this.getSaldoInputs().forEach(input => {
-        const conta = this.normalizarConta(input.dataset.conta);
-        const saldo = utils.numero(mapa[conta] || 0);
+      this.saldos = {
+        sicoob: utils.numero(item?.sicoob || 0),
+        nubank: utils.numero(item?.nubank || 0),
+        metos: utils.numero(item?.metos || 0),
+        portal: utils.numero(item?.portal || 0),
+        monkey: utils.numero(item?.monkey || 0),
+        citibank: utils.numero(item?.citibank || 0),
+        dinheiro: utils.numero(item?.dinheiro || 0)
+      };
 
-        input.value = saldo ? saldo : "";
-        total += saldo;
-      });
-
-      const totalDisponivelBadge = document.getElementById("totalDisponivelBadge");
-      const saldoInicial = document.getElementById("cxSaldoInicial");
-
-      if (totalDisponivelBadge) {
-        totalDisponivelBadge.textContent = `Total disponível: ${utils.moeda(total)}`;
-      }
-
-      if (saldoInicial) {
-        saldoInicial.textContent = utils.moeda(total);
-      }
-
-      return total;
+      this.preencherCamposSaldos();
+      this.atualizarTotalDisponivel();
     } catch (e) {
       console.error("Erro ao carregar saldos bancários:", e);
-      return 0;
+      utils.setAppMsg("Erro ao carregar saldos bancários: " + e.message, "err");
+    }
+  },
+
+  preencherCamposSaldos() {
+    document.querySelectorAll(".saldo-conta").forEach(input => {
+      const conta = input.dataset.conta;
+      if (!conta) return;
+      input.value = this.saldos[conta] ?? 0;
+    });
+  },
+
+  lerCamposSaldos() {
+    const novosSaldos = {};
+
+    document.querySelectorAll(".saldo-conta").forEach(input => {
+      const conta = input.dataset.conta;
+      if (!conta) return;
+      novosSaldos[conta] = utils.numero(input.value || 0);
+    });
+
+    this.saldos = {
+      sicoob: utils.numero(novosSaldos.sicoob || 0),
+      nubank: utils.numero(novosSaldos.nubank || 0),
+      metos: utils.numero(novosSaldos.metos || 0),
+      portal: utils.numero(novosSaldos.portal || 0),
+      monkey: utils.numero(novosSaldos.monkey || 0),
+      citibank: utils.numero(novosSaldos.citibank || 0),
+      dinheiro: utils.numero(novosSaldos.dinheiro || 0)
+    };
+  },
+
+  getSaldoInicial() {
+    return Object.values(this.saldos).reduce((acc, val) => acc + utils.numero(val), 0);
+  },
+
+  atualizarTotalDisponivel() {
+    const badge = document.getElementById("totalDisponivelBadge");
+    if (badge) {
+      badge.textContent = `Total disponível: ${utils.moeda(this.getSaldoInicial())}`;
+    }
+  },
+
+  async salvarSaldosBancarios() {
+    try {
+      this.lerCamposSaldos();
+      this.atualizarTotalDisponivel();
+
+      const { mes, ano } = utils.getMesAno();
+
+      const payload = {
+        mes,
+        ano,
+        sicoob: this.saldos.sicoob,
+        nubank: this.saldos.nubank,
+        metos: this.saldos.metos,
+        portal: this.saldos.portal,
+        monkey: this.saldos.monkey,
+        citibank: this.saldos.citibank,
+        dinheiro: this.saldos.dinheiro
+      };
+
+      const existentes = await api.restGet(
+        "saldos_bancarios",
+        `select=id&mes=eq.${encodeURIComponent(mes)}&ano=eq.${ano}&order=id.desc&limit=1`
+      );
+
+      if (Array.isArray(existentes) && existentes.length) {
+        const id = existentes[0].id;
+        await api.restPatch("saldos_bancarios", `id=eq.${id}`, payload);
+      } else {
+        await api.restInsert("saldos_bancarios", [payload]);
+      }
+
+      utils.setAppMsg("Saldos bancários salvos com sucesso.", "ok");
+      await this.carregarPlanejamento();
+    } catch (e) {
+      console.error("Erro ao salvar saldos bancários:", e);
+      utils.setAppMsg("Erro ao salvar saldos bancários: " + e.message, "err");
     }
   },
 
   async carregarPlanejamento() {
     try {
-      const saldoInicial = await this.carregarSaldosBancarios();
+      const saldoInicial = this.getSaldoInicial();
 
-      const contasReceber = await api.restGet("contas_receber", "select=*");
-      const contasPagar = await api.restGet("contas_pagar", "select=*");
+      const [contasPagar, contasReceber] = await Promise.all([
+        this.buscarContasPagarPendentes(),
+        this.buscarContasReceberPendentes()
+      ]);
 
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
+      const semanas = this.montarPlanejamento12Semanas(contasPagar, contasReceber, saldoInicial);
 
-      const semanas = [];
-      let saldoAtual = utils.numero(saldoInicial);
-      let menorSaldo = saldoAtual;
-      let semanasNegativas = 0;
-      let maiorSaida = 0;
-      let totalEntradas = 0;
-      let totalSaidas = 0;
-
-      for (let i = 0; i < 12; i++) {
-        const inicio = new Date(hoje);
-        inicio.setDate(hoje.getDate() + i * 7);
-
-        const fim = new Date(inicio);
-        fim.setDate(inicio.getDate() + 6);
-
-        const entradasSemana = (contasReceber || [])
-          .filter(item => {
-            if (!item.vencimento) return false;
-            if (String(item.status || "").toLowerCase() === "recebido") return false;
-            const d = new Date(item.vencimento + "T00:00:00");
-            return d >= inicio && d <= fim;
-          })
-          .reduce((acc, item) => acc + utils.numero(item.valor), 0);
-
-        const saidasSemana = (contasPagar || [])
-          .filter(item => {
-            if (!item.vencimento) return false;
-            if (String(item.status || "").toLowerCase() === "pago") return false;
-            const d = new Date(item.vencimento + "T00:00:00");
-            return d >= inicio && d <= fim;
-          })
-          .reduce((acc, item) => acc + utils.numero(item.valor), 0);
-
-        saldoAtual = saldoAtual + entradasSemana - saidasSemana;
-
-        if (saldoAtual < menorSaldo) menorSaldo = saldoAtual;
-        if (saldoAtual < 0) semanasNegativas++;
-        if (saidasSemana > maiorSaida) maiorSaida = saidasSemana;
-
-        totalEntradas += entradasSemana;
-        totalSaidas += saidasSemana;
-
-        semanas.push({
-          semana: `Semana ${i + 1}`,
-          entradas: entradasSemana,
-          saidas: saidasSemana,
-          saldo: saldoAtual
-        });
-      }
-
+      this.renderResumoPlanejamento(semanas, saldoInicial);
       this.renderTabelaPlanejamento(semanas);
-      this.renderGraficoPlanejamento(semanas);
-      this.renderRiscos(semanas, menorSaldo, semanasNegativas, maiorSaida);
-
-      const cxEntradasPrevistas = document.getElementById("cxEntradasPrevistas");
-      const cxSaidasPrevistas = document.getElementById("cxSaidasPrevistas");
-      const cxSaldoFinal = document.getElementById("cxSaldoFinal");
-      const cxMenorSaldo = document.getElementById("cxMenorSaldo");
-
-      if (cxEntradasPrevistas) cxEntradasPrevistas.textContent = utils.moeda(totalEntradas);
-      if (cxSaidasPrevistas) cxSaidasPrevistas.textContent = utils.moeda(totalSaidas);
-      if (cxSaldoFinal) cxSaldoFinal.textContent = utils.moeda(saldoAtual);
-      if (cxMenorSaldo) cxMenorSaldo.textContent = utils.moeda(menorSaldo);
+      this.renderRiscos(semanas);
+      this.renderPlanejamentoChart(semanas);
     } catch (e) {
       console.error("Erro ao carregar planejamento:", e);
       utils.setAppMsg("Erro ao carregar planejamento: " + e.message, "err");
+    }
+  },
+
+  async buscarContasPagarPendentes() {
+    try {
+      const data = await api.restGet(
+        "contas_pagar",
+        "select=*&status=neq.pago&order=vencimento.asc"
+      );
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error("Erro ao buscar contas a pagar:", e);
+      return [];
+    }
+  },
+
+  async buscarContasReceberPendentes() {
+    try {
+      const data = await api.restGet(
+        "contas_receber",
+        "select=*&status=neq.recebido&order=vencimento.asc"
+      );
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error("Erro ao buscar contas a receber:", e);
+      return [];
+    }
+  },
+
+  montarPlanejamento12Semanas(contasPagar, contasReceber, saldoInicial) {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const semanas = [];
+    let saldoCorrente = utils.numero(saldoInicial);
+
+    for (let i = 0; i < 12; i++) {
+      const inicio = new Date(hoje);
+      inicio.setDate(hoje.getDate() + i * 7);
+
+      const fim = new Date(inicio);
+      fim.setDate(inicio.getDate() + 6);
+
+      const entradasLista = (contasReceber || []).filter(item => {
+        if (!item.vencimento) return false;
+        const d = new Date(item.vencimento + "T00:00:00");
+        return d >= inicio && d <= fim;
+      });
+
+      const saidasLista = (contasPagar || []).filter(item => {
+        if (!item.vencimento) return false;
+        const d = new Date(item.vencimento + "T00:00:00");
+        return d >= inicio && d <= fim;
+      });
+
+      const entradas = entradasLista.reduce((acc, item) => acc + utils.numero(item.valor || 0), 0);
+      const saidas = saidasLista.reduce((acc, item) => acc + utils.numero(item.valor || 0), 0);
+
+      saldoCorrente = saldoCorrente + entradas - saidas;
+
+      semanas.push({
+        numero: i + 1,
+        inicio: new Date(inicio),
+        fim: new Date(fim),
+        entradas,
+        saidas,
+        saldo: saldoCorrente,
+        entradasLista,
+        saidasLista
+      });
+    }
+
+    return semanas;
+  },
+
+  renderResumoPlanejamento(semanas, saldoInicial) {
+    const elSaldoInicial = document.getElementById("cxSaldoInicial");
+    const elEntradas = document.getElementById("cxEntradasPrevistas");
+    const elSaidas = document.getElementById("cxSaidasPrevistas");
+    const elSaldoFinal = document.getElementById("cxSaldoFinal");
+    const elMenorSaldo = document.getElementById("cxMenorSaldo");
+
+    const totalEntradas = semanas.reduce((acc, s) => acc + utils.numero(s.entradas), 0);
+    const totalSaidas = semanas.reduce((acc, s) => acc + utils.numero(s.saidas), 0);
+    const saldoFinal = semanas.length ? utils.numero(semanas[semanas.length - 1].saldo) : utils.numero(saldoInicial);
+    const menorSaldo = semanas.length
+      ? Math.min(...semanas.map(s => utils.numero(s.saldo)))
+      : utils.numero(saldoInicial);
+
+    if (elSaldoInicial) elSaldoInicial.textContent = utils.moeda(saldoInicial);
+    if (elEntradas) elEntradas.textContent = utils.moeda(totalEntradas);
+    if (elSaidas) elSaidas.textContent = utils.moeda(totalSaidas);
+    if (elSaldoFinal) {
+      elSaldoFinal.textContent = utils.moeda(saldoFinal);
+      elSaldoFinal.className = saldoFinal < 0 ? "err" : "";
+    }
+    if (elMenorSaldo) {
+      elMenorSaldo.textContent = utils.moeda(menorSaldo);
+      elMenorSaldo.className = menorSaldo < 0 ? "err" : "";
     }
   },
 
@@ -197,77 +241,200 @@ window.planejamentoModule = {
     const tbody = document.getElementById("tabelaPlanejamento");
     if (!tbody) return;
 
-    tbody.innerHTML = (semanas || []).length
-      ? semanas.map(item => `
-          <tr>
-            <td>${item.semana}</td>
-            <td>${utils.moeda(item.entradas)}</td>
-            <td>${utils.moeda(item.saidas)}</td>
-            <td class="${item.saldo < 0 ? "err" : "ok"}">${utils.moeda(item.saldo)}</td>
-          </tr>
-        `).join("")
-      : `<tr><td colspan="4" class="muted">Nenhum planejamento disponível.</td></tr>`;
+    if (!semanas.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="muted">Nenhum planejamento disponível.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = semanas.map(semana => {
+      const periodo = `${this.formatarDataCurta(semana.inicio)} a ${this.formatarDataCurta(semana.fim)}`;
+      return `
+        <tr>
+          <td>Semana ${semana.numero}<br><span class="muted">${periodo}</span></td>
+          <td>${utils.moeda(semana.entradas)}</td>
+          <td>${utils.moeda(semana.saidas)}</td>
+          <td class="${semana.saldo < 0 ? "err" : "ok"}">${utils.moeda(semana.saldo)}</td>
+        </tr>
+      `;
+    }).join("");
   },
 
-  renderGraficoPlanejamento(semanas) {
+  renderRiscos(semanas) {
+    const elMenorSaldo = document.getElementById("riskMenorSaldo");
+    const elSemanasNegativas = document.getElementById("riskSemanasNegativas");
+    const elMaiorSaida = document.getElementById("riskMaiorSaida");
+    const riskList = document.getElementById("riskList");
+
+    if (!semanas.length) {
+      if (riskList) {
+        riskList.innerHTML = `<div class="muted">Nenhum risco calculado.</div>`;
+      }
+      return;
+    }
+
+    const menorSaldo = Math.min(...semanas.map(s => utils.numero(s.saldo)));
+    const semanasNegativas = semanas.filter(s => utils.numero(s.saldo) < 0);
+    const maiorSaida = Math.max(...semanas.map(s => utils.numero(s.saidas)));
+
+    if (elMenorSaldo) {
+      elMenorSaldo.textContent = utils.moeda(menorSaldo);
+      elMenorSaldo.className = `value ${menorSaldo < 0 ? "err" : ""}`.trim();
+    }
+
+    if (elSemanasNegativas) {
+      elSemanasNegativas.textContent = String(semanasNegativas.length);
+      elSemanasNegativas.className = `value ${semanasNegativas.length > 0 ? "err" : ""}`.trim();
+    }
+
+    if (elMaiorSaida) {
+      elMaiorSaida.textContent = utils.moeda(maiorSaida);
+      elMaiorSaida.className = "value";
+    }
+
+    if (riskList) {
+      const riscos = [];
+
+      if (semanasNegativas.length) {
+        semanasNegativas.forEach(semana => {
+          riscos.push(`
+            <div class="alert-item critico">
+              <strong>Semana ${semana.numero}</strong><br>
+              Saldo projetado negativo em ${utils.moeda(semana.saldo)}
+            </div>
+          `);
+        });
+      }
+
+      const semanaMaiorSaida = semanas.find(s => utils.numero(s.saidas) === maiorSaida);
+      if (semanaMaiorSaida && maiorSaida > 0) {
+        riscos.push(`
+          <div class="alert-item atencao">
+            <strong>Maior saída prevista</strong><br>
+            Semana ${semanaMaiorSaida.numero} com ${utils.moeda(maiorSaida)}
+          </div>
+        `);
+      }
+
+      if (!riscos.length) {
+        riscos.push(`<div class="alert-item ok"><strong>Planejamento saudável</strong><br>Nenhum risco relevante identificado.</div>`);
+      }
+
+      riskList.innerHTML = riscos.join("");
+    }
+  },
+
+  renderPlanejamentoChart(semanas) {
     const canvas = document.getElementById("planejamentoChart");
     if (!canvas) return;
 
-    if (this.chart) this.chart.destroy();
+    if (typeof Chart === "undefined") {
+      throw new Error("Chart.js não carregado.");
+    }
 
-    this.chart = new Chart(canvas, {
+    if (this.planejamentoChart) {
+      this.planejamentoChart.destroy();
+      this.planejamentoChart = null;
+    }
+
+    const labels = semanas.map(s => `Semana ${s.numero}`);
+    const entradas = semanas.map(s => utils.numero(s.entradas));
+    const saidas = semanas.map(s => utils.numero(s.saidas));
+    const saldos = semanas.map(s => utils.numero(s.saldo));
+
+    this.planejamentoChart = new Chart(canvas, {
       type: "line",
       data: {
-        labels: (semanas || []).map(item => item.semana),
+        labels,
         datasets: [
           {
             label: "Entradas",
-            data: (semanas || []).map(item => item.entradas),
+            data: entradas,
+            borderColor: "#22c55e",
+            backgroundColor: "rgba(34,197,94,0.15)",
+            fill: true,
+            tension: 0.35,
             borderWidth: 3,
-            tension: 0.35
+            pointRadius: 4,
+            pointBackgroundColor: "#ffffff",
+            pointBorderColor: "#22c55e",
+            pointBorderWidth: 2
           },
           {
             label: "Saídas",
-            data: (semanas || []).map(item => item.saidas),
+            data: saidas,
+            borderColor: "#ef4444",
+            backgroundColor: "rgba(239,68,68,0.15)",
+            fill: true,
+            tension: 0.35,
             borderWidth: 3,
-            tension: 0.35
+            pointRadius: 4,
+            pointBackgroundColor: "#ffffff",
+            pointBorderColor: "#ef4444",
+            pointBorderWidth: 2
           },
           {
             label: "Saldo Projetado",
-            data: (semanas || []).map(item => item.saldo),
+            data: saldos,
+            borderColor: "#facc15",
+            backgroundColor: "rgba(250,204,21,0)",
+            fill: false,
+            tension: 0.35,
             borderWidth: 3,
-            tension: 0.35
+            pointRadius: 4,
+            pointBackgroundColor: "#ffffff",
+            pointBorderColor: "#facc15",
+            pointBorderWidth: 2
           }
         ]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: "top",
+            labels: {
+              color: "#334155",
+              usePointStyle: true,
+              boxWidth: 12
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: ${utils.moeda(context.raw || 0)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: "#475569", font: { weight: "600" } },
+            grid: { display: false }
+          },
+          y: {
+            ticks: {
+              color: "#475569",
+              callback: value => Number(value).toLocaleString("pt-BR")
+            },
+            grid: { color: "rgba(148,163,184,0.15)" }
+          }
+        }
       }
     });
   },
 
-  renderRiscos(semanas, menorSaldo, semanasNegativas, maiorSaida) {
-    const riskMenorSaldo = document.getElementById("riskMenorSaldo");
-    const riskSemanasNegativas = document.getElementById("riskSemanasNegativas");
-    const riskMaiorSaida = document.getElementById("riskMaiorSaida");
-    const riskList = document.getElementById("riskList");
-
-    if (riskMenorSaldo) riskMenorSaldo.textContent = utils.moeda(menorSaldo);
-    if (riskSemanasNegativas) riskSemanasNegativas.textContent = String(semanasNegativas);
-    if (riskMaiorSaida) riskMaiorSaida.textContent = utils.moeda(maiorSaida);
-
-    if (!riskList) return;
-
-    const negativas = (semanas || []).filter(item => item.saldo < 0);
-
-    riskList.innerHTML = negativas.length
-      ? negativas.map(item => `
-          <div class="alert-item critico">
-            <strong>${item.semana}</strong><br>
-            Saldo projetado negativo em ${utils.moeda(item.saldo)}
-          </div>
-        `).join("")
-      : `<div class="alert-item ok">Nenhum risco crítico projetado.</div>`;
+  formatarDataCurta(data) {
+    if (!(data instanceof Date) || Number.isNaN(data.getTime())) return "-";
+    return data.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit"
+    });
   }
 };
