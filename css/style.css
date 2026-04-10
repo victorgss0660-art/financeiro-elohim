@@ -749,3 +749,7 @@ tbody tr.selecionado{
     font-size:24px;
   }
 }
+td:nth-child(2) {
+  font-weight: 700;
+  color: #111827;
+}
