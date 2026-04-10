@@ -2204,3 +2204,15 @@ button, input, select, textarea {
   opacity:1;
   transform:translateY(0);
 }
+.tab-section{
+  display:none !important;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .25s ease, transform .25s ease;
+}
+
+.tab-section.active{
+  display:block !important;
+  opacity:1;
+  transform:translateY(0);
+}
