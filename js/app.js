@@ -287,3 +287,10 @@ window.app = {
 document.addEventListener("DOMContentLoaded", async () => {
   await window.app.init();
 });
+document.getElementById("btnImportarContasPagas")?.addEventListener("click", () => {
+  document.getElementById("fileInputContasPagas").click();
+});
+
+document.getElementById("btnExportarContasPagas")?.addEventListener("click", () => {
+  contasPagasModule.exportarPlanilha();
+});
