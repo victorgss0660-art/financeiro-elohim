@@ -1,122 +1,112 @@
 window.contasPagasModule = {
   lista: [],
+  chartMes: null,
+  chartCategoria: null,
 
   async carregarContasPagas() {
     try {
       const data = await api.restGet(
         "contas_pagar",
-        "select=*&status=eq.pago&order=data_pagamento.desc"
+        "select=*&status=eq.pago"
       );
 
-      this.lista = Array.isArray(data) ? data : [];
-      this.preencherFiltros();
-      this.render();
+      this.lista = data || [];
+
+      this.renderTabela();
+      this.renderCards();
+      this.renderGraficoMes();
+      this.renderGraficoCategoria();
+
     } catch (e) {
       utils.setAppMsg("Erro ao carregar contas pagas", "err");
     }
   },
 
-  getFiltros() {
-    return {
-      busca: document.getElementById("filtroBuscaPagas")?.value.toLowerCase() || "",
-      fornecedor: document.getElementById("filtroFornecedorPagas")?.value || "",
-      categoria: document.getElementById("filtroCategoriaPagas")?.value || "",
-      inicio: document.getElementById("filtroDataInicioPagas")?.value || "",
-      fim: document.getElementById("filtroDataFimPagas")?.value || ""
-    };
-  },
-
-  limparFiltros() {
-    [
-      "filtroBuscaPagas",
-      "filtroFornecedorPagas",
-      "filtroCategoriaPagas",
-      "filtroDataInicioPagas",
-      "filtroDataFimPagas"
-    ].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = "";
-    });
-
-    this.render();
-  },
-
-  preencherFiltros() {
-    const fornecedores = [...new Set(this.lista.map(i => i.fornecedor))];
-    const categorias = [...new Set(this.lista.map(i => i.categoria))];
-
-    document.getElementById("filtroFornecedorPagas").innerHTML =
-      `<option value="">Fornecedor</option>` +
-      fornecedores.map(f => `<option>${f}</option>`).join("");
-
-    document.getElementById("filtroCategoriaPagas").innerHTML =
-      `<option value="">Categoria</option>` +
-      categorias.map(c => `<option>${c}</option>`).join("");
-  },
-
-  aplicarFiltros() {
-    const f = this.getFiltros();
-
-    return this.lista.filter(i => {
-      const texto = `${i.fornecedor} ${i.descricao} ${i.documento}`.toLowerCase();
-
-      if (f.busca && !texto.includes(f.busca)) return false;
-      if (f.fornecedor && i.fornecedor !== f.fornecedor) return false;
-      if (f.categoria && i.categoria !== f.categoria) return false;
-
-      if (f.inicio && i.data_pagamento < f.inicio) return false;
-      if (f.fim && i.data_pagamento > f.fim) return false;
-
-      return true;
-    });
-  },
-
-  atualizarTotais(lista) {
-    const total = lista.reduce((acc, i) => acc + Number(i.valor || 0), 0);
-
-    document.getElementById("cpPagasQtd").textContent = lista.length;
-    document.getElementById("cpPagasTotal").textContent = utils.moeda(total);
-  },
-
-  render() {
+  renderTabela() {
     const tbody = document.getElementById("tabelaContasPagas");
-    if (!tbody) return;
 
-    const dados = this.aplicarFiltros();
-    this.atualizarTotais(dados);
-
-    if (!dados.length) {
-      tbody.innerHTML = `<tr><td colspan="9" class="muted">Nenhuma conta paga.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = dados.map(i => `
+    tbody.innerHTML = this.lista.map(i => `
       <tr>
         <td>${i.fornecedor}</td>
         <td>${i.descricao}</td>
         <td>${i.categoria}</td>
-        <td>${i.documento}</td>
         <td>${utils.moeda(i.valor)}</td>
         <td>${i.data_pagamento || "-"}</td>
-        <td>${utils.moeda(i.multa || 0)}</td>
-        <td>${utils.moeda(i.desconto || 0)}</td>
-        <td>${utils.moeda((i.valor || 0) + (i.multa || 0) - (i.desconto || 0))}</td>
       </tr>
     `).join("");
   },
 
-  exportarPlanilha() {
-    const dados = this.lista.map(i => ({
-      fornecedor: i.fornecedor,
-      descricao: i.descricao,
-      valor: i.valor,
-      pago_em: i.data_pagamento
-    }));
+  renderCards() {
+    const total = this.lista.reduce((acc, i) => acc + Number(i.valor || 0), 0);
+    const qtd = this.lista.length;
+    const media = qtd ? total / qtd : 0;
+    const maior = Math.max(...this.lista.map(i => Number(i.valor || 0)), 0);
 
-    const ws = XLSX.utils.json_to_sheet(dados);
+    document.getElementById("cpPagasTotalCard").textContent = utils.moeda(total);
+    document.getElementById("cpPagasQtdCard").textContent = qtd;
+    document.getElementById("cpPagasMedia").textContent = utils.moeda(media);
+    document.getElementById("cpPagasMaior").textContent = utils.moeda(maior);
+  },
+
+  renderGraficoMes() {
+    const dados = {};
+
+    this.lista.forEach(i => {
+      if (!i.data_pagamento) return;
+      const mes = i.data_pagamento.slice(0,7);
+      dados[mes] = (dados[mes] || 0) + Number(i.valor || 0);
+    });
+
+    const labels = Object.keys(dados).sort();
+    const valores = labels.map(l => dados[l]);
+
+    const ctx = document.getElementById("chartPagasMes");
+
+    if (this.chartMes) this.chartMes.destroy();
+
+    this.chartMes = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "Pagamentos",
+          data: valores,
+          tension: 0.4
+        }]
+      }
+    });
+  },
+
+  renderGraficoCategoria() {
+    const dados = {};
+
+    this.lista.forEach(i => {
+      const cat = i.categoria || "Outros";
+      dados[cat] = (dados[cat] || 0) + Number(i.valor || 0);
+    });
+
+    const labels = Object.keys(dados);
+    const valores = Object.values(dados);
+
+    const ctx = document.getElementById("chartPagasCategoria");
+
+    if (this.chartCategoria) this.chartCategoria.destroy();
+
+    this.chartCategoria = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels,
+        datasets: [{
+          data: valores
+        }]
+      }
+    });
+  },
+
+  exportarPlanilha() {
+    const ws = XLSX.utils.json_to_sheet(this.lista);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Pagas");
-
     XLSX.writeFile(wb, "contas_pagas.xlsx");
   }
 };
