@@ -310,42 +310,43 @@ window.app = {
     }
   },
 
-  navigate(tabName) {
-    const secoes = document.querySelectorAll(".tab-section");
-    const atual = document.querySelector(".tab-section.active");
-    const proxima = document.getElementById(`tab-${tabName}`);
+navigate(tabName) {
+  const secoes = document.querySelectorAll(".tab-section");
+  const proxima = document.getElementById(`tab-${tabName}`);
+  const atual = document.querySelector(".tab-section.active");
 
-    if (!proxima || atual === proxima) return;
+  if (!proxima) {
+    console.warn(`Aba não encontrada: tab-${tabName}`);
+    return;
+  }
 
-    this.currentTab = tabName;
-    this.marcarMenuAtivo(tabName);
+  this.currentTab = tabName;
 
-    if (window.navigation?.atualizarVisibilidadeFiltroMesAno) {
-      window.navigation.atualizarVisibilidadeFiltroMesAno(tabName);
-    } else {
-      this.controlarBlocoMesAno(tabName);
-    }
+  document.querySelectorAll(".menu-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tabName);
+  });
 
-    if (atual) {
-      atual.classList.add("leaving");
+  this.controlarBlocoMesAno(tabName);
 
-      setTimeout(async () => {
-        secoes.forEach(sec => sec.classList.remove("active", "leaving"));
-        proxima.classList.add("active");
+  if (atual) {
+    atual.classList.remove("active", "leaving");
+  }
 
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
+  secoes.forEach(sec => {
+    sec.classList.remove("active", "leaving");
+    sec.style.display = "none";
+  });
 
-        await this.onTabChange(tabName);
-      }, 180);
-    } else {
-      secoes.forEach(sec => sec.classList.remove("active", "leaving"));
-      proxima.classList.add("active");
-      this.onTabChange(tabName);
-    }
-  },
+  proxima.style.display = "block";
+  proxima.classList.add("active");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  this.onTabChange(tabName);
+}
 
   marcarMenuAtivo(tabName) {
     document.querySelectorAll(".menu-btn").forEach(btn => {
