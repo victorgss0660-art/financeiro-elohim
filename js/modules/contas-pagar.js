@@ -558,9 +558,9 @@ window.contasPagarModule = {
             >
           </td>
           <td>${item.fornecedor || "-"}</td>
-          <td>${item.descricao || "-"}</td>
-          <td>${item.categoria || "-"}</td>
           <td>${item.documento || "-"}</td>
+          <td>${item.categoria || "-"}</td>
+          <td>${item.descrição || "-"}</td>
           <td>${utils.moeda(item.valor || 0)}</td>
           <td>${item.vencimento || "-"}</td>
           <td class="${status === "vencido" ? "err" : status === "pago" ? "ok" : ""}">
