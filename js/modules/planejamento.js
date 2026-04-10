@@ -49,7 +49,6 @@ window.planejamentoModule = {
 
   lerCamposSaldos() {
     const novosSaldos = {};
-
     document.querySelectorAll(".saldo-conta").forEach(input => {
       const conta = input.dataset.conta;
       if (!conta) return;
@@ -118,6 +117,9 @@ window.planejamentoModule = {
 
   async carregarPlanejamento() {
     try {
+      const tab = document.getElementById("tab-planejamento");
+      if (!tab || !tab.classList.contains("active")) return;
+
       const saldoInicial = this.getSaldoInicial();
 
       const [contasPagar, contasReceber] = await Promise.all([
@@ -134,7 +136,7 @@ window.planejamentoModule = {
       if (typeof Chart !== "undefined") {
         this.renderPlanejamentoChart(semanas);
       } else {
-        console.warn("Chart.js ainda não carregado. Pulando gráfico do planejamento.");
+        console.warn("Chart.js não carregado no planejamento.");
       }
     } catch (e) {
       console.error("Erro ao carregar planejamento:", e);
@@ -195,8 +197,6 @@ window.planejamentoModule = {
 
       semanas.push({
         numero: i + 1,
-        inicio: new Date(inicio),
-        fim: new Date(fim),
         entradas,
         saidas,
         saldo: saldoCorrente
@@ -285,8 +285,7 @@ window.planejamentoModule = {
 
   renderPlanejamentoChart(semanas) {
     const canvas = document.getElementById("planejamentoChart");
-    if (!canvas) return;
-    if (typeof Chart === "undefined") return;
+    if (!canvas || typeof Chart === "undefined") return;
 
     if (this.planejamentoChart) {
       this.planejamentoChart.destroy();
