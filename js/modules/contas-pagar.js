@@ -523,6 +523,8 @@ window.contasPagarModule = {
     const tbody = document.getElementById("tabelaContasPagar");
     if (!tbody) return;
 
+    this.registrarEventosFiltros();
+    
     const dados = this.aplicarFiltros();
     this.atualizarTotais(dados);
 
