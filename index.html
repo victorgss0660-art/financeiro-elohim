@@ -94,14 +94,6 @@
 
       <!-- DASHBOARD -->
       <section id="tab-dashboard" class="tab-section active">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Dashboard</h3>
-            <div class="badge" id="statusMesTopo">-</div>
-          </div>
-          <p class="muted">Área principal do dashboard.</p>
-        </section>
-
         <section class="cards">
           <div class="card">
             <div class="card-title">Faturamento</div>
@@ -212,6 +204,7 @@
             <div class="panel-head">
               <h3>Status do mês</h3>
             </div>
+
             <div class="status-grid">
               <div class="status-item">
                 <div class="label">Mês</div>
@@ -426,6 +419,7 @@
         <section class="panel table-wrap">
           <div class="panel-head">
             <h3>Contas Pagas</h3>
+            <div class="badge">Histórico</div>
           </div>
 
           <table>
@@ -455,19 +449,74 @@
       <section id="tab-contas-receber" class="tab-section">
         <section class="panel">
           <div class="panel-head">
-            <h3>Contas a Receber</h3>
+            <h3>Cadastrar Conta a Receber</h3>
+            <div class="badge">Recebíveis</div>
           </div>
-          <p class="muted">Área de contas a receber.</p>
+
+          <div class="form-grid">
+            <input id="crrCliente" placeholder="Cliente">
+            <input id="crrDescricao" placeholder="Descrição">
+            <input id="crrCategoria" placeholder="Categoria / Tipo">
+            <input id="crrDocumento" placeholder="NF / FAT / Pedido">
+            <input id="crrValor" type="number" step="0.01" placeholder="Valor">
+            <input id="crrVencimento" type="date">
+            <textarea id="crrObs" class="full" placeholder="Observações"></textarea>
+          </div>
+
+          <div style="margin-top:16px;">
+            <button id="btnSalvarContaReceber" class="btn" type="button">Salvar conta</button>
+          </div>
+        </section>
+
+        <section class="panel table-wrap">
+          <div class="panel-head">
+            <h3>Contas a Receber</h3>
+            <div class="badge">Pendentes</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Descrição</th>
+                <th>Documento</th>
+                <th>Categoria</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaContasReceber">
+              <tr><td colspan="7" class="muted">Nenhuma conta a receber pendente.</td></tr>
+            </tbody>
+          </table>
         </section>
       </section>
 
       <!-- CONTAS RECEBIDAS -->
       <section id="tab-contas-recebidas" class="tab-section">
-        <section class="panel">
+        <section class="panel table-wrap">
           <div class="panel-head">
             <h3>Contas Recebidas</h3>
+            <div class="badge">Histórico</div>
           </div>
-          <p class="muted">Área de contas recebidas.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Descrição</th>
+                <th>Documento</th>
+                <th>Categoria</th>
+                <th>Valor</th>
+                <th>Recebido em</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaContasRecebidas">
+              <tr><td colspan="7" class="muted">Nenhuma conta recebida.</td></tr>
+            </tbody>
+          </table>
         </section>
       </section>
 
@@ -475,9 +524,14 @@
       <section id="tab-faturamento" class="tab-section">
         <section class="panel">
           <div class="panel-head">
-            <h3>Faturamento</h3>
+            <h3>Faturamento do mês</h3>
+            <div class="badge">Receita</div>
           </div>
-          <p class="muted">Área de faturamento.</p>
+
+          <div class="top-filters">
+            <input id="faturamentoInput" type="number" step="0.01" placeholder="Faturamento do mês">
+            <button id="btnSalvarFaturamento" class="btn" type="button">Salvar faturamento</button>
+          </div>
         </section>
       </section>
 
@@ -485,9 +539,15 @@
       <section id="tab-metas" class="tab-section">
         <section class="panel">
           <div class="panel-head">
-            <h3>Metas</h3>
+            <h3>Metas por categoria</h3>
+            <div class="badge">Percentual</div>
           </div>
-          <p class="muted">Área de metas.</p>
+
+          <div id="metaGrid" class="meta-grid"></div>
+
+          <div style="margin-top:16px;">
+            <button id="btnSalvarMetas" class="btn" type="button">Salvar metas</button>
+          </div>
         </section>
       </section>
 
@@ -495,19 +555,41 @@
       <section id="tab-importar" class="tab-section">
         <section class="panel">
           <div class="panel-head">
-            <h3>Importar Despesas</h3>
+            <h3>Importar planilha de despesas</h3>
+            <div class="badge">Excel</div>
           </div>
-          <p class="muted">Área de importação.</p>
+
+          <input id="fileInput" type="file" accept=".xlsx,.xls">
+
+          <div class="import-help">
+            <div><strong>Colunas aceitas:</strong> CATEGORIA, VALOR</div>
+            <div><strong>CATEGORIA:</strong> MC, MP, TERC, FRETE, DESP, TAR, PREST, FOLHA, COMIS, IMPOS, RESC, MANUT</div>
+            <div><strong>VALOR:</strong> aceita 1500, 1500,50, 1500.50, R$ 1.500,50</div>
+          </div>
         </section>
       </section>
 
       <!-- RESUMO -->
       <section id="tab-resumo" class="tab-section">
-        <section class="panel">
+        <section class="panel table-wrap">
           <div class="panel-head">
-            <h3>Resumo</h3>
+            <h3>Resumo Anual</h3>
+            <div class="badge">Ano</div>
           </div>
-          <p class="muted">Área de resumo.</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Faturamento</th>
+                <th>Gastos</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaResumoAnual">
+              <tr><td colspan="4" class="muted">Nenhum dado anual carregado.</td></tr>
+            </tbody>
+          </table>
         </section>
       </section>
 
@@ -515,9 +597,109 @@
       <section id="tab-planejamento" class="tab-section">
         <section class="panel">
           <div class="panel-head">
-            <h3>Planejamento</h3>
+            <h3>Planejamento Financeiro (12 semanas)</h3>
+            <div class="badge">Fluxo</div>
           </div>
-          <p class="muted">Área de planejamento.</p>
+
+          <div class="form-grid">
+            <input class="saldo-conta" data-conta="sicoob" placeholder="Sicoob">
+            <input class="saldo-conta" data-conta="nubank" placeholder="Nubank">
+            <input class="saldo-conta" data-conta="metos" placeholder="Metos">
+            <input class="saldo-conta" data-conta="portal" placeholder="Portal Cash (GE)">
+            <input class="saldo-conta" data-conta="monkey" placeholder="Monkey (WEG)">
+            <input class="saldo-conta" data-conta="citibank" placeholder="Citibank (Hitachi)">
+            <input class="saldo-conta" data-conta="dinheiro" placeholder="Dinheiro Físico">
+          </div>
+
+          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnSalvarSaldosBancarios" class="btn" type="button">Salvar saldos bancários</button>
+          </div>
+
+          <div style="margin-top:16px;">
+            <div id="totalDisponivelBadge" class="badge">Total disponível: R$ 0,00</div>
+          </div>
+
+          <div class="table-total-bar" style="margin-top:16px;">
+            <div class="table-total-item">
+              <span class="table-total-label">Saldo inicial</span>
+              <strong id="cxSaldoInicial">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Entradas previstas</span>
+              <strong id="cxEntradasPrevistas">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Saídas previstas</span>
+              <strong id="cxSaidasPrevistas">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Saldo final projetado</span>
+              <strong id="cxSaldoFinal">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Menor saldo previsto</span>
+              <strong id="cxMenorSaldo">R$ 0,00</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Fluxo Projetado</h3>
+              <div class="badge">12 semanas</div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="planejamentoChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Riscos</h3>
+              <div class="badge">Automático</div>
+            </div>
+
+            <div class="status-grid">
+              <div class="status-item">
+                <div class="label">Menor saldo</div>
+                <div class="value" id="riskMenorSaldo">R$ 0,00</div>
+              </div>
+              <div class="status-item">
+                <div class="label">Semanas negativas</div>
+                <div class="value" id="riskSemanasNegativas">0</div>
+              </div>
+              <div class="status-item">
+                <div class="label">Maior saída</div>
+                <div class="value" id="riskMaiorSaida">R$ 0,00</div>
+              </div>
+            </div>
+
+            <div id="riskList" class="alert-list" style="margin-top:16px;">
+              <div class="muted">Nenhum risco calculado.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel table-wrap">
+          <div class="panel-head">
+            <h3>Tabela de Planejamento</h3>
+            <div class="badge">Detalhado</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Semana</th>
+                <th>Entradas</th>
+                <th>Saídas</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaPlanejamento">
+              <tr><td colspan="4" class="muted">Nenhum planejamento disponível.</td></tr>
+            </tbody>
+          </table>
         </section>
       </section>
     </main>
