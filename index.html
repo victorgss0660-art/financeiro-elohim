@@ -415,35 +415,76 @@
       </section>
 
       <!-- CONTAS PAGAS -->
-      <section id="tab-contas-pagas" class="tab-section">
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Contas Pagas</h3>
-            <div class="badge">Histórico</div>
-          </div>
+<section id="tab-contas-pagas" class="tab-section">
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Contas Pagas</h3>
+      <div class="badge">Histórico</div>
+    </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Fornecedor</th>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Documento</th>
-                <th>Valor</th>
-                <th>Pago em</th>
-                <th>Multa</th>
-                <th>Desconto</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaContasPagas">
-              <tr>
-                <td colspan="9" class="muted">Nenhuma conta paga.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
+    <div style="margin-bottom:16px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button id="btnImportarContasPagas" class="secondary-btn" type="button">Importar</button>
+      <button id="btnExportarContasPagas" class="secondary-btn" type="button">Exportar</button>
+      <input id="fileInputContasPagas" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filtros-linha">
+      <input id="filtroBuscaPagas" placeholder="Buscar..." oninput="contasPagasModule.render()">
+
+      <select id="filtroFornecedorPagas" onchange="contasPagasModule.render()">
+        <option value="">Fornecedor</option>
+      </select>
+
+      <select id="filtroCategoriaPagas" onchange="contasPagasModule.render()">
+        <option value="">Categoria</option>
+      </select>
+
+      <input type="date" id="filtroDataInicioPagas" onchange="contasPagasModule.render()">
+      <input type="date" id="filtroDataFimPagas" onchange="contasPagasModule.render()">
+
+      <button onclick="contasPagasModule.limparFiltros()" class="secondary-btn">
+        Limpar
+      </button>
+    </div>
+
+    <!-- TOTAIS -->
+    <div class="table-total-bar">
+      <div class="table-total-item">
+        <span class="table-total-label">Qtd</span>
+        <strong id="cpPagasQtd">0</strong>
+      </div>
+
+      <div class="table-total-item">
+        <span class="table-total-label">Total pago</span>
+        <strong id="cpPagasTotal">R$ 0,00</strong>
+      </div>
+    </div>
+
+    <!-- TABELA -->
+    <table>
+      <thead>
+        <tr>
+          <th>Fornecedor</th>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Documento</th>
+          <th>Valor</th>
+          <th>Pago em</th>
+          <th>Multa</th>
+          <th>Desconto</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+
+      <tbody id="tabelaContasPagas">
+        <tr>
+          <td colspan="9" class="muted">Nenhuma conta paga.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
 
       <!-- CONTAS A RECEBER -->
       <section id="tab-contas-receber" class="tab-section">
