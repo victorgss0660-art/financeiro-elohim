@@ -294,3 +294,6 @@ document.getElementById("btnImportarContasPagas")?.addEventListener("click", () 
 document.getElementById("btnExportarContasPagas")?.addEventListener("click", () => {
   contasPagasModule.exportarPlanilha();
 });
+document.getElementById("btnExportarContasPagas")?.addEventListener("click", () => {
+  contasPagasModule.exportarPlanilha();
+});
