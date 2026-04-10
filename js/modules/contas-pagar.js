@@ -82,23 +82,19 @@ window.contasPagarModule = {
 
   async salvarContaPagar() {
     try {
-      const { mes, ano } = utils.getMesAno();
-
       const payload = {
-        fornecedor: document.getElementById("cpFornecedor").value.trim(),
-        descricao: document.getElementById("cpDescricao").value.trim(),
-        categoria: document.getElementById("cpCategoria").value.trim(),
-        documento: document.getElementById("cpDocumento").value.trim(),
-        valor: Number(document.getElementById("cpValor").value || 0),
-        vencimento: document.getElementById("cpVencimento").value,
-        observacoes: document.getElementById("cpObservacoes").value.trim(),
+        fornecedor: document.getElementById("cpFornecedor")?.value.trim() || "",
+        descricao: document.getElementById("cpDescricao")?.value.trim() || "",
+        categoria: document.getElementById("cpCategoria")?.value.trim() || "",
+        documento: document.getElementById("cpDocumento")?.value.trim() || "",
+        valor: Number(document.getElementById("cpValor")?.value || 0),
+        vencimento: document.getElementById("cpVencimento")?.value || "",
+        observacoes: document.getElementById("cpObservacoes")?.value.trim() || "",
         numero_nfe: document.getElementById("cpNumeroNfe")?.value.trim() || "",
         numero_boleto: document.getElementById("cpNumeroBoleto")?.value.trim() || "",
         tem_nfe: !!document.getElementById("cpTemNfe")?.checked,
         tem_boleto: !!document.getElementById("cpTemBoleto")?.checked,
-        status: "pendente",
-        mes,
-        ano
+        status: "pendente"
       };
 
       if (!payload.fornecedor || !payload.descricao || !payload.valor || !payload.vencimento) {
@@ -149,21 +145,24 @@ window.contasPagarModule = {
   },
 
   preencherFormulario(item) {
-    document.getElementById("cpFornecedor").value = item.fornecedor || "";
-    document.getElementById("cpDescricao").value = item.descricao || "";
-    document.getElementById("cpCategoria").value = item.categoria || "";
-    document.getElementById("cpDocumento").value = item.documento || "";
-    document.getElementById("cpValor").value = item.valor || "";
-    document.getElementById("cpVencimento").value = item.vencimento || "";
-    document.getElementById("cpObservacoes").value = item.observacoes || "";
+    const setVal = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.value = value || "";
+    };
 
-    const cpNumeroNfe = document.getElementById("cpNumeroNfe");
-    const cpNumeroBoleto = document.getElementById("cpNumeroBoleto");
+    setVal("cpFornecedor", item.fornecedor);
+    setVal("cpDescricao", item.descricao);
+    setVal("cpCategoria", item.categoria);
+    setVal("cpDocumento", item.documento);
+    setVal("cpValor", item.valor);
+    setVal("cpVencimento", item.vencimento);
+    setVal("cpObservacoes", item.observacoes);
+    setVal("cpNumeroNfe", item.numero_nfe);
+    setVal("cpNumeroBoleto", item.numero_boleto);
+
     const cpTemNfe = document.getElementById("cpTemNfe");
     const cpTemBoleto = document.getElementById("cpTemBoleto");
 
-    if (cpNumeroNfe) cpNumeroNfe.value = item.numero_nfe || "";
-    if (cpNumeroBoleto) cpNumeroBoleto.value = item.numero_boleto || "";
     if (cpTemNfe) cpTemNfe.checked = !!item.tem_nfe;
     if (cpTemBoleto) cpTemBoleto.checked = !!item.tem_boleto;
   },
@@ -201,8 +200,6 @@ window.contasPagarModule = {
 
   async duplicar(item) {
     try {
-      const { mes, ano } = utils.getMesAno();
-
       const payload = {
         fornecedor: item.fornecedor || "",
         descricao: item.descricao || "",
@@ -215,9 +212,7 @@ window.contasPagarModule = {
         numero_boleto: item.numero_boleto || "",
         tem_nfe: !!item.tem_nfe,
         tem_boleto: !!item.tem_boleto,
-        status: "pendente",
-        mes,
-        ano
+        status: "pendente"
       };
 
       await api.restInsert("contas_pagar", [payload]);
@@ -234,8 +229,8 @@ window.contasPagarModule = {
   },
 
   preencherFiltros() {
-    const fornecedores = [...new Set(this.lista.map(i => i.fornecedor).filter(Boolean))];
-    const categorias = [...new Set(this.lista.map(i => i.categoria).filter(Boolean))];
+    const fornecedores = [...new Set(this.lista.map(i => i.fornecedor).filter(Boolean))].sort();
+    const categorias = [...new Set(this.lista.map(i => i.categoria).filter(Boolean))].sort();
 
     const selFornecedor = document.getElementById("filtroFornecedor");
     const selCategoria = document.getElementById("filtroCategoria");
@@ -263,7 +258,8 @@ window.contasPagarModule = {
     const vencidas = document.getElementById("cpTotalVencidas");
     const valorVencido = document.getElementById("cpTotalValorVencido");
 
-    const hoje = new Date(new Date().toDateString());
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
 
     const quantidade = dados.length;
     const totalValor = dados.reduce((acc, item) => acc + Number(item.valor || 0), 0);
@@ -320,6 +316,20 @@ window.contasPagarModule = {
     return selecionadas;
   },
 
+  getStatusVisual(item) {
+    if (String(item.status || "").toLowerCase() === "pago") return "pago";
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    if (item.vencimento) {
+      const venc = new Date(item.vencimento + "T00:00:00");
+      if (venc < hoje) return "vencido";
+    }
+
+    return "aberto";
+  },
+
   aplicarFiltros() {
     return this.lista.filter(item => {
       const busca = this.filtros.busca;
@@ -340,13 +350,7 @@ window.contasPagarModule = {
       const categoriaMatch =
         !this.filtros.categoria || item.categoria === this.filtros.categoria;
 
-      let status = "aberto";
-      if (
-        item.vencimento &&
-        new Date(item.vencimento + "T00:00:00") < new Date(new Date().toDateString())
-      ) {
-        status = "vencido";
-      }
+      const status = this.getStatusVisual(item);
 
       const statusMatch =
         !this.filtros.status || status === this.filtros.status;
@@ -374,7 +378,8 @@ window.contasPagarModule = {
         statusMatch &&
         docsMatch &&
         dataInicioMatch &&
-        dataFimMatch
+        dataFimMatch &&
+        String(item.status || "").toLowerCase() !== "pago"
       );
     });
   },
@@ -383,7 +388,7 @@ window.contasPagarModule = {
     const todos = document.getElementById("cpSelecionarTodos");
 
     if (todos && !todos.dataset.binded) {
-      todos.addEventListener("change", (e) => {
+      todos.addEventListener("change", e => {
         const checked = e.target.checked;
 
         document.querySelectorAll(".cp-select-item").forEach(cb => {
@@ -407,6 +412,72 @@ window.contasPagarModule = {
     });
   },
 
+  registrarEventosFiltros() {
+    const busca = document.getElementById("filtroBusca");
+    const fornecedor = document.getElementById("filtroFornecedor");
+    const categoria = document.getElementById("filtroCategoria");
+    const status = document.getElementById("filtroStatus");
+    const docs = document.getElementById("filtroDocs");
+    const dataInicio = document.getElementById("filtroDataInicio");
+    const dataFim = document.getElementById("filtroDataFim");
+
+    if (busca && !busca.dataset.binded) {
+      busca.addEventListener("input", e => {
+        this.filtros.busca = String(e.target.value || "").toLowerCase();
+        this.render();
+      });
+      busca.dataset.binded = "1";
+    }
+
+    if (fornecedor && !fornecedor.dataset.binded) {
+      fornecedor.addEventListener("change", e => {
+        this.filtros.fornecedor = e.target.value || "";
+        this.render();
+      });
+      fornecedor.dataset.binded = "1";
+    }
+
+    if (categoria && !categoria.dataset.binded) {
+      categoria.addEventListener("change", e => {
+        this.filtros.categoria = e.target.value || "";
+        this.render();
+      });
+      categoria.dataset.binded = "1";
+    }
+
+    if (status && !status.dataset.binded) {
+      status.addEventListener("change", e => {
+        this.filtros.status = e.target.value || "";
+        this.render();
+      });
+      status.dataset.binded = "1";
+    }
+
+    if (docs && !docs.dataset.binded) {
+      docs.addEventListener("change", e => {
+        this.filtros.docs = e.target.value || "";
+        this.render();
+      });
+      docs.dataset.binded = "1";
+    }
+
+    if (dataInicio && !dataInicio.dataset.binded) {
+      dataInicio.addEventListener("change", e => {
+        this.filtros.dataInicio = e.target.value || "";
+        this.render();
+      });
+      dataInicio.dataset.binded = "1";
+    }
+
+    if (dataFim && !dataFim.dataset.binded) {
+      dataFim.addEventListener("change", e => {
+        this.filtros.dataFim = e.target.value || "";
+        this.render();
+      });
+      dataFim.dataset.binded = "1";
+    }
+  },
+
   async importarPlanilha(event) {
     try {
       const file = event.target.files?.[0];
@@ -421,8 +492,6 @@ window.contasPagarModule = {
         utils.setAppMsg("A planilha está vazia.", "err");
         return;
       }
-
-      const { mes, ano } = utils.getMesAno();
 
       const linhas = rows.map(row => {
         const id = row.id || row.ID || "";
@@ -439,9 +508,7 @@ window.contasPagarModule = {
           numero_boleto: String(row.numero_boleto || row.NUMERO_BOLETO || row["NÚMERO_BOLETO"] || "").trim(),
           tem_nfe: this.normalizarBooleano(row.tem_nfe || row.TEM_NFE),
           tem_boleto: this.normalizarBooleano(row.tem_boleto || row.TEM_BOLETO),
-          status: String(row.status || row.STATUS || "pendente").trim().toLowerCase() || "pendente",
-          mes,
-          ano
+          status: String(row.status || row.STATUS || "pendente").trim().toLowerCase() || "pendente"
         };
       }).filter(item =>
         item.fornecedor && item.descricao && item.valor && item.vencimento
@@ -465,9 +532,7 @@ window.contasPagarModule = {
           numero_boleto: item.numero_boleto,
           tem_nfe: item.tem_nfe,
           tem_boleto: item.tem_boleto,
-          status: item.status,
-          mes: item.mes,
-          ano: item.ano
+          status: item.status
         };
 
         if (item.id) {
@@ -524,7 +589,7 @@ window.contasPagarModule = {
     if (!tbody) return;
 
     this.registrarEventosFiltros();
-    
+
     const dados = this.aplicarFiltros();
     this.atualizarTotais(dados);
 
@@ -542,9 +607,7 @@ window.contasPagarModule = {
     }
 
     tbody.innerHTML = dados.map(item => {
-      const hoje = new Date(new Date().toDateString());
-      const vencimento = item.vencimento ? new Date(item.vencimento + "T00:00:00") : null;
-      const vencido = vencimento && vencimento < hoje;
+      const status = this.getStatusVisual(item);
       const itemJson = encodeURIComponent(JSON.stringify(item));
 
       return `
@@ -563,8 +626,8 @@ window.contasPagarModule = {
           <td>${item.documento || "-"}</td>
           <td>${utils.moeda(item.valor || 0)}</td>
           <td>${item.vencimento || "-"}</td>
-          <td class="${vencido ? "err" : "ok"}">
-            ${vencido ? "Vencido" : "Em aberto"}
+          <td class="${status === "vencido" ? "err" : status === "pago" ? "ok" : ""}">
+            ${status === "vencido" ? "Vencido" : status === "pago" ? "Pago" : "Em aberto"}
           </td>
           <td>
             <div class="doc-status">
@@ -578,6 +641,7 @@ window.contasPagarModule = {
               <button
                 class="doc-btn nfe ${item.tem_nfe ? "active" : ""}"
                 onclick="contasPagarModule.marcarNfe(${item.id}, ${!item.tem_nfe})"
+                type="button"
               >
                 ${item.tem_nfe ? "NF OK" : "NF"}
               </button>
@@ -585,6 +649,7 @@ window.contasPagarModule = {
               <button
                 class="doc-btn boleto ${item.tem_boleto ? "active" : ""}"
                 onclick="contasPagarModule.marcarBoleto(${item.id}, ${!item.tem_boleto})"
+                type="button"
               >
                 ${item.tem_boleto ? "Boleto OK" : "Boleto"}
               </button>
@@ -592,10 +657,10 @@ window.contasPagarModule = {
           </td>
           <td>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button class="small-btn small-blue" onclick="contasPagarModule.editar(JSON.parse(decodeURIComponent('${itemJson}')))">Editar</button>
-              <button class="small-btn small-yellow" onclick="contasPagarModule.duplicar(JSON.parse(decodeURIComponent('${itemJson}')))">Duplicar</button>
-              <button class="small-btn small-green" onclick="contasPagarModule.abrirPopupPagamento(${item.id})">Pagar</button>
-              <button class="small-btn small-red" onclick="contasPagarModule.excluir(${item.id})">Excluir</button>
+              <button class="small-btn small-blue" onclick="contasPagarModule.editar(JSON.parse(decodeURIComponent('${itemJson}')))" type="button">Editar</button>
+              <button class="small-btn small-yellow" onclick="contasPagarModule.duplicar(JSON.parse(decodeURIComponent('${itemJson}')))" type="button">Duplicar</button>
+              <button class="small-btn small-green" onclick="contasPagarModule.abrirPopupPagamento(${item.id})" type="button">Pagar</button>
+              <button class="small-btn small-red" onclick="contasPagarModule.excluir(${item.id})" type="button">Excluir</button>
             </div>
           </td>
         </tr>
@@ -604,72 +669,6 @@ window.contasPagarModule = {
 
     this.registrarEventosSelecao();
     this.atualizarSelecionados();
-  },
-
-  registrarEventosFiltros() {
-    const busca = document.getElementById("filtroBusca");
-    const fornecedor = document.getElementById("filtroFornecedor");
-    const categoria = document.getElementById("filtroCategoria");
-    const status = document.getElementById("filtroStatus");
-    const docs = document.getElementById("filtroDocs");
-    const dataInicio = document.getElementById("filtroDataInicio");
-    const dataFim = document.getElementById("filtroDataFim");
-
-    if (busca && !busca.dataset.binded) {
-      busca.addEventListener("input", (e) => {
-        this.filtros.busca = e.target.value.toLowerCase();
-        this.render();
-      });
-      busca.dataset.binded = "1";
-    }
-
-    if (fornecedor && !fornecedor.dataset.binded) {
-      fornecedor.addEventListener("change", (e) => {
-        this.filtros.fornecedor = e.target.value;
-        this.render();
-      });
-      fornecedor.dataset.binded = "1";
-    }
-
-    if (categoria && !categoria.dataset.binded) {
-      categoria.addEventListener("change", (e) => {
-        this.filtros.categoria = e.target.value;
-        this.render();
-      });
-      categoria.dataset.binded = "1";
-    }
-
-    if (status && !status.dataset.binded) {
-      status.addEventListener("change", (e) => {
-        this.filtros.status = e.target.value;
-        this.render();
-      });
-      status.dataset.binded = "1";
-    }
-
-    if (docs && !docs.dataset.binded) {
-      docs.addEventListener("change", (e) => {
-        this.filtros.docs = e.target.value;
-        this.render();
-      });
-      docs.dataset.binded = "1";
-    }
-
-    if (dataInicio && !dataInicio.dataset.binded) {
-      dataInicio.addEventListener("change", (e) => {
-        this.filtros.dataInicio = e.target.value;
-        this.render();
-      });
-      dataInicio.dataset.binded = "1";
-    }
-
-    if (dataFim && !dataFim.dataset.binded) {
-      dataFim.addEventListener("change", (e) => {
-        this.filtros.dataFim = e.target.value;
-        this.render();
-      });
-      dataFim.dataset.binded = "1";
-    }
   },
 
   async marcarNfe(id, valor) {
@@ -823,19 +822,19 @@ window.contasPagarModule = {
     }
   },
 
-async carregarContasPagar() {
-  try {
-    const data = await api.restGet(
-      "contas_pagar",
-      "select=*&status=eq.pendente&order=vencimento.asc"
-    );
+  async carregarContasPagar() {
+    try {
+      const data = await api.restGet(
+        "contas_pagar",
+        "select=*&status=neq.pago&order=vencimento.asc"
+      );
 
-    this.lista = Array.isArray(data) ? data : [];
-    this.preencherFiltros();
-    this.registrarEventosFiltros();
-    this.render();
-  } catch (e) {
-    utils.setAppMsg("Erro ao carregar contas a pagar: " + e.message, "err");
+      this.lista = Array.isArray(data) ? data : [];
+      this.preencherFiltros();
+      this.registrarEventosFiltros();
+      this.render();
+    } catch (e) {
+      utils.setAppMsg("Erro ao carregar contas a pagar: " + e.message, "err");
+    }
   }
-}
 };
