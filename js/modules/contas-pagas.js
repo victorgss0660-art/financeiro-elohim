@@ -38,7 +38,7 @@ window.contasPagasModule = {
     tbody.innerHTML = this.lista.map(i => `
       <tr>
         <td>${i.fornecedor || "-"}</td>
-        <td>${i.descricao || "-"}</td>
+        <td>${i.documento || "-"}</td>
         <td>${i.categoria || "-"}</td>
         <td>${utils.moeda(i.valor || 0)}</td>
         <td>${i.data_pagamento || "-"}</td>
