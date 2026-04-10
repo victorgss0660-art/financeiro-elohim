@@ -10,13 +10,13 @@ window.contasPagasModule = {
         "select=*&status=eq.pago"
       );
 
-      this.lista = data || [];
+      this.lista = Array.isArray(data) ? data : [];
 
       this.renderTabela();
       this.renderCards();
       this.renderGraficoMes();
       this.renderGraficoCategoria();
-
+      this.renderRankingFornecedores();
     } catch (e) {
       utils.setAppMsg("Erro ao carregar contas pagas", "err");
     }
@@ -24,13 +24,23 @@ window.contasPagasModule = {
 
   renderTabela() {
     const tbody = document.getElementById("tabelaContasPagas");
+    if (!tbody) return;
+
+    if (!this.lista.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="muted">Nenhuma conta paga.</td>
+        </tr>
+      `;
+      return;
+    }
 
     tbody.innerHTML = this.lista.map(i => `
       <tr>
-        <td>${i.fornecedor}</td>
-        <td>${i.descricao}</td>
-        <td>${i.categoria}</td>
-        <td>${utils.moeda(i.valor)}</td>
+        <td>${i.fornecedor || "-"}</td>
+        <td>${i.descricao || "-"}</td>
+        <td>${i.categoria || "-"}</td>
+        <td>${utils.moeda(i.valor || 0)}</td>
         <td>${i.data_pagamento || "-"}</td>
       </tr>
     `).join("");
@@ -42,25 +52,31 @@ window.contasPagasModule = {
     const media = qtd ? total / qtd : 0;
     const maior = Math.max(...this.lista.map(i => Number(i.valor || 0)), 0);
 
-    document.getElementById("cpPagasTotalCard").textContent = utils.moeda(total);
-    document.getElementById("cpPagasQtdCard").textContent = qtd;
-    document.getElementById("cpPagasMedia").textContent = utils.moeda(media);
-    document.getElementById("cpPagasMaior").textContent = utils.moeda(maior);
+    const totalEl = document.getElementById("cpPagasTotalCard");
+    const qtdEl = document.getElementById("cpPagasQtdCard");
+    const mediaEl = document.getElementById("cpPagasMedia");
+    const maiorEl = document.getElementById("cpPagasMaior");
+
+    if (totalEl) totalEl.textContent = utils.moeda(total);
+    if (qtdEl) qtdEl.textContent = String(qtd);
+    if (mediaEl) mediaEl.textContent = utils.moeda(media);
+    if (maiorEl) maiorEl.textContent = utils.moeda(maior);
   },
 
   renderGraficoMes() {
+    const ctx = document.getElementById("chartPagasMes");
+    if (!ctx || typeof Chart === "undefined") return;
+
     const dados = {};
 
     this.lista.forEach(i => {
       if (!i.data_pagamento) return;
-      const mes = i.data_pagamento.slice(0,7);
+      const mes = String(i.data_pagamento).slice(0, 7);
       dados[mes] = (dados[mes] || 0) + Number(i.valor || 0);
     });
 
     const labels = Object.keys(dados).sort();
     const valores = labels.map(l => dados[l]);
-
-    const ctx = document.getElementById("chartPagasMes");
 
     if (this.chartMes) this.chartMes.destroy();
 
@@ -71,13 +87,20 @@ window.contasPagasModule = {
         datasets: [{
           label: "Pagamentos",
           data: valores,
-          tension: 0.4
+          tension: 0.35
         }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
   },
 
   renderGraficoCategoria() {
+    const ctx = document.getElementById("chartPagasCategoria");
+    if (!ctx || typeof Chart === "undefined") return;
+
     const dados = {};
 
     this.lista.forEach(i => {
@@ -88,8 +111,6 @@ window.contasPagasModule = {
     const labels = Object.keys(dados);
     const valores = Object.values(dados);
 
-    const ctx = document.getElementById("chartPagasCategoria");
-
     if (this.chartCategoria) this.chartCategoria.destroy();
 
     this.chartCategoria = new Chart(ctx, {
@@ -99,8 +120,50 @@ window.contasPagasModule = {
         datasets: [{
           data: valores
         }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
       }
     });
+  },
+
+  renderRankingFornecedores() {
+    const el = document.getElementById("rankingFornecedoresPagas");
+    if (!el) return;
+
+    if (!this.lista.length) {
+      el.innerHTML = `<div class="muted">Nenhum dado disponível.</div>`;
+      return;
+    }
+
+    const mapa = {};
+
+    this.lista.forEach(item => {
+      const fornecedor = item.fornecedor || "Sem fornecedor";
+      if (!mapa[fornecedor]) {
+        mapa[fornecedor] = {
+          fornecedor,
+          total: 0,
+          quantidade: 0
+        };
+      }
+
+      mapa[fornecedor].total += Number(item.valor || 0);
+      mapa[fornecedor].quantidade += 1;
+    });
+
+    const ranking = Object.values(mapa)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+
+    el.innerHTML = ranking.map((item, index) => `
+      <div class="alert-item">
+        <strong>#${index + 1} ${item.fornecedor}</strong><br>
+        Total pago: ${utils.moeda(item.total)}<br>
+        Quantidade de pagamentos: ${item.quantidade}
+      </div>
+    `).join("");
   },
 
   exportarPlanilha() {
