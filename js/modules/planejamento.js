@@ -332,7 +332,8 @@ window.planejamentoModule = {
     if (!canvas) return;
 
     if (typeof Chart === "undefined") {
-      throw new Error("Chart.js não carregado.");
+      console.warn("Chart ainda não carregado, tentando novamente...");
+      return setTimeout(() => this.renderPlanejamentoChart(semanas), 200);
     }
 
     if (this.planejamentoChart) {
