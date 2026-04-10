@@ -405,11 +405,18 @@ navigate(tabName) {
     loading.show();
 
     try {
-      if (tabName === "dashboard") {
-        await window.faturamentoModule?.carregarFaturamento?.();
-        await window.metasModule?.carregarMetas?.();
-        await window.dashboardModule?.carregarDashboard?.();
-        return;
+if (tabName === "dashboard") {
+  await window.faturamentoModule?.carregarFaturamento?.();
+  await window.metasModule?.carregarMetas?.();
+  await window.dashboardModule?.carregarDashboard?.();
+  return;
+}
+
+if (tabName === "planejamento") {
+  await window.planejamentoModule?.carregarSaldosBancarios?.();
+  await window.planejamentoModule?.carregarPlanejamento?.();
+  return;
+}
       }
 
       if (tabName === "contas-pagar") {
