@@ -20,7 +20,6 @@ window.app = {
     this.preencherUsuario();
     this.controlarBlocoMesAno("dashboard");
 
-    // inicializa módulos que precisam bindar elementos
     window.importarModule?.init?.();
 
     await this.navigate("dashboard");
