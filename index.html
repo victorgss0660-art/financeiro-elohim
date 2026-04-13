@@ -598,22 +598,74 @@
       </section>
 
       <!-- IMPORTAR -->
-      <section id="tab-importar" class="tab-section">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Importar planilha de despesas</h3>
-            <div class="badge">Excel</div>
-          </div>
+<section id="tab-importar" class="tab-section">
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Importar planilha de despesas</h3>
+      <div class="badge">Modo ERP</div>
+    </div>
 
-          <input id="fileInput" type="file" accept=".xlsx,.xls">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+      <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
+      <button id="btnConfirmarImportacao" class="btn hidden" type="button">Confirmar importação</button>
+      <button id="btnCancelarImportacao" class="secondary-btn hidden" type="button">Cancelar</button>
+    </div>
 
-          <div class="import-help">
-            <div><strong>Colunas aceitas:</strong> CATEGORIA, VALOR</div>
-            <div><strong>CATEGORIA:</strong> MC, MP, TERC, FRETE, DESP, TAR, PREST, FOLHA, COMIS, IMPOS, RESC, MANUT</div>
-            <div><strong>VALOR:</strong> aceita 1500, 1500,50, 1500.50, R$ 1.500,50</div>
-          </div>
-        </section>
-      </section>
+    <div class="import-help">
+      <div><strong>Colunas aceitas:</strong> CATEGORIA, VALOR</div>
+      <div><strong>CATEGORIA:</strong> MC, MP, TERC, FRETE, DESP, TAR, PREST, FOLHA, COMIS, IMPOS, RESC, MANUT</div>
+      <div><strong>VALOR:</strong> aceita 1500, 1500,50, 1500.50, R$ 1.500,50</div>
+    </div>
+  </section>
+
+  <section class="cards">
+    <div class="card">
+      <div class="card-title">Linhas válidas</div>
+      <div class="card-value" id="impQtdValidas">0</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Linhas com erro</div>
+      <div class="card-value" id="impQtdInvalidas">0</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Valor total válido</div>
+      <div class="card-value" id="impValorTotal">R$ 0,00</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Status</div>
+      <div class="card-value" id="impStatus">Aguardando</div>
+    </div>
+  </section>
+
+  <section class="panel table-wrap">
+    <div class="panel-head">
+      <h3>Pré-visualização da importação</h3>
+      <div class="badge" id="impNomeArquivo">Nenhum arquivo</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Linha</th>
+          <th>Categoria original</th>
+          <th>Categoria final</th>
+          <th>Valor original</th>
+          <th>Valor final</th>
+          <th>Status</th>
+          <th>Observação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaPreviewImportacao">
+        <tr>
+          <td colspan="7" class="muted">Nenhum arquivo carregado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
 
       <!-- RESUMO -->
       <section id="tab-resumo" class="tab-section">
