@@ -230,6 +230,10 @@ window.app = {
           await window.planejamentoModule?.carregarSaldosBancarios?.();
           await window.planejamentoModule?.carregarPlanejamento?.();
           break;
+          
+        case "dre":
+          await window.dreModule?.carregarDRE?.();
+          break;
 
         default:
           break;
