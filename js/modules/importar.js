@@ -1,84 +1,91 @@
 window.importarModule = {
+  init() {
+    const input = document.getElementById("fileInput");
+    if (!input) return;
+
+    input.addEventListener("change", this.handleFile.bind(this));
+  },
+
   async handleFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
     try {
-      const file = event.target.files?.[0];
-      if (!file) return;
+      utils.setAppMsg("Lendo planilha...", "info");
 
-      const buffer = await file.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
 
-      if (!rows.length) {
-        utils.setAppMsg("A planilha está vazia.", "err");
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+
+      const json = XLSX.utils.sheet_to_json(sheet);
+
+      if (!json.length) {
+        utils.setAppMsg("Planilha vazia!", "err");
         return;
       }
 
-      const { mes, ano } = utils.getMesAno();
-      const erros = [];
-      const linhasValidas = [];
+      const dadosTratados = json.map(row => {
+        return {
+          categoria: this.tratarCategoria(row),
+          valor: this.tratarValor(row)
+        };
+      }).filter(i => i.valor > 0);
 
-      rows.forEach((row, index) => {
-        const linhaExcel = index + 2;
-
-        const categoriaBruta =
-          row.CATEGORIA ??
-          row.categoria ??
-          row.Categoria ??
-          "";
-
-        const valorBruto =
-          row.VALOR ??
-          row.valor ??
-          row.Valor ??
-          "";
-
-        const categoria = utils.categoriaCanonica(categoriaBruta);
-        const valor = utils.numero(valorBruto);
-
-        if (!utils.categoriaValida(categoriaBruta)) {
-          erros.push(`Linha ${linhaExcel}: categoria inválida (${categoriaBruta})`);
-          return;
-        }
-
-        if (!valor || valor <= 0) {
-          erros.push(`Linha ${linhaExcel}: valor inválido (${valorBruto})`);
-          return;
-        }
-
-        linhasValidas.push({
-          categoria,
-          valor,
-          mes,
-          ano
-        });
-      });
-
-      if (erros.length) {
-        utils.setAppMsg(erros.join("\n"), "err");
+      if (!dadosTratados.length) {
+        utils.setAppMsg("Nenhum valor válido encontrado", "err");
         return;
       }
 
-      if (!linhasValidas.length) {
-        utils.setAppMsg("Nenhuma linha válida encontrada para importar.", "err");
-        return;
-      }
+      await this.salvarNoBanco(dadosTratados);
 
-      await api.restInsert("gastos", linhasValidas);
+      utils.setAppMsg("Importação concluída com sucesso!", "ok");
 
-      utils.setAppMsg("Despesas importadas com sucesso.", "ok");
-
-      event.target.value = "";
-
-      if (window.dashboardModule?.carregarDashboard) {
-        await window.dashboardModule.carregarDashboard();
-      }
-
-      if (window.resumoModule?.carregarResumoAnual) {
-        await window.resumoModule.carregarResumoAnual();
-      }
     } catch (e) {
+      console.error(e);
       utils.setAppMsg("Erro ao importar planilha: " + e.message, "err");
+    }
+  },
+
+  tratarCategoria(row) {
+    const cat = String(row.CATEGORIA || row.categoria || "").trim().toUpperCase();
+
+    const validas = [
+      "MC","MP","TERC","FRETE",
+      "DESP","TAR","PREST","FOLHA",
+      "COMIS","IMPOS","RESC","MANUT"
+    ];
+
+    if (validas.includes(cat)) return cat;
+
+    return "DESP";
+  },
+
+  tratarValor(row) {
+    let valor = row.VALOR || row.valor || 0;
+
+    if (typeof valor === "string") {
+      valor = valor
+        .replace("R$", "")
+        .replace(/\./g, "")
+        .replace(",", ".")
+        .trim();
+    }
+
+    return Number(valor) || 0;
+  },
+
+  async salvarNoBanco(lista) {
+    const { mes, ano } = utils.getMesAno();
+
+    for (const item of lista) {
+      await api.restPost("despesas", {
+        categoria: item.categoria,
+        valor: item.valor,
+        mes,
+        ano
+      });
     }
   }
 };
