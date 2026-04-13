@@ -301,3 +301,6 @@ document.getElementById("btnExportarContasPagas")?.addEventListener("click", () 
 document.getElementById("btnExportarContasPagas")?.addEventListener("click", () => {
   contasPagasModule.exportarPlanilha();
 });
+window.addEventListener("DOMContentLoaded", () => {
+  window.importarModule?.init?.();
+});
