@@ -1,5 +1,5 @@
 // 🔴 CONFIGURAÇÃO DO SUPABASE
-const SUPABASE_URL = "https://financeiro-elohim.supabase.co";
+const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
 // 🔴 VALIDAÇÃO
