@@ -80,12 +80,20 @@ window.importarModule = {
     const { mes, ano } = utils.getMesAno();
 
     for (const item of lista) {
-      await api.restPost("despesas", {
-        categoria: item.categoria,
-        valor: item.valor,
-        mes,
-        ano
-      });
+const { error } = await supabase
+  .from("gastos")
+  .insert([
+    {
+      categoria: item.categoria,
+      valor: item.valor,
+      mes,
+      ano
+    }
+  ]);
+
+if (error) {
+  console.error("Erro ao salvar:", error);
+}
     }
   }
 };
