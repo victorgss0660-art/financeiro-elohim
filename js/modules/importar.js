@@ -14,15 +14,34 @@ window.importarModule = {
     "MANUT"
   ],
 
+  previewData: [],
+  arquivoAtual: "",
+
   init() {
     const input = document.getElementById("fileInput");
-    if (!input || input.dataset.binded === "1") return;
+    const btnConfirmar = document.getElementById("btnConfirmarImportacao");
+    const btnCancelar = document.getElementById("btnCancelarImportacao");
 
-    input.addEventListener("change", async (event) => {
-      await this.handleFile(event);
-    });
+    if (input && input.dataset.binded !== "1") {
+      input.addEventListener("change", async (event) => {
+        await this.handleFile(event);
+      });
+      input.dataset.binded = "1";
+    }
 
-    input.dataset.binded = "1";
+    if (btnConfirmar && btnConfirmar.dataset.binded !== "1") {
+      btnConfirmar.addEventListener("click", async () => {
+        await this.confirmarImportacao();
+      });
+      btnConfirmar.dataset.binded = "1";
+    }
+
+    if (btnCancelar && btnCancelar.dataset.binded !== "1") {
+      btnCancelar.addEventListener("click", () => {
+        this.cancelarImportacao();
+      });
+      btnCancelar.dataset.binded = "1";
+    }
   },
 
   async handleFile(event) {
@@ -31,6 +50,7 @@ window.importarModule = {
 
     try {
       utils.setAppMsg("Lendo planilha...", "info");
+      this.arquivoAtual = file.name;
 
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer, { type: "array" });
@@ -47,36 +67,18 @@ window.importarModule = {
         throw new Error("A planilha está vazia.");
       }
 
-      const registros = rows
-        .map((row, index) => this.normalizarLinha(row, index + 2))
-        .filter(Boolean);
+      this.previewData = rows.map((row, index) => this.normalizarLinha(row, index + 2));
+      this.renderPreview();
+      this.atualizarResumo();
+      this.mostrarAcoesImportacao(true);
 
-      if (!registros.length) {
-        throw new Error("Nenhuma linha válida encontrada.");
-      }
-
-      await this.salvarNoBanco(registros);
-
-      event.target.value = "";
-
-      utils.setAppMsg(
-        `Importação concluída com sucesso. ${registros.length} lançamento(s) inserido(s).`,
-        "ok"
-      );
-
-      if (window.dashboardModule?.carregarDashboard && window.app?.currentTab === "dashboard") {
-        await window.dashboardModule.carregarDashboard();
-      }
-
-      if (window.resumoModule?.carregarResumoAnual && window.app?.currentTab === "resumo") {
-        await window.resumoModule.carregarResumoAnual();
-      }
-
-      if (window.dreModule?.carregarDRE && window.app?.currentTab === "dre") {
-        await window.dreModule.carregarDRE();
-      }
+      utils.setAppMsg("Pré-visualização carregada. Revise e confirme.", "ok");
     } catch (error) {
-      console.error("Erro ao importar planilha:", error);
+      console.error("Erro ao ler planilha:", error);
+      this.previewData = [];
+      this.renderPreview();
+      this.atualizarResumo();
+      this.mostrarAcoesImportacao(false);
       utils.setAppMsg("Erro ao importar planilha: " + error.message, "err");
     }
   },
@@ -96,17 +98,34 @@ window.importarModule = {
       row["VALOR "] ??
       0;
 
-    const categoria = this.normalizarCategoria(categoriaBruta);
-    const valor = this.normalizarValor(valorBruto);
+    const categoriaOriginal = String(categoriaBruta || "").trim();
+    const valorOriginal = String(valorBruto ?? "").trim();
 
-    if (!valor || valor <= 0) {
-      return null;
-    }
+    const categoriaInfo = this.normalizarCategoria(categoriaBruta);
+    const valorInfo = this.normalizarValor(valorBruto);
+
+    const erros = [];
+    const avisos = [];
+
+    if (!valorInfo.valido) erros.push("Valor inválido");
+    if (valorInfo.numero <= 0) erros.push("Valor zerado");
+    if (categoriaInfo.ajustada) avisos.push("Categoria ajustada para DESP");
+
+    const valido = erros.length === 0;
+
+    let status = "OK";
+    if (!valido) status = "Erro";
+    else if (avisos.length) status = "Ajustado";
 
     return {
-      categoria,
-      valor,
-      linha: numeroLinha
+      linha: numeroLinha,
+      categoriaOriginal,
+      categoriaFinal: categoriaInfo.categoria,
+      valorOriginal,
+      valorFinal: valorInfo.numero,
+      valido,
+      status,
+      observacao: [...erros, ...avisos].join(" | ") || "-"
     };
   },
 
@@ -116,21 +135,34 @@ window.importarModule = {
       .toUpperCase();
 
     if (this.categoriasValidas.includes(categoria)) {
-      return categoria;
+      return {
+        categoria,
+        ajustada: false
+      };
     }
 
-    return "DESP";
+    return {
+      categoria: "DESP",
+      ajustada: true
+    };
   },
 
   normalizarValor(valor) {
     if (typeof valor === "number") {
-      return Number.isFinite(valor) ? valor : 0;
+      return {
+        numero: Number.isFinite(valor) ? valor : 0,
+        valido: Number.isFinite(valor)
+      };
     }
 
-    if (valor == null) return 0;
+    if (valor == null) {
+      return { numero: 0, valido: false };
+    }
 
     let texto = String(valor).trim();
-    if (!texto) return 0;
+    if (!texto) {
+      return { numero: 0, valido: false };
+    }
 
     texto = texto.replace(/R\$/gi, "").replace(/\s/g, "");
 
@@ -144,19 +176,129 @@ window.importarModule = {
     }
 
     const numero = Number(texto);
-    return Number.isFinite(numero) ? numero : 0;
+
+    return {
+      numero: Number.isFinite(numero) ? numero : 0,
+      valido: Number.isFinite(numero)
+    };
   },
 
-  async salvarNoBanco(registros) {
-    const { mes, ano } = utils.getMesAno();
+  renderPreview() {
+    const tbody = document.getElementById("tabelaPreviewImportacao");
+    const nomeArquivo = document.getElementById("impNomeArquivo");
 
-    const payload = registros.map((item) => ({
-      categoria: item.categoria,
-      valor: item.valor,
-      mes,
-      ano
-    }));
+    if (nomeArquivo) {
+      nomeArquivo.textContent = this.arquivoAtual || "Nenhum arquivo";
+    }
 
-    await api.insert("gastos", payload);
+    if (!tbody) return;
+
+    if (!this.previewData.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="muted">Nenhum arquivo carregado.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = this.previewData.map(item => `
+      <tr class="${item.valido ? "" : "selecionado"}">
+        <td>${item.linha}</td>
+        <td>${item.categoriaOriginal || "-"}</td>
+        <td>${item.categoriaFinal}</td>
+        <td>${item.valorOriginal || "-"}</td>
+        <td>${utils.moeda(item.valorFinal || 0)}</td>
+        <td class="${item.status === "Erro" ? "err" : item.status === "Ajustado" ? "" : "ok"}">${item.status}</td>
+        <td>${item.observacao}</td>
+      </tr>
+    `).join("");
+  },
+
+  atualizarResumo() {
+    const validas = this.previewData.filter(i => i.valido);
+    const invalidas = this.previewData.filter(i => !i.valido);
+    const total = validas.reduce((acc, item) => acc + Number(item.valorFinal || 0), 0);
+
+    const qtdValidas = document.getElementById("impQtdValidas");
+    const qtdInvalidas = document.getElementById("impQtdInvalidas");
+    const valorTotal = document.getElementById("impValorTotal");
+    const status = document.getElementById("impStatus");
+
+    if (qtdValidas) qtdValidas.textContent = String(validas.length);
+    if (qtdInvalidas) qtdInvalidas.textContent = String(invalidas.length);
+    if (valorTotal) valorTotal.textContent = utils.moeda(total);
+
+    if (status) {
+      if (!this.previewData.length) status.textContent = "Aguardando";
+      else if (invalidas.length) status.textContent = "Revisar";
+      else status.textContent = "Pronto";
+    }
+  },
+
+  mostrarAcoesImportacao(mostrar) {
+    const btnConfirmar = document.getElementById("btnConfirmarImportacao");
+    const btnCancelar = document.getElementById("btnCancelarImportacao");
+
+    if (btnConfirmar) btnConfirmar.classList.toggle("hidden", !mostrar);
+    if (btnCancelar) btnCancelar.classList.toggle("hidden", !mostrar);
+  },
+
+  async confirmarImportacao() {
+    try {
+      const validos = this.previewData.filter(item => item.valido);
+
+      if (!validos.length) {
+        utils.setAppMsg("Nenhuma linha válida para importar.", "err");
+        return;
+      }
+
+      utils.setAppMsg("Importando registros...", "info");
+
+      const { mes, ano } = utils.getMesAno();
+
+      const payload = validos.map(item => ({
+        categoria: item.categoriaFinal,
+        valor: item.valorFinal,
+        mes,
+        ano
+      }));
+
+      await api.insert("gastos", payload);
+
+      utils.setAppMsg(
+        `Importação concluída com sucesso. ${payload.length} lançamento(s) inserido(s).`,
+        "ok"
+      );
+
+      this.cancelarImportacao();
+
+      if (window.dashboardModule?.carregarDashboard && window.app?.currentTab === "dashboard") {
+        await window.dashboardModule.carregarDashboard();
+      }
+
+      if (window.resumoModule?.carregarResumoAnual) {
+        await window.resumoModule.carregarResumoAnual();
+      }
+
+      if (window.dreModule?.carregarDRE && window.app?.currentTab === "dre") {
+        await window.dreModule.carregarDRE();
+      }
+    } catch (error) {
+      console.error("Erro ao confirmar importação:", error);
+      utils.setAppMsg("Erro ao importar planilha: " + error.message, "err");
+    }
+  },
+
+  cancelarImportacao() {
+    this.previewData = [];
+    this.arquivoAtual = "";
+
+    const input = document.getElementById("fileInput");
+    if (input) input.value = "";
+
+    this.renderPreview();
+    this.atualizarResumo();
+    this.mostrarAcoesImportacao(false);
   }
 };
