@@ -20,6 +20,7 @@ window.app = {
     this.preencherUsuario();
     this.controlarBlocoMesAno("dashboard");
 
+    // Inicializa módulos que precisam bindar elementos
     window.importarModule?.init?.();
 
     await this.navigate("dashboard");
@@ -27,7 +28,7 @@ window.app = {
 
   bindMenu() {
     document.querySelectorAll(".menu-btn").forEach(btn => {
-      if (btn.dataset.binded) return;
+      if (btn.dataset.binded === "1") return;
 
       btn.addEventListener("click", async () => {
         const tab = btn.dataset.tab;
@@ -40,16 +41,16 @@ window.app = {
   },
 
   bindAcoesGlobais() {
-    const btnCarregar = document.getElementById("btnCarregarMes");
-    if (btnCarregar && !btnCarregar.dataset.binded) {
-      btnCarregar.addEventListener("click", async () => {
+    const btnCarregarMes = document.getElementById("btnCarregarMes");
+    if (btnCarregarMes && btnCarregarMes.dataset.binded !== "1") {
+      btnCarregarMes.addEventListener("click", async () => {
         await this.onTabChange(this.currentTab);
       });
-      btnCarregar.dataset.binded = "1";
+      btnCarregarMes.dataset.binded = "1";
     }
 
     const btnSair = document.getElementById("btnSair");
-    if (btnSair && !btnSair.dataset.binded) {
+    if (btnSair && btnSair.dataset.binded !== "1") {
       btnSair.addEventListener("click", () => {
         try {
           localStorage.removeItem("elohim_user");
@@ -60,7 +61,7 @@ window.app = {
     }
 
     const btnSalvarContaPagar = document.getElementById("btnSalvarContaPagar");
-    if (btnSalvarContaPagar && !btnSalvarContaPagar.dataset.binded) {
+    if (btnSalvarContaPagar && btnSalvarContaPagar.dataset.binded !== "1") {
       btnSalvarContaPagar.addEventListener("click", async () => {
         await window.contasPagarModule?.salvarContaPagar?.();
       });
@@ -68,7 +69,7 @@ window.app = {
     }
 
     const btnImportarContasPagar = document.getElementById("btnImportarContasPagar");
-    if (btnImportarContasPagar && !btnImportarContasPagar.dataset.binded) {
+    if (btnImportarContasPagar && btnImportarContasPagar.dataset.binded !== "1") {
       btnImportarContasPagar.addEventListener("click", () => {
         document.getElementById("fileInputContasPagar")?.click();
       });
@@ -76,7 +77,7 @@ window.app = {
     }
 
     const fileInputContasPagar = document.getElementById("fileInputContasPagar");
-    if (fileInputContasPagar && !fileInputContasPagar.dataset.binded) {
+    if (fileInputContasPagar && fileInputContasPagar.dataset.binded !== "1") {
       fileInputContasPagar.addEventListener("change", async event => {
         await window.contasPagarModule?.importarPlanilha?.(event);
       });
@@ -84,7 +85,7 @@ window.app = {
     }
 
     const btnExportarContasPagar = document.getElementById("btnExportarContasPagar");
-    if (btnExportarContasPagar && !btnExportarContasPagar.dataset.binded) {
+    if (btnExportarContasPagar && btnExportarContasPagar.dataset.binded !== "1") {
       btnExportarContasPagar.addEventListener("click", () => {
         window.contasPagarModule?.exportarPlanilha?.();
       });
@@ -92,7 +93,7 @@ window.app = {
     }
 
     const btnPagarSelecionadas = document.getElementById("btnPagarSelecionadas");
-    if (btnPagarSelecionadas && !btnPagarSelecionadas.dataset.binded) {
+    if (btnPagarSelecionadas && btnPagarSelecionadas.dataset.binded !== "1") {
       btnPagarSelecionadas.addEventListener("click", () => {
         window.contasPagarModule?.abrirPopupPagamentoLote?.();
       });
@@ -100,7 +101,7 @@ window.app = {
     }
 
     const btnExportarContasPagas = document.getElementById("btnExportarContasPagas");
-    if (btnExportarContasPagas && !btnExportarContasPagas.dataset.binded) {
+    if (btnExportarContasPagas && btnExportarContasPagas.dataset.binded !== "1") {
       btnExportarContasPagas.addEventListener("click", () => {
         window.contasPagasModule?.exportarPlanilha?.();
       });
@@ -108,7 +109,7 @@ window.app = {
     }
 
     const btnSalvarContaReceber = document.getElementById("btnSalvarContaReceber");
-    if (btnSalvarContaReceber && !btnSalvarContaReceber.dataset.binded) {
+    if (btnSalvarContaReceber && btnSalvarContaReceber.dataset.binded !== "1") {
       btnSalvarContaReceber.addEventListener("click", async () => {
         await window.contasReceberModule?.salvarContaReceber?.();
       });
@@ -116,7 +117,7 @@ window.app = {
     }
 
     const btnSalvarFaturamento = document.getElementById("btnSalvarFaturamento");
-    if (btnSalvarFaturamento && !btnSalvarFaturamento.dataset.binded) {
+    if (btnSalvarFaturamento && btnSalvarFaturamento.dataset.binded !== "1") {
       btnSalvarFaturamento.addEventListener("click", async () => {
         await window.faturamentoModule?.salvarFaturamento?.();
       });
@@ -124,7 +125,7 @@ window.app = {
     }
 
     const btnSalvarMetas = document.getElementById("btnSalvarMetas");
-    if (btnSalvarMetas && !btnSalvarMetas.dataset.binded) {
+    if (btnSalvarMetas && btnSalvarMetas.dataset.binded !== "1") {
       btnSalvarMetas.addEventListener("click", async () => {
         await window.metasModule?.salvarMetas?.();
       });
@@ -132,11 +133,27 @@ window.app = {
     }
 
     const btnSalvarSaldosBancarios = document.getElementById("btnSalvarSaldosBancarios");
-    if (btnSalvarSaldosBancarios && !btnSalvarSaldosBancarios.dataset.binded) {
+    if (btnSalvarSaldosBancarios && btnSalvarSaldosBancarios.dataset.binded !== "1") {
       btnSalvarSaldosBancarios.addEventListener("click", async () => {
         await window.planejamentoModule?.salvarSaldosBancarios?.();
       });
       btnSalvarSaldosBancarios.dataset.binded = "1";
+    }
+
+    const btnConfirmarImportacao = document.getElementById("btnConfirmarImportacao");
+    if (btnConfirmarImportacao && btnConfirmarImportacao.dataset.binded !== "1") {
+      btnConfirmarImportacao.addEventListener("click", async () => {
+        await window.importarModule?.confirmarImportacao?.();
+      });
+      btnConfirmarImportacao.dataset.binded = "1";
+    }
+
+    const btnCancelarImportacao = document.getElementById("btnCancelarImportacao");
+    if (btnCancelarImportacao && btnCancelarImportacao.dataset.binded !== "1") {
+      btnCancelarImportacao.addEventListener("click", () => {
+        window.importarModule?.cancelarImportacao?.();
+      });
+      btnCancelarImportacao.dataset.binded = "1";
     }
   },
 
@@ -182,7 +199,6 @@ window.app = {
   },
 
   async navigate(tabName) {
-    const secoes = document.querySelectorAll(".tab-section");
     const proxima = document.getElementById(`tab-${tabName}`);
     if (!proxima) return;
 
@@ -192,7 +208,7 @@ window.app = {
       btn.classList.toggle("active", btn.dataset.tab === tabName);
     });
 
-    secoes.forEach(sec => {
+    document.querySelectorAll(".tab-section").forEach(sec => {
       sec.classList.remove("active");
       sec.style.display = "none";
     });
@@ -284,10 +300,14 @@ window.app = {
           break;
       }
 
-      utils.setAppMsg("", "info");
+      if (window.utils?.setAppMsg) {
+        utils.setAppMsg("", "info");
+      }
     } catch (e) {
       console.error(`Erro ao carregar aba ${tabName}:`, e);
-      utils.setAppMsg(`Erro ao carregar ${tabName}: ${e.message}`, "err");
+      if (window.utils?.setAppMsg) {
+        utils.setAppMsg(`Erro ao carregar ${tabName}: ${e.message}`, "err");
+      }
     } finally {
       loading.hide();
     }
@@ -332,5 +352,12 @@ window.app = {
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
-  await window.app.init();
+  try {
+    await window.app.init();
+  } catch (e) {
+    console.error("Erro ao iniciar aplicação:", e);
+    if (window.utils?.setAppMsg) {
+      utils.setAppMsg("Erro ao iniciar sistema: " + e.message, "err");
+    }
+  }
 });
