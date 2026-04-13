@@ -76,20 +76,26 @@ window.importarModule = {
     return Number(valor) || 0;
   },
 
-  async salvarNoBanco(lista) {
-    const { mes, ano } = utils.getMesAno();
+async salvarNoBanco(lista) {
+  const { mes, ano } = utils.getMesAno();
 
-    for (const item of lista) {
-const { error } = await supabase
-  .from("gastos")
-  .insert([
-    {
-      categoria: item.categoria,
-      valor: item.valor,
-      mes,
-      ano
+  for (const item of lista) {
+    const { error } = await supabase
+      .from("gastos")
+      .insert([
+        {
+          categoria: item.categoria,
+          valor: item.valor,
+          mes,
+          ano
+        }
+      ]);
+
+    if (error) {
+      console.error("Erro ao inserir:", error);
     }
-  ]);
+  }
+}
 
 if (error) {
   console.error("Erro ao salvar:", error);
