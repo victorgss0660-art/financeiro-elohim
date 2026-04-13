@@ -16,9 +16,12 @@ window.importarModule = {
 
   init() {
     const input = document.getElementById("fileInput");
-    if (!input || input.dataset.binded) return;
+    if (!input || input.dataset.binded === "1") return;
 
-    input.addEventListener("change", this.handleFile.bind(this));
+    input.addEventListener("change", async (event) => {
+      await this.handleFile(event);
+    });
+
     input.dataset.binded = "1";
   },
 
@@ -29,60 +32,56 @@ window.importarModule = {
     try {
       utils.setAppMsg("Lendo planilha...", "info");
 
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data, { type: "array" });
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: "array" });
 
-      if (!workbook.SheetNames.length) {
-        utils.setAppMsg("A planilha não possui abas válidas.", "err");
-        return;
+      if (!workbook.SheetNames?.length) {
+        throw new Error("Nenhuma aba encontrada na planilha.");
       }
 
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
+      const primeiraAba = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[primeiraAba];
       const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
       if (!rows.length) {
-        utils.setAppMsg("A planilha está vazia.", "err");
-        return;
+        throw new Error("A planilha está vazia.");
       }
 
-      const dadosTratados = rows
-        .map((row, index) => this.tratarLinha(row, index + 2))
-        .filter(item => item && item.valor > 0);
+      const registros = rows
+        .map((row, index) => this.normalizarLinha(row, index + 2))
+        .filter(Boolean);
 
-      if (!dadosTratados.length) {
-        utils.setAppMsg("Nenhuma linha válida encontrada para importar.", "err");
-        return;
+      if (!registros.length) {
+        throw new Error("Nenhuma linha válida encontrada.");
       }
 
-      await this.salvarNoBanco(dadosTratados);
+      await this.salvarNoBanco(registros);
 
-      const input = document.getElementById("fileInput");
-      if (input) input.value = "";
+      event.target.value = "";
 
       utils.setAppMsg(
-        `Importação concluída com sucesso. ${dadosTratados.length} lançamentos inseridos.`,
+        `Importação concluída com sucesso. ${registros.length} lançamento(s) inserido(s).`,
         "ok"
       );
 
-      if (window.dashboardModule?.carregarDashboard) {
+      if (window.dashboardModule?.carregarDashboard && window.app?.currentTab === "dashboard") {
         await window.dashboardModule.carregarDashboard();
       }
 
-      if (window.resumoModule?.carregarResumoAnual) {
+      if (window.resumoModule?.carregarResumoAnual && window.app?.currentTab === "resumo") {
         await window.resumoModule.carregarResumoAnual();
       }
 
       if (window.dreModule?.carregarDRE && window.app?.currentTab === "dre") {
         await window.dreModule.carregarDRE();
       }
-    } catch (e) {
-      console.error("Erro ao importar planilha:", e);
-      utils.setAppMsg("Erro ao importar planilha: " + e.message, "err");
+    } catch (error) {
+      console.error("Erro ao importar planilha:", error);
+      utils.setAppMsg("Erro ao importar planilha: " + error.message, "err");
     }
   },
 
-  tratarLinha(row, numeroLinha) {
+  normalizarLinha(row, numeroLinha) {
     const categoriaBruta =
       row.CATEGORIA ??
       row.categoria ??
@@ -97,10 +96,12 @@ window.importarModule = {
       row["VALOR "] ??
       0;
 
-    const categoria = this.tratarCategoria(categoriaBruta);
-    const valor = this.tratarValor(valorBruto);
+    const categoria = this.normalizarCategoria(categoriaBruta);
+    const valor = this.normalizarValor(valorBruto);
 
-    if (!valor || valor <= 0) return null;
+    if (!valor || valor <= 0) {
+      return null;
+    }
 
     return {
       categoria,
@@ -109,7 +110,7 @@ window.importarModule = {
     };
   },
 
-  tratarCategoria(valor) {
+  normalizarCategoria(valor) {
     const categoria = String(valor || "")
       .trim()
       .toUpperCase();
@@ -121,7 +122,7 @@ window.importarModule = {
     return "DESP";
   },
 
-  tratarValor(valor) {
+  normalizarValor(valor) {
     if (typeof valor === "number") {
       return Number.isFinite(valor) ? valor : 0;
     }
@@ -146,22 +147,16 @@ window.importarModule = {
     return Number.isFinite(numero) ? numero : 0;
   },
 
-  async salvarNoBanco(lista) {
+  async salvarNoBanco(registros) {
     const { mes, ano } = utils.getMesAno();
 
-    const payload = lista.map(item => ({
+    const payload = registros.map((item) => ({
       categoria: item.categoria,
       valor: item.valor,
       mes,
       ano
     }));
 
-    const { error } = await supabase
-      .from("gastos")
-      .insert(payload);
-
-    if (error) {
-      throw new Error(error.message || "Falha ao salvar no banco.");
-    }
+    await api.insert("gastos", payload);
   }
 };
