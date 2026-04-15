@@ -137,6 +137,13 @@
           <div class="panel">
             <div class="panel-head">
               <h3>Gastos x Meta por Categoria</h3>
+              <button
+                class="secondary-btn"
+                type="button"
+                onclick="dashboardModule.abrirGraficoFullscreen('barChart', 'Gastos x Meta por Categoria')"
+              >
+                Tela cheia
+              </button>
             </div>
             <div class="chart-wrap">
               <canvas id="barChart"></canvas>
@@ -146,6 +153,13 @@
           <div class="panel">
             <div class="panel-head">
               <h3>Distribuição dos Gastos</h3>
+              <button
+                class="secondary-btn"
+                type="button"
+                onclick="dashboardModule.abrirGraficoFullscreen('pieChart', 'Distribuição dos Gastos')"
+              >
+                Tela cheia
+              </button>
             </div>
             <div class="chart-wrap">
               <canvas id="pieChart"></canvas>
@@ -156,6 +170,13 @@
         <section class="panel">
           <div class="panel-head">
             <h3>Evolução Mensal</h3>
+            <button
+              class="secondary-btn"
+              type="button"
+              onclick="dashboardModule.abrirGraficoFullscreen('lineChart', 'Evolução Mensal')"
+            >
+              Tela cheia
+            </button>
           </div>
           <div class="chart-wrap">
             <canvas id="lineChart"></canvas>
@@ -165,6 +186,13 @@
         <section class="panel">
           <div class="panel-head">
             <h3>Ranking Anual de Categorias</h3>
+            <button
+              class="secondary-btn"
+              type="button"
+              onclick="dashboardModule.abrirGraficoFullscreen('rankingChart', 'Ranking Anual de Categorias')"
+            >
+              Tela cheia
+            </button>
           </div>
           <div class="chart-wrap">
             <canvas id="rankingChart"></canvas>
@@ -971,6 +999,22 @@
       <div class="popup-actions">
         <button id="btnSalvarMetaPopup" class="btn" type="button">Salvar</button>
         <button id="btnCancelarMetaPopup" class="secondary-btn" type="button">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP GRÁFICO -->
+  <div id="popupGrafico" class="popup hidden">
+    <div class="popup-box" style="max-width: 1200px; width: 96vw;">
+      <div class="panel-head" style="margin-bottom: 16px;">
+        <h3 id="popupGraficoTitulo">Gráfico</h3>
+        <button class="secondary-btn" type="button" onclick="dashboardModule.fecharGraficoFullscreen()">
+          Fechar
+        </button>
+      </div>
+
+      <div style="height: 70vh;">
+        <canvas id="popupGraficoCanvas"></canvas>
       </div>
     </div>
   </div>
