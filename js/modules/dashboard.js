@@ -76,26 +76,6 @@ window.dashboardModule = {
     return { mes, ano };
   },
 
-  mesParaNumero(nomeMes) {
-    const mapa = {
-      janeiro: 1,
-      fevereiro: 2,
-      março: 3,
-      marco: 3,
-      abril: 4,
-      maio: 5,
-      junho: 6,
-      julho: 7,
-      agosto: 8,
-      setembro: 9,
-      outubro: 10,
-      novembro: 11,
-      dezembro: 12
-    };
-
-    return mapa[String(nomeMes || "").trim().toLowerCase()] || 1;
-  },
-
   numeroParaMes(numero) {
     const meses = [
       "Janeiro",
@@ -143,6 +123,7 @@ window.dashboardModule = {
 
   formatarMoeda(valor) {
     if (window.utils?.moeda) return utils.moeda(valor);
+
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL"
@@ -221,11 +202,14 @@ window.dashboardModule = {
     ano
   }) {
     const categorias = {};
+
     this.categoriasPadrao.forEach(cat => {
       categorias[cat] = {
         categoria: cat,
         gasto: 0,
+        tipoMeta: "percentual",
         percentualMeta: 0,
+        valorMeta: 0,
         metaValor: 0,
         diferenca: 0,
         situacao: "Dentro da meta"
@@ -234,11 +218,14 @@ window.dashboardModule = {
 
     (gastosMes || []).forEach(item => {
       const categoria = this.normalizarTexto(item.categoria || "DESP");
+
       if (!categorias[categoria]) {
         categorias[categoria] = {
           categoria,
           gasto: 0,
+          tipoMeta: "percentual",
           percentualMeta: 0,
+          valorMeta: 0,
           metaValor: 0,
           diferenca: 0,
           situacao: "Sem meta"
@@ -256,27 +243,30 @@ window.dashboardModule = {
         categorias[categoria] = {
           categoria,
           gasto: 0,
+          tipoMeta: "percentual",
           percentualMeta: 0,
+          valorMeta: 0,
           metaValor: 0,
           diferenca: 0,
           situacao: "Sem meta"
         };
       }
 
-      categorias[categoria].percentualMeta = this.normalizarNumero(
-        item.percentual_meta ??
-        item.percentual ??
-        item.meta ??
-        item.valor ??
-        0
-      );
+      categorias[categoria].tipoMeta = item.tipo_meta || "percentual";
+      categorias[categoria].percentualMeta = this.normalizarNumero(item.percentual_meta || 0);
+      categorias[categoria].valorMeta = this.normalizarNumero(item.valor_meta || 0);
     });
 
     Object.values(categorias).forEach(item => {
-      item.metaValor = faturamentoMes * (item.percentualMeta / 100);
+      if (item.tipoMeta === "valor") {
+        item.metaValor = this.normalizarNumero(item.valorMeta || 0);
+      } else {
+        item.metaValor = faturamentoMes * (this.normalizarNumero(item.percentualMeta || 0) / 100);
+      }
+
       item.diferenca = item.metaValor - item.gasto;
 
-      if (item.percentualMeta <= 0) {
+      if (item.metaValor <= 0) {
         item.situacao = item.gasto > 0 ? "Sem meta cadastrada" : "Sem movimentação";
       } else if (item.gasto > item.metaValor) {
         item.situacao = "Acima da meta";
@@ -429,7 +419,7 @@ window.dashboardModule = {
     if (!tbody) return;
 
     const linhas = analise.categorias
-      .filter(item => item.gasto > 0 || item.percentualMeta > 0)
+      .filter(item => item.gasto > 0 || item.metaValor > 0)
       .sort((a, b) => b.gasto - a.gasto);
 
     if (!linhas.length) {
@@ -445,7 +435,7 @@ window.dashboardModule = {
       <tr>
         <td>${item.categoria}</td>
         <td>${this.formatarMoeda(item.gasto)}</td>
-        <td>${this.arredondar(item.percentualMeta, 2)}%</td>
+        <td>${item.tipoMeta === "valor" ? "Valor fixo" : `${this.arredondar(item.percentualMeta, 2)}%`}</td>
         <td>${this.formatarMoeda(item.metaValor)}</td>
         <td class="${item.diferenca >= 0 ? "ok" : "err"}">${this.formatarMoeda(item.diferenca)}</td>
         <td class="${item.situacao === "Acima da meta" ? "err" : "ok"}">${item.situacao}</td>
