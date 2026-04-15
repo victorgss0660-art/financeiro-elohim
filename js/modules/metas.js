@@ -74,16 +74,25 @@ window.metasModule = {
     return Number.isFinite(numero) ? numero : 0;
   },
 
+  formatarMoeda(valor) {
+    if (window.utils?.moeda) return utils.moeda(valor);
+
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    }).format(Number(valor || 0));
+  },
+
   formatarExibicaoMeta(item) {
-    const tipo = item?.tipo_meta || "percentual";
+    if (!item) return "-";
+
+    const tipo = item.tipo_meta || "percentual";
 
     if (tipo === "valor") {
-      const valor = this.normalizarNumero(item?.valor_meta || 0);
-      return window.utils?.moeda ? utils.moeda(valor) : `R$ ${valor.toFixed(2)}`;
+      return this.formatarMoeda(item.valor_meta || 0);
     }
 
-    const percentual = this.normalizarNumero(item?.percentual_meta || 0);
-    return `${percentual}%`;
+    return `${this.normalizarNumero(item.percentual_meta || 0)}%`;
   },
 
   async carregarMetas() {
@@ -111,13 +120,22 @@ window.metasModule = {
     if (!grid) return;
 
     grid.innerHTML = this.categorias.map(categoria => {
-      const item = this.lista.find(i => String(i.categoria || "").toUpperCase() === categoria);
+      const item = this.lista.find(
+        i => String(i.categoria || "").trim().toUpperCase() === categoria
+      );
+
+      const tipoLabel = !item
+        ? "Sem meta"
+        : (item.tipo_meta === "valor" ? "Valor fixo" : "Porcentagem");
 
       return `
         <div class="status-item" style="margin-bottom:12px;">
           <div class="label">${categoria}</div>
-          <div class="value" style="font-size:18px; margin-bottom:10px;">
+          <div class="value" style="font-size:18px; margin-bottom:6px;">
             ${this.formatarExibicaoMeta(item)}
+          </div>
+          <div class="muted" style="margin-bottom:10px; font-size:12px;">
+            ${tipoLabel}
           </div>
 
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -137,23 +155,23 @@ window.metasModule = {
   abrirPopup(categoria) {
     this.categoriaAtual = categoria;
 
-    const item = this.lista.find(i => String(i.categoria || "").toUpperCase() === categoria);
+    const item = this.lista.find(
+      i => String(i.categoria || "").trim().toUpperCase() === categoria
+    );
 
     const popup = document.getElementById("popupMeta");
     const categoriaInput = document.getElementById("metaCategoriaPopup");
     const tipoSelect = document.getElementById("metaTipoPopup");
     const valorInput = document.getElementById("metaValorPopup");
 
-    if (categoriaInput) categoriaInput.value = categoria;
-    if (tipoSelect) tipoSelect.value = item?.tipo_meta || "percentual";
+    const tipo = item?.tipo_meta || "percentual";
+    const valor = tipo === "valor"
+      ? this.normalizarNumero(item?.valor_meta || 0)
+      : this.normalizarNumero(item?.percentual_meta || 0);
 
-    if (valorInput) {
-      if ((item?.tipo_meta || "percentual") === "valor") {
-        valorInput.value = this.normalizarNumero(item?.valor_meta || 0);
-      } else {
-        valorInput.value = this.normalizarNumero(item?.percentual_meta || 0);
-      }
-    }
+    if (categoriaInput) categoriaInput.value = categoria;
+    if (tipoSelect) tipoSelect.value = tipo;
+    if (valorInput) valorInput.value = valor || "";
 
     if (popup) popup.classList.remove("hidden");
   },
@@ -161,6 +179,7 @@ window.metasModule = {
   fecharPopup() {
     const popup = document.getElementById("popupMeta");
     if (popup) popup.classList.add("hidden");
+
     this.categoriaAtual = null;
   },
 
@@ -169,12 +188,22 @@ window.metasModule = {
       if (!this.categoriaAtual) return;
 
       const { mes, ano } = this.getMesAno();
+
       const tipo = document.getElementById("metaTipoPopup")?.value || "percentual";
-      const valorDigitado = this.normalizarNumero(document.getElementById("metaValorPopup")?.value || 0);
+      const valorDigitado = this.normalizarNumero(
+        document.getElementById("metaValorPopup")?.value || 0
+      );
+
+      if (valorDigitado <= 0) {
+        if (window.utils?.setAppMsg) {
+          utils.setAppMsg("Digite um valor de meta maior que zero.", "err");
+        }
+        return;
+      }
 
       const existente = this.lista.find(
         i =>
-          String(i.categoria || "").toUpperCase() === this.categoriaAtual &&
+          String(i.categoria || "").trim().toUpperCase() === this.categoriaAtual &&
           String(i.mes || "").trim().toLowerCase() === String(mes).trim().toLowerCase() &&
           Number(i.ano || 0) === Number(ano)
       );
