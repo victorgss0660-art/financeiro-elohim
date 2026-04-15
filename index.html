@@ -993,5 +993,33 @@
   <script src="./js/modules/planejamento.js"></script>
 
   <script src="./js/app.js"></script>
+  <div id="popupMeta" class="popup hidden">
+  <div class="popup-box">
+    <h3>Configurar Meta</h3>
+
+    <div class="popup-field">
+      <label for="metaCategoriaPopup">Categoria</label>
+      <input type="text" id="metaCategoriaPopup" readonly>
+    </div>
+
+    <div class="popup-field">
+      <label for="metaTipoPopup">Tipo da meta</label>
+      <select id="metaTipoPopup">
+        <option value="percentual">Porcentagem (%)</option>
+        <option value="valor">Valor fixo (R$)</option>
+      </select>
+    </div>
+
+    <div class="popup-field">
+      <label for="metaValorPopup">Valor da meta</label>
+      <input type="number" id="metaValorPopup" step="0.01" placeholder="Digite o valor">
+    </div>
+
+    <div class="popup-actions">
+      <button id="btnSalvarMetaPopup" class="btn" type="button">Salvar</button>
+      <button id="btnCancelarMetaPopup" class="secondary-btn" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
