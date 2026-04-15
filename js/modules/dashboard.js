@@ -3,6 +3,7 @@ window.dashboardModule = {
   pieChart: null,
   lineChart: null,
   rankingChart: null,
+  popupChart: null,
 
   categoriasPadrao: [
     "MC",
@@ -18,6 +19,8 @@ window.dashboardModule = {
     "RESC",
     "MANUT"
   ],
+
+  ultimoAnalise: null,
 
   async carregarDashboard() {
     try {
@@ -50,6 +53,8 @@ window.dashboardModule = {
         ano
       });
 
+      this.ultimoAnalise = analise;
+
       this.renderCards(analise);
       this.renderResumoTabela(analise);
       this.renderTopListas(analise);
@@ -78,20 +83,9 @@ window.dashboardModule = {
 
   numeroParaMes(numero) {
     const meses = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ];
-
     return meses[(Number(numero) || 1) - 1] || "Janeiro";
   },
 
@@ -123,7 +117,6 @@ window.dashboardModule = {
 
   formatarMoeda(valor) {
     if (window.utils?.moeda) return utils.moeda(valor);
-
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL"
@@ -153,7 +146,6 @@ window.dashboardModule = {
 
   async buscarGastosMes(mes, ano) {
     const data = await api.select("gastos", { ano });
-
     return (data || []).filter(item => {
       const mesItem = String(item.mes || "").trim().toLowerCase();
       return mesItem === String(mes).trim().toLowerCase();
@@ -162,7 +154,6 @@ window.dashboardModule = {
 
   async buscarMetasMes(mes, ano) {
     const data = await api.select("metas", { ano });
-
     return (data || []).filter(item => {
       const mesItem = String(item.mes || "").trim().toLowerCase();
       return mesItem === String(mes).trim().toLowerCase();
@@ -174,20 +165,12 @@ window.dashboardModule = {
   },
 
   async buscarContasPagar() {
-    const data = await api.restGet(
-      "contas_pagar",
-      "select=*&order=vencimento.asc"
-    );
-
+    const data = await api.restGet("contas_pagar", "select=*&order=vencimento.asc");
     return Array.isArray(data) ? data : [];
   },
 
   async buscarContasReceber() {
-    const data = await api.restGet(
-      "contas_receber",
-      "select=*&order=vencimento.asc"
-    );
-
+    const data = await api.restGet("contas_receber", "select=*&order=vencimento.asc");
     return Array.isArray(data) ? data : [];
   },
 
@@ -218,7 +201,6 @@ window.dashboardModule = {
 
     (gastosMes || []).forEach(item => {
       const categoria = this.normalizarTexto(item.categoria || "DESP");
-
       if (!categorias[categoria]) {
         categorias[categoria] = {
           categoria,
@@ -231,7 +213,6 @@ window.dashboardModule = {
           situacao: "Sem meta"
         };
       }
-
       categorias[categoria].gasto += this.normalizarNumero(item.valor || 0);
     });
 
@@ -402,7 +383,6 @@ window.dashboardModule = {
     this.setText("gas", this.formatarMoeda(analise.totalGastosMes));
     this.setText("saldo", this.formatarMoeda(analise.saldoMes));
     this.setText("metaAtingida", `${this.arredondar(analise.metaAtingida, 2)}%`);
-
     this.setText("cardVencidas", String(analise.contasVencidas.length));
     this.setText("cardHoje", String(analise.vencemHoje.length));
     this.setText("card7dias", String(analise.proximos7Dias.length));
@@ -482,9 +462,7 @@ window.dashboardModule = {
     const canvas = document.getElementById("barChart");
     if (!canvas || typeof Chart === "undefined") return;
 
-    const linhas = analise.categorias
-      .filter(item => item.gasto > 0 || item.metaValor > 0);
-
+    const linhas = analise.categorias.filter(item => item.gasto > 0 || item.metaValor > 0);
     const labels = linhas.map(item => item.categoria);
     const gastos = linhas.map(item => this.arredondar(item.gasto, 2));
     const metas = linhas.map(item => this.arredondar(item.metaValor, 2));
@@ -492,17 +470,19 @@ window.dashboardModule = {
     if (this.barChart) this.barChart.destroy();
 
     this.barChart = new Chart(canvas, {
-      type: "bar",
       data: {
         labels,
         datasets: [
           {
+            type: "bar",
             label: "Gasto",
             data: gastos
           },
           {
+            type: "line",
             label: "Meta",
-            data: metas
+            data: metas,
+            tension: 0.35
           }
         ]
       },
@@ -527,11 +507,7 @@ window.dashboardModule = {
       type: "doughnut",
       data: {
         labels,
-        datasets: [
-          {
-            data: valores
-          }
-        ]
+        datasets: [{ data: valores }]
       },
       options: {
         responsive: true,
@@ -545,18 +521,8 @@ window.dashboardModule = {
     if (!canvas || typeof Chart === "undefined") return;
 
     const ordemMeses = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ];
 
     const labels = ordemMeses;
@@ -568,13 +534,11 @@ window.dashboardModule = {
       type: "line",
       data: {
         labels,
-        datasets: [
-          {
-            label: "Gastos mensais",
-            data: valores,
-            tension: 0.35
-          }
-        ]
+        datasets: [{
+          label: "Gastos mensais",
+          data: valores,
+          tension: 0.35
+        }]
       },
       options: {
         responsive: true,
@@ -599,12 +563,10 @@ window.dashboardModule = {
       type: "bar",
       data: {
         labels,
-        datasets: [
-          {
-            label: "Gastos no ano",
-            data: valores
-          }
-        ]
+        datasets: [{
+          label: "Gastos no ano",
+          data: valores
+        }]
       },
       options: {
         indexAxis: "y",
@@ -612,6 +574,124 @@ window.dashboardModule = {
         maintainAspectRatio: false
       }
     });
+  },
+
+  abrirGraficoFullscreen(chartId, titulo) {
+    const popup = document.getElementById("popupGrafico");
+    const popupTitulo = document.getElementById("popupGraficoTitulo");
+    const popupCanvas = document.getElementById("popupGraficoCanvas");
+
+    if (!popup || !popupTitulo || !popupCanvas || !this.ultimoAnalise) return;
+
+    popupTitulo.textContent = titulo;
+    popup.classList.remove("hidden");
+
+    if (this.popupChart) {
+      this.popupChart.destroy();
+      this.popupChart = null;
+    }
+
+    if (chartId === "barChart") {
+      const linhas = this.ultimoAnalise.categorias.filter(item => item.gasto > 0 || item.metaValor > 0);
+      const labels = linhas.map(item => item.categoria);
+      const gastos = linhas.map(item => this.arredondar(item.gasto, 2));
+      const metas = linhas.map(item => this.arredondar(item.metaValor, 2));
+
+      this.popupChart = new Chart(popupCanvas, {
+        data: {
+          labels,
+          datasets: [
+            {
+              type: "bar",
+              label: "Gasto",
+              data: gastos
+            },
+            {
+              type: "line",
+              label: "Meta",
+              data: metas,
+              tension: 0.35
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      return;
+    }
+
+    if (chartId === "pieChart") {
+      const linhas = this.ultimoAnalise.categorias.filter(item => item.gasto > 0);
+      this.popupChart = new Chart(popupCanvas, {
+        type: "doughnut",
+        data: {
+          labels: linhas.map(item => item.categoria),
+          datasets: [{ data: linhas.map(item => this.arredondar(item.gasto, 2)) }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      return;
+    }
+
+    if (chartId === "lineChart") {
+      const ordemMeses = [
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      ];
+
+      this.popupChart = new Chart(popupCanvas, {
+        type: "line",
+        data: {
+          labels: ordemMeses,
+          datasets: [{
+            label: "Gastos mensais",
+            data: ordemMeses.map(m => this.arredondar(this.ultimoAnalise.gastosPorMes[m] || 0, 2)),
+            tension: 0.35
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      return;
+    }
+
+    if (chartId === "rankingChart") {
+      const ranking = Object.entries(this.ultimoAnalise.rankingAnualCategorias)
+        .sort((a, b) => b[1] - a[1]);
+
+      this.popupChart = new Chart(popupCanvas, {
+        type: "bar",
+        data: {
+          labels: ranking.map(item => item[0]),
+          datasets: [{
+            label: "Gastos no ano",
+            data: ranking.map(item => this.arredondar(item[1], 2))
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+  },
+
+  fecharGraficoFullscreen() {
+    const popup = document.getElementById("popupGrafico");
+    if (popup) popup.classList.add("hidden");
+
+    if (this.popupChart) {
+      this.popupChart.destroy();
+      this.popupChart = null;
+    }
   },
 
   setText(id, value) {
