@@ -753,3 +753,25 @@ td:nth-child(2) {
   font-weight: 700;
   color: #111827;
 }
+<section class="grid">
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Status do mês</h3>
+    </div>
+
+    <div class="status-grid">
+      <div class="status-item">
+        <div class="label">Mês</div>
+        <div class="value" id="statusMes">-</div>
+      </div>
+      <div class="status-item">
+        <div class="label">Atualização</div>
+        <div class="value" id="statusAtualizacao">-</div>
+      </div>
+      <div class="status-item">
+        <div class="label">Situação</div>
+        <div class="value" id="statusSituacao">-</div>
+      </div>
+    </div>
+  </div>
+</section>
