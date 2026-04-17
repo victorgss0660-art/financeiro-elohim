@@ -133,39 +133,46 @@
           </div>
         </section>
 
-        <section class="grid">
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Gastos x Meta por Categoria</h3>
-              <button
-                class="secondary-btn"
-                type="button"
-                onclick="dashboardModule.abrirGraficoFullscreen('barChart', 'Gastos x Meta por Categoria')"
-              >
-                Tela cheia
-              </button>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="barChart"></canvas>
-            </div>
-          </div>
+<section class="grid grid-3-dashboard">
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Gastos x Meta por Categoria</h3>
+      <button
+        class="secondary-btn"
+        type="button"
+        onclick="dashboardModule.abrirGraficoFullscreen('barChart', 'Gastos x Meta por Categoria')"
+      >
+        Tela cheia
+      </button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="barChart"></canvas>
+    </div>
+  </div>
 
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Distribuição dos Gastos</h3>
-              <button
-                class="secondary-btn"
-                type="button"
-                onclick="dashboardModule.abrirGraficoFullscreen('pieChart', 'Distribuição dos Gastos')"
-              >
-                Tela cheia
-              </button>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="pieChart"></canvas>
-            </div>
-          </div>
-        </section>
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Distribuição dos Gastos</h3>
+      <button
+        class="secondary-btn"
+        type="button"
+        onclick="dashboardModule.abrirGraficoFullscreen('pieChart', 'Distribuição dos Gastos')"
+      >
+        Tela cheia
+      </button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="pieChart"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Alertas</h3>
+    </div>
+    <div id="alertList" class="alert-list"></div>
+  </div>
+</section>
 
         <section class="panel">
           <div class="panel-head">
