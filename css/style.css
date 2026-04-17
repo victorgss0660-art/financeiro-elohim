@@ -796,3 +796,24 @@ td:nth-child(2) {
     grid-template-columns: 1fr;
   }
 }
+.grid-3-dashboard {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.9fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.grid-3-dashboard .panel {
+  min-height: 100%;
+}
+
+.grid-3-dashboard .alert-list {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+@media (max-width: 1200px) {
+  .grid-3-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
