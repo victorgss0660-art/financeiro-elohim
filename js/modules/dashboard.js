@@ -680,13 +680,27 @@ window.dashboardModule = {
 
     const metaAtingida = faturamentoMes > 0 ? (saldoMes / faturamentoMes) * 100 : 0;
 
-    const gastosPorMes = {};
+const gastosPorMes = {};
+const faturamentoPorMes = {};
+const lucroPorMes = {};
 
-    for (let i = 1; i <= 12; i++) {
+for (let i = 1; i <= 12; i++) {
+  const nomeMes = this.numeroParaMes(i);
+  gastosPorMes[nomeMes] = 0;
+  faturamentoPorMes[nomeMes] = 0;
+  lucroPorMes[nomeMes] = 0;
+}
+    // GASTOS POR MÊS
+(gastosAno || []).forEach(item => {
+  const nomeMes = String(item.mes || "").trim();
+  if (!nomeMes) return;
+  if (!(nomeMes in gastosPorMes)) return;
 
-      gastosPorMes[this.numeroParaMes(i)] = 0;
+  gastosPorMes[nomeMes] += this.normalizarNumero(item.valor || 0);
+});
 
-    }
+// FATURAMENTO POR MÊS
+// (usando tabela meses)
 
     (gastosAno || []).forEach(item => {
 
