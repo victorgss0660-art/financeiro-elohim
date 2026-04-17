@@ -1719,3 +1719,7 @@ for (let i = 1; i <= 12; i++) {
   }
 
 };
+async buscarFaturamentoAno(ano) {
+  const data = await api.select("meses", { ano });
+  return Array.isArray(data) ? data : [];
+}
