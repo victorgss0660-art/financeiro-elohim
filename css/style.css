@@ -817,3 +817,26 @@ td:nth-child(2) {
     grid-template-columns: 1fr;
   }
 }
+.grid-2-dashboard {
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 16px;
+
+  align-items: stretch;
+
+}
+
+.grid-2-dashboard .panel {
+
+  height: 100%;
+
+}
+
+.grid-2-dashboard .chart-wrap {
+
+  height: 320px;
+
+}
