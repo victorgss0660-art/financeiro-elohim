@@ -174,37 +174,39 @@
   </div>
 </section>
 
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Evolução Mensal</h3>
-            <button
-              class="secondary-btn"
-              type="button"
-              onclick="dashboardModule.abrirGraficoFullscreen('lineChart', 'Evolução Mensal')"
-            >
-              Tela cheia
-            </button>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="lineChart"></canvas>
-          </div>
-        </section>
+<section class="grid grid-2-dashboard">
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Evolução Mensal</h3>
+      <button
+        class="secondary-btn"
+        type="button"
+        onclick="dashboardModule.abrirGraficoFullscreen('lineChart', 'Evolução Mensal')"
+      >
+        Tela cheia
+      </button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="lineChart"></canvas>
+    </div>
+  </div>
 
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Ranking Anual de Categorias</h3>
-            <button
-              class="secondary-btn"
-              type="button"
-              onclick="dashboardModule.abrirGraficoFullscreen('rankingChart', 'Ranking Anual de Categorias')"
-            >
-              Tela cheia
-            </button>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="rankingChart"></canvas>
-          </div>
-        </section>
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Ranking Anual de Categorias</h3>
+      <button
+        class="secondary-btn"
+        type="button"
+        onclick="dashboardModule.abrirGraficoFullscreen('rankingChart', 'Ranking Anual de Categorias')"
+      >
+        Tela cheia
+      </button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="rankingChart"></canvas>
+    </div>
+  </div>
+</section>
 
         <section class="grid">
           <div class="panel">
