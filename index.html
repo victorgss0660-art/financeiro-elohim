@@ -94,184 +94,204 @@
       <div id="appMsg" class="info"></div>
 
       <!-- DASHBOARD -->
-      <section id="tab-dashboard" class="tab-section active">
-        <section class="cards">
-          <div class="card">
-            <div class="card-title">Faturamento</div>
-            <div class="card-value" id="fat">R$ 0,00</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Gastos</div>
-            <div class="card-value" id="gas">R$ 0,00</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Saldo</div>
-            <div class="card-value" id="saldo">R$ 0,00</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Meta atingida</div>
-            <div class="card-value" id="metaAtingida">0%</div>
-          </div>
-        </section>
-
-        <section class="cards">
-          <div class="card">
-            <div class="card-title">Contas vencidas</div>
-            <div class="card-value" id="cardVencidas">0</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Vencem hoje</div>
-            <div class="card-value" id="cardHoje">0</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Próximos 7 dias</div>
-            <div class="card-value" id="card7dias">0</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Variação faturamento</div>
-            <div class="card-value" id="varFat">0%</div>
-          </div>
-        </section>
-
-<section class="grid grid-3-dashboard">
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Gastos x Meta por Categoria</h3>
-      <button
-        class="secondary-btn"
-        type="button"
-        onclick="dashboardModule.abrirGraficoFullscreen('barChart', 'Gastos x Meta por Categoria')"
-      >
-        Tela cheia
-      </button>
-    </div>
-    <div class="chart-wrap">
-      <canvas id="barChart"></canvas>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Distribuição dos Gastos</h3>
-      <button
-        class="secondary-btn"
-        type="button"
-        onclick="dashboardModule.abrirGraficoFullscreen('pieChart', 'Distribuição dos Gastos')"
-      >
-        Tela cheia
-      </button>
-    </div>
-    <div class="chart-wrap">
-      <canvas id="pieChart"></canvas>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Alertas</h3>
-    </div>
-    <div id="alertList" class="alert-list"></div>
-  </div>
-</section>
-
-<section class="grid grid-2-dashboard">
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Evolução Mensal</h3>
-      <button
-        class="secondary-btn"
-        type="button"
-        onclick="dashboardModule.abrirGraficoFullscreen('lineChart', 'Evolução Mensal')"
-      >
-        Tela cheia
-      </button>
-    </div>
-    <div class="chart-wrap">
-      <canvas id="lineChart"></canvas>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Ranking Anual de Categorias</h3>
-      <button
-        class="secondary-btn"
-        type="button"
-        onclick="dashboardModule.abrirGraficoFullscreen('rankingChart', 'Ranking Anual de Categorias')"
-      >
-        Tela cheia
-      </button>
-    </div>
-    <div class="chart-wrap">
-      <canvas id="rankingChart"></canvas>
-    </div>
-  </div>
-</section>
-
-        <section class="grid">
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Top 5 Contas a Pagar</h3>
-            </div>
-            <div id="topPagar" class="alert-list"></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Top 5 Contas a Receber</h3>
-            </div>
-            <div id="topReceber" class="alert-list"></div>
-          </div>
-        </section>
-
-<section class="grid">
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Status do mês</h3>
+<section id="tab-dashboard" class="tab-section active">
+  <section class="cards cards-premium">
+    <div class="card card-kpi">
+      <div class="card-title">Faturamento</div>
+      <div class="card-value" id="fat">R$ 0,00</div>
     </div>
 
-    <div class="status-grid">
-      <div class="status-item">
-        <div class="label">Mês</div>
-        <div class="value" id="statusMes">-</div>
+    <div class="card card-kpi">
+      <div class="card-title">Gastos</div>
+      <div class="card-value" id="gas">R$ 0,00</div>
+    </div>
+
+    <div class="card card-kpi">
+      <div class="card-title">Saldo</div>
+      <div class="card-value" id="saldo">R$ 0,00</div>
+    </div>
+
+    <div class="card card-kpi">
+      <div class="card-title">Meta atingida</div>
+      <div class="card-value" id="metaAtingida">0%</div>
+    </div>
+  </section>
+
+  <section class="grid grid-3-dashboard">
+    <div class="panel panel-premium">
+      <div class="panel-head">
+        <h3>Gastos x Meta por Categoria</h3>
+        <button
+          class="secondary-btn"
+          type="button"
+          onclick="dashboardModule.abrirGraficoFullscreen('barChart', 'Gastos x Meta por Categoria')"
+        >
+          Tela cheia
+        </button>
       </div>
-      <div class="status-item">
-        <div class="label">Atualização</div>
-        <div class="value" id="statusAtualizacao">-</div>
+
+      <div class="chart-wrap chart-wrap-premium">
+        <canvas id="barChart"></canvas>
       </div>
-      <div class="status-item">
-        <div class="label">Situação</div>
-        <div class="value" id="statusSituacao">-</div>
+
+      <div class="chart-footer-note">
+        Categorias ordenadas pelo maior gasto no mês
       </div>
     </div>
-  </div>
+
+    <div class="panel panel-premium">
+      <div class="panel-head">
+        <h3>Distribuição dos Gastos</h3>
+        <button
+          class="secondary-btn"
+          type="button"
+          onclick="dashboardModule.abrirGraficoFullscreen('pieChart', 'Distribuição dos Gastos')"
+        >
+          Tela cheia
+        </button>
+      </div>
+
+      <div class="chart-wrap chart-wrap-premium">
+        <canvas id="pieChart"></canvas>
+      </div>
+
+      <div class="chart-footer-note">
+        Exibindo categorias com movimentação no período
+      </div>
+    </div>
+
+    <div class="panel panel-premium alert-panel-premium">
+      <div class="panel-head">
+        <h3>Alertas</h3>
+      </div>
+      <div id="alertList" class="alert-list alert-list-premium"></div>
+    </div>
+  </section>
+
+  <section class="grid grid-2-dashboard">
+    <div class="panel panel-premium">
+      <div class="panel-head">
+        <h3>Evolução Mensal</h3>
+        <button
+          class="secondary-btn"
+          type="button"
+          onclick="dashboardModule.abrirGraficoFullscreen('lineChart', 'Evolução Mensal')"
+        >
+          Tela cheia
+        </button>
+      </div>
+
+      <div class="chart-wrap chart-wrap-premium chart-tall">
+        <canvas id="lineChart"></canvas>
+      </div>
+
+      <div class="dashboard-summary-strip">
+        <div class="summary-pill">
+          <span>Faturamento YTD</span>
+          <strong id="dashFatYtd">R$ 0,00</strong>
+        </div>
+        <div class="summary-pill">
+          <span>Gastos YTD</span>
+          <strong id="dashGasYtd">R$ 0,00</strong>
+        </div>
+        <div class="summary-pill">
+          <span>Lucro YTD</span>
+          <strong id="dashLucroYtd">R$ 0,00</strong>
+        </div>
+        <div class="summary-pill">
+          <span>Margem</span>
+          <strong id="dashMargemYtd">0%</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-premium">
+      <div class="panel-head">
+        <h3>Ranking Anual de Categorias</h3>
+        <button
+          class="secondary-btn"
+          type="button"
+          onclick="dashboardModule.abrirGraficoFullscreen('rankingChart', 'Ranking Anual de Categorias')"
+        >
+          Tela cheia
+        </button>
+      </div>
+
+      <div class="chart-wrap chart-wrap-premium chart-tall">
+        <canvas id="rankingChart"></canvas>
+      </div>
+
+      <div class="chart-footer-note">
+        Exibindo top 10 categorias do ano
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="panel panel-premium">
+      <div class="panel-head">
+        <h3>Top 5 Contas a Pagar</h3>
+      </div>
+      <div id="topPagar" class="alert-list"></div>
+    </div>
+
+    <div class="panel panel-premium">
+      <div class="panel-head">
+        <h3>Top 5 Contas a Receber</h3>
+      </div>
+      <div id="topReceber" class="alert-list"></div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="panel panel-premium">
+      <div class="panel-head">
+        <h3>Status do mês</h3>
+      </div>
+
+      <div class="status-grid">
+        <div class="status-item">
+          <div class="label">Mês</div>
+          <div class="value" id="statusMes">-</div>
+        </div>
+
+        <div class="status-item">
+          <div class="label">Atualização</div>
+          <div class="value" id="statusAtualizacao">-</div>
+        </div>
+
+        <div class="status-item">
+          <div class="label">Situação</div>
+          <div class="value" id="statusSituacao">-</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel panel-premium table-wrap">
+    <div class="panel-head">
+      <h3>Resumo por Categoria</h3>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Categoria</th>
+          <th>Gasto</th>
+          <th>Meta %</th>
+          <th>Meta R$</th>
+          <th>Diferença</th>
+          <th>Situação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaResumo">
+        <tr>
+          <td colspan="6" class="muted">Nenhum dado carregado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 </section>
-
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Resumo por Categoria</h3>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Categoria</th>
-                <th>Gasto</th>
-                <th>Meta %</th>
-                <th>Meta R$</th>
-                <th>Diferença</th>
-                <th>Situação</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaResumo">
-              <tr>
-                <td colspan="6" class="muted">Nenhum dado carregado.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-
       <!-- CONTAS A PAGAR -->
       <section id="tab-contas-pagar" class="tab-section">
         <section class="panel">
