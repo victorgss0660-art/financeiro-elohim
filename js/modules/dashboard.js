@@ -24,17 +24,17 @@ window.dashboardModule = {
 
   palette: [
     "#dc2626",
-    "#ef4444",
-    "#f87171",
-    "#fb7185",
-    "#f59e0b",
+    "#f97316",
     "#fbbf24",
-    "#10b981",
     "#22c55e",
-    "#06b6d4",
+    "#14b8a6",
     "#3b82f6",
     "#6366f1",
-    "#8b5cf6"
+    "#8b5cf6",
+    "#c026d3",
+    "#ec4899",
+    "#94a3b8",
+    "#64748b"
   ],
 
   doughnutCenterTextPlugin: {
@@ -48,20 +48,20 @@ window.dashboardModule = {
       const x = meta.data[0].x;
       const y = meta.data[0].y;
 
-      const title = pluginOptions?.title || "Total";
+      const title = pluginOptions?.title || "TOTAL";
       const value = pluginOptions?.value || "";
 
       ctx.save();
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
-      ctx.fillStyle = "#6b7280";
-      ctx.font = "600 12px Inter, sans-serif";
-      ctx.fillText(title, x, y - 12);
+      ctx.fillStyle = "#475569";
+      ctx.font = "700 13px Inter, sans-serif";
+      ctx.fillText(title, x, y - 14);
 
-      ctx.fillStyle = "#111827";
-      ctx.font = "800 16px Inter, sans-serif";
-      ctx.fillText(value, x, y + 10);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "800 22px Inter, sans-serif";
+      ctx.fillText(value, x, y + 12);
       ctx.restore();
     }
   },
@@ -110,6 +110,7 @@ window.dashboardModule = {
       this.renderPieChart(analise);
       this.renderLineChart(analise);
       this.renderRankingChart(analise);
+      this.renderSummaryStrip(analise);
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
       if (window.utils?.setAppMsg) {
@@ -130,18 +131,8 @@ window.dashboardModule = {
 
   numeroParaMes(numero) {
     const meses = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ];
     return meses[(Number(numero) || 1) - 1] || "Janeiro";
   },
@@ -176,8 +167,23 @@ window.dashboardModule = {
     if (window.utils?.moeda) return utils.moeda(valor);
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
-      currency: "BRL"
+      currency: "BRL",
+      maximumFractionDigits: 2
     }).format(Number(valor || 0));
+  },
+
+  formatarMoedaCompacta(valor) {
+    const numero = Number(valor || 0);
+
+    if (Math.abs(numero) >= 1000000) {
+      return `R$ ${(numero / 1000000).toFixed(2)} mi`;
+    }
+
+    if (Math.abs(numero) >= 1000) {
+      return `R$ ${(numero / 1000).toFixed(1)} mil`;
+    }
+
+    return this.formatarMoeda(numero);
   },
 
   arredondar(valor, casas = 2) {
@@ -190,7 +196,7 @@ window.dashboardModule = {
       responsive: true,
       maintainAspectRatio: false,
       animation: {
-        duration: 700,
+        duration: 850,
         easing: "easeOutQuart"
       },
       interaction: {
@@ -205,16 +211,16 @@ window.dashboardModule = {
             boxHeight: 12,
             usePointStyle: true,
             pointStyle: "circle",
-            padding: 16,
-            color: "#374151",
+            padding: 18,
+            color: "#334155",
             font: {
               size: 12,
-              weight: "600"
+              weight: "700"
             }
           }
         },
         tooltip: {
-          backgroundColor: "rgba(17,24,39,0.96)",
+          backgroundColor: "rgba(15,23,42,0.96)",
           titleColor: "#ffffff",
           bodyColor: "#e5e7eb",
           borderColor: "rgba(255,255,255,0.08)",
@@ -233,10 +239,10 @@ window.dashboardModule = {
       scales: {
         x: {
           ticks: {
-            color: "#6b7280",
+            color: "#64748b",
             font: {
               size: 11,
-              weight: "600"
+              weight: "700"
             }
           },
           grid: {
@@ -249,11 +255,11 @@ window.dashboardModule = {
         y: {
           beginAtZero: true,
           ticks: {
-            color: "#6b7280",
+            color: "#64748b",
             font: {
               size: 11
             },
-            callback: (value) => this.formatarMoeda(value)
+            callback: (value) => this.formatarMoedaCompacta(value)
           },
           grid: {
             color: "rgba(148,163,184,0.18)"
@@ -419,7 +425,6 @@ window.dashboardModule = {
       const nomeMes = String(item.mes || "").trim();
       if (!nomeMes) return;
       if (!(nomeMes in gastosPorMes)) return;
-
       gastosPorMes[nomeMes] += this.normalizarNumero(item.valor || 0);
     });
 
@@ -427,7 +432,6 @@ window.dashboardModule = {
       const nomeMes = String(item.mes || item.nome_mes || "").trim();
       if (!nomeMes) return;
       if (!(nomeMes in faturamentoPorMes)) return;
-
       faturamentoPorMes[nomeMes] += this.normalizarNumero(
         item.faturamento ?? item.valor ?? item.receita ?? 0
       );
@@ -442,6 +446,11 @@ window.dashboardModule = {
       const categoria = this.normalizarTexto(item.categoria || "DESP");
       rankingAnualCategorias[categoria] = (rankingAnualCategorias[categoria] || 0) + this.normalizarNumero(item.valor || 0);
     });
+
+    const totalFatAno = Object.values(faturamentoPorMes).reduce((a, b) => a + b, 0);
+    const totalGasAno = Object.values(gastosPorMes).reduce((a, b) => a + b, 0);
+    const totalLucroAno = totalFatAno - totalGasAno;
+    const margemAno = totalFatAno > 0 ? (totalLucroAno / totalFatAno) * 100 : 0;
 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -541,7 +550,11 @@ window.dashboardModule = {
       proximos7Dias,
       topPagar,
       topReceber,
-      alertas
+      alertas,
+      totalFatAno,
+      totalGasAno,
+      totalLucroAno,
+      margemAno
     };
   },
 
@@ -559,6 +572,13 @@ window.dashboardModule = {
       : 0;
 
     this.setText("varFat", `${this.arredondar(variacao, 2)}%`);
+  },
+
+  renderSummaryStrip(analise) {
+    this.setText("dashFatYtd", this.formatarMoeda(analise.totalFatAno));
+    this.setText("dashGasYtd", this.formatarMoeda(analise.totalGasAno));
+    this.setText("dashLucroYtd", this.formatarMoeda(analise.totalLucroAno));
+    this.setText("dashMargemYtd", `${this.arredondar(analise.margemAno, 2)}%`);
   },
 
   renderResumoTabela(analise) {
@@ -650,10 +670,10 @@ window.dashboardModule = {
             type: "bar",
             label: "Gasto",
             data: gastos,
-            backgroundColor: "rgba(220, 38, 38, 0.78)",
+            backgroundColor: "rgba(220, 38, 38, 0.82)",
             borderColor: "rgba(153, 27, 27, 1)",
             borderWidth: 1,
-            borderRadius: 10,
+            borderRadius: 12,
             borderSkipped: false,
             maxBarThickness: 34
           },
@@ -662,7 +682,7 @@ window.dashboardModule = {
             label: "Meta",
             data: metas,
             borderColor: "rgba(37, 99, 235, 1)",
-            backgroundColor: "rgba(37, 99, 235, 0.12)",
+            backgroundColor: "rgba(37, 99, 235, 0.08)",
             pointBackgroundColor: "rgba(37, 99, 235, 1)",
             pointBorderColor: "#ffffff",
             pointBorderWidth: 2,
@@ -701,7 +721,7 @@ window.dashboardModule = {
           backgroundColor: labels.map((_, i) => this.palette[i % this.palette.length]),
           borderColor: "#ffffff",
           borderWidth: 3,
-          hoverOffset: 8
+          hoverOffset: 10
         }]
       },
       plugins: [this.doughnutCenterTextPlugin],
@@ -717,15 +737,15 @@ window.dashboardModule = {
               boxHeight: 12,
               usePointStyle: true,
               pointStyle: "circle",
-              color: "#374151",
+              color: "#334155",
               font: {
                 size: 12,
-                weight: "600"
+                weight: "700"
               }
             }
           },
           tooltip: {
-            backgroundColor: "rgba(17,24,39,0.96)",
+            backgroundColor: "rgba(15,23,42,0.96)",
             titleColor: "#ffffff",
             bodyColor: "#e5e7eb",
             borderColor: "rgba(255,255,255,0.08)",
@@ -739,8 +759,8 @@ window.dashboardModule = {
             }
           },
           doughnutCenterTextPlugin: {
-            title: "Total",
-            value: this.formatarMoeda(total)
+            title: "TOTAL",
+            value: this.formatarMoedaCompacta(total)
           }
         }
       }
@@ -773,7 +793,7 @@ window.dashboardModule = {
             label: "Gastos",
             data: gastos,
             borderColor: "#dc2626",
-            backgroundColor: "rgba(220,38,38,0.12)",
+            backgroundColor: "rgba(220,38,38,0.10)",
             fill: true,
             tension: 0.35,
             pointRadius: 4,
@@ -787,7 +807,7 @@ window.dashboardModule = {
             label: "Faturamento",
             data: faturamento,
             borderColor: "#2563eb",
-            backgroundColor: "rgba(37,99,235,0.06)",
+            backgroundColor: "rgba(37,99,235,0.05)",
             fill: false,
             tension: 0.35,
             pointRadius: 4,
@@ -832,7 +852,7 @@ window.dashboardModule = {
 
     const options = this.getChartBaseOptions();
     options.indexAxis = "y";
-    options.scales.x.ticks.callback = (value) => this.formatarMoeda(value);
+    options.scales.x.ticks.callback = (value) => this.formatarMoedaCompacta(value);
 
     this.rankingChart = new Chart(canvas, {
       type: "bar",
@@ -842,9 +862,9 @@ window.dashboardModule = {
           label: "Gastos no ano",
           data: valores,
           backgroundColor: labels.map((_, i) => this.palette[i % this.palette.length]),
-          borderRadius: 10,
+          borderRadius: 12,
           borderSkipped: false,
-          maxBarThickness: 26
+          maxBarThickness: 28
         }]
       },
       options
@@ -877,19 +897,19 @@ window.dashboardModule = {
               type: "bar",
               label: "Gasto",
               data: linhas.map(item => this.arredondar(item.gasto, 2)),
-              backgroundColor: "rgba(220, 38, 38, 0.78)",
+              backgroundColor: "rgba(220, 38, 38, 0.82)",
               borderColor: "rgba(153, 27, 27, 1)",
               borderWidth: 1,
-              borderRadius: 10,
+              borderRadius: 12,
               borderSkipped: false,
-              maxBarThickness: 40
+              maxBarThickness: 42
             },
             {
               type: "line",
               label: "Meta",
               data: linhas.map(item => this.arredondar(item.metaValor, 2)),
               borderColor: "rgba(37, 99, 235, 1)",
-              backgroundColor: "rgba(37, 99, 235, 0.12)",
+              backgroundColor: "rgba(37, 99, 235, 0.08)",
               pointBackgroundColor: "rgba(37, 99, 235, 1)",
               pointBorderColor: "#ffffff",
               pointBorderWidth: 2,
@@ -921,7 +941,7 @@ window.dashboardModule = {
             backgroundColor: linhas.map((_, i) => this.palette[i % this.palette.length]),
             borderColor: "#ffffff",
             borderWidth: 3,
-            hoverOffset: 8
+            hoverOffset: 10
           }]
         },
         plugins: [this.doughnutCenterTextPlugin],
@@ -937,15 +957,15 @@ window.dashboardModule = {
                 boxHeight: 12,
                 usePointStyle: true,
                 pointStyle: "circle",
-                color: "#374151",
+                color: "#334155",
                 font: {
                   size: 12,
-                  weight: "600"
+                  weight: "700"
                 }
               }
             },
             tooltip: {
-              backgroundColor: "rgba(17,24,39,0.96)",
+              backgroundColor: "rgba(15,23,42,0.96)",
               titleColor: "#ffffff",
               bodyColor: "#e5e7eb",
               callbacks: {
@@ -957,8 +977,8 @@ window.dashboardModule = {
               }
             },
             doughnutCenterTextPlugin: {
-              title: "Total",
-              value: this.formatarMoeda(total)
+              title: "TOTAL",
+              value: this.formatarMoedaCompacta(total)
             }
           }
         }
@@ -983,7 +1003,7 @@ window.dashboardModule = {
               label: "Gastos",
               data: ordemMeses.map(m => this.arredondar(this.ultimoAnalise.gastosPorMes[m] || 0, 2)),
               borderColor: "#dc2626",
-              backgroundColor: "rgba(220,38,38,0.12)",
+              backgroundColor: "rgba(220,38,38,0.10)",
               fill: true,
               tension: 0.35,
               pointRadius: 5,
@@ -997,7 +1017,7 @@ window.dashboardModule = {
               label: "Faturamento",
               data: ordemMeses.map(m => this.arredondar(this.ultimoAnalise.faturamentoPorMes[m] || 0, 2)),
               borderColor: "#2563eb",
-              backgroundColor: "rgba(37,99,235,0.06)",
+              backgroundColor: "rgba(37,99,235,0.05)",
               fill: false,
               tension: 0.35,
               pointRadius: 5,
@@ -1035,7 +1055,7 @@ window.dashboardModule = {
 
       const options = this.getChartBaseOptions();
       options.indexAxis = "y";
-      options.scales.x.ticks.callback = (value) => this.formatarMoeda(value);
+      options.scales.x.ticks.callback = (value) => this.formatarMoedaCompacta(value);
 
       this.popupChart = new Chart(popupCanvas, {
         type: "bar",
@@ -1045,9 +1065,9 @@ window.dashboardModule = {
             label: "Gastos no ano",
             data: ranking.map(item => this.arredondar(item[1], 2)),
             backgroundColor: ranking.map((_, i) => this.palette[i % this.palette.length]),
-            borderRadius: 10,
+            borderRadius: 12,
             borderSkipped: false,
-            maxBarThickness: 32
+            maxBarThickness: 34
           }]
         },
         options
