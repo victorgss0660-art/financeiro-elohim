@@ -651,52 +651,60 @@ window.dashboardModule = {
       .sort((a, b) => b.gasto - a.gasto);
   },
 
-  renderBarChart(analise) {
-    const canvas = document.getElementById("barChart");
-    if (!canvas || typeof Chart === "undefined") return;
+renderBarChart(analise) {
+  const canvas = document.getElementById("barChart");
+  if (!canvas || typeof Chart === "undefined") return;
 
-    const linhas = this.getSortedCategoryData(analise);
-    const labels = linhas.map(item => item.categoria);
-    const gastos = linhas.map(item => this.arredondar(item.gasto, 2));
-    const metas = linhas.map(item => this.arredondar(item.metaValor, 2));
+  const linhas = this.getSortedCategoryData(analise);
 
-    if (this.barChart) this.barChart.destroy();
+  const labels = linhas.map(i => i.categoria);
+  const gastos = linhas.map(i => this.arredondar(i.gasto, 2));
+  const metas = linhas.map(i => this.arredondar(i.metaValor, 2));
 
-    this.barChart = new Chart(canvas, {
-      data: {
-        labels,
-        datasets: [
-          {
-            type: "bar",
-            label: "Gasto",
-            data: gastos,
-            backgroundColor: "rgba(220, 38, 38, 0.82)",
-            borderColor: "rgba(153, 27, 27, 1)",
-            borderWidth: 1,
-            borderRadius: 12,
-            borderSkipped: false,
-            maxBarThickness: 34
-          },
-          {
-            type: "line",
-            label: "Meta",
-            data: metas,
-            borderColor: "rgba(37, 99, 235, 1)",
-            backgroundColor: "rgba(37, 99, 235, 0.08)",
-            pointBackgroundColor: "rgba(37, 99, 235, 1)",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            borderWidth: 3,
-            tension: 0.35,
-            fill: false
+  const cores = linhas.map(i =>
+    i.gasto > i.metaValor ? "#dc2626" : "#22c55e"
+  );
+
+  if (this.barChart) this.barChart.destroy();
+
+  this.barChart = new Chart(canvas, {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: "bar",
+          label: "Gasto",
+          data: gastos,
+          backgroundColor: cores,
+          borderRadius: 14,
+          maxBarThickness: 38
+        },
+        {
+          type: "line",
+          label: "Meta",
+          data: metas,
+          borderColor: "#2563eb",
+          borderWidth: 3,
+          tension: 0.4,
+          pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      ...this.getChartBaseOptions(),
+      plugins: {
+        ...this.getChartBaseOptions().plugins,
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              return `${ctx.dataset.label}: ${this.formatarMoeda(ctx.parsed.y)}`;
+            }
           }
-        ]
-      },
-      options: this.getChartBaseOptions()
-    });
-  },
+        }
+      }
+    }
+  });
+}
 
   renderPieChart(analise) {
     const canvas = document.getElementById("pieChart");
