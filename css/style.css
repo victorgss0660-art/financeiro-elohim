@@ -777,9 +777,9 @@ td:nth-child(2) {
 </section>
 .grid-3-dashboard {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 0.9fr;
+  grid-template-columns: 1.6fr 1fr 0.8fr;
   gap: 16px;
-  align-items: stretch;
+  margin-bottom: 16px;
 }
 
 .grid-3-dashboard .panel {
