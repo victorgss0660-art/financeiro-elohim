@@ -95,30 +95,40 @@
 
       <!-- DASHBOARD -->
 <section id="tab-dashboard" class="tab-section active">
-  <section class="cards cards-premium">
+  <section class="cards cards-premium cards-bi-top">
     <div class="card card-kpi">
       <div class="card-title">Faturamento</div>
       <div class="card-value" id="fat">R$ 0,00</div>
+      <div class="card-subvalue" id="fatVsMesAnterior">vs mês anterior: 0%</div>
     </div>
 
     <div class="card card-kpi">
       <div class="card-title">Gastos</div>
       <div class="card-value" id="gas">R$ 0,00</div>
+      <div class="card-subvalue" id="gasVsMesAnterior">vs mês anterior: 0%</div>
     </div>
 
     <div class="card card-kpi">
-      <div class="card-title">Saldo</div>
-      <div class="card-value" id="saldo">R$ 0,00</div>
+      <div class="card-title">Lucro</div>
+      <div class="card-value" id="lucroCard">R$ 0,00</div>
+      <div class="card-subvalue" id="lucroVsMesAnterior">vs mês anterior: 0%</div>
+    </div>
+
+    <div class="card card-kpi">
+      <div class="card-title">Margem</div>
+      <div class="card-value" id="margemCard">0%</div>
+      <div class="card-subvalue" id="margemVsMesAnterior">vs mês anterior: 0 p.p.</div>
     </div>
 
     <div class="card card-kpi">
       <div class="card-title">Meta atingida</div>
       <div class="card-value" id="metaAtingida">0%</div>
+      <div class="card-subvalue" id="metaGlobalInfo">meta global: R$ 0,00</div>
     </div>
   </section>
 
-  <section class="grid grid-3-dashboard">
-    <div class="panel panel-premium">
+  <section class="grid grid-3-dashboard-bi">
+    <div class="panel panel-premium panel-main-bi">
       <div class="panel-head">
         <h3>Gastos x Meta por Categoria</h3>
         <button
@@ -130,12 +140,12 @@
         </button>
       </div>
 
-      <div class="chart-wrap chart-wrap-premium">
+      <div class="chart-wrap chart-wrap-premium chart-wrap-bi-main">
         <canvas id="barChart"></canvas>
       </div>
 
       <div class="chart-footer-note">
-        Categorias ordenadas pelo maior gasto no mês
+        Verde = dentro da meta · Vermelho = acima da meta
       </div>
     </div>
 
@@ -156,13 +166,13 @@
       </div>
 
       <div class="chart-footer-note">
-        Exibindo categorias com movimentação no período
+        Participação percentual de cada categoria
       </div>
     </div>
 
     <div class="panel panel-premium alert-panel-premium">
       <div class="panel-head">
-        <h3>Alertas</h3>
+        <h3>Alertas Executivos</h3>
       </div>
       <div id="alertList" class="alert-list alert-list-premium"></div>
     </div>
@@ -199,7 +209,7 @@
           <strong id="dashLucroYtd">R$ 0,00</strong>
         </div>
         <div class="summary-pill">
-          <span>Margem</span>
+          <span>Margem YTD</span>
           <strong id="dashMargemYtd">0%</strong>
         </div>
       </div>
@@ -221,9 +231,7 @@
         <canvas id="rankingChart"></canvas>
       </div>
 
-      <div class="chart-footer-note">
-        Exibindo top 10 categorias do ano
-      </div>
+      <div id="rankingResumo" class="ranking-summary-list"></div>
     </div>
   </section>
 
@@ -264,6 +272,21 @@
           <div class="label">Situação</div>
           <div class="value" id="statusSituacao">-</div>
         </div>
+
+        <div class="status-item">
+          <div class="label">Contas vencidas</div>
+          <div class="value" id="cardVencidas">0</div>
+        </div>
+
+        <div class="status-item">
+          <div class="label">Vencem hoje</div>
+          <div class="value" id="cardHoje">0</div>
+        </div>
+
+        <div class="status-item">
+          <div class="label">Próximos 7 dias</div>
+          <div class="value" id="card7dias">0</div>
+        </div>
       </div>
     </div>
   </section>
@@ -281,17 +304,19 @@
           <th>Meta %</th>
           <th>Meta R$</th>
           <th>Diferença</th>
+          <th>Desvio %</th>
           <th>Situação</th>
         </tr>
       </thead>
       <tbody id="tabelaResumo">
         <tr>
-          <td colspan="6" class="muted">Nenhum dado carregado.</td>
+          <td colspan="7" class="muted">Nenhum dado carregado.</td>
         </tr>
       </tbody>
     </table>
   </section>
 </section>
+      
       <!-- CONTAS A PAGAR -->
       <section id="tab-contas-pagar" class="tab-section">
         <section class="panel">
