@@ -1355,35 +1355,40 @@ calcularForecast(analise) {
     };
   },
 
-  renderForecast(analise) {
+renderForecast(analise) {
     const forecast = this.calcularForecast(analise);
 
-    this.setText("forecastFat", this.formatarMoeda(forecast.forecastFat));
-    this.setText("forecastGas", this.formatarMoeda(forecast.forecastGas));
-    this.setText("forecastLucro", this.formatarMoeda(forecast.forecastLucro));
-    this.setText("forecastMargem", this.formatarPercentual(forecast.forecastMargem));
+    this.setText("forecastLucro", this.formatarMoeda(forecast.realistaLucro));
+    this.setText("forecastMargem", this.formatarPercentual(forecast.realistaMargem));
     this.setText("forecastRisco", forecast.risco);
 
     this.setText(
-      "forecastFatNote",
-      `Projetado com base em ${forecast.diasConsiderados}/${forecast.ultimoDiaMes} dias`
-    );
-    this.setText(
-      "forecastGasNote",
-      `Projetado com base em ${forecast.diasConsiderados}/${forecast.ultimoDiaMes} dias`
-    );
-    this.setText(
       "forecastLucroNote",
-      `Resultado estimado no fechamento`
+      `Fechamento estimado com base em ${forecast.diasConsiderados}/${forecast.ultimoDiaMes} dias`
     );
     this.setText(
       "forecastMargemNote",
-      `Margem estimada do fechamento`
+      `Cenário realista do mês`
     );
     this.setText(
       "forecastRiscoNote",
       forecast.riscoNote
     );
+
+    this.setText("forecastPessimistaFat", this.formatarMoeda(forecast.pessimistaFat));
+    this.setText("forecastPessimistaGas", this.formatarMoeda(forecast.pessimistaGas));
+    this.setText("forecastPessimistaLucro", this.formatarMoeda(forecast.pessimistaLucro));
+    this.setText("forecastPessimistaMargem", this.formatarPercentual(forecast.pessimistaMargem));
+
+    this.setText("forecastRealistaFat", this.formatarMoeda(forecast.realistaFat));
+    this.setText("forecastRealistaGas", this.formatarMoeda(forecast.realistaGas));
+    this.setText("forecastRealistaLucro", this.formatarMoeda(forecast.realistaLucro));
+    this.setText("forecastRealistaMargem", this.formatarPercentual(forecast.realistaMargem));
+
+    this.setText("forecastOtimistaFat", this.formatarMoeda(forecast.otimistaFat));
+    this.setText("forecastOtimistaGas", this.formatarMoeda(forecast.otimistaGas));
+    this.setText("forecastOtimistaLucro", this.formatarMoeda(forecast.otimistaLucro));
+    this.setText("forecastOtimistaMargem", this.formatarPercentual(forecast.otimistaMargem));
 
     const riscoEl = document.getElementById("forecastRisco");
     if (riscoEl) {
@@ -1391,9 +1396,3 @@ calcularForecast(analise) {
       riscoEl.classList.add(forecast.riscoClasse);
     }
   },
-  
-  setText(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
-  }
-};
