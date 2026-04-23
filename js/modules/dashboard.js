@@ -574,12 +574,17 @@ window.dashboardModule = {
     this.setText("varFat", `${this.arredondar(variacao, 2)}%`);
   },
 
-  renderSummaryStrip(analise) {
-    this.setText("dashFatYtd", this.formatarMoeda(analise.totalFatAno));
-    this.setText("dashGasYtd", this.formatarMoeda(analise.totalGasAno));
-    this.setText("dashLucroYtd", this.formatarMoeda(analise.totalLucroAno));
-    this.setText("dashMargemYtd", `${this.arredondar(analise.margemAno, 2)}%`);
-  },
+renderSummaryStrip(analise) {
+  this.setText("dashFatYtd", this.formatarMoeda(analise.totalFatAno));
+  this.setText("dashGasYtd", this.formatarMoeda(analise.totalGasAno));
+  this.setText("dashLucroYtd", this.formatarMoeda(analise.totalLucroAno));
+
+  const margem = analise.totalFatAno > 0
+    ? (analise.totalLucroAno / analise.totalFatAno) * 100
+    : 0;
+
+  this.setText("dashMargemYtd", `${this.arredondar(margem, 2)}%`);
+}
 
   renderResumoTabela(analise) {
     const tbody = document.getElementById("tabelaResumo");
