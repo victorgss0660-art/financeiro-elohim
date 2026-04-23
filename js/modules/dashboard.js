@@ -104,18 +104,18 @@ window.dashboardModule = {
 
       this.ultimoAnalise = analise;
 
-      this.renderCards(analise);
-      this.renderResumoTabela(analise);
-      this.renderTopListas(analise);
-      this.renderAlertas(analise);
-      this.renderBarChart(analise);
-      this.renderPieChart(analise);
-      this.renderLineChart(analise);
-      this.renderRankingChart(analise);
-      this.renderRankingResumo(analise);
-      this.renderSummaryStrip(analise);
-      this.renderForecast(analise);
-      this.renderStatusMes(analise);
+      this.safeCall("renderCards", () => this.renderCards(analise));
+      this.safeCall("renderResumoTabela", () => this.renderResumoTabela(analise));
+      this.safeCall("renderTopListas", () => this.renderTopListas(analise));
+      this.safeCall("renderAlertas", () => this.renderAlertas(analise));
+      this.safeCall("renderBarChart", () => this.renderBarChart(analise));
+      this.safeCall("renderPieChart", () => this.renderPieChart(analise));
+      this.safeCall("renderLineChart", () => this.renderLineChart(analise));
+      this.safeCall("renderRankingChart", () => this.renderRankingChart(analise));
+      this.safeCall("renderRankingResumo", () => this.renderRankingResumo(analise));
+      this.safeCall("renderSummaryStrip", () => this.renderSummaryStrip(analise));
+      this.safeCall("renderForecast", () => this.renderForecast(analise));
+      this.safeCall("renderStatusMes", () => this.renderStatusMes(analise));
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
       if (window.utils?.setAppMsg) {
@@ -124,13 +124,21 @@ window.dashboardModule = {
     }
   },
 
-  getMesAnoSeguro() {
-    if (window.utils?.getMesAno) {
-      return utils.getMesAno();
+  safeCall(label, fn) {
+    try {
+      fn();
+    } catch (error) {
+      console.error(`Erro em ${label}:`, error);
     }
+  },
+
+  getMesAnoSeguro() {
+    if (window.utils?.getMesAno) return utils.getMesAno();
 
     const mes = document.getElementById("mesSelect")?.value || "Janeiro";
-    const ano = Number(document.getElementById("anoSelect")?.value || new Date().getFullYear());
+    const ano = Number(
+      document.getElementById("anoSelect")?.value || new Date().getFullYear()
+    );
 
     return { mes, ano };
   },
@@ -150,7 +158,6 @@ window.dashboardModule = {
       "Novembro",
       "Dezembro"
     ];
-
     return meses[(Number(numero) || 1) - 1] || "Janeiro";
   },
 
@@ -169,7 +176,6 @@ window.dashboardModule = {
       "Novembro",
       "Dezembro"
     ];
-
     const idx = meses.indexOf(nomeMes);
     if (idx <= 0) return meses[11];
     return meses[idx - 1];
@@ -332,15 +338,14 @@ window.dashboardModule = {
     const data = await api.select("meses", { ano });
 
     const alvo = (data || []).find((item) => {
-      const mesItem = String(item.mes || item.nome_mes || "").trim().toLowerCase();
+      const mesItem = String(item.mes || item.nome_mes || "")
+        .trim()
+        .toLowerCase();
       return mesItem === String(mes).trim().toLowerCase();
     });
 
     return this.normalizarNumero(
-      alvo?.faturamento ??
-      alvo?.valor ??
-      alvo?.receita ??
-      0
+      alvo?.faturamento ?? alvo?.valor ?? alvo?.receita ?? 0
     );
   },
 
@@ -372,12 +377,18 @@ window.dashboardModule = {
   },
 
   async buscarContasPagar() {
-    const data = await api.restGet("contas_pagar", "select=*&order=vencimento.asc");
+    const data = await api.restGet(
+      "contas_pagar",
+      "select=*&order=vencimento.asc"
+    );
     return Array.isArray(data) ? data : [];
   },
 
   async buscarContasReceber() {
-    const data = await api.restGet("contas_receber", "select=*&order=vencimento.asc");
+    const data = await api.restGet(
+      "contas_receber",
+      "select=*&order=vencimento.asc"
+    );
     return Array.isArray(data) ? data : [];
   },
 
@@ -447,27 +458,35 @@ window.dashboardModule = {
       }
 
       categorias[categoria].tipoMeta = item.tipo_meta || "percentual";
-      categorias[categoria].percentualMeta = this.normalizarNumero(item.percentual_meta || 0);
-      categorias[categoria].valorMeta = this.normalizarNumero(item.valor_meta || 0);
+      categorias[categoria].percentualMeta = this.normalizarNumero(
+        item.percentual_meta || 0
+      );
+      categorias[categoria].valorMeta = this.normalizarNumero(
+        item.valor_meta || 0
+      );
     });
 
     Object.values(categorias).forEach((item) => {
       if (item.tipoMeta === "valor") {
         item.metaValor = this.normalizarNumero(item.valorMeta || 0);
       } else {
-        item.metaValor = faturamentoMes * (this.normalizarNumero(item.percentualMeta || 0) / 100);
+        item.metaValor =
+          faturamentoMes *
+          (this.normalizarNumero(item.percentualMeta || 0) / 100);
       }
 
       item.diferenca = item.metaValor - item.gasto;
 
       if (item.metaValor > 0) {
-        item.desvioPercentual = ((item.gasto - item.metaValor) / item.metaValor) * 100;
+        item.desvioPercentual =
+          ((item.gasto - item.metaValor) / item.metaValor) * 100;
       } else {
         item.desvioPercentual = 0;
       }
 
       if (item.metaValor <= 0) {
-        item.situacao = item.gasto > 0 ? "Sem meta cadastrada" : "Sem movimentação";
+        item.situacao =
+          item.gasto > 0 ? "Sem meta cadastrada" : "Sem movimentação";
       } else if (item.gasto > item.metaValor) {
         item.situacao = "Acima da meta";
       } else {
@@ -475,11 +494,15 @@ window.dashboardModule = {
       }
     });
 
-    const totalGastosMes = Object.values(categorias).reduce((acc, item) => acc + item.gasto, 0);
+    const totalGastosMes = Object.values(categorias).reduce(
+      (acc, item) => acc + item.gasto,
+      0
+    );
     const saldoMes = faturamentoMes - totalGastosMes;
     const lucroMes = saldoMes;
     const margemMes = faturamentoMes > 0 ? (lucroMes / faturamentoMes) * 100 : 0;
-    const metaAtingida = faturamentoMes > 0 ? (saldoMes / faturamentoMes) * 100 : 0;
+    const metaAtingida =
+      faturamentoMes > 0 ? (saldoMes / faturamentoMes) * 100 : 0;
 
     const gastosPorMes = {};
     const faturamentoPorMes = {};
@@ -517,10 +540,14 @@ window.dashboardModule = {
     (gastosAno || []).forEach((item) => {
       const categoria = this.normalizarTexto(item.categoria || "DESP");
       rankingAnualCategorias[categoria] =
-        (rankingAnualCategorias[categoria] || 0) + this.normalizarNumero(item.valor || 0);
+        (rankingAnualCategorias[categoria] || 0) +
+        this.normalizarNumero(item.valor || 0);
     });
 
-    const totalFatAno = Object.values(faturamentoPorMes).reduce((a, b) => a + b, 0);
+    const totalFatAno = Object.values(faturamentoPorMes).reduce(
+      (a, b) => a + b,
+      0
+    );
     const totalGasAno = Object.values(gastosPorMes).reduce((a, b) => a + b, 0);
     const totalLucroAno = totalFatAno - totalGasAno;
     const margemAno = totalFatAno > 0 ? (totalLucroAno / totalFatAno) * 100 : 0;
@@ -529,16 +556,26 @@ window.dashboardModule = {
     const faturamentoMesAnterior = faturamentoPorMes[mesAnteriorNome] || 0;
     const gastosMesAnterior = gastosPorMes[mesAnteriorNome] || 0;
     const lucroMesAnterior = lucroPorMes[mesAnteriorNome] || 0;
-    const margemMesAnterior = faturamentoMesAnterior > 0
-      ? (lucroMesAnterior / faturamentoMesAnterior) * 100
-      : 0;
+    const margemMesAnterior =
+      faturamentoMesAnterior > 0
+        ? (lucroMesAnterior / faturamentoMesAnterior) * 100
+        : 0;
 
-    const variacaoFat = this.variacaoPercentual(faturamentoMes, faturamentoMesAnterior);
-    const variacaoGas = this.variacaoPercentual(totalGastosMes, gastosMesAnterior);
+    const variacaoFat = this.variacaoPercentual(
+      faturamentoMes,
+      faturamentoMesAnterior
+    );
+    const variacaoGas = this.variacaoPercentual(
+      totalGastosMes,
+      gastosMesAnterior
+    );
     const variacaoLucro = this.variacaoPercentual(lucroMes, lucroMesAnterior);
     const variacaoMargemPP = margemMes - margemMesAnterior;
 
-    const metaGlobal = Object.values(categorias).reduce((acc, item) => acc + item.metaValor, 0);
+    const metaGlobal = Object.values(categorias).reduce(
+      (acc, item) => acc + item.metaValor,
+      0
+    );
 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -548,7 +585,9 @@ window.dashboardModule = {
     });
 
     const contasReceberPendentes = (contasReceber || []).filter((item) => {
-      return !["recebido", "pago", "baixado"].includes(String(item.status || "").toLowerCase());
+      return !["recebido", "pago", "baixado"].includes(
+        String(item.status || "").toLowerCase()
+      );
     });
 
     const contasVencidas = contasPagarPendentes.filter((item) => {
@@ -571,11 +610,17 @@ window.dashboardModule = {
     });
 
     const topPagar = [...contasPagarPendentes]
-      .sort((a, b) => this.normalizarNumero(b.valor) - this.normalizarNumero(a.valor))
+      .sort(
+        (a, b) =>
+          this.normalizarNumero(b.valor) - this.normalizarNumero(a.valor)
+      )
       .slice(0, 5);
 
     const topReceber = [...contasReceberPendentes]
-      .sort((a, b) => this.normalizarNumero(b.valor) - this.normalizarNumero(a.valor))
+      .sort(
+        (a, b) =>
+          this.normalizarNumero(b.valor) - this.normalizarNumero(a.valor)
+      )
       .slice(0, 5);
 
     const alertas = [];
@@ -585,7 +630,10 @@ window.dashboardModule = {
         tipo: "critico",
         titulo: `${contasVencidas.length} conta(s) vencida(s)`,
         descricao: `Valor total vencido: ${this.formatarMoeda(
-          contasVencidas.reduce((a, b) => a + this.normalizarNumero(b.valor), 0)
+          contasVencidas.reduce(
+            (a, b) => a + this.normalizarNumero(b.valor),
+            0
+          )
         )}`
       });
     }
@@ -612,11 +660,15 @@ window.dashboardModule = {
       alertas.push({
         tipo: "atencao",
         titulo: "Lucro abaixo do mês anterior",
-        descricao: `Variação do lucro: ${this.formatarPercentual(variacaoLucro)}`
+        descricao: `Variação do lucro: ${this.formatarPercentual(
+          variacaoLucro
+        )}`
       });
     }
 
-    const categoriasAcimaMeta = Object.values(categorias).filter((item) => item.situacao === "Acima da meta");
+    const categoriasAcimaMeta = Object.values(categorias).filter(
+      (item) => item.situacao === "Acima da meta"
+    );
     if (categoriasAcimaMeta.length) {
       alertas.push({
         tipo: "atencao",
@@ -676,11 +728,26 @@ window.dashboardModule = {
     this.setText("margemCard", this.formatarPercentual(analise.margemMes));
     this.setText("metaAtingida", this.formatarPercentual(analise.metaAtingida));
 
-    this.setText("fatVsMesAnterior", `vs mês anterior: ${this.formatarPercentual(analise.variacaoFat)}`);
-    this.setText("gasVsMesAnterior", `vs mês anterior: ${this.formatarPercentual(analise.variacaoGas)}`);
-    this.setText("lucroVsMesAnterior", `vs mês anterior: ${this.formatarPercentual(analise.variacaoLucro)}`);
-    this.setText("margemVsMesAnterior", `vs mês anterior: ${this.arredondar(analise.variacaoMargemPP, 2)} p.p.`);
-    this.setText("metaGlobalInfo", `meta global: ${this.formatarMoeda(analise.metaGlobal)}`);
+    this.setText(
+      "fatVsMesAnterior",
+      `vs mês anterior: ${this.formatarPercentual(analise.variacaoFat)}`
+    );
+    this.setText(
+      "gasVsMesAnterior",
+      `vs mês anterior: ${this.formatarPercentual(analise.variacaoGas)}`
+    );
+    this.setText(
+      "lucroVsMesAnterior",
+      `vs mês anterior: ${this.formatarPercentual(analise.variacaoLucro)}`
+    );
+    this.setText(
+      "margemVsMesAnterior",
+      `vs mês anterior: ${this.arredondar(analise.variacaoMargemPP, 2)} p.p.`
+    );
+    this.setText(
+      "metaGlobalInfo",
+      `meta global: ${this.formatarMoeda(analise.metaGlobal)}`
+    );
   },
 
   renderSummaryStrip(analise) {
@@ -688,6 +755,85 @@ window.dashboardModule = {
     this.setText("dashGasYtd", this.formatarMoeda(analise.totalGasAno));
     this.setText("dashLucroYtd", this.formatarMoeda(analise.totalLucroAno));
     this.setText("dashMargemYtd", this.formatarPercentual(analise.margemAno));
+  },
+
+  renderForecast(analise) {
+    const forecast = this.calcularForecast(analise);
+
+    this.setText("forecastLucro", this.formatarMoeda(forecast.realistaLucro));
+    this.setText(
+      "forecastMargem",
+      this.formatarPercentual(forecast.realistaMargem)
+    );
+    this.setText("forecastRisco", forecast.risco);
+
+    this.setText(
+      "forecastLucroNote",
+      `Fechamento estimado com base em ${forecast.diasConsiderados}/${forecast.ultimoDiaMes} dias`
+    );
+    this.setText("forecastMargemNote", "Cenário realista do mês");
+    this.setText("forecastRiscoNote", forecast.riscoNote);
+
+    this.setText(
+      "forecastPessimistaFat",
+      this.formatarMoeda(forecast.pessimistaFat)
+    );
+    this.setText(
+      "forecastPessimistaGas",
+      this.formatarMoeda(forecast.pessimistaGas)
+    );
+    this.setText(
+      "forecastPessimistaLucro",
+      this.formatarMoeda(forecast.pessimistaLucro)
+    );
+    this.setText(
+      "forecastPessimistaMargem",
+      this.formatarPercentual(forecast.pessimistaMargem)
+    );
+
+    this.setText(
+      "forecastRealistaFat",
+      this.formatarMoeda(forecast.realistaFat)
+    );
+    this.setText(
+      "forecastRealistaGas",
+      this.formatarMoeda(forecast.realistaGas)
+    );
+    this.setText(
+      "forecastRealistaLucro",
+      this.formatarMoeda(forecast.realistaLucro)
+    );
+    this.setText(
+      "forecastRealistaMargem",
+      this.formatarPercentual(forecast.realistaMargem)
+    );
+
+    this.setText(
+      "forecastOtimistaFat",
+      this.formatarMoeda(forecast.otimistaFat)
+    );
+    this.setText(
+      "forecastOtimistaGas",
+      this.formatarMoeda(forecast.otimistaGas)
+    );
+    this.setText(
+      "forecastOtimistaLucro",
+      this.formatarMoeda(forecast.otimistaLucro)
+    );
+    this.setText(
+      "forecastOtimistaMargem",
+      this.formatarPercentual(forecast.otimistaMargem)
+    );
+
+    const riscoEl = document.getElementById("forecastRisco");
+    if (riscoEl) {
+      riscoEl.classList.remove(
+        "forecast-ok",
+        "forecast-warn",
+        "forecast-danger"
+      );
+      riscoEl.classList.add(forecast.riscoClasse);
+    }
   },
 
   renderStatusMes(analise) {
@@ -728,25 +874,36 @@ window.dashboardModule = {
       .sort((a, b) => b.gasto - a.gasto);
 
     if (!linhas.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="7" class="muted">Nenhum dado carregado.</td>
-        </tr>
-      `;
+      tbody.innerHTML =
+        '<tr><td colspan="7" class="muted">Nenhum dado carregado.</td></tr>';
       return;
     }
 
-    tbody.innerHTML = linhas.map((item) => `
+    tbody.innerHTML = linhas
+      .map(
+        (item) => `
       <tr>
         <td>${item.categoria}</td>
         <td>${this.formatarMoeda(item.gasto)}</td>
-        <td>${item.tipoMeta === "valor" ? "Valor fixo" : this.formatarPercentual(item.percentualMeta)}</td>
+        <td>${
+          item.tipoMeta === "valor"
+            ? "Valor fixo"
+            : this.formatarPercentual(item.percentualMeta)
+        }</td>
         <td>${this.formatarMoeda(item.metaValor)}</td>
-        <td class="${item.diferenca >= 0 ? "ok" : "err"}">${this.formatarMoeda(item.diferenca)}</td>
-        <td class="${item.desvioPercentual <= 0 ? "ok" : "err"}">${this.formatarPercentual(item.desvioPercentual)}</td>
-        <td class="${item.situacao === "Acima da meta" ? "err" : "ok"}">${item.situacao}</td>
+        <td class="${item.diferenca >= 0 ? "ok" : "err"}">${this.formatarMoeda(
+          item.diferenca
+        )}</td>
+        <td class="${item.desvioPercentual <= 0 ? "ok" : "err"}">${this.formatarPercentual(
+          item.desvioPercentual
+        )}</td>
+        <td class="${
+          item.situacao === "Acima da meta" ? "err" : "ok"
+        }">${item.situacao}</td>
       </tr>
-    `).join("");
+    `
+      )
+      .join("");
   },
 
   renderTopListas(analise) {
@@ -759,39 +916,49 @@ window.dashboardModule = {
     if (!el) return;
 
     if (!lista.length) {
-      el.innerHTML = `<div class="muted">Nenhum dado disponível.</div>`;
+      el.innerHTML = '<div class="muted">Nenhum dado disponível.</div>';
       return;
     }
 
-    el.innerHTML = lista.map((item) => `
+    el.innerHTML = lista
+      .map(
+        (item) => `
       <div class="alert-item">
         <strong>${item[campoNome] || "-"}</strong><br>
         ${item.documento || "-"} · ${item.categoria || "-"}<br>
         ${this.formatarMoeda(item.valor || 0)} · ${item[campoData] || "-"}
       </div>
-    `).join("");
+    `
+      )
+      .join("");
   },
 
   renderAlertas(analise) {
     const el = document.getElementById("alertList");
     if (!el) return;
 
-    const prioridade = {
-      critico: 1,
-      atencao: 2,
-      ok: 3
-    };
+    const prioridade = { critico: 1, atencao: 2, ok: 3 };
 
     const ordenados = [...analise.alertas].sort(
       (a, b) => prioridade[a.tipo] - prioridade[b.tipo]
     );
 
-    el.innerHTML = ordenados.map((alerta) => `
+    el.innerHTML = ordenados
+      .map(
+        (alerta) => `
       <div class="alert-item ${alerta.tipo}">
-        <strong>${alerta.tipo === "critico" ? "🔴" : alerta.tipo === "atencao" ? "🟠" : "🟢"} ${alerta.titulo}</strong><br>
+        <strong>${
+          alerta.tipo === "critico"
+            ? "🔴"
+            : alerta.tipo === "atencao"
+            ? "🟠"
+            : "🟢"
+        } ${alerta.titulo}</strong><br>
         ${alerta.descricao}
       </div>
-    `).join("");
+    `
+      )
+      .join("");
   },
 
   renderRankingResumo(analise) {
@@ -805,14 +972,15 @@ window.dashboardModule = {
     const total = ranking.reduce((acc, item) => acc + Number(item[1] || 0), 0);
 
     if (!ranking.length) {
-      el.innerHTML = `<div class="muted">Nenhum dado disponível.</div>`;
+      el.innerHTML = '<div class="muted">Nenhum dado disponível.</div>';
       return;
     }
 
-    el.innerHTML = ranking.map(([categoria, valor]) => {
-      const percentual = total > 0 ? (valor / total) * 100 : 0;
+    el.innerHTML = ranking
+      .map(([categoria, valor]) => {
+        const percentual = total > 0 ? (valor / total) * 100 : 0;
 
-      return `
+        return `
         <div class="ranking-summary-item">
           <div class="left">
             <strong>${categoria}</strong>
@@ -821,7 +989,8 @@ window.dashboardModule = {
           <div class="right">${this.formatarMoeda(valor)}</div>
         </div>
       `;
-    }).join("");
+      })
+      .join("");
   },
 
   getSortedCategoryData(analise) {
@@ -939,7 +1108,10 @@ window.dashboardModule = {
               label: (context) => {
                 const value = Number(context.parsed || 0);
                 const perc = total > 0 ? ((value / total) * 100) : 0;
-                return `${context.label}: ${this.formatarMoeda(value)} (${this.arredondar(perc, 2)}%)`;
+                return `${context.label}: ${this.formatarMoeda(value)} (${this.arredondar(
+                  perc,
+                  2
+                )}%)`;
               }
             }
           },
@@ -982,7 +1154,9 @@ window.dashboardModule = {
         datasets: [
           {
             label: "Gastos",
-            data: ordemMeses.map((m) => this.arredondar(analise.gastosPorMes[m] || 0, 2)),
+            data: ordemMeses.map((m) =>
+              this.arredondar(analise.gastosPorMes[m] || 0, 2)
+            ),
             borderColor: "#dc2626",
             backgroundColor: "rgba(220,38,38,0.10)",
             fill: true,
@@ -996,7 +1170,9 @@ window.dashboardModule = {
           },
           {
             label: "Faturamento",
-            data: ordemMeses.map((m) => this.arredondar(analise.faturamentoPorMes[m] || 0, 2)),
+            data: ordemMeses.map((m) =>
+              this.arredondar(analise.faturamentoPorMes[m] || 0, 2)
+            ),
             borderColor: "#2563eb",
             backgroundColor: "rgba(37,99,235,0.05)",
             fill: false,
@@ -1010,7 +1186,9 @@ window.dashboardModule = {
           },
           {
             label: "Lucro",
-            data: ordemMeses.map((m) => this.arredondar(analise.lucroPorMes[m] || 0, 2)),
+            data: ordemMeses.map((m) =>
+              this.arredondar(analise.lucroPorMes[m] || 0, 2)
+            ),
             borderColor: "#16a34a",
             backgroundColor: "rgba(22,163,74,0.10)",
             fill: true,
@@ -1040,7 +1218,8 @@ window.dashboardModule = {
 
     const options = this.getChartBaseOptions();
     options.indexAxis = "y";
-    options.scales.x.ticks.callback = (value) => this.formatarMoedaCompacta(value);
+    options.scales.x.ticks.callback = (value) =>
+      this.formatarMoedaCompacta(value);
 
     this.rankingChart = new Chart(canvas, {
       type: "bar",
@@ -1050,7 +1229,9 @@ window.dashboardModule = {
           {
             label: "Gastos no ano",
             data: ranking.map((item) => this.arredondar(item[1], 2)),
-            backgroundColor: ranking.map((_, i) => this.palette[i % this.palette.length]),
+            backgroundColor: ranking.map(
+              (_, i) => this.palette[i % this.palette.length]
+            ),
             borderRadius: 12,
             borderSkipped: false,
             maxBarThickness: 28
@@ -1132,7 +1313,9 @@ window.dashboardModule = {
           datasets: [
             {
               data: valores,
-              backgroundColor: linhas.map((_, i) => this.palette[i % this.palette.length]),
+              backgroundColor: linhas.map(
+                (_, i) => this.palette[i % this.palette.length]
+              ),
               borderColor: "#ffffff",
               borderWidth: 3,
               hoverOffset: 10
@@ -1167,7 +1350,10 @@ window.dashboardModule = {
                 label: (context) => {
                   const value = Number(context.parsed || 0);
                   const perc = total > 0 ? ((value / total) * 100) : 0;
-                  return `${context.label}: ${this.formatarMoeda(value)} (${this.arredondar(perc, 2)}%)`;
+                  return `${context.label}: ${this.formatarMoeda(value)} (${this.arredondar(
+                    perc,
+                    2
+                  )}%)`;
                 }
               }
             },
@@ -1204,7 +1390,9 @@ window.dashboardModule = {
           datasets: [
             {
               label: "Gastos",
-              data: ordemMeses.map((m) => this.arredondar(this.ultimoAnalise.gastosPorMes[m] || 0, 2)),
+              data: ordemMeses.map((m) =>
+                this.arredondar(this.ultimoAnalise.gastosPorMes[m] || 0, 2)
+              ),
               borderColor: "#dc2626",
               backgroundColor: "rgba(220,38,38,0.10)",
               fill: true,
@@ -1218,7 +1406,9 @@ window.dashboardModule = {
             },
             {
               label: "Faturamento",
-              data: ordemMeses.map((m) => this.arredondar(this.ultimoAnalise.faturamentoPorMes[m] || 0, 2)),
+              data: ordemMeses.map((m) =>
+                this.arredondar(this.ultimoAnalise.faturamentoPorMes[m] || 0, 2)
+              ),
               borderColor: "#2563eb",
               backgroundColor: "rgba(37,99,235,0.05)",
               fill: false,
@@ -1232,7 +1422,9 @@ window.dashboardModule = {
             },
             {
               label: "Lucro",
-              data: ordemMeses.map((m) => this.arredondar(this.ultimoAnalise.lucroPorMes[m] || 0, 2)),
+              data: ordemMeses.map((m) =>
+                this.arredondar(this.ultimoAnalise.lucroPorMes[m] || 0, 2)
+              ),
               borderColor: "#16a34a",
               backgroundColor: "rgba(22,163,74,0.10)",
               fill: true,
@@ -1258,7 +1450,8 @@ window.dashboardModule = {
 
       const options = this.getChartBaseOptions();
       options.indexAxis = "y";
-      options.scales.x.ticks.callback = (value) => this.formatarMoedaCompacta(value);
+      options.scales.x.ticks.callback = (value) =>
+        this.formatarMoedaCompacta(value);
 
       this.popupChart = new Chart(popupCanvas, {
         type: "bar",
@@ -1268,7 +1461,9 @@ window.dashboardModule = {
             {
               label: "Gastos no ano",
               data: ranking.map((item) => this.arredondar(item[1], 2)),
-              backgroundColor: ranking.map((_, i) => this.palette[i % this.palette.length]),
+              backgroundColor: ranking.map(
+                (_, i) => this.palette[i % this.palette.length]
+              ),
               borderRadius: 12,
               borderSkipped: false,
               maxBarThickness: 34
@@ -1289,110 +1484,9 @@ window.dashboardModule = {
       this.popupChart = null;
     }
   },
-calcularForecast(analise) {
-    const hoje = new Date();
-    const diaAtual = hoje.getDate();
-    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
 
-    const diasConsiderados = Math.max(diaAtual, 1);
-    const fatorProjecao = ultimoDiaMes / diasConsiderados;
-
-    const baseFat = analise.faturamentoMes * fatorProjecao;
-    const baseGas = analise.totalGastosMes * fatorProjecao;
-
-    const pessimistaFat = baseFat * 0.92;
-    const pessimistaGas = baseGas * 1.08;
-    const pessimistaLucro = pessimistaFat - pessimistaGas;
-    const pessimistaMargem = pessimistaFat > 0 ? (pessimistaLucro / pessimistaFat) * 100 : 0;
-
-    const realistaFat = baseFat;
-    const realistaGas = baseGas;
-    const realistaLucro = realistaFat - realistaGas;
-    const realistaMargem = realistaFat > 0 ? (realistaLucro / realistaFat) * 100 : 0;
-
-    const otimistaFat = baseFat * 1.08;
-    const otimistaGas = baseGas * 0.96;
-    const otimistaLucro = otimistaFat - otimistaGas;
-    const otimistaMargem = otimistaFat > 0 ? (otimistaLucro / otimistaFat) * 100 : 0;
-
-    let risco = "Controlado";
-    let riscoClasse = "forecast-ok";
-    let riscoNote = "Fechamento estimado saudável";
-
-    if (realistaLucro < 0) {
-      risco = "Crítico";
-      riscoClasse = "forecast-danger";
-      riscoNote = "Cenário realista indica fechamento negativo";
-    } else if (realistaMargem < 10) {
-      risco = "Atenção";
-      riscoClasse = "forecast-warn";
-      riscoNote = "Margem projetada abaixo do ideal";
-    }
-
-    return {
-      diasConsiderados,
-      ultimoDiaMes,
-      fatorProjecao,
-
-      pessimistaFat,
-      pessimistaGas,
-      pessimistaLucro,
-      pessimistaMargem,
-
-      realistaFat,
-      realistaGas,
-      realistaLucro,
-      realistaMargem,
-
-      otimistaFat,
-      otimistaGas,
-      otimistaLucro,
-      otimistaMargem,
-
-      risco,
-      riscoClasse,
-      riscoNote
-    };
-  },
-
-renderForecast(analise) {
-    const forecast = this.calcularForecast(analise);
-
-    this.setText("forecastLucro", this.formatarMoeda(forecast.realistaLucro));
-    this.setText("forecastMargem", this.formatarPercentual(forecast.realistaMargem));
-    this.setText("forecastRisco", forecast.risco);
-
-    this.setText(
-      "forecastLucroNote",
-      `Fechamento estimado com base em ${forecast.diasConsiderados}/${forecast.ultimoDiaMes} dias`
-    );
-    this.setText(
-      "forecastMargemNote",
-      `Cenário realista do mês`
-    );
-    this.setText(
-      "forecastRiscoNote",
-      forecast.riscoNote
-    );
-
-    this.setText("forecastPessimistaFat", this.formatarMoeda(forecast.pessimistaFat));
-    this.setText("forecastPessimistaGas", this.formatarMoeda(forecast.pessimistaGas));
-    this.setText("forecastPessimistaLucro", this.formatarMoeda(forecast.pessimistaLucro));
-    this.setText("forecastPessimistaMargem", this.formatarPercentual(forecast.pessimistaMargem));
-
-    this.setText("forecastRealistaFat", this.formatarMoeda(forecast.realistaFat));
-    this.setText("forecastRealistaGas", this.formatarMoeda(forecast.realistaGas));
-    this.setText("forecastRealistaLucro", this.formatarMoeda(forecast.realistaLucro));
-    this.setText("forecastRealistaMargem", this.formatarPercentual(forecast.realistaMargem));
-
-    this.setText("forecastOtimistaFat", this.formatarMoeda(forecast.otimistaFat));
-    this.setText("forecastOtimistaGas", this.formatarMoeda(forecast.otimistaGas));
-    this.setText("forecastOtimistaLucro", this.formatarMoeda(forecast.otimistaLucro));
-    this.setText("forecastOtimistaMargem", this.formatarPercentual(forecast.otimistaMargem));
-
-    const riscoEl = document.getElementById("forecastRisco");
-    if (riscoEl) {
-      riscoEl.classList.remove("forecast-ok", "forecast-warn", "forecast-danger");
-      riscoEl.classList.add(forecast.riscoClasse);
-    }
-  },
+  setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+};
