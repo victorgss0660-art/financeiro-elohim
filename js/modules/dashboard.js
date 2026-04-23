@@ -775,75 +775,55 @@ renderBarChart(analise) {
     });
   },
 
-  renderLineChart(analise) {
-    const canvas = document.getElementById("lineChart");
-    if (!canvas || typeof Chart === "undefined") return;
+renderLineChart(analise) {
+  const canvas = document.getElementById("lineChart");
+  if (!canvas || typeof Chart === "undefined") return;
 
-    const ordemMeses = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
+  const meses = [
+    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+  ];
 
-    const gastos = ordemMeses.map(m => this.arredondar(analise.gastosPorMes[m] || 0, 2));
-    const faturamento = ordemMeses.map(m => this.arredondar(analise.faturamentoPorMes[m] || 0, 2));
-    const lucro = ordemMeses.map(m => this.arredondar(analise.lucroPorMes[m] || 0, 2));
+  const gastos = meses.map(m => analise.gastosPorMes[m] || 0);
+  const faturamento = meses.map(m => analise.faturamentoPorMes[m] || 0);
+  const lucro = meses.map(m => analise.lucroPorMes[m] || 0);
 
-    if (this.lineChart) this.lineChart.destroy();
+  const mesAtual = new Date().getMonth();
 
-    const options = this.getChartBaseOptions();
+  if (this.lineChart) this.lineChart.destroy();
 
-    this.lineChart = new Chart(canvas, {
-      type: "line",
-      data: {
-        labels: ordemMeses,
-        datasets: [
-          {
-            label: "Gastos",
-            data: gastos,
-            borderColor: "#dc2626",
-            backgroundColor: "rgba(220,38,38,0.10)",
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            pointBackgroundColor: "#dc2626",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2,
-            borderWidth: 3
-          },
-          {
-            label: "Faturamento",
-            data: faturamento,
-            borderColor: "#2563eb",
-            backgroundColor: "rgba(37,99,235,0.05)",
-            fill: false,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            pointBackgroundColor: "#2563eb",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2,
-            borderWidth: 3
-          },
-          {
-            label: "Lucro",
-            data: lucro,
-            borderColor: "#16a34a",
-            backgroundColor: "rgba(22,163,74,0.10)",
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            pointBackgroundColor: "#16a34a",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2,
-            borderWidth: 3
-          }
-        ]
-      },
-      options
-    });
-  },
+  this.lineChart = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: meses,
+      datasets: [
+        {
+          label: "Faturamento",
+          data: faturamento,
+          borderColor: "#2563eb",
+          borderWidth: 3,
+          tension: 0.4
+        },
+        {
+          label: "Gastos",
+          data: gastos,
+          borderColor: "#dc2626",
+          borderWidth: 3,
+          tension: 0.4
+        },
+        {
+          label: "Lucro",
+          data: lucro,
+          borderColor: "#16a34a",
+          borderWidth: 4,
+          tension: 0.4,
+          pointRadius: (ctx) => ctx.dataIndex === mesAtual ? 6 : 3
+        }
+      ]
+    },
+    options: this.getChartBaseOptions()
+  });
+}
 
   renderRankingChart(analise) {
     const canvas = document.getElementById("rankingChart");
