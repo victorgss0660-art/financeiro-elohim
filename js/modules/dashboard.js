@@ -633,23 +633,27 @@ window.dashboardModule = {
     `).join("");
   },
 
-  renderAlertas(analise) {
-    const el = document.getElementById("alertList");
-    if (!el) return;
+renderAlertas(analise) {
+  const el = document.getElementById("alertList");
+  if (!el) return;
 
-    el.innerHTML = analise.alertas.map(alerta => `
-      <div class="alert-item ${alerta.tipo}">
-        <strong>${alerta.titulo}</strong><br>
-        ${alerta.descricao}
-      </div>
-    `).join("");
-  },
+  const prioridade = {
+    critico: 1,
+    atencao: 2,
+    ok: 3
+  };
 
-  getSortedCategoryData(analise) {
-    return [...analise.categorias]
-      .filter(item => item.gasto > 0 || item.metaValor > 0)
-      .sort((a, b) => b.gasto - a.gasto);
-  },
+  const ordenados = [...analise.alertas].sort(
+    (a, b) => prioridade[a.tipo] - prioridade[b.tipo]
+  );
+
+  el.innerHTML = ordenados.map(a => `
+    <div class="alert-item ${a.tipo}">
+      <strong>${a.tipo === "critico" ? "🔴" : a.tipo === "atencao" ? "🟠" : "🟢"} ${a.titulo}</strong><br>
+      ${a.descricao}
+    </div>
+  `).join("");
+}
 
 renderBarChart(analise) {
   const canvas = document.getElementById("barChart");
