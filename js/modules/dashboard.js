@@ -114,6 +114,7 @@ window.dashboardModule = {
       this.renderRankingChart(analise);
       this.renderRankingResumo(analise);
       this.renderSummaryStrip(analise);
+      this.renderForecast(analise);
       this.renderStatusMes(analise);
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
