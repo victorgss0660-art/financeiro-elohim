@@ -1297,36 +1297,61 @@ calcularForecast(analise) {
     const diasConsiderados = Math.max(diaAtual, 1);
     const fatorProjecao = ultimoDiaMes / diasConsiderados;
 
-    const forecastFat = analise.faturamentoMes * fatorProjecao;
-    const forecastGas = analise.totalGastosMes * fatorProjecao;
-    const forecastLucro = forecastFat - forecastGas;
-    const forecastMargem = forecastFat > 0 ? (forecastLucro / forecastFat) * 100 : 0;
+    const baseFat = analise.faturamentoMes * fatorProjecao;
+    const baseGas = analise.totalGastosMes * fatorProjecao;
+
+    const pessimistaFat = baseFat * 0.92;
+    const pessimistaGas = baseGas * 1.08;
+    const pessimistaLucro = pessimistaFat - pessimistaGas;
+    const pessimistaMargem = pessimistaFat > 0 ? (pessimistaLucro / pessimistaFat) * 100 : 0;
+
+    const realistaFat = baseFat;
+    const realistaGas = baseGas;
+    const realistaLucro = realistaFat - realistaGas;
+    const realistaMargem = realistaFat > 0 ? (realistaLucro / realistaFat) * 100 : 0;
+
+    const otimistaFat = baseFat * 1.08;
+    const otimistaGas = baseGas * 0.96;
+    const otimistaLucro = otimistaFat - otimistaGas;
+    const otimistaMargem = otimistaFat > 0 ? (otimistaLucro / otimistaFat) * 100 : 0;
 
     let risco = "Controlado";
     let riscoClasse = "forecast-ok";
     let riscoNote = "Fechamento estimado saudável";
 
-    if (forecastLucro < 0) {
+    if (realistaLucro < 0) {
       risco = "Crítico";
       riscoClasse = "forecast-danger";
-      riscoNote = "Projeção indica fechamento negativo";
-    } else if (forecastFat > 0 && (forecastLucro / forecastFat) < 0.1) {
+      riscoNote = "Cenário realista indica fechamento negativo";
+    } else if (realistaMargem < 10) {
       risco = "Atenção";
       riscoClasse = "forecast-warn";
-      riscoNote = "Margem projetada apertada";
+      riscoNote = "Margem projetada abaixo do ideal";
     }
 
     return {
-      forecastFat,
-      forecastGas,
-      forecastLucro,
-      forecastMargem,
+      diasConsiderados,
+      ultimoDiaMes,
+      fatorProjecao,
+
+      pessimistaFat,
+      pessimistaGas,
+      pessimistaLucro,
+      pessimistaMargem,
+
+      realistaFat,
+      realistaGas,
+      realistaLucro,
+      realistaMargem,
+
+      otimistaFat,
+      otimistaGas,
+      otimistaLucro,
+      otimistaMargem,
+
       risco,
       riscoClasse,
-      riscoNote,
-      fatorProjecao,
-      diasConsiderados,
-      ultimoDiaMes
+      riscoNote
     };
   },
 
