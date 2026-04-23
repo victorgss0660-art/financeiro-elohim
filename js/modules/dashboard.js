@@ -41,6 +41,7 @@ window.dashboardModule = {
     id: "doughnutCenterTextPlugin",
     afterDraw(chart, args, pluginOptions) {
       if (chart.config.type !== "doughnut") return;
+
       const meta = chart.getDatasetMeta(0);
       if (!meta || !meta.data || !meta.data.length) return;
 
@@ -62,6 +63,7 @@ window.dashboardModule = {
       ctx.fillStyle = "#0f172a";
       ctx.font = "800 22px Inter, sans-serif";
       ctx.fillText(value, x, y + 12);
+
       ctx.restore();
     }
   },
@@ -111,6 +113,7 @@ window.dashboardModule = {
       this.renderLineChart(analise);
       this.renderRankingChart(analise);
       this.renderSummaryStrip(analise);
+      this.renderStatusMes(analise);
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
       if (window.utils?.setAppMsg) {
@@ -126,14 +129,26 @@ window.dashboardModule = {
 
     const mes = document.getElementById("mesSelect")?.value || "Janeiro";
     const ano = Number(document.getElementById("anoSelect")?.value || new Date().getFullYear());
+
     return { mes, ano };
   },
 
   numeroParaMes(numero) {
     const meses = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
     ];
+
     return meses[(Number(numero) || 1) - 1] || "Janeiro";
   },
 
@@ -142,7 +157,10 @@ window.dashboardModule = {
   },
 
   normalizarNumero(valor) {
-    if (typeof valor === "number") return Number.isFinite(valor) ? valor : 0;
+    if (typeof valor === "number") {
+      return Number.isFinite(valor) ? valor : 0;
+    }
+
     if (valor == null) return 0;
 
     let texto = String(valor).trim();
@@ -165,6 +183,7 @@ window.dashboardModule = {
 
   formatarMoeda(valor) {
     if (window.utils?.moeda) return utils.moeda(valor);
+
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -275,7 +294,7 @@ window.dashboardModule = {
   async buscarFaturamentoMes(mes, ano) {
     const data = await api.select("meses", { ano });
 
-    const alvo = (data || []).find(item => {
+    const alvo = (data || []).find((item) => {
       const mesItem = String(item.mes || item.nome_mes || "").trim().toLowerCase();
       return mesItem === String(mes).trim().toLowerCase();
     });
@@ -295,7 +314,8 @@ window.dashboardModule = {
 
   async buscarGastosMes(mes, ano) {
     const data = await api.select("gastos", { ano });
-    return (data || []).filter(item => {
+
+    return (data || []).filter((item) => {
       const mesItem = String(item.mes || "").trim().toLowerCase();
       return mesItem === String(mes).trim().toLowerCase();
     });
@@ -303,7 +323,8 @@ window.dashboardModule = {
 
   async buscarMetasMes(mes, ano) {
     const data = await api.select("metas", { ano });
-    return (data || []).filter(item => {
+
+    return (data || []).filter((item) => {
       const mesItem = String(item.mes || "").trim().toLowerCase();
       return mesItem === String(mes).trim().toLowerCase();
     });
@@ -336,7 +357,7 @@ window.dashboardModule = {
   }) {
     const categorias = {};
 
-    this.categoriasPadrao.forEach(cat => {
+    this.categoriasPadrao.forEach((cat) => {
       categorias[cat] = {
         categoria: cat,
         gasto: 0,
@@ -349,8 +370,9 @@ window.dashboardModule = {
       };
     });
 
-    (gastosMes || []).forEach(item => {
+    (gastosMes || []).forEach((item) => {
       const categoria = this.normalizarTexto(item.categoria || "DESP");
+
       if (!categorias[categoria]) {
         categorias[categoria] = {
           categoria,
@@ -363,10 +385,11 @@ window.dashboardModule = {
           situacao: "Sem meta"
         };
       }
+
       categorias[categoria].gasto += this.normalizarNumero(item.valor || 0);
     });
 
-    (metasMes || []).forEach(item => {
+    (metasMes || []).forEach((item) => {
       const categoria = this.normalizarTexto(item.categoria || "");
       if (!categoria) return;
 
@@ -388,7 +411,7 @@ window.dashboardModule = {
       categorias[categoria].valorMeta = this.normalizarNumero(item.valor_meta || 0);
     });
 
-    Object.values(categorias).forEach(item => {
+    Object.values(categorias).forEach((item) => {
       if (item.tipoMeta === "valor") {
         item.metaValor = this.normalizarNumero(item.valorMeta || 0);
       } else {
@@ -421,30 +444,33 @@ window.dashboardModule = {
       lucroPorMes[nomeMes] = 0;
     }
 
-    (gastosAno || []).forEach(item => {
+    (gastosAno || []).forEach((item) => {
       const nomeMes = String(item.mes || "").trim();
       if (!nomeMes) return;
       if (!(nomeMes in gastosPorMes)) return;
+
       gastosPorMes[nomeMes] += this.normalizarNumero(item.valor || 0);
     });
 
-    (faturamentoAno || []).forEach(item => {
+    (faturamentoAno || []).forEach((item) => {
       const nomeMes = String(item.mes || item.nome_mes || "").trim();
       if (!nomeMes) return;
       if (!(nomeMes in faturamentoPorMes)) return;
+
       faturamentoPorMes[nomeMes] += this.normalizarNumero(
         item.faturamento ?? item.valor ?? item.receita ?? 0
       );
     });
 
-    Object.keys(gastosPorMes).forEach(nomeMes => {
+    Object.keys(gastosPorMes).forEach((nomeMes) => {
       lucroPorMes[nomeMes] = faturamentoPorMes[nomeMes] - gastosPorMes[nomeMes];
     });
 
     const rankingAnualCategorias = {};
-    (gastosAno || []).forEach(item => {
+    (gastosAno || []).forEach((item) => {
       const categoria = this.normalizarTexto(item.categoria || "DESP");
-      rankingAnualCategorias[categoria] = (rankingAnualCategorias[categoria] || 0) + this.normalizarNumero(item.valor || 0);
+      rankingAnualCategorias[categoria] =
+        (rankingAnualCategorias[categoria] || 0) + this.normalizarNumero(item.valor || 0);
     });
 
     const totalFatAno = Object.values(faturamentoPorMes).reduce((a, b) => a + b, 0);
@@ -455,27 +481,27 @@ window.dashboardModule = {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const contasPagarPendentes = (contasPagar || []).filter(item => {
+    const contasPagarPendentes = (contasPagar || []).filter((item) => {
       return String(item.status || "").toLowerCase() !== "pago";
     });
 
-    const contasReceberPendentes = (contasReceber || []).filter(item => {
+    const contasReceberPendentes = (contasReceber || []).filter((item) => {
       return !["recebido", "pago", "baixado"].includes(String(item.status || "").toLowerCase());
     });
 
-    const contasVencidas = contasPagarPendentes.filter(item => {
+    const contasVencidas = contasPagarPendentes.filter((item) => {
       if (!item.vencimento) return false;
       const data = new Date(String(item.vencimento) + "T00:00:00");
       return data < hoje;
     });
 
-    const vencemHoje = contasPagarPendentes.filter(item => {
+    const vencemHoje = contasPagarPendentes.filter((item) => {
       if (!item.vencimento) return false;
       const data = new Date(String(item.vencimento) + "T00:00:00");
       return data.getTime() === hoje.getTime();
     });
 
-    const proximos7Dias = contasPagarPendentes.filter(item => {
+    const proximos7Dias = contasPagarPendentes.filter((item) => {
       if (!item.vencimento) return false;
       const data = new Date(String(item.vencimento) + "T00:00:00");
       const diff = Math.ceil((data - hoje) / 86400000);
@@ -496,7 +522,9 @@ window.dashboardModule = {
       alertas.push({
         tipo: "critico",
         titulo: `${contasVencidas.length} conta(s) vencida(s)`,
-        descricao: `Valor total vencido: ${this.formatarMoeda(contasVencidas.reduce((a, b) => a + this.normalizarNumero(b.valor), 0))}`
+        descricao: `Valor total vencido: ${this.formatarMoeda(
+          contasVencidas.reduce((a, b) => a + this.normalizarNumero(b.valor), 0)
+        )}`
       });
     }
 
@@ -504,7 +532,9 @@ window.dashboardModule = {
       alertas.push({
         tipo: "atencao",
         titulo: `${vencemHoje.length} conta(s) vencem hoje`,
-        descricao: `Valor total: ${this.formatarMoeda(vencemHoje.reduce((a, b) => a + this.normalizarNumero(b.valor), 0))}`
+        descricao: `Valor total: ${this.formatarMoeda(
+          vencemHoje.reduce((a, b) => a + this.normalizarNumero(b.valor), 0)
+        )}`
       });
     }
 
@@ -516,12 +546,12 @@ window.dashboardModule = {
       });
     }
 
-    const categoriasAcimaMeta = Object.values(categorias).filter(item => item.situacao === "Acima da meta");
+    const categoriasAcimaMeta = Object.values(categorias).filter((item) => item.situacao === "Acima da meta");
     if (categoriasAcimaMeta.length) {
       alertas.push({
         tipo: "atencao",
         titulo: `${categoriasAcimaMeta.length} categoria(s) acima da meta`,
-        descricao: categoriasAcimaMeta.map(i => i.categoria).join(", ")
+        descricao: categoriasAcimaMeta.map((i) => i.categoria).join(", ")
       });
     }
 
@@ -563,6 +593,7 @@ window.dashboardModule = {
     this.setText("gas", this.formatarMoeda(analise.totalGastosMes));
     this.setText("saldo", this.formatarMoeda(analise.saldoMes));
     this.setText("metaAtingida", `${this.arredondar(analise.metaAtingida, 2)}%`);
+
     this.setText("cardVencidas", String(analise.contasVencidas.length));
     this.setText("cardHoje", String(analise.vencemHoje.length));
     this.setText("card7dias", String(analise.proximos7Dias.length));
@@ -574,24 +605,44 @@ window.dashboardModule = {
     this.setText("varFat", `${this.arredondar(variacao, 2)}%`);
   },
 
-renderSummaryStrip(analise) {
-  this.setText("dashFatYtd", this.formatarMoeda(analise.totalFatAno));
-  this.setText("dashGasYtd", this.formatarMoeda(analise.totalGasAno));
-  this.setText("dashLucroYtd", this.formatarMoeda(analise.totalLucroAno));
+  renderSummaryStrip(analise) {
+    this.setText("dashFatYtd", this.formatarMoeda(analise.totalFatAno));
+    this.setText("dashGasYtd", this.formatarMoeda(analise.totalGasAno));
+    this.setText("dashLucroYtd", this.formatarMoeda(analise.totalLucroAno));
+    this.setText("dashMargemYtd", `${this.arredondar(analise.margemAno, 2)}%`);
+  },
 
-  const margem = analise.totalFatAno > 0
-    ? (analise.totalLucroAno / analise.totalFatAno) * 100
-    : 0;
+  renderStatusMes(analise) {
+    this.setText("statusMes", `${analise.mes}/${analise.ano}`);
 
-  this.setText("dashMargemYtd", `${this.arredondar(margem, 2)}%`);
-}
+    const agora = new Date().toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+    this.setText("statusAtualizacao", agora);
+
+    const el = document.getElementById("statusSituacao");
+    if (!el) return;
+
+    el.classList.remove("ok", "err");
+
+    if (analise.saldoMes < 0) {
+      el.textContent = "Crítico";
+      el.classList.add("err");
+    } else if (analise.saldoMes === 0) {
+      el.textContent = "Neutro";
+    } else {
+      el.textContent = "Saudável";
+      el.classList.add("ok");
+    }
+  },
 
   renderResumoTabela(analise) {
     const tbody = document.getElementById("tabelaResumo");
     if (!tbody) return;
 
     const linhas = analise.categorias
-      .filter(item => item.gasto > 0 || item.metaValor > 0)
+      .filter((item) => item.gasto > 0 || item.metaValor > 0)
       .sort((a, b) => b.gasto - a.gasto);
 
     if (!linhas.length) {
@@ -603,7 +654,7 @@ renderSummaryStrip(analise) {
       return;
     }
 
-    tbody.innerHTML = linhas.map(item => `
+    tbody.innerHTML = linhas.map((item) => `
       <tr>
         <td>${item.categoria}</td>
         <td>${this.formatarMoeda(item.gasto)}</td>
@@ -629,7 +680,7 @@ renderSummaryStrip(analise) {
       return;
     }
 
-    el.innerHTML = lista.map(item => `
+    el.innerHTML = lista.map((item) => `
       <div class="alert-item">
         <strong>${item[campoNome] || "-"}</strong><br>
         ${item.documento || "-"} · ${item.categoria || "-"}<br>
@@ -638,93 +689,95 @@ renderSummaryStrip(analise) {
     `).join("");
   },
 
-renderAlertas(analise) {
-  const el = document.getElementById("alertList");
-  if (!el) return;
+  renderAlertas(analise) {
+    const el = document.getElementById("alertList");
+    if (!el) return;
 
-  const prioridade = {
-    critico: 1,
-    atencao: 2,
-    ok: 3
-  };
+    const prioridade = {
+      critico: 1,
+      atencao: 2,
+      ok: 3
+    };
 
-  const ordenados = [...analise.alertas].sort(
-    (a, b) => prioridade[a.tipo] - prioridade[b.tipo]
-  );
+    const ordenados = [...analise.alertas].sort(
+      (a, b) => prioridade[a.tipo] - prioridade[b.tipo]
+    );
 
-  el.innerHTML = ordenados.map(a => `
-    <div class="alert-item ${a.tipo}">
-      <strong>${a.tipo === "critico" ? "🔴" : a.tipo === "atencao" ? "🟠" : "🟢"} ${a.titulo}</strong><br>
-      ${a.descricao}
-    </div>
-  `).join("");
-}
+    el.innerHTML = ordenados.map((alerta) => `
+      <div class="alert-item ${alerta.tipo}">
+        <strong>${alerta.tipo === "critico" ? "🔴" : alerta.tipo === "atencao" ? "🟠" : "🟢"} ${alerta.titulo}</strong><br>
+        ${alerta.descricao}
+      </div>
+    `).join("");
+  },
 
-renderBarChart(analise) {
-  const canvas = document.getElementById("barChart");
-  if (!canvas || typeof Chart === "undefined") return;
+  getSortedCategoryData(analise) {
+    return [...analise.categorias]
+      .filter((item) => item.gasto > 0 || item.metaValor > 0)
+      .sort((a, b) => b.gasto - a.gasto);
+  },
 
-  const linhas = this.getSortedCategoryData(analise);
+  renderBarChart(analise) {
+    const canvas = document.getElementById("barChart");
+    if (!canvas || typeof Chart === "undefined") return;
 
-  const labels = linhas.map(i => i.categoria);
-  const gastos = linhas.map(i => this.arredondar(i.gasto, 2));
-  const metas = linhas.map(i => this.arredondar(i.metaValor, 2));
+    const linhas = this.getSortedCategoryData(analise);
+    const labels = linhas.map((item) => item.categoria);
+    const gastos = linhas.map((item) => this.arredondar(item.gasto, 2));
+    const metas = linhas.map((item) => this.arredondar(item.metaValor, 2));
 
-  const cores = linhas.map(i =>
-    i.gasto > i.metaValor ? "#dc2626" : "#22c55e"
-  );
+    const cores = linhas.map((item) =>
+      item.metaValor > 0 && item.gasto > item.metaValor ? "#dc2626" : "#22c55e"
+    );
 
-  if (this.barChart) this.barChart.destroy();
+    if (this.barChart) this.barChart.destroy();
 
-  this.barChart = new Chart(canvas, {
-    data: {
-      labels,
-      datasets: [
-        {
-          type: "bar",
-          label: "Gasto",
-          data: gastos,
-          backgroundColor: cores,
-          borderRadius: 14,
-          maxBarThickness: 38
-        },
-        {
-          type: "line",
-          label: "Meta",
-          data: metas,
-          borderColor: "#2563eb",
-          borderWidth: 3,
-          tension: 0.4,
-          pointRadius: 3
-        }
-      ]
-    },
-    options: {
-      ...this.getChartBaseOptions(),
-      plugins: {
-        ...this.getChartBaseOptions().plugins,
-        tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              return `${ctx.dataset.label}: ${this.formatarMoeda(ctx.parsed.y)}`;
-            }
+    this.barChart = new Chart(canvas, {
+      data: {
+        labels,
+        datasets: [
+          {
+            type: "bar",
+            label: "Gasto",
+            data: gastos,
+            backgroundColor: cores,
+            borderColor: cores,
+            borderWidth: 1,
+            borderRadius: 12,
+            borderSkipped: false,
+            maxBarThickness: 34
+          },
+          {
+            type: "line",
+            label: "Meta",
+            data: metas,
+            borderColor: "rgba(37, 99, 235, 1)",
+            backgroundColor: "rgba(37, 99, 235, 0.08)",
+            pointBackgroundColor: "rgba(37, 99, 235, 1)",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: false
           }
-        }
-      }
-    }
-  });
-}
+        ]
+      },
+      options: this.getChartBaseOptions()
+    });
+  },
 
   renderPieChart(analise) {
     const canvas = document.getElementById("pieChart");
     if (!canvas || typeof Chart === "undefined") return;
 
     const linhas = analise.categorias
-      .filter(item => item.gasto > 0)
+      .filter((item) => item.gasto > 0)
       .sort((a, b) => b.gasto - a.gasto);
 
-    const labels = linhas.map(item => item.categoria);
-    const valores = linhas.map(item => this.arredondar(item.gasto, 2));
+    const labels = linhas.map((item) => item.categoria);
+    const valores = linhas.map((item) => this.arredondar(item.gasto, 2));
     const total = valores.reduce((a, b) => a + b, 0);
 
     if (this.pieChart) this.pieChart.destroy();
@@ -733,13 +786,15 @@ renderBarChart(analise) {
       type: "doughnut",
       data: {
         labels,
-        datasets: [{
-          data: valores,
-          backgroundColor: labels.map((_, i) => this.palette[i % this.palette.length]),
-          borderColor: "#ffffff",
-          borderWidth: 3,
-          hoverOffset: 10
-        }]
+        datasets: [
+          {
+            data: valores,
+            backgroundColor: labels.map((_, i) => this.palette[i % this.palette.length]),
+            borderColor: "#ffffff",
+            borderWidth: 3,
+            hoverOffset: 10
+          }
+        ]
       },
       plugins: [this.doughnutCenterTextPlugin],
       options: {
@@ -784,55 +839,81 @@ renderBarChart(analise) {
     });
   },
 
-renderLineChart(analise) {
-  const canvas = document.getElementById("lineChart");
-  if (!canvas || typeof Chart === "undefined") return;
+  renderLineChart(analise) {
+    const canvas = document.getElementById("lineChart");
+    if (!canvas || typeof Chart === "undefined") return;
 
-  const meses = [
-    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
-  ];
+    const ordemMeses = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
+    ];
 
-  const gastos = meses.map(m => analise.gastosPorMes[m] || 0);
-  const faturamento = meses.map(m => analise.faturamentoPorMes[m] || 0);
-  const lucro = meses.map(m => analise.lucroPorMes[m] || 0);
+    const mesAtual = new Date().getMonth();
 
-  const mesAtual = new Date().getMonth();
+    if (this.lineChart) this.lineChart.destroy();
 
-  if (this.lineChart) this.lineChart.destroy();
-
-  this.lineChart = new Chart(canvas, {
-    type: "line",
-    data: {
-      labels: meses,
-      datasets: [
-        {
-          label: "Faturamento",
-          data: faturamento,
-          borderColor: "#2563eb",
-          borderWidth: 3,
-          tension: 0.4
-        },
-        {
-          label: "Gastos",
-          data: gastos,
-          borderColor: "#dc2626",
-          borderWidth: 3,
-          tension: 0.4
-        },
-        {
-          label: "Lucro",
-          data: lucro,
-          borderColor: "#16a34a",
-          borderWidth: 4,
-          tension: 0.4,
-          pointRadius: (ctx) => ctx.dataIndex === mesAtual ? 6 : 3
-        }
-      ]
-    },
-    options: this.getChartBaseOptions()
-  });
-}
+    this.lineChart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels: ordemMeses,
+        datasets: [
+          {
+            label: "Gastos",
+            data: ordemMeses.map((m) => this.arredondar(analise.gastosPorMes[m] || 0, 2)),
+            borderColor: "#dc2626",
+            backgroundColor: "rgba(220,38,38,0.10)",
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "#dc2626",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2,
+            borderWidth: 3
+          },
+          {
+            label: "Faturamento",
+            data: ordemMeses.map((m) => this.arredondar(analise.faturamentoPorMes[m] || 0, 2)),
+            borderColor: "#2563eb",
+            backgroundColor: "rgba(37,99,235,0.05)",
+            fill: false,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "#2563eb",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2,
+            borderWidth: 3
+          },
+          {
+            label: "Lucro",
+            data: ordemMeses.map((m) => this.arredondar(analise.lucroPorMes[m] || 0, 2)),
+            borderColor: "#16a34a",
+            backgroundColor: "rgba(22,163,74,0.10)",
+            fill: true,
+            tension: 0.35,
+            pointRadius: (ctx) => (ctx.dataIndex === mesAtual ? 6 : 4),
+            pointHoverRadius: 7,
+            pointBackgroundColor: "#16a34a",
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 2,
+            borderWidth: 4
+          }
+        ]
+      },
+      options: this.getChartBaseOptions()
+    });
+  },
 
   renderRankingChart(analise) {
     const canvas = document.getElementById("rankingChart");
@@ -841,9 +922,6 @@ renderLineChart(analise) {
     const ranking = Object.entries(analise.rankingAnualCategorias)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10);
-
-    const labels = ranking.map(item => item[0]);
-    const valores = ranking.map(item => this.arredondar(item[1], 2));
 
     if (this.rankingChart) this.rankingChart.destroy();
 
@@ -854,15 +932,17 @@ renderLineChart(analise) {
     this.rankingChart = new Chart(canvas, {
       type: "bar",
       data: {
-        labels,
-        datasets: [{
-          label: "Gastos no ano",
-          data: valores,
-          backgroundColor: labels.map((_, i) => this.palette[i % this.palette.length]),
-          borderRadius: 12,
-          borderSkipped: false,
-          maxBarThickness: 28
-        }]
+        labels: ranking.map((item) => item[0]),
+        datasets: [
+          {
+            label: "Gastos no ano",
+            data: ranking.map((item) => this.arredondar(item[1], 2)),
+            backgroundColor: ranking.map((_, i) => this.palette[i % this.palette.length]),
+            borderRadius: 12,
+            borderSkipped: false,
+            maxBarThickness: 28
+          }
+        ]
       },
       options
     });
@@ -885,17 +965,20 @@ renderLineChart(analise) {
 
     if (chartId === "barChart") {
       const linhas = this.getSortedCategoryData(this.ultimoAnalise);
+      const cores = linhas.map((item) =>
+        item.metaValor > 0 && item.gasto > item.metaValor ? "#dc2626" : "#22c55e"
+      );
 
       this.popupChart = new Chart(popupCanvas, {
         data: {
-          labels: linhas.map(item => item.categoria),
+          labels: linhas.map((item) => item.categoria),
           datasets: [
             {
               type: "bar",
               label: "Gasto",
-              data: linhas.map(item => this.arredondar(item.gasto, 2)),
-              backgroundColor: "rgba(220, 38, 38, 0.82)",
-              borderColor: "rgba(153, 27, 27, 1)",
+              data: linhas.map((item) => this.arredondar(item.gasto, 2)),
+              backgroundColor: cores,
+              borderColor: cores,
               borderWidth: 1,
               borderRadius: 12,
               borderSkipped: false,
@@ -904,7 +987,7 @@ renderLineChart(analise) {
             {
               type: "line",
               label: "Meta",
-              data: linhas.map(item => this.arredondar(item.metaValor, 2)),
+              data: linhas.map((item) => this.arredondar(item.metaValor, 2)),
               borderColor: "rgba(37, 99, 235, 1)",
               backgroundColor: "rgba(37, 99, 235, 0.08)",
               pointBackgroundColor: "rgba(37, 99, 235, 1)",
@@ -923,23 +1006,25 @@ renderLineChart(analise) {
 
     if (chartId === "pieChart") {
       const linhas = this.ultimoAnalise.categorias
-        .filter(item => item.gasto > 0)
+        .filter((item) => item.gasto > 0)
         .sort((a, b) => b.gasto - a.gasto);
 
-      const valores = linhas.map(item => this.arredondar(item.gasto, 2));
+      const valores = linhas.map((item) => this.arredondar(item.gasto, 2));
       const total = valores.reduce((a, b) => a + b, 0);
 
       this.popupChart = new Chart(popupCanvas, {
         type: "doughnut",
         data: {
-          labels: linhas.map(item => item.categoria),
-          datasets: [{
-            data: valores,
-            backgroundColor: linhas.map((_, i) => this.palette[i % this.palette.length]),
-            borderColor: "#ffffff",
-            borderWidth: 3,
-            hoverOffset: 10
-          }]
+          labels: linhas.map((item) => item.categoria),
+          datasets: [
+            {
+              data: valores,
+              backgroundColor: linhas.map((_, i) => this.palette[i % this.palette.length]),
+              borderColor: "#ffffff",
+              borderWidth: 3,
+              hoverOffset: 10
+            }
+          ]
         },
         plugins: [this.doughnutCenterTextPlugin],
         options: {
@@ -985,11 +1070,19 @@ renderLineChart(analise) {
 
     if (chartId === "lineChart") {
       const ordemMeses = [
-        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro"
       ];
-
-      const options = this.getChartBaseOptions();
 
       this.popupChart = new Chart(popupCanvas, {
         type: "line",
@@ -998,7 +1091,7 @@ renderLineChart(analise) {
           datasets: [
             {
               label: "Gastos",
-              data: ordemMeses.map(m => this.arredondar(this.ultimoAnalise.gastosPorMes[m] || 0, 2)),
+              data: ordemMeses.map((m) => this.arredondar(this.ultimoAnalise.gastosPorMes[m] || 0, 2)),
               borderColor: "#dc2626",
               backgroundColor: "rgba(220,38,38,0.10)",
               fill: true,
@@ -1012,7 +1105,7 @@ renderLineChart(analise) {
             },
             {
               label: "Faturamento",
-              data: ordemMeses.map(m => this.arredondar(this.ultimoAnalise.faturamentoPorMes[m] || 0, 2)),
+              data: ordemMeses.map((m) => this.arredondar(this.ultimoAnalise.faturamentoPorMes[m] || 0, 2)),
               borderColor: "#2563eb",
               backgroundColor: "rgba(37,99,235,0.05)",
               fill: false,
@@ -1026,7 +1119,7 @@ renderLineChart(analise) {
             },
             {
               label: "Lucro",
-              data: ordemMeses.map(m => this.arredondar(this.ultimoAnalise.lucroPorMes[m] || 0, 2)),
+              data: ordemMeses.map((m) => this.arredondar(this.ultimoAnalise.lucroPorMes[m] || 0, 2)),
               borderColor: "#16a34a",
               backgroundColor: "rgba(22,163,74,0.10)",
               fill: true,
@@ -1036,11 +1129,11 @@ renderLineChart(analise) {
               pointBackgroundColor: "#16a34a",
               pointBorderColor: "#fff",
               pointBorderWidth: 2,
-              borderWidth: 3
+              borderWidth: 4
             }
           ]
         },
-        options
+        options: this.getChartBaseOptions()
       });
       return;
     }
@@ -1057,15 +1150,17 @@ renderLineChart(analise) {
       this.popupChart = new Chart(popupCanvas, {
         type: "bar",
         data: {
-          labels: ranking.map(item => item[0]),
-          datasets: [{
-            label: "Gastos no ano",
-            data: ranking.map(item => this.arredondar(item[1], 2)),
-            backgroundColor: ranking.map((_, i) => this.palette[i % this.palette.length]),
-            borderRadius: 12,
-            borderSkipped: false,
-            maxBarThickness: 34
-          }]
+          labels: ranking.map((item) => item[0]),
+          datasets: [
+            {
+              label: "Gastos no ano",
+              data: ranking.map((item) => this.arredondar(item[1], 2)),
+              backgroundColor: ranking.map((_, i) => this.palette[i % this.palette.length]),
+              borderRadius: 12,
+              borderSkipped: false,
+              maxBarThickness: 34
+            }
+          ]
         },
         options
       });
