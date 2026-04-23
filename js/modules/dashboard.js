@@ -1288,7 +1288,84 @@ window.dashboardModule = {
       this.popupChart = null;
     }
   },
+calcularForecast(analise) {
+    const hoje = new Date();
+    const diaAtual = hoje.getDate();
+    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
 
+    const diasConsiderados = Math.max(diaAtual, 1);
+    const fatorProjecao = ultimoDiaMes / diasConsiderados;
+
+    const forecastFat = analise.faturamentoMes * fatorProjecao;
+    const forecastGas = analise.totalGastosMes * fatorProjecao;
+    const forecastLucro = forecastFat - forecastGas;
+    const forecastMargem = forecastFat > 0 ? (forecastLucro / forecastFat) * 100 : 0;
+
+    let risco = "Controlado";
+    let riscoClasse = "forecast-ok";
+    let riscoNote = "Fechamento estimado saudável";
+
+    if (forecastLucro < 0) {
+      risco = "Crítico";
+      riscoClasse = "forecast-danger";
+      riscoNote = "Projeção indica fechamento negativo";
+    } else if (forecastFat > 0 && (forecastLucro / forecastFat) < 0.1) {
+      risco = "Atenção";
+      riscoClasse = "forecast-warn";
+      riscoNote = "Margem projetada apertada";
+    }
+
+    return {
+      forecastFat,
+      forecastGas,
+      forecastLucro,
+      forecastMargem,
+      risco,
+      riscoClasse,
+      riscoNote,
+      fatorProjecao,
+      diasConsiderados,
+      ultimoDiaMes
+    };
+  },
+
+  renderForecast(analise) {
+    const forecast = this.calcularForecast(analise);
+
+    this.setText("forecastFat", this.formatarMoeda(forecast.forecastFat));
+    this.setText("forecastGas", this.formatarMoeda(forecast.forecastGas));
+    this.setText("forecastLucro", this.formatarMoeda(forecast.forecastLucro));
+    this.setText("forecastMargem", this.formatarPercentual(forecast.forecastMargem));
+    this.setText("forecastRisco", forecast.risco);
+
+    this.setText(
+      "forecastFatNote",
+      `Projetado com base em ${forecast.diasConsiderados}/${forecast.ultimoDiaMes} dias`
+    );
+    this.setText(
+      "forecastGasNote",
+      `Projetado com base em ${forecast.diasConsiderados}/${forecast.ultimoDiaMes} dias`
+    );
+    this.setText(
+      "forecastLucroNote",
+      `Resultado estimado no fechamento`
+    );
+    this.setText(
+      "forecastMargemNote",
+      `Margem estimada do fechamento`
+    );
+    this.setText(
+      "forecastRiscoNote",
+      forecast.riscoNote
+    );
+
+    const riscoEl = document.getElementById("forecastRisco");
+    if (riscoEl) {
+      riscoEl.classList.remove("forecast-ok", "forecast-warn", "forecast-danger");
+      riscoEl.classList.add(forecast.riscoClasse);
+    }
+  },
+  
   setText(id, value) {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
