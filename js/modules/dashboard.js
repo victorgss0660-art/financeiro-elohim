@@ -112,6 +112,7 @@ window.dashboardModule = {
       this.renderPieChart(analise);
       this.renderLineChart(analise);
       this.renderRankingChart(analise);
+      this.renderRankingResumo(analise);
       this.renderSummaryStrip(analise);
       this.renderStatusMes(analise);
     } catch (error) {
@@ -150,6 +151,27 @@ window.dashboardModule = {
     ];
 
     return meses[(Number(numero) || 1) - 1] || "Janeiro";
+  },
+
+  mesAnterior(nomeMes) {
+    const meses = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
+    ];
+
+    const idx = meses.indexOf(nomeMes);
+    if (idx <= 0) return meses[11];
+    return meses[idx - 1];
   },
 
   normalizarTexto(valor) {
@@ -205,9 +227,23 @@ window.dashboardModule = {
     return this.formatarMoeda(numero);
   },
 
+  formatarPercentual(valor) {
+    return `${this.arredondar(valor || 0, 2)}%`;
+  },
+
   arredondar(valor, casas = 2) {
     if (window.utils?.arredondar) return utils.arredondar(valor, casas);
     return Number(Number(valor || 0).toFixed(casas));
+  },
+
+  variacaoPercentual(atual, anterior) {
+    const a = Number(atual || 0);
+    const b = Number(anterior || 0);
+
+    if (b === 0 && a === 0) return 0;
+    if (b === 0) return 100;
+
+    return ((a - b) / Math.abs(b)) * 100;
   },
 
   getChartBaseOptions() {
@@ -366,6 +402,7 @@ window.dashboardModule = {
         valorMeta: 0,
         metaValor: 0,
         diferenca: 0,
+        desvioPercentual: 0,
         situacao: "Dentro da meta"
       };
     });
@@ -382,6 +419,7 @@ window.dashboardModule = {
           valorMeta: 0,
           metaValor: 0,
           diferenca: 0,
+          desvioPercentual: 0,
           situacao: "Sem meta"
         };
       }
@@ -402,6 +440,7 @@ window.dashboardModule = {
           valorMeta: 0,
           metaValor: 0,
           diferenca: 0,
+          desvioPercentual: 0,
           situacao: "Sem meta"
         };
       }
@@ -420,6 +459,12 @@ window.dashboardModule = {
 
       item.diferenca = item.metaValor - item.gasto;
 
+      if (item.metaValor > 0) {
+        item.desvioPercentual = ((item.gasto - item.metaValor) / item.metaValor) * 100;
+      } else {
+        item.desvioPercentual = 0;
+      }
+
       if (item.metaValor <= 0) {
         item.situacao = item.gasto > 0 ? "Sem meta cadastrada" : "Sem movimentação";
       } else if (item.gasto > item.metaValor) {
@@ -431,6 +476,8 @@ window.dashboardModule = {
 
     const totalGastosMes = Object.values(categorias).reduce((acc, item) => acc + item.gasto, 0);
     const saldoMes = faturamentoMes - totalGastosMes;
+    const lucroMes = saldoMes;
+    const margemMes = faturamentoMes > 0 ? (lucroMes / faturamentoMes) * 100 : 0;
     const metaAtingida = faturamentoMes > 0 ? (saldoMes / faturamentoMes) * 100 : 0;
 
     const gastosPorMes = {};
@@ -448,7 +495,6 @@ window.dashboardModule = {
       const nomeMes = String(item.mes || "").trim();
       if (!nomeMes) return;
       if (!(nomeMes in gastosPorMes)) return;
-
       gastosPorMes[nomeMes] += this.normalizarNumero(item.valor || 0);
     });
 
@@ -477,6 +523,21 @@ window.dashboardModule = {
     const totalGasAno = Object.values(gastosPorMes).reduce((a, b) => a + b, 0);
     const totalLucroAno = totalFatAno - totalGasAno;
     const margemAno = totalFatAno > 0 ? (totalLucroAno / totalFatAno) * 100 : 0;
+
+    const mesAnteriorNome = this.mesAnterior(mes);
+    const faturamentoMesAnterior = faturamentoPorMes[mesAnteriorNome] || 0;
+    const gastosMesAnterior = gastosPorMes[mesAnteriorNome] || 0;
+    const lucroMesAnterior = lucroPorMes[mesAnteriorNome] || 0;
+    const margemMesAnterior = faturamentoMesAnterior > 0
+      ? (lucroMesAnterior / faturamentoMesAnterior) * 100
+      : 0;
+
+    const variacaoFat = this.variacaoPercentual(faturamentoMes, faturamentoMesAnterior);
+    const variacaoGas = this.variacaoPercentual(totalGastosMes, gastosMesAnterior);
+    const variacaoLucro = this.variacaoPercentual(lucroMes, lucroMesAnterior);
+    const variacaoMargemPP = margemMes - margemMesAnterior;
+
+    const metaGlobal = Object.values(categorias).reduce((acc, item) => acc + item.metaValor, 0);
 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -546,6 +607,14 @@ window.dashboardModule = {
       });
     }
 
+    if (lucroMes < lucroMesAnterior) {
+      alertas.push({
+        tipo: "atencao",
+        titulo: "Lucro abaixo do mês anterior",
+        descricao: `Variação do lucro: ${this.formatarPercentual(variacaoLucro)}`
+      });
+    }
+
     const categoriasAcimaMeta = Object.values(categorias).filter((item) => item.situacao === "Acima da meta");
     if (categoriasAcimaMeta.length) {
       alertas.push({
@@ -569,7 +638,10 @@ window.dashboardModule = {
       faturamentoMes,
       totalGastosMes,
       saldoMes,
+      lucroMes,
+      margemMes,
       metaAtingida,
+      metaGlobal,
       categorias: Object.values(categorias),
       gastosPorMes,
       faturamentoPorMes,
@@ -584,32 +656,37 @@ window.dashboardModule = {
       totalFatAno,
       totalGasAno,
       totalLucroAno,
-      margemAno
+      margemAno,
+      faturamentoMesAnterior,
+      gastosMesAnterior,
+      lucroMesAnterior,
+      margemMesAnterior,
+      variacaoFat,
+      variacaoGas,
+      variacaoLucro,
+      variacaoMargemPP
     };
   },
 
   renderCards(analise) {
     this.setText("fat", this.formatarMoeda(analise.faturamentoMes));
     this.setText("gas", this.formatarMoeda(analise.totalGastosMes));
-    this.setText("saldo", this.formatarMoeda(analise.saldoMes));
-    this.setText("metaAtingida", `${this.arredondar(analise.metaAtingida, 2)}%`);
+    this.setText("lucroCard", this.formatarMoeda(analise.lucroMes));
+    this.setText("margemCard", this.formatarPercentual(analise.margemMes));
+    this.setText("metaAtingida", this.formatarPercentual(analise.metaAtingida));
 
-    this.setText("cardVencidas", String(analise.contasVencidas.length));
-    this.setText("cardHoje", String(analise.vencemHoje.length));
-    this.setText("card7dias", String(analise.proximos7Dias.length));
-
-    const variacao = analise.faturamentoMes > 0
-      ? ((analise.saldoMes / analise.faturamentoMes) * 100)
-      : 0;
-
-    this.setText("varFat", `${this.arredondar(variacao, 2)}%`);
+    this.setText("fatVsMesAnterior", `vs mês anterior: ${this.formatarPercentual(analise.variacaoFat)}`);
+    this.setText("gasVsMesAnterior", `vs mês anterior: ${this.formatarPercentual(analise.variacaoGas)}`);
+    this.setText("lucroVsMesAnterior", `vs mês anterior: ${this.formatarPercentual(analise.variacaoLucro)}`);
+    this.setText("margemVsMesAnterior", `vs mês anterior: ${this.arredondar(analise.variacaoMargemPP, 2)} p.p.`);
+    this.setText("metaGlobalInfo", `meta global: ${this.formatarMoeda(analise.metaGlobal)}`);
   },
 
   renderSummaryStrip(analise) {
     this.setText("dashFatYtd", this.formatarMoeda(analise.totalFatAno));
     this.setText("dashGasYtd", this.formatarMoeda(analise.totalGasAno));
     this.setText("dashLucroYtd", this.formatarMoeda(analise.totalLucroAno));
-    this.setText("dashMargemYtd", `${this.arredondar(analise.margemAno, 2)}%`);
+    this.setText("dashMargemYtd", this.formatarPercentual(analise.margemAno));
   },
 
   renderStatusMes(analise) {
@@ -635,6 +712,10 @@ window.dashboardModule = {
       el.textContent = "Saudável";
       el.classList.add("ok");
     }
+
+    this.setText("cardVencidas", String(analise.contasVencidas.length));
+    this.setText("cardHoje", String(analise.vencemHoje.length));
+    this.setText("card7dias", String(analise.proximos7Dias.length));
   },
 
   renderResumoTabela(analise) {
@@ -648,7 +729,7 @@ window.dashboardModule = {
     if (!linhas.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="muted">Nenhum dado carregado.</td>
+          <td colspan="7" class="muted">Nenhum dado carregado.</td>
         </tr>
       `;
       return;
@@ -658,9 +739,10 @@ window.dashboardModule = {
       <tr>
         <td>${item.categoria}</td>
         <td>${this.formatarMoeda(item.gasto)}</td>
-        <td>${item.tipoMeta === "valor" ? "Valor fixo" : `${this.arredondar(item.percentualMeta, 2)}%`}</td>
+        <td>${item.tipoMeta === "valor" ? "Valor fixo" : this.formatarPercentual(item.percentualMeta)}</td>
         <td>${this.formatarMoeda(item.metaValor)}</td>
         <td class="${item.diferenca >= 0 ? "ok" : "err"}">${this.formatarMoeda(item.diferenca)}</td>
+        <td class="${item.desvioPercentual <= 0 ? "ok" : "err"}">${this.formatarPercentual(item.desvioPercentual)}</td>
         <td class="${item.situacao === "Acima da meta" ? "err" : "ok"}">${item.situacao}</td>
       </tr>
     `).join("");
@@ -709,6 +791,36 @@ window.dashboardModule = {
         ${alerta.descricao}
       </div>
     `).join("");
+  },
+
+  renderRankingResumo(analise) {
+    const el = document.getElementById("rankingResumo");
+    if (!el) return;
+
+    const ranking = Object.entries(analise.rankingAnualCategorias)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    const total = ranking.reduce((acc, item) => acc + Number(item[1] || 0), 0);
+
+    if (!ranking.length) {
+      el.innerHTML = `<div class="muted">Nenhum dado disponível.</div>`;
+      return;
+    }
+
+    el.innerHTML = ranking.map(([categoria, valor]) => {
+      const percentual = total > 0 ? (valor / total) * 100 : 0;
+
+      return `
+        <div class="ranking-summary-item">
+          <div class="left">
+            <strong>${categoria}</strong>
+            <span>${this.formatarPercentual(percentual)} do top 5</span>
+          </div>
+          <div class="right">${this.formatarMoeda(valor)}</div>
+        </div>
+      `;
+    }).join("");
   },
 
   getSortedCategoryData(analise) {
