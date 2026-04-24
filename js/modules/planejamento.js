@@ -10,6 +10,7 @@ window.planejamentoModule = {
   async carregar() {
     try {
       const { mes, ano } = this.getMesAno();
+      const anoFiltro = String(ano);
 
       const [
         mesesData,
@@ -18,7 +19,7 @@ window.planejamentoModule = {
         contasReceber
       ] = await Promise.all([
         api.select("meses", { ano: String(ano) })
-        api.select("gastos", { ano }),
+        api.select("gastos", { ano: String(ano) })
         api.restGet("contas_pagar", "select=*&order=vencimento.asc"),
         api.restGet("contas_receber", "select=*&order=vencimento.asc")
       ]);
