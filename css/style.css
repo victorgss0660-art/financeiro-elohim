@@ -1247,3 +1247,17 @@ td:nth-child(2) {
     grid-template-columns: 1fr;
   }
 }
+.chart-wrap,
+.chart-wrap-premium,
+.chart-tall {
+  position: relative;
+  min-height: 360px;
+  height: 360px;
+}
+
+.chart-wrap canvas,
+.chart-wrap-premium canvas,
+.chart-tall canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
