@@ -1005,118 +1005,225 @@
       </section>
 
       <!-- PLANEJAMENTO -->
-      <section id="tab-planejamento" class="tab-section">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Planejamento Financeiro (12 semanas)</h3>
-            <div class="badge">Fluxo</div>
-          </div>
+<section id="tab-planejamento" class="tab-section">
 
-          <div class="form-grid">
-            <input class="saldo-conta" data-conta="sicoob" placeholder="Sicoob">
-            <input class="saldo-conta" data-conta="nubank" placeholder="Nubank">
-            <input class="saldo-conta" data-conta="metos" placeholder="Metos">
-            <input class="saldo-conta" data-conta="portal" placeholder="Portal Cash (GE)">
-            <input class="saldo-conta" data-conta="monkey" placeholder="Monkey (WEG)">
-            <input class="saldo-conta" data-conta="citibank" placeholder="Citibank (Hitachi)">
-            <input class="saldo-conta" data-conta="dinheiro" placeholder="Dinheiro Físico">
-          </div>
+  <!-- TOPO EXECUTIVO -->
+  <section class="cards cards-premium cards-bi-top">
 
-          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btnSalvarSaldosBancarios" class="btn" type="button">Salvar saldos bancários</button>
-          </div>
+    <div class="card card-kpi">
+      <div class="card-title">Faturado no mês</div>
+      <div class="card-value" id="planFatReal">R$ 0,00</div>
+      <div class="card-subvalue">Receita já consolidada</div>
+    </div>
 
-          <div style="margin-top:16px;">
-            <div id="totalDisponivelBadge" class="badge">Total disponível: R$ 0,00</div>
-          </div>
+    <div class="card card-kpi">
+      <div class="card-title">A faturar</div>
+      <div class="card-value" id="planAFaturar">R$ 0,00</div>
+      <div class="card-subvalue">Carteira pendente</div>
+    </div>
 
-          <div class="table-total-bar" style="margin-top:16px;">
-            <div class="table-total-item">
-              <span class="table-total-label">Saldo inicial</span>
-              <strong id="cxSaldoInicial">R$ 0,00</strong>
-            </div>
-            <div class="table-total-item">
-              <span class="table-total-label">Entradas previstas</span>
-              <strong id="cxEntradasPrevistas">R$ 0,00</strong>
-            </div>
-            <div class="table-total-item">
-              <span class="table-total-label">Saídas previstas</span>
-              <strong id="cxSaidasPrevistas">R$ 0,00</strong>
-            </div>
-            <div class="table-total-item">
-              <span class="table-total-label">Saldo final projetado</span>
-              <strong id="cxSaldoFinal">R$ 0,00</strong>
-            </div>
-            <div class="table-total-item">
-              <span class="table-total-label">Menor saldo previsto</span>
-              <strong id="cxMenorSaldo">R$ 0,00</strong>
-            </div>
-          </div>
-        </section>
+    <div class="card card-kpi">
+      <div class="card-title">Previsão total</div>
+      <div class="card-value" id="planFatTotal">R$ 0,00</div>
+      <div class="card-subvalue">Real + pendente</div>
+    </div>
 
-        <section class="grid">
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Fluxo Projetado</h3>
-              <div class="badge">12 semanas</div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="planejamentoChart"></canvas>
-            </div>
-          </div>
+    <div class="card card-kpi">
+      <div class="card-title">Lucro previsto</div>
+      <div class="card-value" id="planLucroPrev">R$ 0,00</div>
+      <div class="card-subvalue">Após despesas</div>
+    </div>
 
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Riscos</h3>
-              <div class="badge">Automático</div>
-            </div>
+    <div class="card card-kpi">
+      <div class="card-title">Margem prevista</div>
+      <div class="card-value" id="planMargemPrev">0%</div>
+      <div class="card-subvalue">Resultado estimado</div>
+    </div>
 
-            <div class="status-grid">
-              <div class="status-item">
-                <div class="label">Menor saldo</div>
-                <div class="value" id="riskMenorSaldo">R$ 0,00</div>
-              </div>
-              <div class="status-item">
-                <div class="label">Semanas negativas</div>
-                <div class="value" id="riskSemanasNegativas">0</div>
-              </div>
-              <div class="status-item">
-                <div class="label">Maior saída</div>
-                <div class="value" id="riskMaiorSaida">R$ 0,00</div>
-              </div>
-            </div>
-
-            <div id="riskList" class="alert-list" style="margin-top:16px;">
-              <div class="muted">Nenhum risco calculado.</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel table-wrap">
-          <div class="panel-head">
-            <h3>Tabela de Planejamento</h3>
-            <div class="badge">Detalhado</div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Semana</th>
-                <th>Entradas</th>
-                <th>Saídas</th>
-                <th>Saldo</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaPlanejamento">
-              <tr>
-                <td colspan="4" class="muted">Nenhum planejamento disponível.</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
-    </main>
   </section>
+
+
+  <!-- FORECAST -->
+  <section class="forecast-strip forecast-strip-advanced">
+
+    <div class="forecast-card">
+      <div class="forecast-title">Cenário Realista</div>
+      <div class="forecast-value" id="forecastLucro">R$ 0,00</div>
+      <div class="forecast-note">Fechamento provável</div>
+    </div>
+
+    <div class="forecast-card">
+      <div class="forecast-title">Margem Projetada</div>
+      <div class="forecast-value" id="forecastMargem">0%</div>
+      <div class="forecast-note">Rentabilidade estimada</div>
+    </div>
+
+    <div class="forecast-card">
+      <div class="forecast-title">Nível de Risco</div>
+      <div class="forecast-value" id="forecastRisco">Baixo</div>
+      <div class="forecast-note">Leitura automática</div>
+    </div>
+
+  </section>
+
+
+  <!-- CENÁRIOS -->
+  <section class="forecast-scenarios">
+
+    <div class="scenario-card scenario-pessimista">
+      <div class="scenario-title">Pessimista</div>
+
+      <div class="scenario-line">
+        <span>Faturamento</span>
+        <strong id="forecastPessimistaFat">R$ 0,00</strong>
+      </div>
+
+      <div class="scenario-line">
+        <span>Lucro</span>
+        <strong id="forecastPessimistaLucro">R$ 0,00</strong>
+      </div>
+
+      <div class="scenario-line">
+        <span>Margem</span>
+        <strong id="forecastPessimistaMargem">0%</strong>
+      </div>
+    </div>
+
+
+    <div class="scenario-card scenario-realista">
+      <div class="scenario-title">Realista</div>
+
+      <div class="scenario-line">
+        <span>Faturamento</span>
+        <strong id="forecastRealistaFat">R$ 0,00</strong>
+      </div>
+
+      <div class="scenario-line">
+        <span>Lucro</span>
+        <strong id="forecastRealistaLucro">R$ 0,00</strong>
+      </div>
+
+      <div class="scenario-line">
+        <span>Margem</span>
+        <strong id="forecastRealistaMargem">0%</strong>
+      </div>
+    </div>
+
+
+    <div class="scenario-card scenario-otimista">
+      <div class="scenario-title">Otimista</div>
+
+      <div class="scenario-line">
+        <span>Faturamento</span>
+        <strong id="forecastOtimistaFat">R$ 0,00</strong>
+      </div>
+
+      <div class="scenario-line">
+        <span>Lucro</span>
+        <strong id="forecastOtimistaLucro">R$ 0,00</strong>
+      </div>
+
+      <div class="scenario-line">
+        <span>Margem</span>
+        <strong id="forecastOtimistaMargem">0%</strong>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- GRAFICOS -->
+  <section class="grid grid-2-dashboard">
+
+    <!-- PREVISAO FATURAMENTO -->
+    <div class="panel panel-premium">
+
+      <div class="panel-head">
+        <h3>Previsão de Faturamento</h3>
+
+        <button
+          class="secondary-btn"
+          type="button"
+          onclick="dashboardModule.abrirGraficoFullscreen('forecastChart','Previsão de Faturamento')"
+        >
+          Tela cheia
+        </button>
+      </div>
+
+      <div class="chart-wrap chart-wrap-premium chart-tall">
+        <canvas id="forecastChart"></canvas>
+      </div>
+
+    </div>
+
+
+    <!-- PROJECAO 12 SEMANAS -->
+    <div class="panel panel-premium">
+
+      <div class="panel-head">
+        <h3>Fluxo Futuro 12 Semanas</h3>
+      </div>
+
+      <div class="chart-wrap chart-wrap-premium chart-tall">
+        <canvas id="planejamento12Semanas"></canvas>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- TABELA EXECUTIVA -->
+  <section class="panel panel-premium table-wrap">
+
+    <div class="panel-head">
+      <h3>Planejamento Próximos Meses</h3>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Mês</th>
+          <th>Receita Prevista</th>
+          <th>Despesa Prevista</th>
+          <th>Lucro Previsto</th>
+          <th>Margem</th>
+        </tr>
+      </thead>
+
+      <tbody id="planejamentoTabela">
+
+        <tr>
+          <td colspan="5" class="muted">
+            Nenhum dado carregado.
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+
+  </section>
+
+
+  <!-- ALERTA FUTURO -->
+  <section class="panel panel-premium">
+
+    <div class="panel-head">
+      <h3>Radar Financeiro</h3>
+    </div>
+
+    <div id="radarFinanceiro" class="alert-list">
+
+      <div class="alert-item ok">
+        <strong>🟢 Caixa saudável</strong><br>
+        Sem risco previsto para os próximos períodos.
+      </div>
+
+    </div>
+
+  </section>
+
+</section>
 
   <!-- POPUP PAGAMENTO -->
   <div id="popupPagamento" class="popup hidden">
