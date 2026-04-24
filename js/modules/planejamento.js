@@ -338,9 +338,14 @@ window.planejamentoModule = {
 
   renderForecastChart(a) {
     const canvas = document.getElementById("forecastChart");
-    if (!canvas || typeof Chart === "undefined") return;
+    if (!canvas) return;
 
-    if (this.chartForecast) this.chartForecast.destroy();
+    if (typeof Chart === "undefined") {
+      console.error("Chart.js não carregado.");
+      return;
+    }
+
+    Chart.getChart(canvas)?.destroy();
 
     this.chartForecast = new Chart(canvas, {
       data: {
@@ -351,7 +356,7 @@ window.planejamentoModule = {
             label: "Faturado",
             data: [a.faturado],
             backgroundColor: "#2563eb",
-            borderRadius: 14,
+            borderRadius: 12,
             borderSkipped: false,
             stack: "faturamento"
           },
@@ -360,7 +365,7 @@ window.planejamentoModule = {
             label: "A faturar",
             data: [a.aFaturar],
             backgroundColor: "#f97316",
-            borderRadius: 14,
+            borderRadius: 12,
             borderSkipped: false,
             stack: "faturamento"
           },
@@ -369,7 +374,7 @@ window.planejamentoModule = {
             label: "Despesas",
             data: [a.gastosMes],
             borderColor: "#dc2626",
-            backgroundColor: "rgba(220,38,38,0.10)",
+            backgroundColor: "rgba(220,38,38,0.12)",
             borderWidth: 4,
             pointRadius: 6,
             pointBackgroundColor: "#dc2626",
@@ -381,7 +386,7 @@ window.planejamentoModule = {
             label: "Lucro previsto",
             data: [a.lucroPrevisto],
             borderColor: "#16a34a",
-            backgroundColor: "rgba(22,163,74,0.10)",
+            backgroundColor: "rgba(22,163,74,0.12)",
             borderWidth: 4,
             pointRadius: 6,
             pointBackgroundColor: "#16a34a",
@@ -396,9 +401,14 @@ window.planejamentoModule = {
 
   render12Semanas(a) {
     const canvas = document.getElementById("planejamento12Semanas");
-    if (!canvas || typeof Chart === "undefined") return;
+    if (!canvas) return;
 
-    if (this.chart12Semanas) this.chart12Semanas.destroy();
+    if (typeof Chart === "undefined") {
+      console.error("Chart.js não carregado.");
+      return;
+    }
+
+    Chart.getChart(canvas)?.destroy();
 
     this.chart12Semanas = new Chart(canvas, {
       data: {
@@ -423,11 +433,13 @@ window.planejamentoModule = {
             label: "Saldo acumulado",
             data: a.fluxo12Semanas.map(s => s.acumulado),
             borderColor: "#16a34a",
+            backgroundColor: "rgba(22,163,74,0.10)",
             borderWidth: 4,
             pointRadius: 4,
             pointBackgroundColor: "#16a34a",
             pointBorderColor: "#fff",
-            pointBorderWidth: 2
+            pointBorderWidth: 2,
+            tension: 0.35
           }
         ]
       },
@@ -458,12 +470,12 @@ window.planejamentoModule = {
         },
         tooltip: {
           backgroundColor: "rgba(15,23,42,0.96)",
-          titleColor: "#fff",
+          titleColor: "#ffffff",
           bodyColor: "#e5e7eb",
           callbacks: {
-            label: ctx => {
+            label: (ctx) => {
               const label = ctx.dataset.label || "";
-              const value = Number(ctx.parsed?.y ?? ctx.parsed ?? 0);
+              const value = Number(ctx.parsed?.y ?? ctx.raw ?? 0);
               return `${label}: ${this.moeda(value)}`;
             }
           }
@@ -480,7 +492,7 @@ window.planejamentoModule = {
           stacked,
           beginAtZero: true,
           ticks: {
-            callback: value => this.moeda(value)
+            callback: (value) => this.moeda(value)
           },
           grid: {
             color: "rgba(148,163,184,0.18)"
