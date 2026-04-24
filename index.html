@@ -127,6 +127,45 @@
     </div>
   </section>
 
+  <section class="panel panel-premium">
+  <div class="panel-head">
+    <h3>Previsão de Faturamento</h3>
+    <button
+      class="secondary-btn"
+      type="button"
+      onclick="dashboardModule.abrirGraficoFullscreen('forecastChart', 'Previsão de Faturamento')"
+    >
+      Tela cheia
+    </button>
+  </div>
+
+  <div class="chart-wrap chart-wrap-premium chart-tall">
+    <canvas id="forecastChart"></canvas>
+  </div>
+
+  <div class="dashboard-summary-strip">
+    <div class="summary-pill">
+      <span>Faturado</span>
+      <strong id="dashFaturado">R$ 0,00</strong>
+    </div>
+
+    <div class="summary-pill">
+      <span>A faturar</span>
+      <strong id="dashAFaturar">R$ 0,00</strong>
+    </div>
+
+    <div class="summary-pill">
+      <span>Previsão total</span>
+      <strong id="dashPrevisaoFat">R$ 0,00</strong>
+    </div>
+
+    <div class="summary-pill">
+      <span>Lucro previsto</span>
+      <strong id="dashLucroPrevisto">R$ 0,00</strong>
+    </div>
+  </div>
+</section>
+
   <section class="forecast-strip forecast-strip-advanced">
     <div class="forecast-card">
       <div class="forecast-title">Forecast Realista</div>
