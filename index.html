@@ -695,19 +695,60 @@
       </section>
 
       <!-- FATURAMENTO -->
-      <section id="tab-faturamento" class="tab-section">
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Faturamento do mês</h3>
-            <div class="badge">Receita</div>
-          </div>
+<section id="tab-faturamento" class="tab-section">
 
-          <div class="top-filters">
-            <input id="faturamentoInput" type="number" step="0.01" placeholder="Faturamento do mês">
-            <button id="btnSalvarFaturamento" class="btn" type="button">Salvar faturamento</button>
-          </div>
-        </section>
-      </section>
+<div class="panel">
+  <div class="panel-head">
+    <h3>Faturamento Mensal</h3>
+  </div>
+
+  <div class="grid cols-4">
+
+    <div>
+      <label>Mês</label>
+      <select id="fatMes"></select>
+    </div>
+
+    <div>
+      <label>Ano</label>
+      <input type="number" id="fatAno" value="2026">
+    </div>
+
+    <div>
+      <label>Faturado Real</label>
+      <input type="text" id="fatReal">
+    </div>
+
+    <div>
+      <label>A Faturar</label>
+      <input type="text" id="fatPrevisto">
+    </div>
+
+  </div>
+
+  <br>
+
+  <button onclick="faturamentoModule.salvar()" class="primary-btn">
+    Salvar
+  </button>
+</div>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Mês</th>
+        <th>Faturado</th>
+        <th>A Faturar</th>
+        <th>Previsão Total</th>
+      </tr>
+    </thead>
+
+    <tbody id="fatTabela"></tbody>
+  </table>
+</div>
+
+</section>
 
       <!-- METAS -->
       <section id="tab-metas" class="tab-section">
