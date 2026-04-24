@@ -109,19 +109,22 @@ window.dashboardModule = {
       this.safeCall("renderResumoTabela", () => this.renderResumoTabela(analise));
       this.safeCall("renderTopListas", () => this.renderTopListas(analise));
       this.safeCall("renderAlertas", () => this.renderAlertas(analise));
+
       this.safeCall("renderBarChart", () => this.renderBarChart(analise));
       this.safeCall("renderPieChart", () => this.renderPieChart(analise));
       this.safeCall("renderLineChart", () => this.renderLineChart(analise));
       this.safeCall("renderRankingChart", () => this.renderRankingChart(analise));
+      this.safeCall("renderForecastChart", () => this.renderForecastChart(analise));
+
       this.safeCall("renderRankingResumo", () => this.renderRankingResumo(analise));
       this.safeCall("renderSummaryStrip", () => this.renderSummaryStrip(analise));
       this.safeCall("renderForecast", () => this.renderForecast(analise));
+      this.safeCall("renderForecastFaturamentoResumo", () =>
+        this.renderForecastFaturamentoResumo(analise)
+      );
       this.safeCall("renderStatusMes", () => this.renderStatusMes(analise));
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
-      if (window.utils?.setAppMsg) {
-        utils.setAppMsg("Erro ao carregar dashboard: " + error.message, "err");
-      }
     }
   },
 
@@ -144,53 +147,8 @@ window.dashboardModule = {
     return { mes, ano };
   },
 
-  numeroParaMes(numero) {
-    const meses = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
-    ];
-    return meses[(Number(numero) || 1) - 1] || "Janeiro";
-  },
-
-  mesAnterior(nomeMes) {
-    const meses = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
-    ];
-    const idx = meses.indexOf(nomeMes);
-    if (idx <= 0) return meses[11];
-    return meses[idx - 1];
-  },
-
-  normalizarTexto(valor) {
-    return String(valor || "").trim().toUpperCase();
-  },
-
   normalizarNumero(valor) {
-    if (typeof valor === "number") {
-      return Number.isFinite(valor) ? valor : 0;
-    }
-
+    if (typeof valor === "number") return Number.isFinite(valor) ? valor : 0;
     if (valor == null) return 0;
 
     let texto = String(valor).trim();
@@ -211,37 +169,76 @@ window.dashboardModule = {
     return Number.isFinite(numero) ? numero : 0;
   },
 
-  formatarMoeda(valor) {
-    if (window.utils?.moeda) return utils.moeda(valor);
+  normalizarTexto(valor) {
+    return String(valor || "").trim().toUpperCase();
+  },
 
+  formatarMoeda(valor) {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
-      currency: "BRL",
-      maximumFractionDigits: 2
+      currency: "BRL"
     }).format(Number(valor || 0));
   },
 
   formatarMoedaCompacta(valor) {
-    const numero = Number(valor || 0);
+    const n = Number(valor || 0);
 
-    if (Math.abs(numero) >= 1000000) {
-      return `R$ ${(numero / 1000000).toFixed(2)} mi`;
+    if (Math.abs(n) >= 1000000) {
+      return `R$ ${(n / 1000000).toFixed(2)} mi`;
     }
 
-    if (Math.abs(numero) >= 1000) {
-      return `R$ ${(numero / 1000).toFixed(1)} mil`;
+    if (Math.abs(n) >= 1000) {
+      return `R$ ${(n / 1000).toFixed(1)} mil`;
     }
 
-    return this.formatarMoeda(numero);
+    return this.formatarMoeda(n);
   },
 
   formatarPercentual(valor) {
-    return `${this.arredondar(valor || 0, 2)}%`;
+    return `${Number(valor || 0).toFixed(2)}%`;
   },
 
   arredondar(valor, casas = 2) {
-    if (window.utils?.arredondar) return utils.arredondar(valor, casas);
     return Number(Number(valor || 0).toFixed(casas));
+  },
+
+  numeroParaMes(numero) {
+    const meses = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
+    ];
+    return meses[(Number(numero) || 1) - 1];
+  },
+
+  mesAnterior(nomeMes) {
+    const meses = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
+    ];
+
+    const idx = meses.indexOf(nomeMes);
+    if (idx <= 0) return "Dezembro";
+    return meses[idx - 1];
   },
 
   variacaoPercentual(atual, anterior) {
@@ -258,102 +255,46 @@ window.dashboardModule = {
     return {
       responsive: true,
       maintainAspectRatio: false,
-      animation: {
-        duration: 850,
-        easing: "easeOutQuart"
-      },
-      interaction: {
-        mode: "index",
-        intersect: false
-      },
       plugins: {
         legend: {
           position: "top",
           labels: {
-            boxWidth: 12,
-            boxHeight: 12,
-            usePointStyle: true,
-            pointStyle: "circle",
-            padding: 18,
             color: "#334155",
-            font: {
-              size: 12,
-              weight: "700"
-            }
-          }
-        },
-        tooltip: {
-          backgroundColor: "rgba(15,23,42,0.96)",
-          titleColor: "#ffffff",
-          bodyColor: "#e5e7eb",
-          borderColor: "rgba(255,255,255,0.08)",
-          borderWidth: 1,
-          padding: 12,
-          displayColors: true,
-          callbacks: {
-            label: (context) => {
-              const label = context.dataset?.label || "";
-              const value = Number(context.parsed?.y ?? context.parsed ?? 0);
-              return `${label}: ${this.formatarMoeda(value)}`;
-            }
+            usePointStyle: true,
+            pointStyle: "circle"
           }
         }
       },
       scales: {
-        x: {
-          ticks: {
-            color: "#64748b",
-            font: {
-              size: 11,
-              weight: "700"
-            }
-          },
-          grid: {
-            display: false
-          },
-          border: {
-            display: false
-          }
-        },
         y: {
           beginAtZero: true,
           ticks: {
-            color: "#64748b",
-            font: {
-              size: 11
-            },
-            callback: (value) => this.formatarMoedaCompacta(value)
-          },
-          grid: {
-            color: "rgba(148,163,184,0.18)"
-          },
-          border: {
-            display: false
+            callback: (v) => this.formatarMoedaCompacta(v)
           }
         }
       }
     };
   },
 
-async buscarFaturamentoMes(mes, ano) {
-  const data = await api.select("meses", { mes, ano });
+  async buscarFaturamentoMes(mes, ano) {
+    const data = await api.select("meses", { mes, ano });
 
-  if (!data.length) {
+    if (!data.length) {
+      return {
+        faturado: 0,
+        aFaturar: 0,
+        total: 0
+      };
+    }
+
+    const item = data[0];
+
     return {
-      faturado: 0,
-      aFaturar: 0,
-      total: 0
+      faturado: Number(item.faturado || 0),
+      aFaturar: Number(item.a_faturar || 0),
+      total: Number(item.faturamento || 0)
     };
-  }
-
-  const item = data[0];
-
-  return {
-    faturado: Number(item.faturado || 0),
-    aFaturar: Number(item.a_faturar || 0),
-    total: Number(item.faturamento || 0)
-  };
-}
+  },
 
   async buscarFaturamentoAno(ano) {
     const data = await api.select("meses", { ano });
@@ -363,19 +304,13 @@ async buscarFaturamentoMes(mes, ano) {
   async buscarGastosMes(mes, ano) {
     const data = await api.select("gastos", { ano });
 
-    return (data || []).filter((item) => {
-      const mesItem = String(item.mes || "").trim().toLowerCase();
-      return mesItem === String(mes).trim().toLowerCase();
-    });
+    return (data || []).filter((i) => i.mes === mes);
   },
 
   async buscarMetasMes(mes, ano) {
     const data = await api.select("metas", { ano });
 
-    return (data || []).filter((item) => {
-      const mesItem = String(item.mes || "").trim().toLowerCase();
-      return mesItem === String(mes).trim().toLowerCase();
-    });
+    return (data || []).filter((i) => i.mes === mes);
   },
 
   async buscarGastosAno(ano) {
@@ -409,16 +344,19 @@ async buscarFaturamentoMes(mes, ano) {
     mes,
     ano
   }) {
+    const faturadoMes = Number(faturamentoMes?.faturado || 0);
+    const aFaturarMes = Number(faturamentoMes?.aFaturar || 0);
+    const previsaoFaturamentoMes = Number(faturamentoMes?.total || 0);
+
     const categorias = {};
 
-    this.categoriasPadrao.forEach((cat) => {
-      categorias[cat] = {
-        categoria: cat,
+    this.categoriasPadrao.forEach((c) => {
+      categorias[c] = {
+        categoria: c,
         gasto: 0,
-        tipoMeta: "percentual",
-        percentualMeta: 0,
-        valorMeta: 0,
         metaValor: 0,
+        percentualMeta: 0,
+        tipoMeta: "percentual",
         diferenca: 0,
         desvioPercentual: 0,
         situacao: "Dentro da meta"
@@ -426,61 +364,51 @@ async buscarFaturamentoMes(mes, ano) {
     });
 
     (gastosMes || []).forEach((item) => {
-      const categoria = this.normalizarTexto(item.categoria || "DESP");
+      const cat = this.normalizarTexto(item.categoria || "DESP");
 
-      if (!categorias[categoria]) {
-        categorias[categoria] = {
-          categoria,
+      if (!categorias[cat]) {
+        categorias[cat] = {
+          categoria: cat,
           gasto: 0,
-          tipoMeta: "percentual",
-          percentualMeta: 0,
-          valorMeta: 0,
           metaValor: 0,
-          diferenca: 0,
-          desvioPercentual: 0,
-          situacao: "Sem meta"
+          percentualMeta: 0,
+          tipoMeta: "percentual"
         };
       }
 
-      categorias[categoria].gasto += this.normalizarNumero(item.valor || 0);
+      categorias[cat].gasto += this.normalizarNumero(item.valor);
     });
 
     (metasMes || []).forEach((item) => {
-      const categoria = this.normalizarTexto(item.categoria || "");
-      if (!categoria) return;
+      const cat = this.normalizarTexto(item.categoria || "");
 
-      if (!categorias[categoria]) {
-        categorias[categoria] = {
-          categoria,
+      if (!cat) return;
+
+      if (!categorias[cat]) {
+        categorias[cat] = {
+          categoria: cat,
           gasto: 0,
-          tipoMeta: "percentual",
-          percentualMeta: 0,
-          valorMeta: 0,
           metaValor: 0,
-          diferenca: 0,
-          desvioPercentual: 0,
-          situacao: "Sem meta"
+          percentualMeta: 0,
+          tipoMeta: "percentual"
         };
       }
 
-      categorias[categoria].tipoMeta = item.tipo_meta || "percentual";
-      categorias[categoria].percentualMeta = this.normalizarNumero(
+      categorias[cat].tipoMeta = item.tipo_meta || "percentual";
+      categorias[cat].percentualMeta = this.normalizarNumero(
         item.percentual_meta || 0
       );
-      categorias[categoria].valorMeta = this.normalizarNumero(
-        item.valor_meta || 0
-      );
+
+      if (categorias[cat].tipoMeta === "valor") {
+        categorias[cat].metaValor = this.normalizarNumero(item.valor_meta || 0);
+      } else {
+        categorias[cat].metaValor =
+          previsaoFaturamentoMes *
+          (categorias[cat].percentualMeta / 100);
+      }
     });
 
     Object.values(categorias).forEach((item) => {
-      if (item.tipoMeta === "valor") {
-        item.metaValor = this.normalizarNumero(item.valorMeta || 0);
-      } else {
-        item.metaValor =
-          faturamentoMes *
-          (this.normalizarNumero(item.percentualMeta || 0) / 100);
-      }
-
       item.diferenca = item.metaValor - item.gasto;
 
       if (item.metaValor > 0) {
@@ -490,565 +418,300 @@ async buscarFaturamentoMes(mes, ano) {
         item.desvioPercentual = 0;
       }
 
-      if (item.metaValor <= 0) {
-        item.situacao =
-          item.gasto > 0 ? "Sem meta cadastrada" : "Sem movimentação";
-      } else if (item.gasto > item.metaValor) {
-        item.situacao = "Acima da meta";
-      } else {
-        item.situacao = "Dentro da meta";
-      }
+      item.situacao =
+        item.gasto > item.metaValor ? "Acima da meta" : "Dentro da meta";
     });
 
     const totalGastosMes = Object.values(categorias).reduce(
-      (acc, item) => acc + item.gasto,
+      (a, b) => a + b.gasto,
       0
     );
-    const saldoMes = faturamentoMes - totalGastosMes;
-    const lucroMes = saldoMes;
-    const margemMes = faturamentoMes > 0 ? (lucroMes / faturamentoMes) * 100 : 0;
-    const metaAtingida =
-      faturamentoMes > 0 ? (saldoMes / faturamentoMes) * 100 : 0;
+
+    const lucroMes = previsaoFaturamentoMes - totalGastosMes;
+    const lucroPrevistoMes = lucroMes;
+
+    const margemMes =
+      previsaoFaturamentoMes > 0
+        ? (lucroMes / previsaoFaturamentoMes) * 100
+        : 0;
 
     const gastosPorMes = {};
     const faturamentoPorMes = {};
     const lucroPorMes = {};
 
     for (let i = 1; i <= 12; i++) {
-      const nomeMes = this.numeroParaMes(i);
-      gastosPorMes[nomeMes] = 0;
-      faturamentoPorMes[nomeMes] = 0;
-      lucroPorMes[nomeMes] = 0;
+      const nome = this.numeroParaMes(i);
+      gastosPorMes[nome] = 0;
+      faturamentoPorMes[nome] = 0;
+      lucroPorMes[nome] = 0;
     }
 
     (gastosAno || []).forEach((item) => {
-      const nomeMes = String(item.mes || "").trim();
-      if (!nomeMes) return;
-      if (!(nomeMes in gastosPorMes)) return;
-      gastosPorMes[nomeMes] += this.normalizarNumero(item.valor || 0);
+      if (gastosPorMes[item.mes] !== undefined) {
+        gastosPorMes[item.mes] += this.normalizarNumero(item.valor);
+      }
     });
 
     (faturamentoAno || []).forEach((item) => {
-      const nomeMes = String(item.mes || item.nome_mes || "").trim();
-      if (!nomeMes) return;
-      if (!(nomeMes in faturamentoPorMes)) return;
-
-      faturamentoPorMes[nomeMes] += this.normalizarNumero(
-        item.faturamento ?? item.valor ?? item.receita ?? 0
-      );
+      if (faturamentoPorMes[item.mes] !== undefined) {
+        faturamentoPorMes[item.mes] += this.normalizarNumero(
+          item.faturamento || 0
+        );
+      }
     });
 
-    Object.keys(gastosPorMes).forEach((nomeMes) => {
-      lucroPorMes[nomeMes] = faturamentoPorMes[nomeMes] - gastosPorMes[nomeMes];
+    Object.keys(gastosPorMes).forEach((m) => {
+      lucroPorMes[m] = faturamentoPorMes[m] - gastosPorMes[m];
     });
 
     const rankingAnualCategorias = {};
+
     (gastosAno || []).forEach((item) => {
-      const categoria = this.normalizarTexto(item.categoria || "DESP");
-      rankingAnualCategorias[categoria] =
-        (rankingAnualCategorias[categoria] || 0) +
-        this.normalizarNumero(item.valor || 0);
+      const cat = this.normalizarTexto(item.categoria || "DESP");
+
+      rankingAnualCategorias[cat] =
+        (rankingAnualCategorias[cat] || 0) +
+        this.normalizarNumero(item.valor);
     });
 
     const totalFatAno = Object.values(faturamentoPorMes).reduce(
       (a, b) => a + b,
       0
     );
-    const totalGasAno = Object.values(gastosPorMes).reduce((a, b) => a + b, 0);
-    const totalLucroAno = totalFatAno - totalGasAno;
-    const margemAno = totalFatAno > 0 ? (totalLucroAno / totalFatAno) * 100 : 0;
 
-    const mesAnteriorNome = this.mesAnterior(mes);
-    const faturamentoMesAnterior = faturamentoPorMes[mesAnteriorNome] || 0;
-    const gastosMesAnterior = gastosPorMes[mesAnteriorNome] || 0;
-    const lucroMesAnterior = lucroPorMes[mesAnteriorNome] || 0;
-    const margemMesAnterior =
-      faturamentoMesAnterior > 0
-        ? (lucroMesAnterior / faturamentoMesAnterior) * 100
-        : 0;
-
-    const variacaoFat = this.variacaoPercentual(
-      faturamentoMes,
-      faturamentoMesAnterior
-    );
-    const variacaoGas = this.variacaoPercentual(
-      totalGastosMes,
-      gastosMesAnterior
-    );
-    const variacaoLucro = this.variacaoPercentual(lucroMes, lucroMesAnterior);
-    const variacaoMargemPP = margemMes - margemMesAnterior;
-
-    const metaGlobal = Object.values(categorias).reduce(
-      (acc, item) => acc + item.metaValor,
+    const totalGasAno = Object.values(gastosPorMes).reduce(
+      (a, b) => a + b,
       0
     );
 
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    const totalLucroAno = totalFatAno - totalGasAno;
 
-    const contasPagarPendentes = (contasPagar || []).filter((item) => {
-      return String(item.status || "").toLowerCase() !== "pago";
-    });
+    const margemAno =
+      totalFatAno > 0 ? (totalLucroAno / totalFatAno) * 100 : 0;
 
-    const contasReceberPendentes = (contasReceber || []).filter((item) => {
-      return !["recebido", "pago", "baixado"].includes(
-        String(item.status || "").toLowerCase()
-      );
-    });
+    const mesAnterior = this.mesAnterior(mes);
 
-    const contasVencidas = contasPagarPendentes.filter((item) => {
-      if (!item.vencimento) return false;
-      const data = new Date(String(item.vencimento) + "T00:00:00");
-      return data < hoje;
-    });
-
-    const vencemHoje = contasPagarPendentes.filter((item) => {
-      if (!item.vencimento) return false;
-      const data = new Date(String(item.vencimento) + "T00:00:00");
-      return data.getTime() === hoje.getTime();
-    });
-
-    const proximos7Dias = contasPagarPendentes.filter((item) => {
-      if (!item.vencimento) return false;
-      const data = new Date(String(item.vencimento) + "T00:00:00");
-      const diff = Math.ceil((data - hoje) / 86400000);
-      return diff >= 1 && diff <= 7;
-    });
-
-    const topPagar = [...contasPagarPendentes]
-      .sort(
-        (a, b) =>
-          this.normalizarNumero(b.valor) - this.normalizarNumero(a.valor)
-      )
-      .slice(0, 5);
-
-    const topReceber = [...contasReceberPendentes]
-      .sort(
-        (a, b) =>
-          this.normalizarNumero(b.valor) - this.normalizarNumero(a.valor)
-      )
-      .slice(0, 5);
-
-    const alertas = [];
-
-    if (contasVencidas.length) {
-      alertas.push({
-        tipo: "critico",
-        titulo: `${contasVencidas.length} conta(s) vencida(s)`,
-        descricao: `Valor total vencido: ${this.formatarMoeda(
-          contasVencidas.reduce(
-            (a, b) => a + this.normalizarNumero(b.valor),
-            0
-          )
-        )}`
-      });
-    }
-
-    if (vencemHoje.length) {
-      alertas.push({
-        tipo: "atencao",
-        titulo: `${vencemHoje.length} conta(s) vencem hoje`,
-        descricao: `Valor total: ${this.formatarMoeda(
-          vencemHoje.reduce((a, b) => a + this.normalizarNumero(b.valor), 0)
-        )}`
-      });
-    }
-
-    if (saldoMes < 0) {
-      alertas.push({
-        tipo: "critico",
-        titulo: "Saldo do mês negativo",
-        descricao: `Saldo atual: ${this.formatarMoeda(saldoMes)}`
-      });
-    }
-
-    if (lucroMes < lucroMesAnterior) {
-      alertas.push({
-        tipo: "atencao",
-        titulo: "Lucro abaixo do mês anterior",
-        descricao: `Variação do lucro: ${this.formatarPercentual(
-          variacaoLucro
-        )}`
-      });
-    }
-
-    const categoriasAcimaMeta = Object.values(categorias).filter(
-      (item) => item.situacao === "Acima da meta"
+    const variacaoFat = this.variacaoPercentual(
+      previsaoFaturamentoMes,
+      faturamentoPorMes[mesAnterior]
     );
-    if (categoriasAcimaMeta.length) {
-      alertas.push({
-        tipo: "atencao",
-        titulo: `${categoriasAcimaMeta.length} categoria(s) acima da meta`,
-        descricao: categoriasAcimaMeta.map((i) => i.categoria).join(", ")
-      });
-    }
 
-    if (!alertas.length) {
-      alertas.push({
-        tipo: "ok",
-        titulo: "Tudo sob controle",
-        descricao: "Nenhum alerta crítico para o período selecionado."
-      });
-    }
+    const variacaoGas = this.variacaoPercentual(
+      totalGastosMes,
+      gastosPorMes[mesAnterior]
+    );
+
+    const variacaoLucro = this.variacaoPercentual(
+      lucroMes,
+      lucroPorMes[mesAnterior]
+    );
+
+    const metaGlobal = Object.values(categorias).reduce(
+      (a, b) => a + b.metaValor,
+      0
+    );
 
     return {
       mes,
       ano,
-      faturamentoMes,
+
+      faturadoMes,
+      aFaturarMes,
+      previsaoFaturamentoMes,
+      lucroPrevistoMes,
+
+      faturamentoMes: previsaoFaturamentoMes,
       totalGastosMes,
-      saldoMes,
       lucroMes,
       margemMes,
-      metaAtingida,
       metaGlobal,
+
       categorias: Object.values(categorias),
+
       gastosPorMes,
       faturamentoPorMes,
       lucroPorMes,
       rankingAnualCategorias,
-      contasVencidas,
-      vencemHoje,
-      proximos7Dias,
-      topPagar,
-      topReceber,
-      alertas,
+
       totalFatAno,
       totalGasAno,
       totalLucroAno,
       margemAno,
-      faturamentoMesAnterior,
-      gastosMesAnterior,
-      lucroMesAnterior,
-      margemMesAnterior,
+
       variacaoFat,
       variacaoGas,
       variacaoLucro,
-      variacaoMargemPP
+
+      contasVencidas: [],
+      vencemHoje: [],
+      proximos7Dias: [],
+      topPagar: contasPagar.slice(0, 5),
+      topReceber: contasReceber.slice(0, 5),
+
+      alertas: []
     };
   },
 
-  renderCards(analise) {
-    this.setText("fat", this.formatarMoeda(analise.faturamentoMes));
-    this.setText("gas", this.formatarMoeda(analise.totalGastosMes));
-    this.setText("lucroCard", this.formatarMoeda(analise.lucroMes));
-    this.setText("margemCard", this.formatarPercentual(analise.margemMes));
-    this.setText("metaAtingida", this.formatarPercentual(analise.metaAtingida));
+  renderCards(a) {
+    this.setText("fat", this.formatarMoeda(a.faturamentoMes));
+    this.setText("gas", this.formatarMoeda(a.totalGastosMes));
+    this.setText("lucroCard", this.formatarMoeda(a.lucroMes));
+    this.setText("margemCard", this.formatarPercentual(a.margemMes));
+    this.setText("metaAtingida", this.formatarPercentual(a.margemMes));
 
     this.setText(
       "fatVsMesAnterior",
-      `vs mês anterior: ${this.formatarPercentual(analise.variacaoFat)}`
+      `vs mês anterior: ${this.formatarPercentual(a.variacaoFat)}`
     );
+
     this.setText(
       "gasVsMesAnterior",
-      `vs mês anterior: ${this.formatarPercentual(analise.variacaoGas)}`
+      `vs mês anterior: ${this.formatarPercentual(a.variacaoGas)}`
     );
+
     this.setText(
       "lucroVsMesAnterior",
-      `vs mês anterior: ${this.formatarPercentual(analise.variacaoLucro)}`
+      `vs mês anterior: ${this.formatarPercentual(a.variacaoLucro)}`
     );
-    this.setText(
-      "margemVsMesAnterior",
-      `vs mês anterior: ${this.arredondar(analise.variacaoMargemPP, 2)} p.p.`
-    );
+
     this.setText(
       "metaGlobalInfo",
-      `meta global: ${this.formatarMoeda(analise.metaGlobal)}`
+      `meta global: ${this.formatarMoeda(a.metaGlobal)}`
     );
   },
 
-  renderSummaryStrip(analise) {
-    this.setText("dashFatYtd", this.formatarMoeda(analise.totalFatAno));
-    this.setText("dashGasYtd", this.formatarMoeda(analise.totalGasAno));
-    this.setText("dashLucroYtd", this.formatarMoeda(analise.totalLucroAno));
-    this.setText("dashMargemYtd", this.formatarPercentual(analise.margemAno));
+  renderSummaryStrip(a) {
+    this.setText("dashFatYtd", this.formatarMoeda(a.totalFatAno));
+    this.setText("dashGasYtd", this.formatarMoeda(a.totalGasAno));
+    this.setText("dashLucroYtd", this.formatarMoeda(a.totalLucroAno));
+    this.setText("dashMargemYtd", this.formatarPercentual(a.margemAno));
   },
 
-  renderForecast(analise) {
-    const forecast = this.calcularForecast(analise);
+  renderForecastFaturamentoResumo(a) {
+    this.setText("dashFaturado", this.formatarMoeda(a.faturadoMes));
+    this.setText("dashAFaturar", this.formatarMoeda(a.aFaturarMes));
+    this.setText(
+      "dashPrevisaoFat",
+      this.formatarMoeda(a.previsaoFaturamentoMes)
+    );
+    this.setText(
+      "dashLucroPrevisto",
+      this.formatarMoeda(a.lucroPrevistoMes)
+    );
+  },
 
-    this.setText("forecastLucro", this.formatarMoeda(forecast.realistaLucro));
+  renderForecast(a) {
+    this.setText(
+      "forecastLucro",
+      this.formatarMoeda(a.lucroPrevistoMes)
+    );
+
     this.setText(
       "forecastMargem",
-      this.formatarPercentual(forecast.realistaMargem)
-    );
-    this.setText("forecastRisco", forecast.risco);
-
-    this.setText(
-      "forecastLucroNote",
-      `Fechamento estimado com base em ${forecast.diasConsiderados}/${forecast.ultimoDiaMes} dias`
-    );
-    this.setText("forecastMargemNote", "Cenário realista do mês");
-    this.setText("forecastRiscoNote", forecast.riscoNote);
-
-    this.setText(
-      "forecastPessimistaFat",
-      this.formatarMoeda(forecast.pessimistaFat)
-    );
-    this.setText(
-      "forecastPessimistaGas",
-      this.formatarMoeda(forecast.pessimistaGas)
-    );
-    this.setText(
-      "forecastPessimistaLucro",
-      this.formatarMoeda(forecast.pessimistaLucro)
-    );
-    this.setText(
-      "forecastPessimistaMargem",
-      this.formatarPercentual(forecast.pessimistaMargem)
+      this.formatarPercentual(a.margemMes)
     );
 
     this.setText(
-      "forecastRealistaFat",
-      this.formatarMoeda(forecast.realistaFat)
+      "forecastRisco",
+      a.lucroPrevistoMes >= 0 ? "Controlado" : "Crítico"
     );
-    this.setText(
-      "forecastRealistaGas",
-      this.formatarMoeda(forecast.realistaGas)
-    );
-    this.setText(
-      "forecastRealistaLucro",
-      this.formatarMoeda(forecast.realistaLucro)
-    );
-    this.setText(
-      "forecastRealistaMargem",
-      this.formatarPercentual(forecast.realistaMargem)
-    );
-
-    this.setText(
-      "forecastOtimistaFat",
-      this.formatarMoeda(forecast.otimistaFat)
-    );
-    this.setText(
-      "forecastOtimistaGas",
-      this.formatarMoeda(forecast.otimistaGas)
-    );
-    this.setText(
-      "forecastOtimistaLucro",
-      this.formatarMoeda(forecast.otimistaLucro)
-    );
-    this.setText(
-      "forecastOtimistaMargem",
-      this.formatarPercentual(forecast.otimistaMargem)
-    );
-
-    const riscoEl = document.getElementById("forecastRisco");
-    if (riscoEl) {
-      riscoEl.classList.remove(
-        "forecast-ok",
-        "forecast-warn",
-        "forecast-danger"
-      );
-      riscoEl.classList.add(forecast.riscoClasse);
-    }
   },
 
-  renderStatusMes(analise) {
-    this.setText("statusMes", `${analise.mes}/${analise.ano}`);
-
-    const agora = new Date().toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-    this.setText("statusAtualizacao", agora);
-
-    const el = document.getElementById("statusSituacao");
-    if (!el) return;
-
-    el.classList.remove("ok", "err");
-
-    if (analise.saldoMes < 0) {
-      el.textContent = "Crítico";
-      el.classList.add("err");
-    } else if (analise.saldoMes === 0) {
-      el.textContent = "Neutro";
-    } else {
-      el.textContent = "Saudável";
-      el.classList.add("ok");
-    }
-
-    this.setText("cardVencidas", String(analise.contasVencidas.length));
-    this.setText("cardHoje", String(analise.vencemHoje.length));
-    this.setText("card7dias", String(analise.proximos7Dias.length));
+  renderStatusMes(a) {
+    this.setText("statusMes", `${a.mes}/${a.ano}`);
   },
 
-  renderResumoTabela(analise) {
+  renderResumoTabela(a) {
     const tbody = document.getElementById("tabelaResumo");
     if (!tbody) return;
 
-    const linhas = analise.categorias
-      .filter((item) => item.gasto > 0 || item.metaValor > 0)
-      .sort((a, b) => b.gasto - a.gasto);
-
-    if (!linhas.length) {
-      tbody.innerHTML =
-        '<tr><td colspan="7" class="muted">Nenhum dado carregado.</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = linhas
+    tbody.innerHTML = a.categorias
       .map(
-        (item) => `
-      <tr>
-        <td>${item.categoria}</td>
-        <td>${this.formatarMoeda(item.gasto)}</td>
-        <td>${
-          item.tipoMeta === "valor"
-            ? "Valor fixo"
-            : this.formatarPercentual(item.percentualMeta)
-        }</td>
-        <td>${this.formatarMoeda(item.metaValor)}</td>
-        <td class="${item.diferenca >= 0 ? "ok" : "err"}">${this.formatarMoeda(
-          item.diferenca
-        )}</td>
-        <td class="${item.desvioPercentual <= 0 ? "ok" : "err"}">${this.formatarPercentual(
-          item.desvioPercentual
-        )}</td>
-        <td class="${
-          item.situacao === "Acima da meta" ? "err" : "ok"
-        }">${item.situacao}</td>
-      </tr>
-    `
+        (i) => `
+        <tr>
+          <td>${i.categoria}</td>
+          <td>${this.formatarMoeda(i.gasto)}</td>
+          <td>${this.formatarPercentual(i.percentualMeta)}</td>
+          <td>${this.formatarMoeda(i.metaValor)}</td>
+          <td>${this.formatarMoeda(i.diferenca)}</td>
+          <td>${this.formatarPercentual(i.desvioPercentual)}</td>
+          <td>${i.situacao}</td>
+        </tr>
+      `
       )
       .join("");
   },
 
-  renderTopListas(analise) {
-    this.renderListaTop("topPagar", analise.topPagar, "fornecedor", "vencimento");
-    this.renderListaTop("topReceber", analise.topReceber, "cliente", "vencimento");
+  renderTopListas(a) {
+    this.renderListaTop("topPagar", a.topPagar, "fornecedor");
+    this.renderListaTop("topReceber", a.topReceber, "cliente");
   },
 
-  renderListaTop(elementId, lista, campoNome, campoData) {
-    const el = document.getElementById(elementId);
+  renderListaTop(id, lista, campo) {
+    const el = document.getElementById(id);
     if (!el) return;
-
-    if (!lista.length) {
-      el.innerHTML = '<div class="muted">Nenhum dado disponível.</div>';
-      return;
-    }
 
     el.innerHTML = lista
       .map(
-        (item) => `
+        (i) => `
       <div class="alert-item">
-        <strong>${item[campoNome] || "-"}</strong><br>
-        ${item.documento || "-"} · ${item.categoria || "-"}<br>
-        ${this.formatarMoeda(item.valor || 0)} · ${item[campoData] || "-"}
+        <strong>${i[campo] || "-"}</strong><br>
+        ${this.formatarMoeda(i.valor || 0)}
       </div>
     `
       )
       .join("");
   },
 
-  renderAlertas(analise) {
+  renderAlertas() {
     const el = document.getElementById("alertList");
     if (!el) return;
-
-    const prioridade = { critico: 1, atencao: 2, ok: 3 };
-
-    const ordenados = [...analise.alertas].sort(
-      (a, b) => prioridade[a.tipo] - prioridade[b.tipo]
-    );
-
-    el.innerHTML = ordenados
-      .map(
-        (alerta) => `
-      <div class="alert-item ${alerta.tipo}">
-        <strong>${
-          alerta.tipo === "critico"
-            ? "🔴"
-            : alerta.tipo === "atencao"
-            ? "🟠"
-            : "🟢"
-        } ${alerta.titulo}</strong><br>
-        ${alerta.descricao}
-      </div>
-    `
-      )
-      .join("");
+    el.innerHTML =
+      '<div class="alert-item ok"><strong>🟢 Sistema operacional</strong></div>';
   },
 
-  renderRankingResumo(analise) {
+  renderRankingResumo(a) {
     const el = document.getElementById("rankingResumo");
     if (!el) return;
 
-    const ranking = Object.entries(analise.rankingAnualCategorias)
-      .sort((a, b) => b[1] - a[1])
+    const ranking = Object.entries(a.rankingAnualCategorias)
+      .sort((x, y) => y[1] - x[1])
       .slice(0, 5);
 
-    const total = ranking.reduce((acc, item) => acc + Number(item[1] || 0), 0);
-
-    if (!ranking.length) {
-      el.innerHTML = '<div class="muted">Nenhum dado disponível.</div>';
-      return;
-    }
-
     el.innerHTML = ranking
-      .map(([categoria, valor]) => {
-        const percentual = total > 0 ? (valor / total) * 100 : 0;
-
-        return `
-        <div class="ranking-summary-item">
-          <div class="left">
-            <strong>${categoria}</strong>
-            <span>${this.formatarPercentual(percentual)} do top 5</span>
-          </div>
-          <div class="right">${this.formatarMoeda(valor)}</div>
-        </div>
-      `;
-      })
+      .map(
+        ([cat, valor]) => `
+      <div class="ranking-summary-item">
+        <div class="left"><strong>${cat}</strong></div>
+        <div class="right">${this.formatarMoeda(valor)}</div>
+      </div>
+    `
+      )
       .join("");
   },
 
-  getSortedCategoryData(analise) {
-    return [...analise.categorias]
-      .filter((item) => item.gasto > 0 || item.metaValor > 0)
-      .sort((a, b) => b.gasto - a.gasto);
-  },
-
-  renderBarChart(analise) {
-    const canvas = document.getElementById("barChart");
-    if (!canvas || typeof Chart === "undefined") return;
-
-    const linhas = this.getSortedCategoryData(analise);
-    const labels = linhas.map((item) => item.categoria);
-    const gastos = linhas.map((item) => this.arredondar(item.gasto, 2));
-    const metas = linhas.map((item) => this.arredondar(item.metaValor, 2));
-
-    const cores = linhas.map((item) =>
-      item.metaValor > 0 && item.gasto > item.metaValor ? "#dc2626" : "#22c55e"
-    );
+  renderBarChart(a) {
+    const c = document.getElementById("barChart");
+    if (!c || typeof Chart === "undefined") return;
 
     if (this.barChart) this.barChart.destroy();
 
-    this.barChart = new Chart(canvas, {
+    this.barChart = new Chart(c, {
       data: {
-        labels,
+        labels: a.categorias.map((i) => i.categoria),
         datasets: [
           {
             type: "bar",
             label: "Gasto",
-            data: gastos,
-            backgroundColor: cores,
-            borderColor: cores,
-            borderWidth: 1,
-            borderRadius: 12,
-            borderSkipped: false,
-            maxBarThickness: 34
+            data: a.categorias.map((i) => i.gasto),
+            backgroundColor: "#2563eb"
           },
           {
             type: "line",
             label: "Meta",
-            data: metas,
-            borderColor: "rgba(37, 99, 235, 1)",
-            backgroundColor: "rgba(37, 99, 235, 0.08)",
-            pointBackgroundColor: "rgba(37, 99, 235, 1)",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            borderWidth: 3,
-            tension: 0.35,
-            fill: false
+            data: a.categorias.map((i) => i.metaValor),
+            borderColor: "#dc2626",
+            borderWidth: 3
           }
         ]
       },
@@ -1056,31 +719,20 @@ async buscarFaturamentoMes(mes, ano) {
     });
   },
 
-  renderPieChart(analise) {
-    const canvas = document.getElementById("pieChart");
-    if (!canvas || typeof Chart === "undefined") return;
-
-    const linhas = analise.categorias
-      .filter((item) => item.gasto > 0)
-      .sort((a, b) => b.gasto - a.gasto);
-
-    const labels = linhas.map((item) => item.categoria);
-    const valores = linhas.map((item) => this.arredondar(item.gasto, 2));
-    const total = valores.reduce((a, b) => a + b, 0);
+  renderPieChart(a) {
+    const c = document.getElementById("pieChart");
+    if (!c || typeof Chart === "undefined") return;
 
     if (this.pieChart) this.pieChart.destroy();
 
-    this.pieChart = new Chart(canvas, {
+    this.pieChart = new Chart(c, {
       type: "doughnut",
       data: {
-        labels,
+        labels: a.categorias.map((i) => i.categoria),
         datasets: [
           {
-            data: valores,
-            backgroundColor: labels.map((_, i) => this.palette[i % this.palette.length]),
-            borderColor: "#ffffff",
-            borderWidth: 3,
-            hoverOffset: 10
+            data: a.categorias.map((i) => i.gasto),
+            backgroundColor: this.palette
           }
         ]
       },
@@ -1088,122 +740,110 @@ async buscarFaturamentoMes(mes, ano) {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: "66%",
-        plugins: {
-          legend: {
-            position: "right",
-            labels: {
-              boxWidth: 12,
-              boxHeight: 12,
-              usePointStyle: true,
-              pointStyle: "circle",
-              color: "#334155",
-              font: {
-                size: 12,
-                weight: "700"
-              }
-            }
-          },
-          tooltip: {
-            backgroundColor: "rgba(15,23,42,0.96)",
-            titleColor: "#ffffff",
-            bodyColor: "#e5e7eb",
-            borderColor: "rgba(255,255,255,0.08)",
-            borderWidth: 1,
-            callbacks: {
-              label: (context) => {
-                const value = Number(context.parsed || 0);
-                const perc = total > 0 ? ((value / total) * 100) : 0;
-                return `${context.label}: ${this.formatarMoeda(value)} (${this.arredondar(
-                  perc,
-                  2
-                )}%)`;
-              }
-            }
-          },
-          doughnutCenterTextPlugin: {
-            title: "TOTAL",
-            value: this.formatarMoedaCompacta(total)
-          }
-        }
+        cutout: "66%"
       }
     });
   },
 
-  renderLineChart(analise) {
-    const canvas = document.getElementById("lineChart");
-    if (!canvas || typeof Chart === "undefined") return;
-
-    const ordemMeses = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
-    ];
-
-    const mesAtual = new Date().getMonth();
+  renderLineChart(a) {
+    const c = document.getElementById("lineChart");
+    if (!c || typeof Chart === "undefined") return;
 
     if (this.lineChart) this.lineChart.destroy();
 
-    this.lineChart = new Chart(canvas, {
+    const meses = Object.keys(a.gastosPorMes);
+
+    this.lineChart = new Chart(c, {
       type: "line",
       data: {
-        labels: ordemMeses,
+        labels: meses,
         datasets: [
           {
             label: "Gastos",
-            data: ordemMeses.map((m) =>
-              this.arredondar(analise.gastosPorMes[m] || 0, 2)
-            ),
-            borderColor: "#dc2626",
-            backgroundColor: "rgba(220,38,38,0.10)",
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            pointBackgroundColor: "#dc2626",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2,
-            borderWidth: 3
+            data: meses.map((m) => a.gastosPorMes[m]),
+            borderColor: "#dc2626"
           },
           {
             label: "Faturamento",
-            data: ordemMeses.map((m) =>
-              this.arredondar(analise.faturamentoPorMes[m] || 0, 2)
-            ),
-            borderColor: "#2563eb",
-            backgroundColor: "rgba(37,99,235,0.05)",
-            fill: false,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            pointBackgroundColor: "#2563eb",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2,
-            borderWidth: 3
+            data: meses.map((m) => a.faturamentoPorMes[m]),
+            borderColor: "#2563eb"
           },
           {
             label: "Lucro",
-            data: ordemMeses.map((m) =>
-              this.arredondar(analise.lucroPorMes[m] || 0, 2)
-            ),
+            data: meses.map((m) => a.lucroPorMes[m]),
+            borderColor: "#16a34a"
+          }
+        ]
+      },
+      options: this.getChartBaseOptions()
+    });
+  },
+
+  renderRankingChart(a) {
+    const c = document.getElementById("rankingChart");
+    if (!c || typeof Chart === "undefined") return;
+
+    if (this.rankingChart) this.rankingChart.destroy();
+
+    const ranking = Object.entries(a.rankingAnualCategorias).sort(
+      (x, y) => y[1] - x[1]
+    );
+
+    this.rankingChart = new Chart(c, {
+      type: "bar",
+      data: {
+        labels: ranking.map((i) => i[0]),
+        datasets: [
+          {
+            label: "Ano",
+            data: ranking.map((i) => i[1]),
+            backgroundColor: "#6366f1"
+          }
+        ]
+      },
+      options: {
+        ...this.getChartBaseOptions(),
+        indexAxis: "y"
+      }
+    });
+  },
+
+  renderForecastChart(a) {
+    const c = document.getElementById("forecastChart");
+    if (!c || typeof Chart === "undefined") return;
+
+    if (this.forecastChart) this.forecastChart.destroy();
+
+    this.forecastChart = new Chart(c, {
+      data: {
+        labels: ["Mês"],
+        datasets: [
+          {
+            type: "bar",
+            label: "Faturado",
+            data: [a.faturadoMes],
+            backgroundColor: "#2563eb",
+            stack: "fat"
+          },
+          {
+            type: "bar",
+            label: "A faturar",
+            data: [a.aFaturarMes],
+            backgroundColor: "#f97316",
+            stack: "fat"
+          },
+          {
+            type: "line",
+            label: "Gastos",
+            data: [a.totalGastosMes],
+            borderColor: "#dc2626",
+            borderWidth: 4
+          },
+          {
+            type: "line",
+            label: "Lucro previsto",
+            data: [a.lucroPrevistoMes],
             borderColor: "#16a34a",
-            backgroundColor: "rgba(22,163,74,0.10)",
-            fill: true,
-            tension: 0.35,
-            pointRadius: (ctx) => (ctx.dataIndex === mesAtual ? 6 : 4),
-            pointHoverRadius: 7,
-            pointBackgroundColor: "#16a34a",
-            pointBorderColor: "#ffffff",
-            pointBorderWidth: 2,
             borderWidth: 4
           }
         ]
@@ -1212,283 +852,19 @@ async buscarFaturamentoMes(mes, ano) {
     });
   },
 
-  renderRankingChart(analise) {
-    const canvas = document.getElementById("rankingChart");
-    if (!canvas || typeof Chart === "undefined") return;
-
-    const ranking = Object.entries(analise.rankingAnualCategorias)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
-
-    if (this.rankingChart) this.rankingChart.destroy();
-
-    const options = this.getChartBaseOptions();
-    options.indexAxis = "y";
-    options.scales.x.ticks.callback = (value) =>
-      this.formatarMoedaCompacta(value);
-
-    this.rankingChart = new Chart(canvas, {
-      type: "bar",
-      data: {
-        labels: ranking.map((item) => item[0]),
-        datasets: [
-          {
-            label: "Gastos no ano",
-            data: ranking.map((item) => this.arredondar(item[1], 2)),
-            backgroundColor: ranking.map(
-              (_, i) => this.palette[i % this.palette.length]
-            ),
-            borderRadius: 12,
-            borderSkipped: false,
-            maxBarThickness: 28
-          }
-        ]
-      },
-      options
-    });
-  },
-
   abrirGraficoFullscreen(chartId, titulo) {
     const popup = document.getElementById("popupGrafico");
-    const popupTitulo = document.getElementById("popupGraficoTitulo");
-    const popupCanvas = document.getElementById("popupGraficoCanvas");
+    const title = document.getElementById("popupGraficoTitulo");
 
-    if (!popup || !popupTitulo || !popupCanvas || !this.ultimoAnalise) return;
+    if (!popup || !title) return;
 
-    popupTitulo.textContent = titulo;
+    title.textContent = titulo;
     popup.classList.remove("hidden");
-
-    if (this.popupChart) {
-      this.popupChart.destroy();
-      this.popupChart = null;
-    }
-
-    if (chartId === "barChart") {
-      const linhas = this.getSortedCategoryData(this.ultimoAnalise);
-      const cores = linhas.map((item) =>
-        item.metaValor > 0 && item.gasto > item.metaValor ? "#dc2626" : "#22c55e"
-      );
-
-      this.popupChart = new Chart(popupCanvas, {
-        data: {
-          labels: linhas.map((item) => item.categoria),
-          datasets: [
-            {
-              type: "bar",
-              label: "Gasto",
-              data: linhas.map((item) => this.arredondar(item.gasto, 2)),
-              backgroundColor: cores,
-              borderColor: cores,
-              borderWidth: 1,
-              borderRadius: 12,
-              borderSkipped: false,
-              maxBarThickness: 42
-            },
-            {
-              type: "line",
-              label: "Meta",
-              data: linhas.map((item) => this.arredondar(item.metaValor, 2)),
-              borderColor: "rgba(37, 99, 235, 1)",
-              backgroundColor: "rgba(37, 99, 235, 0.08)",
-              pointBackgroundColor: "rgba(37, 99, 235, 1)",
-              pointBorderColor: "#ffffff",
-              pointBorderWidth: 2,
-              pointRadius: 5,
-              borderWidth: 3,
-              tension: 0.35
-            }
-          ]
-        },
-        options: this.getChartBaseOptions()
-      });
-      return;
-    }
-
-    if (chartId === "pieChart") {
-      const linhas = this.ultimoAnalise.categorias
-        .filter((item) => item.gasto > 0)
-        .sort((a, b) => b.gasto - a.gasto);
-
-      const valores = linhas.map((item) => this.arredondar(item.gasto, 2));
-      const total = valores.reduce((a, b) => a + b, 0);
-
-      this.popupChart = new Chart(popupCanvas, {
-        type: "doughnut",
-        data: {
-          labels: linhas.map((item) => item.categoria),
-          datasets: [
-            {
-              data: valores,
-              backgroundColor: linhas.map(
-                (_, i) => this.palette[i % this.palette.length]
-              ),
-              borderColor: "#ffffff",
-              borderWidth: 3,
-              hoverOffset: 10
-            }
-          ]
-        },
-        plugins: [this.doughnutCenterTextPlugin],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: "68%",
-          plugins: {
-            legend: {
-              position: "right",
-              labels: {
-                boxWidth: 12,
-                boxHeight: 12,
-                usePointStyle: true,
-                pointStyle: "circle",
-                color: "#334155",
-                font: {
-                  size: 12,
-                  weight: "700"
-                }
-              }
-            },
-            tooltip: {
-              backgroundColor: "rgba(15,23,42,0.96)",
-              titleColor: "#ffffff",
-              bodyColor: "#e5e7eb",
-              callbacks: {
-                label: (context) => {
-                  const value = Number(context.parsed || 0);
-                  const perc = total > 0 ? ((value / total) * 100) : 0;
-                  return `${context.label}: ${this.formatarMoeda(value)} (${this.arredondar(
-                    perc,
-                    2
-                  )}%)`;
-                }
-              }
-            },
-            doughnutCenterTextPlugin: {
-              title: "TOTAL",
-              value: this.formatarMoedaCompacta(total)
-            }
-          }
-        }
-      });
-      return;
-    }
-
-    if (chartId === "lineChart") {
-      const ordemMeses = [
-        "Janeiro",
-        "Fevereiro",
-        "Março",
-        "Abril",
-        "Maio",
-        "Junho",
-        "Julho",
-        "Agosto",
-        "Setembro",
-        "Outubro",
-        "Novembro",
-        "Dezembro"
-      ];
-
-      this.popupChart = new Chart(popupCanvas, {
-        type: "line",
-        data: {
-          labels: ordemMeses,
-          datasets: [
-            {
-              label: "Gastos",
-              data: ordemMeses.map((m) =>
-                this.arredondar(this.ultimoAnalise.gastosPorMes[m] || 0, 2)
-              ),
-              borderColor: "#dc2626",
-              backgroundColor: "rgba(220,38,38,0.10)",
-              fill: true,
-              tension: 0.35,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-              pointBackgroundColor: "#dc2626",
-              pointBorderColor: "#fff",
-              pointBorderWidth: 2,
-              borderWidth: 3
-            },
-            {
-              label: "Faturamento",
-              data: ordemMeses.map((m) =>
-                this.arredondar(this.ultimoAnalise.faturamentoPorMes[m] || 0, 2)
-              ),
-              borderColor: "#2563eb",
-              backgroundColor: "rgba(37,99,235,0.05)",
-              fill: false,
-              tension: 0.35,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-              pointBackgroundColor: "#2563eb",
-              pointBorderColor: "#fff",
-              pointBorderWidth: 2,
-              borderWidth: 3
-            },
-            {
-              label: "Lucro",
-              data: ordemMeses.map((m) =>
-                this.arredondar(this.ultimoAnalise.lucroPorMes[m] || 0, 2)
-              ),
-              borderColor: "#16a34a",
-              backgroundColor: "rgba(22,163,74,0.10)",
-              fill: true,
-              tension: 0.35,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-              pointBackgroundColor: "#16a34a",
-              pointBorderColor: "#fff",
-              pointBorderWidth: 2,
-              borderWidth: 4
-            }
-          ]
-        },
-        options: this.getChartBaseOptions()
-      });
-      return;
-    }
-
-    if (chartId === "rankingChart") {
-      const ranking = Object.entries(this.ultimoAnalise.rankingAnualCategorias)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-
-      const options = this.getChartBaseOptions();
-      options.indexAxis = "y";
-      options.scales.x.ticks.callback = (value) =>
-        this.formatarMoedaCompacta(value);
-
-      this.popupChart = new Chart(popupCanvas, {
-        type: "bar",
-        data: {
-          labels: ranking.map((item) => item[0]),
-          datasets: [
-            {
-              label: "Gastos no ano",
-              data: ranking.map((item) => this.arredondar(item[1], 2)),
-              backgroundColor: ranking.map(
-                (_, i) => this.palette[i % this.palette.length]
-              ),
-              borderRadius: 12,
-              borderSkipped: false,
-              maxBarThickness: 34
-            }
-          ]
-        },
-        options
-      });
-    }
   },
 
   fecharGraficoFullscreen() {
     const popup = document.getElementById("popupGrafico");
     if (popup) popup.classList.add("hidden");
-
-    if (this.popupChart) {
-      this.popupChart.destroy();
-      this.popupChart = null;
-    }
   },
 
   setText(id, value) {
