@@ -334,20 +334,25 @@ window.dashboardModule = {
     };
   },
 
-  async buscarFaturamentoMes(mes, ano) {
-    const data = await api.select("meses", { ano });
+async buscarFaturamentoMes(mes, ano) {
+  const data = await api.select("meses", { mes, ano });
 
-    const alvo = (data || []).find((item) => {
-      const mesItem = String(item.mes || item.nome_mes || "")
-        .trim()
-        .toLowerCase();
-      return mesItem === String(mes).trim().toLowerCase();
-    });
+  if (!data.length) {
+    return {
+      faturado: 0,
+      aFaturar: 0,
+      total: 0
+    };
+  }
 
-    return this.normalizarNumero(
-      alvo?.faturamento ?? alvo?.valor ?? alvo?.receita ?? 0
-    );
-  },
+  const item = data[0];
+
+  return {
+    faturado: Number(item.faturado || 0),
+    aFaturar: Number(item.a_faturar || 0),
+    total: Number(item.faturamento || 0)
+  };
+}
 
   async buscarFaturamentoAno(ano) {
     const data = await api.select("meses", { ano });
