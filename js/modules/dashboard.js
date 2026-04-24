@@ -3,6 +3,7 @@ window.dashboardModule = {
   pieChart: null,
   lineChart: null,
   rankingChart: null,
+  forecastChart: null,
   popupChart: null,
 
   categoriasPadrao: [
