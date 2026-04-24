@@ -1,65 +1,81 @@
 window.faturamentoModule = {
-  extrairValor(item) {
-    return utils.numero(
-      item?.valor ??
-      item?.faturamento ??
-      item?.receita ??
-      0
+  async carregar() {
+    await this.listar();
+  },
+
+  async salvar() {
+    const mes = document.getElementById("fatMes").value;
+    const ano = Number(document.getElementById("fatAno").value);
+
+    const faturado = this.numero(
+      document.getElementById("fatReal").value
     );
-  },
 
-  async carregarFaturamento() {
-    try {
-      const { mes, ano } = utils.getMesAno();
-      const input = document.getElementById("faturamentoInput");
-      if (!input) return;
+    const aFaturar = this.numero(
+      document.getElementById("fatPrevisto").value
+    );
 
-      const data = await api.restGet("meses", "select=*");
+    const faturamento = faturado + aFaturar;
 
-      const registro = (data || []).find(item =>
-        String(item.mes || item.nome_mes || "").trim() === String(mes).trim() &&
-        Number(item.ano || item.exercicio || 0) === Number(ano)
+    const existente = await api.select("meses", { mes, ano });
+
+    if (existente.length) {
+      await api.update(
+        "meses",
+        existente[0].id,
+        {
+          mes,
+          ano,
+          faturado,
+          a_faturar: aFaturar,
+          faturamento
+        }
       );
-
-      input.value = registro ? this.extrairValor(registro) : "";
-    } catch (e) {
-      utils.setAppMsg("Erro ao carregar faturamento: " + e.message, "err");
-    }
-  },
-
-  async salvarFaturamento() {
-    try {
-      const { mes, ano } = utils.getMesAno();
-      const input = document.getElementById("faturamentoInput");
-      if (!input) return;
-
-      const valor = Number(input.value || 0);
-      const data = await api.restGet("meses", "select=*");
-
-      const existente = (data || []).find(item =>
-        String(item.mes || item.nome_mes || "").trim() === String(mes).trim() &&
-        Number(item.ano || item.exercicio || 0) === Number(ano)
-      );
-
-      const payload = {
+    } else {
+      await api.insert("meses", {
         mes,
         ano,
-        valor
-      };
-
-      if (existente?.id) {
-        await api.restPatch("meses", `id=eq.${existente.id}`, payload);
-      } else {
-        await api.restInsert("meses", [payload]);
-      }
-
-      utils.setAppMsg("Faturamento salvo com sucesso.", "ok");
-
-      await this.carregarFaturamento();
-      await window.dashboardModule?.carregarDashboard?.();
-      await window.resumoModule?.carregarResumoAnual?.();
-    } catch (e) {
-      utils.setAppMsg("Erro ao salvar faturamento: " + e.message, "err");
+        faturado,
+        a_faturar: aFaturar,
+        faturamento
+      });
     }
+
+    alert("Faturamento salvo.");
+    await this.listar();
+  },
+
+  async listar() {
+    const ano = Number(document.getElementById("fatAno").value);
+
+    const dados = await api.select("meses", { ano });
+
+    const tbody = document.getElementById("fatTabela");
+
+    tbody.innerHTML = dados
+      .sort((a, b) => a.id - b.id)
+      .map(item => `
+        <tr>
+          <td>${item.mes}</td>
+          <td>${this.moeda(item.faturado || 0)}</td>
+          <td>${this.moeda(item.a_faturar || 0)}</td>
+          <td>${this.moeda(item.faturamento || 0)}</td>
+        </tr>
+      `).join("");
+  },
+
+  numero(v) {
+    return Number(
+      String(v || 0)
+        .replace(/\./g, "")
+        .replace(",", ".")
+    ) || 0;
+  },
+
+  moeda(v) {
+    return Number(v || 0).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
   }
 };
