@@ -130,10 +130,16 @@ async function carregarModuloDaAba(tab) {
       return;
     }
 
-    if (tab === "contas-pagar" && window.contasPagarModule) {
-      await contasPagarModule.carregar();
-      return;
-    }
+if (tab === "contas-pagar" && window.contasPagarModule) {
+  if (typeof contasPagarModule.carregar === "function") {
+    await contasPagarModule.carregar();
+  } else if (typeof contasPagarModule.init === "function") {
+    await contasPagarModule.init();
+  } else if (typeof contasPagarModule.listar === "function") {
+    await contasPagarModule.listar();
+  }
+  return;
+}
 
     if (tab === "contas-pagas" && window.contasPagasModule) {
       await contasPagasModule.carregar();
