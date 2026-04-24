@@ -1,37 +1,22 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    iniciarApp();
-  } catch (error) {
-    console.error("Erro ao iniciar app:", error);
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  iniciarApp();
 });
 
 function iniciarApp() {
   preencherSelectsMesAno();
   configurarAbas();
   configurarEventosGlobais();
-
   abrirAbaInicial();
 }
 
 function preencherSelectsMesAno() {
   const meses = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro"
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
   ];
 
-  const anoAtual = new Date().getFullYear();
   const mesAtual = meses[new Date().getMonth()];
+  const anoAtual = String(new Date().getFullYear());
 
   document.querySelectorAll("select[id$='Mes'], #mesSelect").forEach((select) => {
     if (!select) return;
@@ -42,42 +27,24 @@ function preencherSelectsMesAno() {
         .join("");
     }
 
-    if (!select.value) {
-      select.value = mesAtual;
-    }
+    if (!select.value) select.value = mesAtual;
   });
 
   document.querySelectorAll("input[id$='Ano'], #anoSelect").forEach((input) => {
     if (!input) return;
-
-    if (!input.value) {
-      input.value = anoAtual;
-    }
+    if (!input.value) input.value = anoAtual;
   });
-
-  const mesSelect = document.getElementById("mesSelect");
-  const anoSelect = document.getElementById("anoSelect");
-
-  if (mesSelect && !mesSelect.value) mesSelect.value = mesAtual;
-  if (anoSelect && !anoSelect.value) anoSelect.value = anoAtual;
 }
 
 function configurarAbas() {
-  const botoes = document.querySelectorAll("[data-tab]");
-
-  botoes.forEach((botao) => {
-    botao.addEventListener("click", () => {
-      const tab = botao.dataset.tab;
-      abrirAba(tab);
-    });
+  document.querySelectorAll("[data-tab]").forEach((botao) => {
+    botao.addEventListener("click", () => abrirAba(botao.dataset.tab));
   });
 }
 
 function abrirAbaInicial() {
-  const botaoAtivo = document.querySelector("[data-tab].active");
-  const tabInicial = botaoAtivo?.dataset?.tab || "dashboard";
-
-  abrirAba(tabInicial);
+  const ativo = document.querySelector("[data-tab].active");
+  abrirAba(ativo?.dataset?.tab || "dashboard");
 }
 
 async function abrirAba(tab) {
@@ -92,74 +59,35 @@ async function abrirAba(tab) {
     section.classList.add("hidden");
   });
 
-  const alvo = document.getElementById(`tab-${tab}`);
-  if (alvo) {
-    alvo.classList.add("active");
-    alvo.classList.remove("hidden");
+  const section = document.getElementById(`tab-${tab}`);
+  if (section) {
+    section.classList.add("active");
+    section.classList.remove("hidden");
   }
 
   await carregarModuloDaAba(tab);
 }
 
 async function carregarModuloDaAba(tab) {
-  try {
-    if (tab === "dashboard" && window.dashboardModule) {
-      await dashboardModule.carregarDashboard();
-      return;
-    }
+  const modulo = obterModulo(tab);
 
-    if (tab === "planejamento" && window.planejamentoModule) {
-      await planejamentoModule.carregar();
-      return;
-    }
-
-    if (tab === "faturamento" && window.faturamentoModule) {
-      await faturamentoModule.carregar();
-      return;
-    }
-
-    if (tab === "metas" && window.metasModule) {
-      await metasModule.carregar();
-      return;
-    }
-
-    if (tab === "importar" && window.importarModule) {
-      if (typeof importarModule.carregar === "function") {
-        await importarModule.carregar();
-      }
-      return;
-    }
-
-if (tab === "contas-pagar" && window.contasPagarModule) {
-  if (typeof contasPagarModule.carregar === "function") {
-    await contasPagarModule.carregar();
-  } else if (typeof contasPagarModule.init === "function") {
-    await contasPagarModule.init();
-  } else if (typeof contasPagarModule.listar === "function") {
-    await contasPagarModule.listar();
+  if (!modulo) {
+    console.warn(`Módulo da aba "${tab}" não encontrado.`);
+    return;
   }
-  return;
-}
 
-    if (tab === "contas-pagas" && window.contasPagasModule) {
-      await contasPagasModule.carregar();
-      return;
-    }
-
-    if (tab === "contas-receber" && window.contasReceberModule) {
-      await contasReceberModule.carregar();
-      return;
-    }
-
-    if (tab === "dre" && window.dreModule) {
-      await dreModule.carregar();
-      return;
-    }
-
-    if (tab === "fornecedores" && window.fornecedoresModule) {
-      await fornecedoresModule.carregar();
-      return;
-    }
+  try {
+    await executarPrimeiraFuncaoDisponivel(modulo, [
+      "carregarDashboard",
+      "carregar",
+      "init",
+      "listar",
+      "render",
+      "load",
+      "atualizar",
+      "buscar",
+      "start"
+    ]);
   } catch (error) {
     console.error(`Erro ao carregar aba ${tab}:`, error);
 
@@ -167,6 +95,46 @@ if (tab === "contas-pagar" && window.contasPagarModule) {
       utils.setAppMsg(`Erro ao carregar aba ${tab}: ${error.message}`, "err");
     }
   }
+}
+
+function obterModulo(tab) {
+  const mapa = {
+    dashboard: window.dashboardModule,
+    planejamento: window.planejamentoModule,
+    faturamento: window.faturamentoModule,
+    metas: window.metasModule,
+    importar: window.importarModule,
+
+    "contas-pagar": window.contasPagarModule,
+    contasPagar: window.contasPagarModule,
+
+    "contas-pagas": window.contasPagasModule,
+    contasPagas: window.contasPagasModule,
+
+    "contas-receber": window.contasReceberModule,
+    contasReceber: window.contasReceberModule,
+
+    "contas-recebidas": window.contasRecebidasModule,
+    contasRecebidas: window.contasRecebidasModule,
+
+    resumo: window.resumoModule,
+    dre: window.dreModule,
+    fornecedores: window.fornecedoresModule
+  };
+
+  return mapa[tab];
+}
+
+async function executarPrimeiraFuncaoDisponivel(modulo, nomes) {
+  for (const nome of nomes) {
+    if (typeof modulo[nome] === "function") {
+      await modulo[nome]();
+      return true;
+    }
+  }
+
+  console.warn("Nenhuma função de carregamento encontrada neste módulo:", modulo);
+  return false;
 }
 
 function configurarEventosGlobais() {
@@ -185,12 +153,18 @@ function configurarEventosGlobais() {
 async function recarregarAbaAtual() {
   const ativo = document.querySelector("[data-tab].active");
   const tab = ativo?.dataset?.tab || "dashboard";
-
   await carregarModuloDaAba(tab);
+}
+
+async function carregarTudo() {
+  await recarregarAbaAtual();
 }
 
 window.app = {
   abrirAba,
   recarregarAbaAtual,
-  carregarModuloDaAba
+  carregarModuloDaAba,
+  carregarTudo
 };
+
+window.carregarTudo = carregarTudo;
