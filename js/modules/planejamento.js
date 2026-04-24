@@ -17,7 +17,7 @@ window.planejamentoModule = {
         contasPagar,
         contasReceber
       ] = await Promise.all([
-        api.select("meses", { ano }),
+        api.select("meses", { ano: String(ano) })
         api.select("gastos", { ano }),
         api.restGet("contas_pagar", "select=*&order=vencimento.asc"),
         api.restGet("contas_receber", "select=*&order=vencimento.asc")
