@@ -68,78 +68,75 @@ window.contasPagarModule = {
     }
   },
 
-  renderizar() {
-    const tbody =
-      document.getElementById("tabelaContasPagar") ||
-      document.getElementById("contasPagarTabela") ||
-      document.getElementById("cpTabela") ||
-      document.querySelector("#tab-contas-pagar tbody");
+renderizar() {
+  const tbody =
+    document.getElementById("tabelaContasPagar") ||
+    document.getElementById("contasPagarTabela") ||
+    document.getElementById("cpTabela") ||
+    document.querySelector("#tab-contas-pagar tbody");
 
-    if (!tbody) {
-      console.error("Tbody da tabela contas a pagar não encontrado.");
-      return;
-    }
+  if (!tbody) return;
 
-    if (!this.filtrados.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="7" class="muted">Nenhuma conta encontrada.</td>
-        </tr>
-      `;
-      return;
-    }
+  if (!this.selecionados) this.selecionados = new Set();
 
-    tbody.innerHTML = this.filtrados.map(item => {
-      const id = Number(item.id);
-      const boletoOk = Boolean(item.boleto_recebido);
-      const nfeOk = Boolean(item.nfe || item.documento);
+  if (!this.filtrados.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="muted">Nenhuma conta encontrada.</td>
+      </tr>
+    `;
+    return;
+  }
 
-      return `
-        <tr>
-          <td><strong>${item.fornecedor || "-"}</strong></td>
-          <td>${item.documento || item.nfe || "-"}</td>
-          <td><strong>${this.moeda(item.valor || 0)}</strong></td>
-          <td>${item.categoria || "-"}</td>
-          <td>${this.dataBR(item.vencimento)}</td>
+  tbody.innerHTML = this.filtrados.map(item => {
+    const id = Number(item.id);
+    const selecionado = this.selecionados.has(id);
+    const boletoOk = Boolean(item.boleto_recebido);
+    const nfeOk = Boolean(item.nfe || item.documento);
 
-          <td>
-            <button
-              class="doc-btn ${boletoOk ? "ok" : "warn"}"
-              onclick="contasPagarModule.marcarBoleto(${id})"
-            >
-              Boleto
-            </button>
+    return `
+      <tr class="${selecionado ? "linha-selecionada" : ""}">
+        <td>
+          <input
+            type="checkbox"
+            ${selecionado ? "checked" : ""}
+            onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+          >
+        </td>
 
-            <button
-              class="doc-btn ${nfeOk ? "ok" : "warn"}"
-              onclick="contasPagarModule.marcarNfe(${id})"
-            >
-              NFE
-            </button>
-          </td>
+        <td><strong>${item.fornecedor || "-"}</strong></td>
+        <td>${item.documento || item.nfe || "-"}</td>
+        <td>${item.categoria || "-"}</td>
+        <td>${this.dataBR(item.vencimento)}</td>
+        <td>${item.descricao || "-"}</td>
 
-          <td>
-            <button class="secondary-btn mini action-btn-blue" onclick="contasPagarModule.editar(${id})">
-              Editar
-            </button>
+        <td>
+          <button
+            class="doc-btn ${nfeOk ? "ok" : "warn"}"
+            onclick="contasPagarModule.marcarNfe(${id})"
+          >
+            NFE
+          </button>
 
-            <button class="secondary-btn mini" onclick="contasPagarModule.duplicar(${id})">
-              Duplicar
-            </button>
+          <button
+            class="doc-btn ${boletoOk ? "ok" : "warn"}"
+            onclick="contasPagarModule.marcarBoleto(${id})"
+          >
+            Boleto
+          </button>
+        </td>
 
-            <button class="secondary-btn mini action-btn-green" onclick="contasPagarModule.marcarPago(${id})">
-              Pagar
-            </button>
-
-            <button class="secondary-btn mini action-btn-red" onclick="contasPagarModule.excluir(${id})">
-              Excluir
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-  },
-
+        <td>
+          <button class="secondary-btn mini action-btn-blue" onclick="contasPagarModule.editar(${id})">Editar</button>
+          <button class="secondary-btn mini" onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
+          <button class="secondary-btn mini action-btn-green" onclick="contasPagarModule.marcarPago(${id})">Pagar</button>
+          <button class="secondary-btn mini action-btn-red" onclick="contasPagarModule.excluir(${id})">Excluir</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+  
   async marcarBoleto(id) {
     const item = this.dados.find(i => Number(i.id) === Number(id));
     if (!item) return;
