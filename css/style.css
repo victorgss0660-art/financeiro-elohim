@@ -1437,3 +1437,57 @@ td:nth-child(2) {
   outline: 2px solid rgba(220, 38, 38, 0.35);
   background: #fff7f7 !important;
 }
+/* CONTAS A PAGAR - LINHAS COMPACTAS */
+
+#tab-contas-pagar table {
+  border-collapse: collapse !important;
+}
+
+#tab-contas-pagar thead th {
+  padding: 10px 8px !important;
+  font-size: 12px;
+}
+
+#tab-contas-pagar tbody tr {
+  height: 54px !important;
+}
+
+#tab-contas-pagar tbody td {
+  padding: 6px 8px !important;
+  font-size: 13px;
+  vertical-align: middle !important;
+  line-height: 1.1 !important;
+}
+
+#tab-contas-pagar tbody td strong {
+  font-size: 13px;
+}
+
+.acoes-documentos,
+.acoes-tabela {
+  gap: 4px !important;
+}
+
+.doc-btn,
+.secondary-btn.mini,
+.danger-btn.mini {
+  padding: 4px 8px !important;
+  font-size: 10px !important;
+  min-height: 24px !important;
+  line-height: 1 !important;
+}
+
+.acoes-documentos {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.acoes-tabela {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 190px;
+}
+
+#tab-contas-pagar input[type="checkbox"] {
+  transform: scale(0.9);
+}
