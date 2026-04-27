@@ -17,12 +17,18 @@ window.api = {
     });
 
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text || `Erro Supabase: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(errorText || `Erro Supabase ${response.status}`);
     }
 
     const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    return text ? JSON.parse(text) : [];
+  },
+
+  async restGet(table, query = "select=*") {
+    return await this.request(table, query, {
+      method: "GET"
+    });
   },
 
   async select(table, filters = {}) {
@@ -35,15 +41,7 @@ window.api = {
       }
     });
 
-    return await this.request(table, params.toString(), {
-      method: "GET"
-    });
-  },
-
-  async restGet(table, query = "select=*") {
-    return await this.request(table, query, {
-      method: "GET"
-    });
+    return await this.restGet(table, params.toString());
   },
 
   async insert(table, data) {
@@ -64,9 +62,5 @@ window.api = {
     return await this.request(table, `id=eq.${id}`, {
       method: "DELETE"
     });
-  },
-
-  async remove(table, id) {
-    return await this.delete(table, id);
   }
 };
