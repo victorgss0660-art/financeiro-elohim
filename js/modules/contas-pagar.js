@@ -52,31 +52,40 @@ window.contasPagarModule = {
 
 async listar() {
   try {
-    const url =
-      `${SUPABASE_URL}/rest/v1/contas_pagar?select=*&order=vencimento.asc`;
+    let dados = [];
 
-    const resposta = await fetch(url, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`
-      }
+    console.log("Buscando contas_pagar...");
+
+    if (window.api && typeof api.restGet === "function") {
+      dados = await api.restGet(
+        "contas_pagar",
+        "select=*&order=vencimento.asc"
+      );
+    } else if (window.api && typeof api.select === "function") {
+      dados = await api.select("contas_pagar", {});
+    } else {
+      throw new Error("api não encontrada");
+    }
+
+    console.log("Dados recebidos:", dados);
+
+    dados = Array.isArray(dados) ? dados : [];
+
+    this.dados = dados.filter(item => {
+      const status = String(item.status || "pendente").trim().toLowerCase();
+      return status !== "pago";
     });
 
-    const dados = await resposta.json();
+    this.filtrados = [...this.dados];
 
-    this.dados = Array.isArray(dados)
-      ? dados.filter(item => {
-          const status = String(item.status || "pendente").toLowerCase();
-          return status !== "pago";
-        })
-      : [];
+    console.log("Contas a pagar filtradas:", this.dados);
 
     this.renderizar();
     this.atualizarResumo();
 
   } catch (error) {
-    console.error(error);
-    alert("Erro ao puxar contas do Supabase");
+    console.error("Erro ao carregar contas a pagar:", error);
+    alert("Erro ao carregar contas a pagar: " + error.message);
   }
 }
   renderizar() {
