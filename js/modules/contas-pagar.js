@@ -306,89 +306,82 @@ window.contasPagarModule = {
     this.atualizarResumo();
   },
 
-  renderizar() {
-    const tbody =
-      document.getElementById("tabelaContasPagar") ||
-      document.getElementById("contasPagarTabela") ||
-      document.getElementById("cpTabela") ||
-      document.querySelector("#tab-contas-pagar tbody");
+renderizar() {
+  const tbody =
+    document.getElementById("tabelaContasPagar") ||
+    document.getElementById("contasPagarTabela") ||
+    document.querySelector("#tab-contas-pagar tbody");
 
-    if (!tbody) return;
+  if (!tbody) return;
 
-    if (!this.filtrados.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="12" class="muted">Nenhuma conta a pagar encontrada.</td>
-        </tr>
-      `;
-      return;
-    }
+  if (!this.filtrados.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8">Nenhuma conta encontrada.</td>
+      </tr>
+    `;
+    return;
+  }
 
-    tbody.innerHTML = this.filtrados.map(item => {
-      const id = Number(item.id);
-      const selecionado = this.selecionados.has(id);
-      const boletoOk = Boolean(item.boleto_recebido);
-      const nfeOk = Boolean(item.nfe || item.documento);
+  tbody.innerHTML = this.filtrados.map(item => {
+    const id = Number(item.id);
 
-      return `
-        <tr class="${selecionado ? "linha-selecionada" : ""}">
-          <td>
-            <input
-              type="checkbox"
-              ${selecionado ? "checked" : ""}
-              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
-            >
-          </td>
+    const boletoOk = item.boleto_recebido;
+    const nfeOk = item.nfe || item.documento;
 
-          <td><strong>${item.fornecedor || "-"}</strong></td>
-          <td>${item.documento || item.nfe || item.numero_nf || "-"}</td>
-          <td>${item.categoria || "-"}</td>
-          <td>${item.descricao || "-"}</td>
-          <td><strong>${this.moeda(item.valor || 0)}</strong></td>
-          <td>${this.dataBR(item.vencimento)}</td>
-          <td>${item.status || "pendente"}</td>
+    return `
+      <tr>
+        <td><strong>${item.fornecedor || "-"}</strong></td>
 
-          <td class="acoes-documentos">
-            <button
-              class="doc-btn ${nfeOk ? "ok" : "warn"}"
-              onclick="contasPagarModule.marcarNfe(${id})"
-            >
-              NFE ${nfeOk ? "OK" : "Pendente"}
-            </button>
+        <td>${item.documento || "-"}</td>
 
-            <button
-              class="doc-btn ${boletoOk ? "ok" : "warn"}"
-              onclick="contasPagarModule.marcarBoleto(${id})"
-            >
-              Boleto ${boletoOk ? "OK" : "Pendente"}
-            </button>
-          </td>
+        <td><strong>${this.moeda(item.valor || 0)}</strong></td>
 
-          <td class="acoes-tabela">
-            <button class="secondary-btn mini action-btn-blue" onclick="contasPagarModule.selecionar(${id})">
-              Selecionar
-            </button>
+        <td>${item.categoria || "-"}</td>
 
-            <button class="secondary-btn mini" onclick="contasPagarModule.editar(${id})">
-              Editar
-            </button>
+        <td>${this.dataBR(item.vencimento)}</td>
 
-            <button class="secondary-btn mini" onclick="contasPagarModule.duplicar(${id})">
-              Duplicar
-            </button>
+        <td>
+          <button
+            class="doc-btn ${nfeOk ? "ok" : "warn"}"
+            onclick="contasPagarModule.marcarNfe(${id})"
+          >
+            NFE
+          </button>
 
-            <button class="secondary-btn mini action-btn-green" onclick="contasPagarModule.marcarPago(${id})">
-              Pagar
-            </button>
+          <button
+            class="doc-btn ${boletoOk ? "ok" : "warn"}"
+            onclick="contasPagarModule.marcarBoleto(${id})"
+          >
+            Boleto
+          </button>
+        </td>
 
-            <button class="secondary-btn mini action-btn-red" onclick="contasPagarModule.excluir(${id})">
-              Excluir
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-  },
+        <td>
+          <button class="secondary-btn mini action-btn-blue"
+            onclick="contasPagarModule.editar(${id})">
+            Editar
+          </button>
+
+          <button class="secondary-btn mini"
+            onclick="contasPagarModule.duplicar(${id})">
+            Duplicar
+          </button>
+
+          <button class="secondary-btn mini action-btn-green"
+            onclick="contasPagarModule.marcarPago(${id})">
+            Pagar
+          </button>
+
+          <button class="secondary-btn mini action-btn-red"
+            onclick="contasPagarModule.excluir(${id})">
+            Excluir
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
 
   toggleSelecionado(id, marcado) {
     id = Number(id);
