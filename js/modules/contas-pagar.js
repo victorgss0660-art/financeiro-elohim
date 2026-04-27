@@ -572,47 +572,13 @@ window.contasPagarModule = {
 
           <td class="acoes-tabela">
 
-            <button class="secondary-btn mini" onclick="contasPagarModule.selecionar(${id})">
-
-              Selecionar
-
-            </button>
-
-            <button class="secondary-btn mini" onclick="contasPagarModule.editar(${id})">
-
-              Editar
-
-            </button>
-
-            <button class="secondary-btn mini" onclick="contasPagarModule.duplicar(${id})">
-
-              Duplicar
-
-            </button>
-
-            <button class="secondary-btn mini" onclick="contasPagarModule.marcarNfe(${id})">
-
-              NFE
-
-            </button>
-
-            <button class="secondary-btn mini" onclick="contasPagarModule.marcarBoleto(${id})">
-
-              Boleto
-
-            </button>
-
-            <button class="secondary-btn mini" onclick="contasPagarModule.marcarPago(${id})">
-
-              Pagar
-
-            </button>
-
-            <button class="danger-btn mini" onclick="contasPagarModule.excluir(${id})">
-
-              Excluir
-
-            </button>
+       <button class="secondary-btn mini" onclick="contasPagarModule.selecionar(${id})">Sel.</button>
+<button class="secondary-btn mini" onclick="contasPagarModule.editar(${id})">Editar</button>
+<button class="secondary-btn mini" onclick="contasPagarModule.duplicar(${id})">Dup.</button>
+<button class="secondary-btn mini" onclick="contasPagarModule.marcarNfe(${id})">NFE</button>
+<button class="secondary-btn mini" onclick="contasPagarModule.marcarBoleto(${id})">Boleto</button>
+<button class="secondary-btn mini" onclick="contasPagarModule.marcarPago(${id})">Pagar</button>
+<button class="danger-btn mini" onclick="contasPagarModule.excluir(${id})">Excluir</button>
 
           </td>
 
