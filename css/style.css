@@ -1325,3 +1325,38 @@ td:nth-child(2) {
     min-width: 1200px;
   }
 }
+.doc-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.doc-btn.ok {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.doc-btn.warn {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.action-btn-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.action-btn-red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.action-btn-green {
+  background: #dcfce7;
+  color: #166534;
+}
