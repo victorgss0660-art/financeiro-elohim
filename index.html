@@ -192,7 +192,38 @@
               <button class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
             </div>
           </div>
+<div class="form-grid" style="margin-bottom: 14px;">
+  <div>
+    <label>Buscar</label>
+    <input
+      id="cpBusca"
+      type="text"
+      placeholder="Fornecedor, documento, categoria, descrição ou NFE"
+      oninput="contasPagarModule.aplicarFiltros()"
+    >
+  </div>
 
+  <div>
+    <label>Fornecedor</label>
+    <input
+      id="cpFiltroFornecedor"
+      type="text"
+      placeholder="Filtrar fornecedor"
+      oninput="contasPagarModule.aplicarFiltros()"
+    >
+  </div>
+
+  <div>
+    <label>Categoria</label>
+    <input
+      id="cpFiltroCategoria"
+      type="text"
+      placeholder="Filtrar categoria"
+      oninput="contasPagarModule.aplicarFiltros()"
+    >
+  </div>
+</div>
+          
           <div class="table-wrap">
             <table>
 <thead>
