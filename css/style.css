@@ -1360,3 +1360,16 @@ td:nth-child(2) {
   background: #dcfce7;
   color: #166534;
 }
+.acoes-documentos {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  min-width: 220px;
+}
+
+.acoes-tabela {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 260px;
+}
