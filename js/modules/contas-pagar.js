@@ -50,26 +50,34 @@ window.contasPagarModule = {
     return d.toLocaleDateString("pt-BR");
   },
 
-  async listar() {
-    try {
-      const { mes, ano } = this.getMesAno();
+async listar() {
+  try {
+    const { mes, ano } = this.getMesAno();
 
-      const dados = await api.select("contas_pagar", {
-        mes,
-        ano: String(ano)
-      });
+    let dados = await api.select("contas_pagar", {
+      ano: String(ano)
+    });
 
-      this.dados = Array.isArray(dados)
-        ? dados.filter(item => String(item.status || "").toLowerCase() !== "pago")
-        : [];
+    dados = Array.isArray(dados) ? dados : [];
 
-      this.renderizar();
-      this.atualizarResumo();
-    } catch (error) {
-      console.error("Erro ao carregar contas a pagar:", error);
-      alert("Erro ao carregar contas a pagar: " + error.message);
-    }
-  },
+    this.dados = dados.filter(item => {
+      const mesmoMes =
+        String(item.mes || "").trim().toLowerCase() ===
+        String(mes || "").trim().toLowerCase();
+
+      const pendente =
+        String(item.status || "pendente").toLowerCase() !== "pago";
+
+      return mesmoMes && pendente;
+    });
+
+    this.renderizar();
+    this.atualizarResumo();
+  } catch (error) {
+    console.error("Erro ao puxar contas do Supabase:", error);
+    alert("Erro ao puxar contas do Supabase: " + error.message);
+  }
+}
 
   renderizar() {
     const tbody =
