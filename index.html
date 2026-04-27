@@ -127,45 +127,6 @@
     </div>
   </section>
 
-  <section class="panel panel-premium">
-  <div class="panel-head">
-    <h3>Previsão de Faturamento</h3>
-    <button
-      class="secondary-btn"
-      type="button"
-      onclick="dashboardModule.abrirGraficoFullscreen('forecastChart', 'Previsão de Faturamento')"
-    >
-      Tela cheia
-    </button>
-  </div>
-
-  <div class="chart-wrap chart-wrap-premium chart-tall">
-    <canvas id="forecastChart"></canvas>
-  </div>
-
-  <div class="dashboard-summary-strip">
-    <div class="summary-pill">
-      <span>Faturado</span>
-      <strong id="dashFaturado">R$ 0,00</strong>
-    </div>
-
-    <div class="summary-pill">
-      <span>A faturar</span>
-      <strong id="dashAFaturar">R$ 0,00</strong>
-    </div>
-
-    <div class="summary-pill">
-      <span>Previsão total</span>
-      <strong id="dashPrevisaoFat">R$ 0,00</strong>
-    </div>
-
-    <div class="summary-pill">
-      <span>Lucro previsto</span>
-      <strong id="dashLucroPrevisto">R$ 0,00</strong>
-    </div>
-  </div>
-</section>
-
   <section class="forecast-strip forecast-strip-advanced">
     <div class="forecast-card">
       <div class="forecast-title">Forecast Realista</div>
@@ -439,177 +400,140 @@
 </section>
       
       <!-- CONTAS A PAGAR -->
-<section id="tab-contas-pagar" class="tab-section">
-
-  <div class="panel">
-
-    <div class="panel-head">
-
-      <h3>Contas a Pagar</h3>
-
-    </div>
-
-    <div class="grid-3">
-
-      <div>
-
-        <label>Buscar</label>
-
-        <input
-
-          type="text"
-
-          id="buscarContaPagar"
-
-          placeholder="Fornecedor, documento, categoria..."
-
-        >
-
-      </div>
-
-      <div>
-
-        <label>Status</label>
-
-        <select id="filtroStatusPagar">
-
-          <option value="">Todos</option>
-
-          <option value="pendente">Pendentes</option>
-
-          <option value="pago">Pagas</option>
-
-        </select>
-
-      </div>
-
-      <div>
-
-        <label>Ações</label>
-
-        <button class="primary-btn" onclick="contasPagarModule.listar()">
-
-          Atualizar
-
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="cards">
-
-    <div class="card">
-
-      <div class="card-label">Qtd. Contas</div>
-
-      <div class="card-value" id="qtdContasPagar">0</div>
-
-    </div>
-
-    <div class="card">
-
-      <div class="card-label">Total</div>
-
-      <div class="card-value" id="totalContasPagar">R$ 0,00</div>
-
-    </div>
-
-    <div class="card">
-
-      <div class="card-label">Selecionadas</div>
-
-      <div class="card-value" id="qtdSelecionadasPagar">0</div>
-
-    </div>
-
-    <div class="card">
-
-      <div class="card-label">Total Selecionado</div>
-
-      <div class="card-value" id="totalSelecionadoPagar">R$ 0,00</div>
-
-    </div>
-
-  </div>
-
-  <div class="panel">
-
-    <div class="panel-head">
-
-      <h3>Tabela</h3>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-
-        <button class="secondary-btn" onclick="selecionarTodasContasPagar()">
-
-          Selecionar Todas
-
-        </button>
-
-        <button class="secondary-btn" onclick="limparSelecaoContasPagar()">
-
-          Limpar
-
-        </button>
-
-        <button class="secondary-btn" onclick="inverterNfeSelecionados()">
-
-          Inverter NFE
-
-        </button>
-
-        <button class="secondary-btn" onclick="inverterBoletoSelecionados()">
-
-          Inverter Boleto
-
-        </button>
-
-      </div>
-
-    </div>
-
-    <div class="table-wrap">
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>Sel.</th>
-
-            <th>Fornecedor</th>
-
-            <th>Documento</th>
-
-            <th>Categoria</th>
-
-            <th>Vencimento</th>
-
-            <th>Descrição</th>
-
-            <th>NFE / Boleto</th>
-
-            <th>Valor</th>
-
-            <th>Ações</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody id="tabelaContasPagar"></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-</section>
+      <section id="tab-contas-pagar" class="tab-section">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Cadastrar Conta a Pagar</h3>
+            <div class="badge">Financeiro</div>
+          </div>
+
+          <div class="form-grid">
+            <input id="cpFornecedor" placeholder="Fornecedor">
+            <input id="cpDocumento" placeholder="Documento interno">
+            <input id="cpCategoria" placeholder="Categoria">
+            <input id="cpDescricao" placeholder="Descrição">
+            <input id="cpValor" type="number" step="0.01" placeholder="Valor">
+            <input id="cpVencimento" type="date">
+            <input id="cpNumeroNfe" placeholder="Número da NF-e">
+            <input id="cpNumeroBoleto" placeholder="Número do boleto">
+
+            <label class="check-card">
+              <input id="cpTemBoleto" type="checkbox">
+              <span>Boleto já recebido</span>
+            </label>
+
+            <label class="check-card">
+              <input id="cpTemNfe" type="checkbox">
+              <span>NF-e já recebida</span>
+            </label>
+
+            <textarea id="cpObservacoes" class="full" placeholder="Observações"></textarea>
+          </div>
+
+          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnSalvarContaPagar" class="btn" type="button">Salvar conta</button>
+            <button id="btnImportarContasPagar" class="secondary-btn" type="button">Importar planilha</button>
+            <button id="btnExportarContasPagar" class="secondary-btn" type="button">Exportar planilha</button>
+            <input id="fileInputContasPagar" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+          </div>
+        </section>
+
+        <section class="panel table-wrap">
+          <div class="panel-head">
+            <h3>Contas a Pagar</h3>
+            <div class="badge">Pendentes</div>
+          </div>
+
+          <div class="filtros-linha">
+            <input id="filtroBusca" class="busca" placeholder="Buscar por fornecedor, documento, categoria, descrição, NF-e ou boleto" oninput="contasPagarModule.render()">
+
+            <select id="filtroFornecedor" onchange="contasPagarModule.render()">
+              <option value="">Fornecedor</option>
+            </select>
+
+            <select id="filtroCategoria" onchange="contasPagarModule.render()">
+              <option value="">Categoria</option>
+            </select>
+
+            <select id="filtroStatus" onchange="contasPagarModule.render()">
+              <option value="">Status</option>
+              <option value="aberto">Em aberto</option>
+              <option value="vencido">Vencido</option>
+            </select>
+
+            <select id="filtroDocs" onchange="contasPagarModule.render()">
+              <option value="">Documentos</option>
+              <option value="faltando_nfe">Faltando NF-e</option>
+              <option value="faltando_boleto">Faltando boleto</option>
+              <option value="faltando_ambos">Faltando ambos</option>
+              <option value="completos">Completos</option>
+            </select>
+
+            <input id="filtroDataInicio" class="data" type="date" onchange="contasPagarModule.render()">
+            <input id="filtroDataFim" class="data" type="date" onchange="contasPagarModule.render()">
+
+            <button id="btnLimparFiltrosContasPagar" class="secondary-btn" type="button" onclick="contasPagarModule.limparFiltros()">
+              Limpar filtros
+            </button>
+          </div>
+
+          <div class="table-total-bar">
+            <div class="table-total-item">
+              <span class="table-total-label">Qtd. de contas</span>
+              <strong id="cpTotalQuantidade">0</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Total filtrado</span>
+              <strong id="cpTotalValor">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Vencidas</span>
+              <strong id="cpTotalVencidas">0</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Valor vencido</span>
+              <strong id="cpTotalValorVencido">R$ 0,00</strong>
+            </div>
+          </div>
+
+          <div class="table-total-bar" style="margin-top:8px;">
+            <div class="table-total-item">
+              <span class="table-total-label">Selecionadas</span>
+              <strong id="cpSelecionadasQtd">0</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Total selecionado</span>
+              <strong id="cpSelecionadasValor">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Ação em lote</span>
+              <button id="btnPagarSelecionadas" class="btn" type="button">Pagar selecionadas</button>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox" id="cpSelecionarTodos"></th>
+                <th>Fornecedor</th>
+                <th>Documento</th>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Documentos</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaContasPagar">
+              <tr>
+                <td colspan="10" class="muted">Nenhuma conta encontrada.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
 
       <!-- CONTAS PAGAS -->
       <section id="tab-contas-pagas" class="tab-section">
@@ -1042,225 +966,118 @@
       </section>
 
       <!-- PLANEJAMENTO -->
-<section id="tab-planejamento" class="tab-section">
+      <section id="tab-planejamento" class="tab-section">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Planejamento Financeiro (12 semanas)</h3>
+            <div class="badge">Fluxo</div>
+          </div>
 
-  <!-- TOPO EXECUTIVO -->
-  <section class="cards cards-premium cards-bi-top">
+          <div class="form-grid">
+            <input class="saldo-conta" data-conta="sicoob" placeholder="Sicoob">
+            <input class="saldo-conta" data-conta="nubank" placeholder="Nubank">
+            <input class="saldo-conta" data-conta="metos" placeholder="Metos">
+            <input class="saldo-conta" data-conta="portal" placeholder="Portal Cash (GE)">
+            <input class="saldo-conta" data-conta="monkey" placeholder="Monkey (WEG)">
+            <input class="saldo-conta" data-conta="citibank" placeholder="Citibank (Hitachi)">
+            <input class="saldo-conta" data-conta="dinheiro" placeholder="Dinheiro Físico">
+          </div>
 
-    <div class="card card-kpi">
-      <div class="card-title">Faturado no mês</div>
-      <div class="card-value" id="planFatReal">R$ 0,00</div>
-      <div class="card-subvalue">Receita já consolidada</div>
-    </div>
+          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnSalvarSaldosBancarios" class="btn" type="button">Salvar saldos bancários</button>
+          </div>
 
-    <div class="card card-kpi">
-      <div class="card-title">A faturar</div>
-      <div class="card-value" id="planAFaturar">R$ 0,00</div>
-      <div class="card-subvalue">Carteira pendente</div>
-    </div>
+          <div style="margin-top:16px;">
+            <div id="totalDisponivelBadge" class="badge">Total disponível: R$ 0,00</div>
+          </div>
 
-    <div class="card card-kpi">
-      <div class="card-title">Previsão total</div>
-      <div class="card-value" id="planFatTotal">R$ 0,00</div>
-      <div class="card-subvalue">Real + pendente</div>
-    </div>
+          <div class="table-total-bar" style="margin-top:16px;">
+            <div class="table-total-item">
+              <span class="table-total-label">Saldo inicial</span>
+              <strong id="cxSaldoInicial">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Entradas previstas</span>
+              <strong id="cxEntradasPrevistas">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Saídas previstas</span>
+              <strong id="cxSaidasPrevistas">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Saldo final projetado</span>
+              <strong id="cxSaldoFinal">R$ 0,00</strong>
+            </div>
+            <div class="table-total-item">
+              <span class="table-total-label">Menor saldo previsto</span>
+              <strong id="cxMenorSaldo">R$ 0,00</strong>
+            </div>
+          </div>
+        </section>
 
-    <div class="card card-kpi">
-      <div class="card-title">Lucro previsto</div>
-      <div class="card-value" id="planLucroPrev">R$ 0,00</div>
-      <div class="card-subvalue">Após despesas</div>
-    </div>
+        <section class="grid">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Fluxo Projetado</h3>
+              <div class="badge">12 semanas</div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="planejamentoChart"></canvas>
+            </div>
+          </div>
 
-    <div class="card card-kpi">
-      <div class="card-title">Margem prevista</div>
-      <div class="card-value" id="planMargemPrev">0%</div>
-      <div class="card-subvalue">Resultado estimado</div>
-    </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Riscos</h3>
+              <div class="badge">Automático</div>
+            </div>
 
+            <div class="status-grid">
+              <div class="status-item">
+                <div class="label">Menor saldo</div>
+                <div class="value" id="riskMenorSaldo">R$ 0,00</div>
+              </div>
+              <div class="status-item">
+                <div class="label">Semanas negativas</div>
+                <div class="value" id="riskSemanasNegativas">0</div>
+              </div>
+              <div class="status-item">
+                <div class="label">Maior saída</div>
+                <div class="value" id="riskMaiorSaida">R$ 0,00</div>
+              </div>
+            </div>
+
+            <div id="riskList" class="alert-list" style="margin-top:16px;">
+              <div class="muted">Nenhum risco calculado.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel table-wrap">
+          <div class="panel-head">
+            <h3>Tabela de Planejamento</h3>
+            <div class="badge">Detalhado</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Semana</th>
+                <th>Entradas</th>
+                <th>Saídas</th>
+                <th>Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaPlanejamento">
+              <tr>
+                <td colspan="4" class="muted">Nenhum planejamento disponível.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+    </main>
   </section>
-
-
-  <!-- FORECAST -->
-  <section class="forecast-strip forecast-strip-advanced">
-
-    <div class="forecast-card">
-      <div class="forecast-title">Cenário Realista</div>
-      <div class="forecast-value" id="forecastLucro">R$ 0,00</div>
-      <div class="forecast-note">Fechamento provável</div>
-    </div>
-
-    <div class="forecast-card">
-      <div class="forecast-title">Margem Projetada</div>
-      <div class="forecast-value" id="forecastMargem">0%</div>
-      <div class="forecast-note">Rentabilidade estimada</div>
-    </div>
-
-    <div class="forecast-card">
-      <div class="forecast-title">Nível de Risco</div>
-      <div class="forecast-value" id="forecastRisco">Baixo</div>
-      <div class="forecast-note">Leitura automática</div>
-    </div>
-
-  </section>
-
-
-  <!-- CENÁRIOS -->
-  <section class="forecast-scenarios">
-
-    <div class="scenario-card scenario-pessimista">
-      <div class="scenario-title">Pessimista</div>
-
-      <div class="scenario-line">
-        <span>Faturamento</span>
-        <strong id="forecastPessimistaFat">R$ 0,00</strong>
-      </div>
-
-      <div class="scenario-line">
-        <span>Lucro</span>
-        <strong id="forecastPessimistaLucro">R$ 0,00</strong>
-      </div>
-
-      <div class="scenario-line">
-        <span>Margem</span>
-        <strong id="forecastPessimistaMargem">0%</strong>
-      </div>
-    </div>
-
-
-    <div class="scenario-card scenario-realista">
-      <div class="scenario-title">Realista</div>
-
-      <div class="scenario-line">
-        <span>Faturamento</span>
-        <strong id="forecastRealistaFat">R$ 0,00</strong>
-      </div>
-
-      <div class="scenario-line">
-        <span>Lucro</span>
-        <strong id="forecastRealistaLucro">R$ 0,00</strong>
-      </div>
-
-      <div class="scenario-line">
-        <span>Margem</span>
-        <strong id="forecastRealistaMargem">0%</strong>
-      </div>
-    </div>
-
-
-    <div class="scenario-card scenario-otimista">
-      <div class="scenario-title">Otimista</div>
-
-      <div class="scenario-line">
-        <span>Faturamento</span>
-        <strong id="forecastOtimistaFat">R$ 0,00</strong>
-      </div>
-
-      <div class="scenario-line">
-        <span>Lucro</span>
-        <strong id="forecastOtimistaLucro">R$ 0,00</strong>
-      </div>
-
-      <div class="scenario-line">
-        <span>Margem</span>
-        <strong id="forecastOtimistaMargem">0%</strong>
-      </div>
-    </div>
-
-  </section>
-
-
-  <!-- GRAFICOS -->
-  <section class="grid grid-2-dashboard">
-
-    <!-- PREVISAO FATURAMENTO -->
-    <div class="panel panel-premium">
-
-      <div class="panel-head">
-        <h3>Previsão de Faturamento</h3>
-
-        <button
-          class="secondary-btn"
-          type="button"
-          onclick="dashboardModule.abrirGraficoFullscreen('forecastChart','Previsão de Faturamento')"
-        >
-          Tela cheia
-        </button>
-      </div>
-
-      <div class="chart-wrap chart-wrap-premium chart-tall">
-        <canvas id="forecastChart"></canvas>
-      </div>
-
-    </div>
-
-
-    <!-- PROJECAO 12 SEMANAS -->
-    <div class="panel panel-premium">
-
-      <div class="panel-head">
-        <h3>Fluxo Futuro 12 Semanas</h3>
-      </div>
-
-      <div class="chart-wrap chart-wrap-premium chart-tall">
-        <canvas id="planejamento12Semanas"></canvas>
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- TABELA EXECUTIVA -->
-  <section class="panel panel-premium table-wrap">
-
-    <div class="panel-head">
-      <h3>Planejamento Próximos Meses</h3>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Mês</th>
-          <th>Receita Prevista</th>
-          <th>Despesa Prevista</th>
-          <th>Lucro Previsto</th>
-          <th>Margem</th>
-        </tr>
-      </thead>
-
-      <tbody id="planejamentoTabela">
-
-        <tr>
-          <td colspan="5" class="muted">
-            Nenhum dado carregado.
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
-
-  </section>
-
-
-  <!-- ALERTA FUTURO -->
-  <section class="panel panel-premium">
-
-    <div class="panel-head">
-      <h3>Radar Financeiro</h3>
-    </div>
-
-    <div id="radarFinanceiro" class="alert-list">
-
-      <div class="alert-item ok">
-        <strong>🟢 Caixa saudável</strong><br>
-        Sem risco previsto para os próximos períodos.
-      </div>
-
-    </div>
-
-  </section>
-
-</section>
 
   <!-- POPUP PAGAMENTO -->
   <div id="popupPagamento" class="popup hidden">
