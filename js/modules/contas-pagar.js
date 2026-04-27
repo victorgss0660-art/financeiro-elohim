@@ -87,7 +87,7 @@ async listar() {
     console.error("Erro ao carregar contas a pagar:", error);
     alert("Erro ao carregar contas a pagar: " + error.message);
   }
-}
+},
   renderizar() {
     const tbody =
       document.getElementById("tabelaContasPagar") ||
