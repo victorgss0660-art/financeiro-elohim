@@ -1302,3 +1302,12 @@ td:nth-child(2) {
   background: #fee2e2 !important;
   color: #991b1b !important;
 }
+.doc-btn.ok {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.doc-btn.warn {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
