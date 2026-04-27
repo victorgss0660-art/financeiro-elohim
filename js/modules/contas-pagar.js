@@ -2,6 +2,8 @@ window.contasPagarModule = {
 
   dados: [],
 
+  filtrados: [],
+
   selecionados: new Set(),
 
   editandoId: null,
@@ -30,13 +32,7 @@ window.contasPagarModule = {
 
     if (!valor) return 0;
 
-    let texto = String(valor)
-
-      .replace(/R\$/g, "")
-
-      .replace(/\s/g, "")
-
-      .trim();
+    let texto = String(valor).replace(/R\$/g, "").replace(/\s/g, "").trim();
 
     if (texto.includes(",") && texto.includes(".")) {
 
@@ -216,6 +212,8 @@ window.contasPagarModule = {
 
         : [];
 
+      this.filtrados = [...this.dados];
+
       this.renderizar();
 
       this.atualizarResumo();
@@ -230,13 +228,75 @@ window.contasPagarModule = {
 
   },
 
+  aplicarFiltros() {
+
+    const busca = String(document.getElementById("cpBusca")?.value || "")
+
+      .trim()
+
+      .toLowerCase();
+
+    const fornecedor = String(document.getElementById("cpFiltroFornecedor")?.value || "")
+
+      .trim()
+
+      .toLowerCase();
+
+    const categoria = String(document.getElementById("cpFiltroCategoria")?.value || "")
+
+      .trim()
+
+      .toLowerCase();
+
+    this.filtrados = this.dados.filter((item) => {
+
+      const textoItem = [
+
+        item.fornecedor,
+
+        item.documento,
+
+        item.categoria,
+
+        item.descricao,
+
+        item.nfe
+
+      ].join(" ").toLowerCase();
+
+      const bateBusca = !busca || textoItem.includes(busca);
+
+      const bateFornecedor =
+
+        !fornecedor ||
+
+        String(item.fornecedor || "").toLowerCase().includes(fornecedor);
+
+      const bateCategoria =
+
+        !categoria ||
+
+        String(item.categoria || "").toLowerCase().includes(categoria);
+
+      return bateBusca && bateFornecedor && bateCategoria;
+
+    });
+
+    this.renderizar();
+
+    this.atualizarResumo();
+
+  },
+
   renderizar() {
 
     const tbody = document.getElementById("tabelaContasPagar");
 
     if (!tbody) return;
 
-    if (!this.dados.length) {
+    const lista = this.filtrados || [];
+
+    if (!lista.length) {
 
       tbody.innerHTML = `
 
@@ -252,7 +312,7 @@ window.contasPagarModule = {
 
     }
 
-    tbody.innerHTML = this.dados.map((item) => {
+    tbody.innerHTML = lista.map((item) => {
 
       const id = Number(item.id);
 
@@ -284,9 +344,11 @@ window.contasPagarModule = {
 
           <td>${item.documento || "-"}</td>
 
-          <td>${item.categoria || "-"}</td>
+          <td><strong>${this.moeda(item.valor || 0)}</strong></td>
 
           <td>${this.dataBR(item.vencimento)}</td>
+
+          <td>${item.categoria || "-"}</td>
 
           <td>${item.descricao || "-"}</td>
 
@@ -317,8 +379,6 @@ window.contasPagarModule = {
             </button>
 
           </td>
-
-          <td><strong>${this.moeda(item.valor || 0)}</strong></td>
 
           <td>
 
@@ -358,23 +418,21 @@ window.contasPagarModule = {
 
   atualizarResumo() {
 
-    const total = this.dados.reduce((acc, item) => {
+    const total = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
 
-      return acc + this.numero(item.valor);
+    const selecionados = this.filtrados.filter((item) =>
 
-    }, 0);
+      this.selecionados.has(Number(item.id))
 
-    const selecionados = this.dados.filter((item) => {
+    );
 
-      return this.selecionados.has(Number(item.id));
+    const totalSelecionado = selecionados.reduce(
 
-    });
+      (acc, item) => acc + this.numero(item.valor),
 
-    const totalSelecionado = selecionados.reduce((acc, item) => {
+      0
 
-      return acc + this.numero(item.valor);
-
-    }, 0);
+    );
 
     const qtd = document.getElementById("cpQtd");
 
@@ -384,7 +442,7 @@ window.contasPagarModule = {
 
     const totalSel = document.getElementById("cpTotalSelecionado");
 
-    if (qtd) qtd.textContent = this.dados.length;
+    if (qtd) qtd.textContent = this.filtrados.length;
 
     if (totalEl) totalEl.textContent = this.moeda(total);
 
@@ -408,13 +466,15 @@ window.contasPagarModule = {
 
     }
 
+    this.renderizar();
+
     this.atualizarResumo();
 
   },
 
   selecionarTodos() {
 
-    this.dados.forEach((item) => {
+    this.filtrados.forEach((item) => {
 
       this.selecionados.add(Number(item.id));
 
@@ -518,11 +578,7 @@ window.contasPagarModule = {
 
       if (item.nfe) {
 
-        await api.update("contas_pagar", id, {
-
-          nfe: ""
-
-        });
+        await api.update("contas_pagar", id, { nfe: "" });
 
       } else {
 
@@ -573,62 +629,6 @@ window.contasPagarModule = {
       alert("Erro ao atualizar boleto: " + error.message);
 
     }
-
-  },
-
-  async inverterNfeSelecionados() {
-
-    if (!this.selecionados.size) {
-
-      alert("Nenhuma conta selecionada.");
-
-      return;
-
-    }
-
-    for (const id of this.selecionados) {
-
-      const item = this.dados.find((i) => Number(i.id) === Number(id));
-
-      if (!item) continue;
-
-      await api.update("contas_pagar", id, {
-
-        nfe: item.nfe ? "" : "OK"
-
-      });
-
-    }
-
-    await this.listar();
-
-  },
-
-  async inverterBoletoSelecionados() {
-
-    if (!this.selecionados.size) {
-
-      alert("Nenhuma conta selecionada.");
-
-      return;
-
-    }
-
-    for (const id of this.selecionados) {
-
-      const item = this.dados.find((i) => Number(i.id) === Number(id));
-
-      if (!item) continue;
-
-      await api.update("contas_pagar", id, {
-
-        boleto_recebido: !Boolean(item.boleto_recebido)
-
-      });
-
-    }
-
-    await this.listar();
 
   },
 
