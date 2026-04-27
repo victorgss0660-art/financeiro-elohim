@@ -132,7 +132,9 @@ window.contasPagarModule = {
 
       nfe: this.getValor("cpNfe").trim(),
 
+      tem_boleto: this.getValor("cpBoleto") === "true",
       boleto_recebido: this.getValor("cpBoleto") === "true",
+      tem_nfe: Boolean(this.getValor("cpNfe").trim()),
 
       descricao: this.getValor("cpDescricao").trim(),
 
@@ -318,9 +320,9 @@ window.contasPagarModule = {
 
       const selecionado = this.selecionados.has(id);
 
-      const nfeOk = Boolean(item.nfe);
-
-      const boletoOk = Boolean(item.boleto_recebido);
+      const nfeOk = Boolean(item.tem_nfe || item.nfe);
+      
+      const boletoOk = Boolean(item.tem_boleto || item.boleto_recebido);
 
       return `
 
