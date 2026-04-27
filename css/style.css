@@ -1491,3 +1491,167 @@ td:nth-child(2) {
 #tab-contas-pagar input[type="checkbox"] {
   transform: scale(0.9);
 }
+/* CONTAS A PAGAR — LAYOUT ANTIGO COMPACTO / TEMA BRANCO */
+
+#tab-contas-pagar .panel,
+#tab-contas-pagar .table-wrap {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+#tab-contas-pagar input,
+#tab-contas-pagar select,
+#tab-contas-pagar textarea {
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #dbe2ea;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 12px;
+  padding: 7px 10px;
+}
+
+#tab-contas-pagar .grid,
+#tab-contas-pagar .cards {
+  gap: 8px !important;
+}
+
+#tab-contas-pagar .card,
+#tab-contas-pagar .summary-pill,
+#tab-contas-pagar .status-item {
+  padding: 10px 12px !important;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+#tab-contas-pagar table {
+  width: 100%;
+  border-collapse: collapse !important;
+  font-size: 11px;
+}
+
+#tab-contas-pagar thead th {
+  padding: 9px 8px !important;
+  font-size: 10px;
+  font-weight: 800;
+  color: #475569;
+  background: #f1f5f9;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+#tab-contas-pagar tbody tr {
+  height: 42px !important;
+  border-bottom: 1px solid #edf2f7;
+  background: #ffffff;
+}
+
+#tab-contas-pagar tbody tr:hover {
+  background: #f8fafc;
+}
+
+#tab-contas-pagar tbody td {
+  padding: 6px 8px !important;
+  font-size: 11px;
+  color: #0f172a;
+  vertical-align: middle !important;
+  line-height: 1.05 !important;
+  white-space: nowrap;
+}
+
+#tab-contas-pagar tbody td strong {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+#tab-contas-pagar td:nth-child(2) {
+  min-width: 150px;
+}
+
+#tab-contas-pagar td:nth-child(5) {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#tab-contas-pagar input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  transform: scale(.9);
+  accent-color: #dc2626;
+}
+
+.acoes-documentos {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 125px;
+  max-width: 150px;
+}
+
+.acoes-tabela {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 145px;
+  max-width: 180px;
+}
+
+.doc-btn,
+.secondary-btn.mini,
+.danger-btn.mini {
+  padding: 4px 7px !important;
+  min-height: 22px !important;
+  border-radius: 999px !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.doc-btn.ok {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.doc-btn.warn {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.action-btn-blue {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+}
+
+.action-btn-green {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.action-btn-red {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+.linha-selecionada {
+  background: #fff7f7 !important;
+  outline: 1px solid rgba(220, 38, 38, .25);
+}
+
+#tab-contas-pagar .table-wrap {
+  overflow-x: auto;
+}
+
+@media (max-width: 1200px) {
+  #tab-contas-pagar table {
+    min-width: 1100px;
+  }
+}
