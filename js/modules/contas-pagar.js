@@ -120,34 +120,29 @@ window.contasPagarModule = {
     }
   },
 
-  async listar() {
-    try {
-      const dados = await api.restGet("contas_pagar", "select=*&order=vencimento.asc");
+async listar() {
+  try {
+    console.log("Iniciando busca contas_pagar...");
 
-      this.dados = Array.isArray(dados)
-        ? dados.filter(item => String(item.status || "pendente").toLowerCase() !== "pago")
-        : [];
+    const dados = await api.restGet(
+      "contas_pagar",
+      "select=*&order=vencimento.asc"
+    );
 
-      this.renderizar();
-      this.atualizarResumo();
-    } catch (error) {
-      console.error("Erro ao carregar contas a pagar:", error);
-      alert("Erro ao carregar contas a pagar: " + error.message);
-    }
-  },
+    console.log("Dados recebidos do Supabase:", dados);
 
-  renderizar() {
-    const tbody = document.getElementById("tabelaContasPagar");
-    if (!tbody) return;
+    this.dados = Array.isArray(dados)
+      ? dados.filter(item => String(item.status || "pendente").toLowerCase() !== "pago")
+      : [];
 
-    if (!this.dados.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="9" class="muted">Nenhuma conta a pagar encontrada.</td>
-        </tr>
-      `;
-      return;
-    }
+    this.renderizar();
+    this.atualizarResumo();
+
+  } catch (error) {
+    console.error("Erro ao carregar contas a pagar:", error);
+    alert("Erro ao carregar contas a pagar: " + error.message);
+  }
+}
 
     tbody.innerHTML = this.dados.map(item => {
       const id = Number(item.id);
