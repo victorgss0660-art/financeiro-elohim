@@ -1261,334 +1261,44 @@ td:nth-child(2) {
   width: 100% !important;
   height: 100% !important;
 }
-/* AJUSTE PREMIUM TABELA CONTAS A PAGAR */
-
-#tab-contas-pagar .table-wrap {
-  overflow-x: auto;
+#tab-contas-pagar table {
+  min-width: 1100px;
 }
 
-#tab-contas-pagar table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 10px;
+#tab-contas-pagar th,
+#tab-contas-pagar td {
+  padding: 6px 8px !important;
+  font-size: 11px !important;
+  white-space: nowrap;
 }
 
 #tab-contas-pagar tbody tr {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+  height: 40px;
 }
 
-#tab-contas-pagar td,
-#tab-contas-pagar th {
-  padding: 14px 12px;
-  vertical-align: middle;
-  white-space: nowrap;
+#tab-contas-pagar .doc-btn,
+#tab-contas-pagar .secondary-btn.mini {
+  padding: 4px 7px !important;
+  font-size: 9px !important;
+  border-radius: 999px !important;
 }
 
-#tab-contas-pagar td:nth-child(5) {
-  white-space: normal;
-  min-width: 160px;
-}
-
-.acoes-tabela {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-width: 260px;
-  max-width: 300px;
-}
-
-.acoes-tabela button,
-.secondary-btn.mini,
-.danger-btn.mini {
-  padding: 7px 10px;
-  font-size: 11px;
-  border-radius: 999px;
-  line-height: 1;
-  min-width: auto;
-}
-
-.danger-btn.mini {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-}
-
-.linha-selecionada {
-  outline: 2px solid rgba(220, 38, 38, 0.35);
-  background: #fff7f7 !important;
-}
-
-@media (max-width: 1200px) {
-  #tab-contas-pagar table {
-    min-width: 1200px;
-  }
-}
-.doc-btn {
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  border: 1px solid transparent;
-  cursor: pointer;
-}
-
-.doc-btn.ok {
+#tab-contas-pagar .doc-btn.ok {
   background: #dcfce7;
   color: #166534;
-  border-color: #86efac;
 }
 
-.doc-btn.warn {
+#tab-contas-pagar .doc-btn.warn {
   background: #fef3c7;
   color: #92400e;
-  border-color: #fde68a;
 }
 
-.action-btn-blue {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.action-btn-red {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.action-btn-green {
-  background: #dcfce7;
-  color: #166534;
-}
-.acoes-documentos {
-  display: flex;
-  gap: 8px;
-  flex-wrap: nowrap;
-  min-width: 220px;
-}
-
-.acoes-tabela {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  min-width: 260px;
-}
-.doc-btn {
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  border: 1px solid transparent;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.doc-btn.ok {
-  background: #dcfce7;
-  color: #166534;
-  border-color: #86efac;
-}
-
-.doc-btn.warn {
-  background: #fef3c7;
-  color: #92400e;
-  border-color: #fde68a;
-}
-
-.action-btn-blue {
-  background: #dbeafe !important;
-  color: #1d4ed8 !important;
-}
-
-.action-btn-red {
-  background: #fee2e2 !important;
-  color: #991b1b !important;
-}
-
-.action-btn-green {
+#tab-contas-pagar .action-btn-green {
   background: #dcfce7 !important;
   color: #166534 !important;
 }
 
-.acoes-documentos {
-  display: flex;
-  gap: 8px;
-  flex-wrap: nowrap;
-  min-width: 230px;
-}
-
-.acoes-tabela {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  min-width: 310px;
-}
-
-.secondary-btn.mini,
-.danger-btn.mini {
-  padding: 8px 11px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.linha-selecionada {
-  outline: 2px solid rgba(220, 38, 38, 0.35);
-  background: #fff7f7 !important;
-}
-/* CONTAS A PAGAR - LINHAS COMPACTAS */
-
-#tab-contas-pagar table {
-  border-collapse: collapse !important;
-}
-
-#tab-contas-pagar thead th {
-  padding: 10px 8px !important;
-  font-size: 12px;
-}
-
-#tab-contas-pagar tbody tr {
-  height: 54px !important;
-}
-
-#tab-contas-pagar tbody td {
-  padding: 6px 8px !important;
-  font-size: 13px;
-  vertical-align: middle !important;
-  line-height: 1.1 !important;
-}
-
-#tab-contas-pagar tbody td strong {
-  font-size: 13px;
-}
-
-.acoes-documentos,
-.acoes-tabela {
-  gap: 4px !important;
-}
-
-.doc-btn,
-.secondary-btn.mini,
-.danger-btn.mini {
-  padding: 4px 8px !important;
-  font-size: 10px !important;
-  min-height: 24px !important;
-  line-height: 1 !important;
-}
-
-.acoes-documentos {
-  display: flex;
-  flex-wrap: nowrap;
-}
-
-.acoes-tabela {
-  display: flex;
-  flex-wrap: wrap;
-  max-width: 190px;
-}
-
-#tab-contas-pagar input[type="checkbox"] {
-  transform: scale(0.9);
-}
-/* ===== AJUSTE SOMENTE TABELA CONTAS A PAGAR ===== */
-
-#tab-contas-pagar .table-wrap,
-#tab-contas-pagar .tabela-wrap,
-#tab-contas-pagar .panel table{
-  overflow-x:auto;
-}
-
-#tab-contas-pagar table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:1250px;
-}
-
-#tab-contas-pagar thead th{
-  background:#f8fafc;
-  color:#64748b;
-  font-size:11px;
-  font-weight:800;
-  padding:10px 8px;
-  border-bottom:1px solid #e5e7eb;
-  white-space:nowrap;
-}
-
-#tab-contas-pagar tbody tr{
-  height:46px;
-  border-bottom:1px solid #eef2f7;
-}
-
-#tab-contas-pagar tbody tr:hover{
-  background:#fafafa;
-}
-
-#tab-contas-pagar tbody td{
-  padding:7px 8px;
-  font-size:12px;
-  vertical-align:middle;
-  white-space:nowrap;
-}
-
-#tab-contas-pagar tbody td strong{
-  font-weight:800;
-}
-
-#tab-contas-pagar input[type="checkbox"]{
-  transform:scale(.9);
-}
-
-/* coluna ações */
-#tab-contas-pagar td:last-child{
-  min-width:260px;
-}
-
-/* botões pequenos */
-#tab-contas-pagar .secondary-btn,
-#tab-contas-pagar .danger-btn,
-#tab-contas-pagar .doc-btn{
-  padding:5px 8px !important;
-  font-size:10px !important;
-  border-radius:999px !important;
-  margin:2px;
-  min-height:24px;
-}
-
-/* cores */
-#tab-contas-pagar .action-btn-blue{
-  background:#dbeafe !important;
-  color:#1d4ed8 !important;
-}
-
-#tab-contas-pagar .action-btn-green{
-  background:#dcfce7 !important;
-  color:#166534 !important;
-}
-
-#tab-contas-pagar .action-btn-red{
-  background:#fee2e2 !important;
-  color:#991b1b !important;
-}
-
-#tab-contas-pagar .doc-btn.ok{
-  background:#dcfce7 !important;
-  color:#166534 !important;
-}
-
-#tab-contas-pagar .doc-btn.warn{
-  background:#fef3c7 !important;
-  color:#92400e !important;
-}
-
-/* linha selecionada */
-#tab-contas-pagar .linha-selecionada{
-  background:#fff7f7 !important;
-}
-
-/* filtros mais bonitos */
-#tab-contas-pagar input,
-#tab-contas-pagar select{
-  height:36px;
-  border-radius:10px;
+#tab-contas-pagar .action-btn-red {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
 }
