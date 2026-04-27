@@ -52,36 +52,33 @@ window.contasPagarModule = {
 
 async listar() {
   try {
-    let dados = [];
+    const url =
+      `${SUPABASE_URL}/rest/v1/contas_pagar?select=*&order=vencimento.asc`;
 
-    try {
-      dados = await api.select("contas_pagar", {});
-    } catch (e) {
-      dados = await api.restGet("contas_pagar", "select=*");
-    }
+    const resposta = await fetch(url, {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
+    });
 
-    dados = Array.isArray(dados) ? dados : [];
+    const dados = await resposta.json();
 
-    this.dados = dados
-      .filter(item => {
-        const status = String(item.status || "pendente").toLowerCase();
-        return status !== "pago";
-      })
-      .sort((a, b) => {
-        const da = new Date(a.vencimento || "2999-12-31");
-        const db = new Date(b.vencimento || "2999-12-31");
-        return da - db;
-      });
+    this.dados = Array.isArray(dados)
+      ? dados.filter(item => {
+          const status = String(item.status || "pendente").toLowerCase();
+          return status !== "pago";
+        })
+      : [];
 
     this.renderizar();
     this.atualizarResumo();
 
   } catch (error) {
     console.error(error);
-    alert("Erro ao carregar contas a pagar");
+    alert("Erro ao puxar contas do Supabase");
   }
 }
-
   renderizar() {
     const tbody =
       document.getElementById("tabelaContasPagar") ||
