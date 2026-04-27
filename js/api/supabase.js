@@ -2,65 +2,63 @@ const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co/rest/v1/";
 const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
 window.api = {
-  async request(table, query = "", options = {}) {
-    const url = `${SUPABASE_URL}/rest/v1/${table}${query ? "?" + query : ""}`;
 
-    const response = await fetch(url, {
-      ...options,
+  async request(table, query = "", method = "GET", body = null) {
+
+    let url =
+      `${SUPABASE_URL}/rest/v1/${table}`;
+
+    if (query && query !== "") {
+      url += `?${query}`;
+    }
+
+    const options = {
+      method,
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
         "Content-Type": "application/json",
-        Prefer: "return=representation",
-        ...(options.headers || {})
+        Prefer: "return=representation"
       }
-    });
+    };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || `Erro Supabase ${response.status}`);
+    if (body) {
+      options.body = JSON.stringify(body);
     }
 
-    const text = await response.text();
-    return text ? JSON.parse(text) : [];
+    const res = await fetch(url, options);
+
+    const txt = await res.text();
+
+    if (!res.ok) {
+      throw new Error(txt);
+    }
+
+    return txt ? JSON.parse(txt) : [];
   },
 
   async restGet(table, query = "select=*") {
-    return await this.request(table, query, {
-      method: "GET"
-    });
-  },
-
-  async select(table, filters = {}) {
-    const params = new URLSearchParams();
-    params.set("select", "*");
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        params.set(key, `eq.${value}`);
-      }
-    });
-
-    return await this.restGet(table, params.toString());
+    return await this.request(table, query, "GET");
   },
 
   async insert(table, data) {
-    return await this.request(table, "", {
-      method: "POST",
-      body: JSON.stringify(data)
-    });
+    return await this.request(table, "", "POST", data);
   },
 
   async update(table, id, data) {
-    return await this.request(table, `id=eq.${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data)
-    });
+    return await this.request(
+      table,
+      `id=eq.${id}`,
+      "PATCH",
+      data
+    );
   },
 
   async delete(table, id) {
-    return await this.request(table, `id=eq.${id}`, {
-      method: "DELETE"
-    });
+    return await this.request(
+      table,
+      `id=eq.${id}`,
+      "DELETE"
+    );
   }
 };
