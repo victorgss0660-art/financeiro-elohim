@@ -52,35 +52,33 @@ window.contasPagarModule = {
 
 async listar() {
   try {
-    const { mes, ano } = this.getMesAno();
-
     let dados = [];
 
     try {
       dados = await api.select("contas_pagar", {});
     } catch (e) {
-      dados = await api.restGet("contas_pagar", "select=*&order=vencimento.asc");
+      dados = await api.restGet("contas_pagar", "select=*");
     }
 
     dados = Array.isArray(dados) ? dados : [];
 
-    this.dados = dados.filter(item => {
-      const itemMes = String(item.mes || "").trim().toLowerCase();
-      const itemAno = String(item.ano || "").trim();
-      const status = String(item.status || "pendente").trim().toLowerCase();
-
-      return (
-        itemMes === String(mes).trim().toLowerCase() &&
-        itemAno === String(ano).trim() &&
-        status !== "pago"
-      );
-    });
+    this.dados = dados
+      .filter(item => {
+        const status = String(item.status || "pendente").toLowerCase();
+        return status !== "pago";
+      })
+      .sort((a, b) => {
+        const da = new Date(a.vencimento || "2999-12-31");
+        const db = new Date(b.vencimento || "2999-12-31");
+        return da - db;
+      });
 
     this.renderizar();
     this.atualizarResumo();
+
   } catch (error) {
-    console.error("Erro ao carregar contas a pagar:", error);
-    alert("Erro ao carregar contas a pagar: " + error.message);
+    console.error(error);
+    alert("Erro ao carregar contas a pagar");
   }
 }
 
