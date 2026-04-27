@@ -1,5 +1,5 @@
-const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
+const SUPABASE_URL = "https://qaqszkhkizeifwkhumka.supabase.co/rest/v1/";
+const SUPABASE_KEY = "sb_publishable_D8_2NXn6BH9xA_RnfEJ-uA_jventu5_";
 
 window.api = {
   async request(table, query = "", options = {}) {
