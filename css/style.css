@@ -1491,3 +1491,104 @@ td:nth-child(2) {
 #tab-contas-pagar input[type="checkbox"] {
   transform: scale(0.9);
 }
+/* ===== AJUSTE SOMENTE TABELA CONTAS A PAGAR ===== */
+
+#tab-contas-pagar .table-wrap,
+#tab-contas-pagar .tabela-wrap,
+#tab-contas-pagar .panel table{
+  overflow-x:auto;
+}
+
+#tab-contas-pagar table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1250px;
+}
+
+#tab-contas-pagar thead th{
+  background:#f8fafc;
+  color:#64748b;
+  font-size:11px;
+  font-weight:800;
+  padding:10px 8px;
+  border-bottom:1px solid #e5e7eb;
+  white-space:nowrap;
+}
+
+#tab-contas-pagar tbody tr{
+  height:46px;
+  border-bottom:1px solid #eef2f7;
+}
+
+#tab-contas-pagar tbody tr:hover{
+  background:#fafafa;
+}
+
+#tab-contas-pagar tbody td{
+  padding:7px 8px;
+  font-size:12px;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+
+#tab-contas-pagar tbody td strong{
+  font-weight:800;
+}
+
+#tab-contas-pagar input[type="checkbox"]{
+  transform:scale(.9);
+}
+
+/* coluna ações */
+#tab-contas-pagar td:last-child{
+  min-width:260px;
+}
+
+/* botões pequenos */
+#tab-contas-pagar .secondary-btn,
+#tab-contas-pagar .danger-btn,
+#tab-contas-pagar .doc-btn{
+  padding:5px 8px !important;
+  font-size:10px !important;
+  border-radius:999px !important;
+  margin:2px;
+  min-height:24px;
+}
+
+/* cores */
+#tab-contas-pagar .action-btn-blue{
+  background:#dbeafe !important;
+  color:#1d4ed8 !important;
+}
+
+#tab-contas-pagar .action-btn-green{
+  background:#dcfce7 !important;
+  color:#166534 !important;
+}
+
+#tab-contas-pagar .action-btn-red{
+  background:#fee2e2 !important;
+  color:#991b1b !important;
+}
+
+#tab-contas-pagar .doc-btn.ok{
+  background:#dcfce7 !important;
+  color:#166534 !important;
+}
+
+#tab-contas-pagar .doc-btn.warn{
+  background:#fef3c7 !important;
+  color:#92400e !important;
+}
+
+/* linha selecionada */
+#tab-contas-pagar .linha-selecionada{
+  background:#fff7f7 !important;
+}
+
+/* filtros mais bonitos */
+#tab-contas-pagar input,
+#tab-contas-pagar select{
+  height:36px;
+  border-radius:10px;
+}
