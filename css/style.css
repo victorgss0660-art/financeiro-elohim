@@ -1261,3 +1261,67 @@ td:nth-child(2) {
   width: 100% !important;
   height: 100% !important;
 }
+/* AJUSTE PREMIUM TABELA CONTAS A PAGAR */
+
+#tab-contas-pagar .table-wrap {
+  overflow-x: auto;
+}
+
+#tab-contas-pagar table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+#tab-contas-pagar tbody tr {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+}
+
+#tab-contas-pagar td,
+#tab-contas-pagar th {
+  padding: 14px 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+#tab-contas-pagar td:nth-child(5) {
+  white-space: normal;
+  min-width: 160px;
+}
+
+.acoes-tabela {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 260px;
+  max-width: 300px;
+}
+
+.acoes-tabela button,
+.secondary-btn.mini,
+.danger-btn.mini {
+  padding: 7px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  line-height: 1;
+  min-width: auto;
+}
+
+.danger-btn.mini {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.linha-selecionada {
+  outline: 2px solid rgba(220, 38, 38, 0.35);
+  background: #fff7f7 !important;
+}
+
+@media (max-width: 1200px) {
+  #tab-contas-pagar table {
+    min-width: 1200px;
+  }
+}
