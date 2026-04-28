@@ -103,23 +103,20 @@ renderizar() {
         <td>${item.descricao || "-"}</td>
 
         <td>
-          <button
-            class="doc-btn ${item.tem_nfe ? "ok" : "warn"}"
-            onclick="contasPagarModule.toggleNfe(${id})"
-          >
+          <button onclick="contasPagarModule.toggleNfe(${id})">
             ${item.tem_nfe ? "NFE OK" : "NFE"}
           </button>
 
-          <button
-            class="doc-btn ${item.tem_boleto ? "ok" : "warn"}"
-            onclick="contasPagarModule.toggleBoleto(${id})"
-          >
+          <button onclick="contasPagarModule.toggleBoleto(${id})">
             ${item.tem_boleto ? "Boleto OK" : "Boleto"}
           </button>
         </td>
 
         <td>
+          <button onclick="contasPagarModule.editar(${id})">Editar</button>
+          <button onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
           <button onclick="contasPagarModule.pagar(${id})">Pagar</button>
+          <button onclick="contasPagarModule.excluir(${id})">Excluir</button>
         </td>
       </tr>
     `;
