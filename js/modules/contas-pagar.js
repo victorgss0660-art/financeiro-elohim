@@ -72,7 +72,9 @@ renderizar() {
   const tbody = this.get("tabelaContasPagar");
   if (!tbody) return;
 
-  if (!this.dados.length) {
+  const lista = this.filtrados || this.dados || [];
+
+  if (!lista.length) {
     tbody.innerHTML = `
       <tr>
         <td colspan="9">Nenhuma conta encontrada.</td>
@@ -81,7 +83,7 @@ renderizar() {
     return;
   }
 
-  tbody.innerHTML = this.dados.map((item) => {
+  tbody.innerHTML = lista.map((item) => {
     const id = Number(item.id);
     const marcado = this.selecionados?.has(id);
 
