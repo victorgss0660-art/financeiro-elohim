@@ -83,7 +83,6 @@ window.contasPagarModule = {
       valor: this.numero(this.getValor("cpValor")),
       nfe,
       tem_nfe: Boolean(nfe),
-      boleto_recebido: boleto,
       tem_boleto: boleto,
       descricao: this.getValor("cpDescricao").trim(),
       status: "pendente"
@@ -235,7 +234,7 @@ window.contasPagarModule = {
       const id = Number(item.id);
       const selecionado = this.selecionados.has(id);
       const nfeOk = Boolean(item.tem_nfe || item.nfe);
-      const boletoOk = Boolean(item.tem_boleto || item.boleto_recebido);
+      const boletoOk = Boolean(item.tem_boleto);
 
       return `
         <tr class="${selecionado ? "linha-selecionada linha-vermelha" : ""}">
@@ -357,7 +356,7 @@ window.contasPagarModule = {
     this.setValor("cpNfe", item.nfe || "");
     this.setValor(
       "cpBoleto",
-      Boolean(item.tem_boleto || item.boleto_recebido) ? "true" : "false"
+      Boolean(item.tem_boleto) ? "true" : "false"
     );
     this.setValor("cpDescricao", item.descricao || "");
 
@@ -428,7 +427,6 @@ window.contasPagarModule = {
 
       await api.update("contas_pagar", id, {
         tem_boleto: novoStatus,
-        boleto_recebido: novoStatus
       });
 
       await this.listar();
