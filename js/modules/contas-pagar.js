@@ -43,24 +43,37 @@ window.contasPagarModule = {
     return this.get(id)?.value || "";
   },
 
-  async listar() {
-    try {
-      const dados = await api.restGet(
-        "contas_pagar",
-        "select=*&order=vencimento.asc"
-      );
+async listar() {
+  try {
+    console.log("Buscando contas_pagar no Supabase...");
 
-      this.dados = (dados || []).filter(
-        (item) => String(item.status || "").toLowerCase() !== "pago"
-      );
+    let dados = await api.restGet(
+      "contas_pagar",
+      "select=*"
+    );
 
-      this.renderizar();
+    console.log("Dados recebidos:", dados);
 
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao carregar contas a pagar.");
-    }
-  },
+    dados = Array.isArray(dados) ? dados : [];
+
+    this.dados = dados
+      .filter((item) => {
+        const status = String(item.status || "pendente").trim().toLowerCase();
+        return status !== "pago";
+      })
+      .sort((a, b) => {
+        const da = new Date(a.vencimento || "2999-12-31");
+        const db = new Date(b.vencimento || "2999-12-31");
+        return da - db;
+      });
+
+    this.renderizar();
+
+  } catch (error) {
+    console.error("Erro ao carregar contas a pagar:", error);
+    alert("Erro ao carregar contas a pagar: " + error.message);
+  }
+}
 
   renderizar() {
     const tbody = this.get("tabelaContasPagar");
