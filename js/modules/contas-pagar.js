@@ -113,23 +113,21 @@ renderizar() {
         <td>${item.categoria || "-"}</td>
         <td>${item.descricao || "-"}</td>
 
-        <td>
-          <div class="docs-actions">
-            <button
-              class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
-              onclick="contasPagarModule.toggleNfe(${id})"
-            >
-              ${item.tem_nfe ? "NFE OK" : "NFE"}
-            </button>
+<td>
+  <button
+    class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
+    onclick="contasPagarModule.toggleNfe(${id})"
+  >
+    ${item.tem_nfe ? "NFE OK" : "NFE"}
+  </button>
 
-            <button
-              class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
-              onclick="contasPagarModule.toggleBoleto(${id})"
-            >
-              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
-            </button>
-          </div>
-        </td>
+  <button
+    class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
+    onclick="contasPagarModule.toggleBoleto(${id})"
+  >
+    ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+  </button>
+</td>
 
         <td>
           <div class="row-actions">
