@@ -21,7 +21,6 @@ window.contasPagarModule = {
 
   numero(valor) {
     if (typeof valor === "number") return valor;
-
     if (!valor) return 0;
 
     let txt = String(valor)
@@ -162,17 +161,16 @@ window.contasPagarModule = {
       let ok = true;
 
       if (busca && !texto.includes(busca)) ok = false;
+
       if (
         fornecedor &&
         !(item.fornecedor || "").toLowerCase().includes(fornecedor)
-      )
-        ok = false;
+      ) ok = false;
 
       if (
         categoria &&
         !(item.categoria || "").toLowerCase().includes(categoria)
-      )
-        ok = false;
+      ) ok = false;
 
       if (dtIni && item.vencimento < dtIni) ok = false;
       if (dtFim && item.vencimento > dtFim) ok = false;
@@ -211,17 +209,18 @@ window.contasPagarModule = {
       return;
     }
 
-    tbody.innerHTML = this.filtrados
-      .map((item) => {
-        const id = Number(item.id);
-        const marcado = this.selecionados.has(id);
+    tbody.innerHTML = this.filtrados.map((item) => {
+      const id = Number(item.id);
+      const marcado = this.selecionados.has(id);
 
-        return `
+      return `
         <tr class="${marcado ? "linha-vermelha" : ""}">
           <td>
-            <input type="checkbox"
+            <input
+              type="checkbox"
               ${marcado ? "checked" : ""}
-              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)">
+              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+            >
           </td>
 
           <td>${item.fornecedor || "-"}</td>
@@ -232,15 +231,17 @@ window.contasPagarModule = {
           <td>${item.descricao || "-"}</td>
 
           <td>
-            <button class="doc-btn ${
-              item.tem_nfe ? "ok" : "warn"
-            }" onclick="contasPagarModule.marcarNfe(${id})">
+            <button
+              class="doc-btn ${item.tem_nfe ? "ok" : "warn"}"
+              onclick="contasPagarModule.marcarNfe(${id})"
+            >
               ${item.tem_nfe ? "NFE OK" : "NFE"}
             </button>
 
-            <button class="doc-btn ${
-              item.tem_boleto ? "ok" : "warn"
-            }" onclick="contasPagarModule.marcarBoleto(${id})">
+            <button
+              class="doc-btn ${item.tem_boleto ? "ok" : "warn"}"
+              onclick="contasPagarModule.marcarBoleto(${id})"
+            >
               ${item.tem_boleto ? "Boleto OK" : "Boleto"}
             </button>
           </td>
@@ -253,8 +254,7 @@ window.contasPagarModule = {
           </td>
         </tr>
       `;
-      })
-      .join("");
+    }).join("");
   },
 
   atualizarResumo() {
@@ -291,6 +291,21 @@ window.contasPagarModule = {
     this.atualizarResumo();
   },
 
+  selecionarTodos() {
+    this.filtrados.forEach((item) =>
+      this.selecionados.add(Number(item.id))
+    );
+
+    this.renderizar();
+    this.atualizarResumo();
+  },
+
+  limparSelecao() {
+    this.selecionados.clear();
+    this.renderizar();
+    this.atualizarResumo();
+  },
+
   editar(id) {
     const item = this.dados.find((x) => Number(x.id) === Number(id));
     if (!item) return;
@@ -315,6 +330,7 @@ window.contasPagarModule = {
       if (!item) return;
 
       const novo = { ...item };
+
       delete novo.id;
       delete novo.created_at;
       delete novo.updated_at;
@@ -357,76 +373,75 @@ window.contasPagarModule = {
     }
   },
 
-async marcarPago(id) {
-  try {
-    const item = this.dados.find((x) => Number(x.id) === Number(id));
-    if (!item) return;
+  async marcarPago(id) {
+    try {
+      const item = this.dados.find((x) => Number(x.id) === Number(id));
+      if (!item) return;
 
-    const hoje = new Date().toISOString().slice(0, 10);
+      const hoje = new Date().toISOString().slice(0, 10);
 
-    const dataPagamento = prompt(
-      `Data do pagamento:\n\nFornecedor: ${item.fornecedor}\nValor original: ${this.moeda(item.valor)}`,
-      hoje
-    );
+      const dataPagamento = prompt(
+        `Data do pagamento:\n\nFornecedor: ${item.fornecedor}\nValor original: ${this.moeda(item.valor)}`,
+        hoje
+      );
 
-    if (dataPagamento === null || dataPagamento.trim() === "") return;
+      if (dataPagamento === null || dataPagamento.trim() === "") return;
 
-    const multa = prompt(
-      "Informe multa/juros (se não houver deixe 0):",
-      "0"
-    );
+      const multa = prompt(
+        "Informe multa/juros (se não houver deixe 0):",
+        "0"
+      );
 
-    if (multa === null) return;
+      if (multa === null) return;
 
-    const desconto = prompt(
-      "Informe desconto (se não houver deixe 0):",
-      "0"
-    );
+      const desconto = prompt(
+        "Informe desconto (se não houver deixe 0):",
+        "0"
+      );
 
-    if (desconto === null) return;
+      if (desconto === null) return;
 
-    const valorOriginal = this.numero(item.valor);
-    const valorMulta = this.numero(multa);
-    const valorDesconto = this.numero(desconto);
+      const valorOriginal = this.numero(item.valor);
+      const valorMulta = this.numero(multa);
+      const valorDesconto = this.numero(desconto);
 
-    const valorFinal =
-      valorOriginal + valorMulta - valorDesconto;
+      const valorFinal =
+        valorOriginal + valorMulta - valorDesconto;
 
-    const confirmar = confirm(
-      `Confirmar pagamento?\n\n` +
-      `Fornecedor: ${item.fornecedor || "-"}\n` +
-      `Documento: ${item.documento || "-"}\n` +
-      `Data pagamento: ${dataPagamento}\n\n` +
-      `Valor original: ${this.moeda(valorOriginal)}\n` +
-      `Multa/Juros: ${this.moeda(valorMulta)}\n` +
-      `Desconto: ${this.moeda(valorDesconto)}\n` +
-      `Valor final pago: ${this.moeda(valorFinal)}`
-    );
+      const confirmar = confirm(
+        `Confirmar pagamento?\n\n` +
+        `Fornecedor: ${item.fornecedor || "-"}\n` +
+        `Documento: ${item.documento || "-"}\n` +
+        `Data pagamento: ${dataPagamento}\n\n` +
+        `Valor original: ${this.moeda(valorOriginal)}\n` +
+        `Multa/Juros: ${this.moeda(valorMulta)}\n` +
+        `Desconto: ${this.moeda(valorDesconto)}\n` +
+        `Valor final pago: ${this.moeda(valorFinal)}`
+      );
 
-    if (!confirmar) return;
+      if (!confirmar) return;
 
-    await api.update("contas_pagar", id, {
-      status: "pago",
-      data_pagamento: dataPagamento,
-      multa: valorMulta,
-      desconto: valorDesconto
-    });
+      await api.update("contas_pagar", id, {
+        status: "pago",
+        data_pagamento: dataPagamento,
+        multa: valorMulta,
+        desconto: valorDesconto
+      });
 
-    this.selecionados.delete(Number(id));
+      this.selecionados.delete(Number(id));
 
-    await this.listar();
+      await this.listar();
 
-    if (window.contasPagasModule?.carregar) {
-      await contasPagasModule.carregar();
+      if (window.contasPagasModule?.carregar) {
+        await contasPagasModule.carregar();
+      }
+
+      alert("Conta paga com sucesso.");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao pagar conta.");
     }
-
-    alert("Conta paga com sucesso.");
-
-  } catch (error) {
-    console.error("Erro ao pagar conta:", error);
-    alert("Erro ao pagar conta: " + error.message);
-  }
-}
+  },
 
   async pagarSelecionadas() {
     if (!this.selecionados.size) {
