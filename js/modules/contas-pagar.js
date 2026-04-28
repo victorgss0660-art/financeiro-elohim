@@ -76,66 +76,68 @@ window.contasPagarModule = {
     }
   },
 
-  renderizar() {
-    const tbody = this.get("tabelaContasPagar");
-    if (!tbody) return;
+renderizar() {
+  const tbody = this.get("tabelaContasPagar");
+  if (!tbody) return;
 
-    const lista = this.filtrados;
+  const lista = this.filtrados || this.dados || [];
 
-    if (!lista.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="9">Nenhuma conta encontrada.</td>
-        </tr>
-      `;
-      return;
-    }
+  if (!lista.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9">Nenhuma conta encontrada.</td>
+      </tr>
+    `;
+    return;
+  }
 
-    tbody.innerHTML = lista.map((item) => {
-      const id = Number(item.id);
-      const marcado = this.selecionados.has(id);
+  tbody.innerHTML = lista.map((item) => {
+    const id = Number(item.id);
+    const marcado = this.selecionados.has(id);
 
-      return `
-        <tr class="${marcado ? "linha-vermelha" : ""}">
-          <td>
-            <input
-              type="checkbox"
-              ${marcado ? "checked" : ""}
-              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
-            >
-          </td>
+    return `
+      <tr class="${marcado ? "linha-vermelha" : ""}">
+        <td>
+          <input
+            type="checkbox"
+            ${marcado ? "checked" : ""}
+            onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+          >
+        </td>
 
-          <td>${item.fornecedor || "-"}</td>
-          <td>${item.documento || "-"}</td>
-          <td>${this.moeda(item.valor)}</td>
-          <td>${this.dataBR(item.vencimento)}</td>
-          <td>${item.categoria || "-"}</td>
-          <td>${item.descricao || "-"}</td>
+        <td>${item.fornecedor || "-"}</td>
+        <td>${item.documento || "-"}</td>
+        <td>${this.moeda(item.valor)}</td>
+        <td>${this.dataBR(item.vencimento)}</td>
+        <td>${item.categoria || "-"}</td>
+        <td>${item.descricao || "-"}</td>
 
-<td>
-  <button
-    class="${item.tem_nfe ? "ok" : ""}"
-    onclick="contasPagarModule.toggleNfe(${id})"
-  >
-    ${item.tem_nfe ? "NFE OK" : "NFE"}
-  </button>
+        <td class="docs-actions">
+          <button
+            class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
+            onclick="contasPagarModule.toggleNfe(${id})"
+          >
+            ${item.tem_nfe ? "NFE OK" : "NFE"}
+          </button>
 
-  <button
-    class="${item.tem_boleto ? "ok" : ""}"
-    onclick="contasPagarModule.toggleBoleto(${id})"
-  >
-    ${item.tem_boleto ? "Boleto OK" : "Boleto"}
-  </button>
-</td>
-            <button onclick="contasPagarModule.editar(${id})">Editar</button>
-            <button onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
-            <button onclick="contasPagarModule.pagar(${id})">Pagar</button>
-            <button onclick="contasPagarModule.excluir(${id})">Excluir</button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-  },
+          <button
+            class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
+            onclick="contasPagarModule.toggleBoleto(${id})"
+          >
+            ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+          </button>
+        </td>
+
+        <td class="row-actions">
+          <button class="btn-editar" onclick="contasPagarModule.editar(${id})">Editar</button>
+          <button class="btn-duplicar" onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
+          <button class="btn-pagar" onclick="contasPagarModule.pagar(${id})">Pagar</button>
+          <button class="btn-excluir" onclick="contasPagarModule.excluir(${id})">Excluir</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+},
 
   resumo() {
     const qtd = this.get("cpQtd");
