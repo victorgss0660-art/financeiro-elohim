@@ -413,30 +413,38 @@ montarPayload() {
     }
   },
 
-  async marcarPago(id) {
-    try {
-      const item = this.dados.find((i) => Number(i.id) === Number(id));
-      if (!item) return;
+async marcarPago(id) {
+  try {
+    const item = this.dados.find((i) => Number(i.id) === Number(id));
+    if (!item) return;
 
-      const hoje = new Date().toISOString().slice(0, 10);
+    const confirmar = confirm(
+      `Confirmar pagamento?\n\nFornecedor: ${item.fornecedor || "-"}\nDocumento: ${item.documento || "-"}\nValor: ${this.moeda(item.valor || 0)}`
+    );
 
-      await api.update("contas_pagar", id, {
-        status: "pago",
-        data_pagamento: hoje
-      });
+    if (!confirmar) return;
 
-      this.selecionados.delete(Number(id));
+    const hoje = new Date().toISOString().slice(0, 10);
 
-      await this.listar();
+    await api.update("contas_pagar", id, {
+      status: "pago",
+      data_pagamento: hoje
+    });
 
-      if (window.contasPagasModule?.carregar) {
-        await contasPagasModule.carregar();
-      }
-    } catch (error) {
-      console.error("Erro ao pagar conta:", error);
-      alert("Erro ao pagar conta: " + error.message);
+    this.selecionados.delete(Number(id));
+
+    await this.listar();
+
+    if (window.contasPagasModule?.carregar) {
+      await contasPagasModule.carregar();
     }
-  },
+
+    alert("Conta paga com sucesso.");
+  } catch (error) {
+    console.error("Erro ao pagar conta:", error);
+    alert("Erro ao pagar conta: " + error.message);
+  }
+}
 
   async pagarSelecionadas() {
     if (!this.selecionados.size) {
