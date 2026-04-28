@@ -369,18 +369,28 @@ async marcarPago(id) {
       hoje
     );
 
-    if (dataPagamento === null) return;
+    if (dataPagamento === null || dataPagamento.trim() === "") return;
 
-    const jurosMulta = prompt("Informe multa/juros, se houver:", "0");
-    if (jurosMulta === null) return;
+    const multa = prompt(
+      "Informe multa/juros (se não houver deixe 0):",
+      "0"
+    );
 
-    const desconto = prompt("Informe desconto, se houver:", "0");
+    if (multa === null) return;
+
+    const desconto = prompt(
+      "Informe desconto (se não houver deixe 0):",
+      "0"
+    );
+
     if (desconto === null) return;
 
     const valorOriginal = this.numero(item.valor);
-    const valorJuros = this.numero(jurosMulta);
+    const valorMulta = this.numero(multa);
     const valorDesconto = this.numero(desconto);
-    const valorPago = valorOriginal + valorJuros - valorDesconto;
+
+    const valorFinal =
+      valorOriginal + valorMulta - valorDesconto;
 
     const confirmar = confirm(
       `Confirmar pagamento?\n\n` +
@@ -388,9 +398,9 @@ async marcarPago(id) {
       `Documento: ${item.documento || "-"}\n` +
       `Data pagamento: ${dataPagamento}\n\n` +
       `Valor original: ${this.moeda(valorOriginal)}\n` +
-      `Multa/Juros: ${this.moeda(valorJuros)}\n` +
+      `Multa/Juros: ${this.moeda(valorMulta)}\n` +
       `Desconto: ${this.moeda(valorDesconto)}\n` +
-      `Valor pago: ${this.moeda(valorPago)}`
+      `Valor final pago: ${this.moeda(valorFinal)}`
     );
 
     if (!confirmar) return;
@@ -398,9 +408,8 @@ async marcarPago(id) {
     await api.update("contas_pagar", id, {
       status: "pago",
       data_pagamento: dataPagamento,
-      multa: valorJuros,
-      desconto: valorDesconto,
-      valor_pago: valorPago
+      multa: valorMulta,
+      desconto: valorDesconto
     });
 
     this.selecionados.delete(Number(id));
@@ -412,6 +421,7 @@ async marcarPago(id) {
     }
 
     alert("Conta paga com sucesso.");
+
   } catch (error) {
     console.error("Erro ao pagar conta:", error);
     alert("Erro ao pagar conta: " + error.message);
