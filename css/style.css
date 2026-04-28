@@ -459,3 +459,61 @@ tbody tr:hover{
 #tab-contas-pagar .linha-vermelha td strong {
   color: #7f1d1d;
 }
+/* BOTÕES CONTAS A PAGAR */
+
+#tabelaContasPagar button{
+  border:none;
+  padding:7px 12px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  margin:2px;
+  transition:0.2s;
+}
+
+#tabelaContasPagar button:hover{
+  transform:translateY(-1px);
+  opacity:.92;
+}
+
+/* NFE */
+#tabelaContasPagar button:nth-child(1){
+  background:#f59e0b;
+  color:#fff;
+}
+
+/* BOLETO */
+#tabelaContasPagar button:nth-child(2){
+  background:#3b82f6;
+  color:#fff;
+}
+
+/* EDITAR */
+#tabelaContasPagar td:last-child button:nth-child(1){
+  background:#6366f1;
+  color:#fff;
+}
+
+/* DUPLICAR */
+#tabelaContasPagar td:last-child button:nth-child(2){
+  background:#8b5cf6;
+  color:#fff;
+}
+
+/* PAGAR */
+#tabelaContasPagar td:last-child button:nth-child(3){
+  background:#10b981;
+  color:#fff;
+}
+
+/* EXCLUIR */
+#tabelaContasPagar td:last-child button:nth-child(4){
+  background:#ef4444;
+  color:#fff;
+}
+
+/* LINHA SELECIONADA */
+.linha-vermelha{
+  background:#fff1f2 !important;
+}
