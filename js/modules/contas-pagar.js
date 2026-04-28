@@ -357,39 +357,66 @@ window.contasPagarModule = {
     }
   },
 
-  async marcarPago(id) {
-    try {
-      const item = this.dados.find((x) => Number(x.id) === Number(id));
-      if (!item) return;
+async marcarPago(id) {
+  try {
+    const item = this.dados.find((x) => Number(x.id) === Number(id));
+    if (!item) return;
 
-      const ok = confirm(
-        `Confirmar pagamento?\n\nFornecedor: ${
-          item.fornecedor
-        }\nValor: ${this.moeda(item.valor)}`
-      );
+    const hoje = new Date().toISOString().slice(0, 10);
 
-      if (!ok) return;
+    const dataPagamento = prompt(
+      `Data do pagamento:\n\nFornecedor: ${item.fornecedor}\nValor original: ${this.moeda(item.valor)}`,
+      hoje
+    );
 
-      const hoje = new Date().toISOString().slice(0, 10);
+    if (dataPagamento === null) return;
 
-      await api.update("contas_pagar", id, {
-        status: "pago",
-        data_pagamento: hoje
-      });
+    const jurosMulta = prompt("Informe multa/juros, se houver:", "0");
+    if (jurosMulta === null) return;
 
-      this.selecionados.delete(Number(id));
+    const desconto = prompt("Informe desconto, se houver:", "0");
+    if (desconto === null) return;
 
-      await this.listar();
+    const valorOriginal = this.numero(item.valor);
+    const valorJuros = this.numero(jurosMulta);
+    const valorDesconto = this.numero(desconto);
+    const valorPago = valorOriginal + valorJuros - valorDesconto;
 
-      if (window.contasPagasModule?.carregar) {
-        await contasPagasModule.carregar();
-      }
+    const confirmar = confirm(
+      `Confirmar pagamento?\n\n` +
+      `Fornecedor: ${item.fornecedor || "-"}\n` +
+      `Documento: ${item.documento || "-"}\n` +
+      `Data pagamento: ${dataPagamento}\n\n` +
+      `Valor original: ${this.moeda(valorOriginal)}\n` +
+      `Multa/Juros: ${this.moeda(valorJuros)}\n` +
+      `Desconto: ${this.moeda(valorDesconto)}\n` +
+      `Valor pago: ${this.moeda(valorPago)}`
+    );
 
-      alert("Conta paga com sucesso.");
-    } catch (error) {
-      alert("Erro ao pagar conta.");
+    if (!confirmar) return;
+
+    await api.update("contas_pagar", id, {
+      status: "pago",
+      data_pagamento: dataPagamento,
+      juros_multa: valorJuros,
+      desconto: valorDesconto,
+      valor_pago: valorPago
+    });
+
+    this.selecionados.delete(Number(id));
+
+    await this.listar();
+
+    if (window.contasPagasModule?.carregar) {
+      await contasPagasModule.carregar();
     }
-  },
+
+    alert("Conta paga com sucesso.");
+  } catch (error) {
+    console.error("Erro ao pagar conta:", error);
+    alert("Erro ao pagar conta: " + error.message);
+  }
+}
 
   async pagarSelecionadas() {
     if (!this.selecionados.size) {
