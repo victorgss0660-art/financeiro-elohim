@@ -112,17 +112,21 @@ window.contasPagarModule = {
           <td>${item.categoria || "-"}</td>
           <td>${item.descricao || "-"}</td>
 
-          <td>
-            <button onclick="contasPagarModule.toggleNfe(${id})">
-              ${item.tem_nfe ? "NFE OK" : "NFE"}
-            </button>
+<td>
+  <button
+    class="${item.tem_nfe ? "ok" : ""}"
+    onclick="contasPagarModule.toggleNfe(${id})"
+  >
+    ${item.tem_nfe ? "NFE OK" : "NFE"}
+  </button>
 
-            <button onclick="contasPagarModule.toggleBoleto(${id})">
-              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
-            </button>
-          </td>
-
-          <td>
+  <button
+    class="${item.tem_boleto ? "ok" : ""}"
+    onclick="contasPagarModule.toggleBoleto(${id})"
+  >
+    ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+  </button>
+</td>
             <button onclick="contasPagarModule.editar(${id})">Editar</button>
             <button onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
             <button onclick="contasPagarModule.pagar(${id})">Pagar</button>
