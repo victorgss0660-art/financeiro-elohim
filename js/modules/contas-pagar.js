@@ -435,48 +435,30 @@ window.contasPagarModule = {
     }
   },
 
-  async marcarPago(id) {
-    try {
-      const item = this.dados.find((i) => Number(i.id) === Number(id));
-      if (!item) return;
+async marcarPago(id) {
+  try {
+    const item = this.dados.find((i) => Number(i.id) === Number(id));
+    if (!item) return;
 
-      const hoje = new Date().toISOString().slice(0, 10);
+    const hoje = new Date().toISOString().slice(0, 10);
 
-      const contaPaga = {
-        mes: item.mes || "",
-        ano: String(item.ano || ""),
-        fornecedor: item.fornecedor || "",
-        documento: item.documento || "",
-        categoria: item.categoria || "",
-        vencimento: item.vencimento || null,
-        descricao: item.descricao || "",
-        valor: this.numero(item.valor),
-        nfe: item.nfe || "",
-        tem_nfe: Boolean(item.tem_nfe || item.nfe),
-        boleto_recebido: Boolean(item.tem_boleto || item.boleto_recebido),
-        tem_boleto: Boolean(item.tem_boleto || item.boleto_recebido),
-        data_pagamento: hoje,
-        status: "pago"
-      };
+    await api.update("contas_pagar", id, {
+      status: "pago",
+      data_pagamento: hoje
+    });
 
-      await api.insert("contas_pagas", contaPaga);
+    this.selecionados.delete(Number(id));
 
-      await api.update("contas_pagar", id, {
-        status: "pago",
-        data_pagamento: hoje
-      });
+    await this.listar();
 
-      this.selecionados.delete(Number(id));
-      await this.listar();
-
-      if (window.contasPagasModule?.carregar) {
-        await contasPagasModule.carregar();
-      }
-    } catch (error) {
-      console.error("Erro ao pagar conta:", error);
-      alert("Erro ao pagar conta: " + error.message);
+    if (window.contasPagasModule?.carregar) {
+      await contasPagasModule.carregar();
     }
-  },
+  } catch (error) {
+    console.error("Erro ao pagar conta:", error);
+    alert("Erro ao pagar conta: " + error.message);
+  }
+}
 
   async pagarSelecionadas() {
     if (!this.selecionados.size) {
