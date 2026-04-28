@@ -517,3 +517,26 @@ tbody tr:hover{
 .linha-vermelha{
   background:#fff1f2 !important;
 }
+/* NFE e BOLETO DESMARCADOS */
+#tabelaContasPagar button{
+  border:none;
+  padding:7px 12px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  margin:2px;
+}
+
+/* Vermelho clarinho padrão */
+#tabelaContasPagar button:nth-child(1),
+#tabelaContasPagar button:nth-child(2){
+  background:#fee2e2;
+  color:#b91c1c;
+}
+
+/* Verde quando marcado */
+#tabelaContasPagar button.ok{
+  background:#dcfce7 !important;
+  color:#166534 !important;
+}
