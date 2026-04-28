@@ -97,6 +97,7 @@ renderizar() {
 
     return `
       <tr class="${marcado ? "linha-vermelha" : ""}">
+
         <td>
           <input
             type="checkbox"
@@ -112,32 +113,39 @@ renderizar() {
         <td>${item.categoria || "-"}</td>
         <td>${item.descricao || "-"}</td>
 
-        <td class="docs-actions">
-          <button
-            class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
-            onclick="contasPagarModule.toggleNfe(${id})"
-          >
-            ${item.tem_nfe ? "NFE OK" : "NFE"}
-          </button>
+        <td>
+          <div class="docs-actions">
+            <button
+              class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
+              onclick="contasPagarModule.toggleNfe(${id})"
+            >
+              ${item.tem_nfe ? "NFE OK" : "NFE"}
+            </button>
 
-          <button
-            class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
-            onclick="contasPagarModule.toggleBoleto(${id})"
-          >
-            ${item.tem_boleto ? "Boleto OK" : "Boleto"}
-          </button>
+            <button
+              class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
+              onclick="contasPagarModule.toggleBoleto(${id})"
+            >
+              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+            </button>
+          </div>
         </td>
 
-        <td class="row-actions">
-          <button class="btn-editar" onclick="contasPagarModule.editar(${id})">Editar</button>
-          <button class="btn-duplicar" onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
-          <button class="btn-pagar" onclick="contasPagarModule.pagar(${id})">Pagar</button>
-          <button class="btn-excluir" onclick="contasPagarModule.excluir(${id})">Excluir</button>
+        <td>
+          <div class="row-actions">
+            <button class="btn-editar" onclick="contasPagarModule.editar(${id})">Editar</button>
+            <button class="btn-duplicar" onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
+            <button class="btn-pagar" onclick="contasPagarModule.pagar(${id})">Pagar</button>
+            <button class="btn-excluir" onclick="contasPagarModule.excluir(${id})">Excluir</button>
+          </div>
         </td>
+
       </tr>
     `;
   }).join("");
-},
+
+  this.resumo();
+}
 
   resumo() {
     const qtd = this.get("cpQtd");
