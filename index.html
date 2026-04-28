@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Financeiro Empresarial</title>
 
-<link rel="stylesheet" href="./css/style.css?v=5">
-
+  <link rel="stylesheet" href="./css/style.css?v=10" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -144,8 +143,8 @@
             </div>
 
             <div>
-              <label>Categoria</label>
-              <input id="cpCategoria" type="text" />
+              <label>Valor</label>
+              <input id="cpValor" type="text" />
             </div>
 
             <div>
@@ -154,13 +153,16 @@
             </div>
 
             <div>
-              <label>Valor</label>
-              <input id="cpValor" type="text" />
+              <label>Categoria</label>
+              <input id="cpCategoria" type="text" />
             </div>
 
             <div>
-              <label>NFE</label>
-              <input id="cpNfe" type="text" />
+              <label>NFE recebida</label>
+              <select id="cpNfe">
+                <option value="">Não</option>
+                <option value="OK">Sim</option>
+              </select>
             </div>
 
             <div>
@@ -178,7 +180,7 @@
           </div>
 
           <div class="actions-row">
-            <button class="primary-btn" onclick="contasPagarModule.salvar()">Salvar</button>
+            <button class="primary-btn" onclick="contasPagarModule.salvar()">Salvar conta</button>
             <button class="secondary-btn" onclick="contasPagarModule.limparFormulario()">Limpar</button>
           </div>
         </div>
@@ -187,78 +189,80 @@
           <div class="panel-head">
             <h3>Contas em Aberto</h3>
 
-<div class="actions-row">
-  <button class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">Selecionar todas</button>
-  <button class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
-  <button class="secondary-btn action-btn-green" onclick="contasPagarModule.pagarSelecionadas()">Pagar selecionadas</button>
-  <button class="secondary-btn" onclick="contasPagarModule.limparFiltros()">Limpar filtros</button>
-</div>
+            <div class="actions-row">
+              <button class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">Selecionar todas</button>
+              <button class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
+              <button class="secondary-btn action-btn-green" onclick="contasPagarModule.pagarSelecionadas()">Pagar selecionadas</button>
+              <button class="secondary-btn" onclick="contasPagarModule.limparFiltros()">Limpar filtros</button>
+            </div>
           </div>
-<div class="form-grid" style="margin-bottom: 14px;">
-  <div>
-    <label>Buscar</label>
-    <input
-      id="cpBusca"
-      type="text"
-      placeholder="Fornecedor, documento, categoria, descrição ou NFE"
-      oninput="contasPagarModule.aplicarFiltros()"
-    >
-  </div>
 
-  <div>
-    <label>Fornecedor</label>
-    <input
-      id="cpFiltroFornecedor"
-      type="text"
-      placeholder="Filtrar fornecedor"
-      oninput="contasPagarModule.aplicarFiltros()"
-    >
-  </div>
+          <div class="form-grid" style="margin-bottom: 14px;">
+            <div>
+              <label>Buscar</label>
+              <input
+                id="cpBusca"
+                type="text"
+                placeholder="Fornecedor, documento, categoria ou descrição"
+                oninput="contasPagarModule.aplicarFiltros()"
+              />
+            </div>
 
-  <div>
-    <label>Categoria</label>
-    <input
-      id="cpFiltroCategoria"
-      type="text"
-      placeholder="Filtrar categoria"
-      oninput="contasPagarModule.aplicarFiltros()"
-    >
-  </div>
-  
-  <div>
-  <label>Vencimento inicial</label>
-  <input
-    id="cpVencimentoInicio"
-    type="date"
-    onchange="contasPagarModule.aplicarFiltros()"
-  >
-</div>
+            <div>
+              <label>Fornecedor</label>
+              <input
+                id="cpFiltroFornecedor"
+                type="text"
+                placeholder="Filtrar fornecedor"
+                oninput="contasPagarModule.aplicarFiltros()"
+              />
+            </div>
 
-<div>
-  <label>Vencimento final</label>
-  <input
-    id="cpVencimentoFim"
-    type="date"
-    onchange="contasPagarModule.aplicarFiltros()"
-  >
-</div>
-</div>
-          
+            <div>
+              <label>Categoria</label>
+              <input
+                id="cpFiltroCategoria"
+                type="text"
+                placeholder="Filtrar categoria"
+                oninput="contasPagarModule.aplicarFiltros()"
+              />
+            </div>
+
+            <div>
+              <label>Vencimento inicial</label>
+              <input
+                id="cpVencimentoInicio"
+                type="date"
+                onchange="contasPagarModule.aplicarFiltros()"
+              />
+            </div>
+
+            <div>
+              <label>Vencimento final</label>
+              <input
+                id="cpVencimentoFim"
+                type="date"
+                onchange="contasPagarModule.aplicarFiltros()"
+              />
+            </div>
+          </div>
+
           <div class="table-wrap">
             <table>
-<thead>
-  <tr>
-    <th>Selecionar</th>
-    <th>Fornecedor</th>
-    <th>Documento</th>
-    <th>Valor</th>
-    <th>Vencimento</th>
-    <th>Categoria</th>
-    <th>Descrição</th>
-    <th>NFE / Boleto</th>
-    <th>Ações</th>
-  </tr>
-</thead>
+              <thead>
+                <tr>
+                  <th>Selecionar</th>
+                  <th>Fornecedor</th>
+                  <th>Documento</th>
+                  <th>Valor</th>
+                  <th>Vencimento</th>
+                  <th>Categoria</th>
+                  <th>Descrição</th>
+                  <th>NFE / Boleto</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
               <tbody id="tabelaContasPagar">
                 <tr>
                   <td colspan="9" class="muted">Nenhuma conta carregada.</td>
@@ -275,7 +279,54 @@
           <p>Histórico de pagamentos realizados.</p>
         </div>
 
+        <section class="cards-grid">
+          <div class="card">
+            <span>Quantidade</span>
+            <strong id="pagasQtd">0</strong>
+          </div>
+
+          <div class="card">
+            <span>Total pago</span>
+            <strong id="pagasTotal">R$ 0,00</strong>
+          </div>
+        </section>
+
         <div class="panel">
+          <div class="form-grid" style="margin-bottom: 14px;">
+            <div>
+              <label>Buscar</label>
+              <input
+                id="pagasBusca"
+                type="text"
+                placeholder="Fornecedor, documento, categoria ou descrição"
+                oninput="contasPagasModule.aplicarFiltros()"
+              />
+            </div>
+
+            <div>
+              <label>Data inicial</label>
+              <input
+                id="pagasDataInicio"
+                type="date"
+                onchange="contasPagasModule.aplicarFiltros()"
+              />
+            </div>
+
+            <div>
+              <label>Data final</label>
+              <input
+                id="pagasDataFim"
+                type="date"
+                onchange="contasPagasModule.aplicarFiltros()"
+              />
+            </div>
+
+            <div>
+              <label>Ações</label>
+              <button class="secondary-btn" onclick="contasPagasModule.limparFiltros()">Limpar filtros</button>
+            </div>
+          </div>
+
           <div class="table-wrap">
             <table>
               <thead>
@@ -283,14 +334,16 @@
                   <th>Fornecedor</th>
                   <th>Documento</th>
                   <th>Categoria</th>
+                  <th>Vencimento</th>
                   <th>Pagamento</th>
                   <th>Descrição</th>
                   <th>Valor</th>
                 </tr>
               </thead>
+
               <tbody id="tabelaContasPagas">
                 <tr>
-                  <td colspan="6" class="muted">Nenhum pagamento carregado.</td>
+                  <td colspan="7" class="muted">Nenhuma conta paga carregada.</td>
                 </tr>
               </tbody>
             </table>
@@ -304,7 +357,7 @@
           <p>Controle de clientes, notas e recebimentos.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado na próxima etapa.</div>
+        <div class="panel empty-state">Módulo será recriado depois.</div>
       </section>
 
       <section id="tab-faturamento" class="tab-section">
@@ -313,7 +366,7 @@
           <p>Faturado, a faturar e previsão total.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado na próxima etapa.</div>
+        <div class="panel empty-state">Módulo será recriado depois.</div>
       </section>
 
       <section id="tab-metas" class="tab-section">
@@ -322,7 +375,7 @@
           <p>Metas por categoria em percentual ou valor.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado na próxima etapa.</div>
+        <div class="panel empty-state">Módulo será recriado depois.</div>
       </section>
 
       <section id="tab-planejamento" class="tab-section">
@@ -331,7 +384,7 @@
           <p>Forecast, fluxo futuro e cenários financeiros.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado na próxima etapa.</div>
+        <div class="panel empty-state">Módulo será recriado depois.</div>
       </section>
 
       <section id="tab-dre" class="tab-section">
@@ -340,7 +393,7 @@
           <p>Demonstrativo de resultado gerencial.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado na próxima etapa.</div>
+        <div class="panel empty-state">Módulo será recriado depois.</div>
       </section>
 
       <section id="tab-importar" class="tab-section">
@@ -349,7 +402,7 @@
           <p>Importação de planilhas de despesas.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado na próxima etapa.</div>
+        <div class="panel empty-state">Módulo será recriado depois.</div>
       </section>
 
     </main>
