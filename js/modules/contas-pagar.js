@@ -10,38 +10,43 @@ window.contasPagarModule = {
 
   getMesAno() {
     return {
-      mes: document.getElementById("mesSelect")?.value || "Janeiro",
-      ano: String(document.getElementById("anoSelect")?.value || new Date().getFullYear())
+      mes:
+        document.getElementById("mesSelect")?.value ||
+        new Date().toLocaleString("pt-BR", { month: "long" }),
+      ano:
+        document.getElementById("anoSelect")?.value ||
+        String(new Date().getFullYear())
     };
   },
 
   numero(valor) {
-    if (typeof valor === "number") return Number.isFinite(valor) ? valor : 0;
+    if (typeof valor === "number") return valor;
+
     if (!valor) return 0;
 
-    let texto = String(valor).replace(/R\$/g, "").replace(/\s/g, "").trim();
+    let txt = String(valor)
+      .replace(/R\$/g, "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .trim();
 
-    if (texto.includes(",") && texto.includes(".")) {
-      texto = texto.replace(/\./g, "").replace(",", ".");
-    } else if (texto.includes(",")) {
-      texto = texto.replace(",", ".");
-    }
-
-    const n = Number(texto);
-    return Number.isFinite(n) ? n : 0;
+    const n = parseFloat(txt);
+    return isNaN(n) ? 0 : n;
   },
 
   moeda(valor) {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL"
-    }).format(Number(valor || 0));
+    }).format(this.numero(valor));
   },
 
   dataBR(data) {
     if (!data) return "-";
-    const d = new Date(String(data) + "T00:00:00");
-    if (Number.isNaN(d.getTime())) return data;
+
+    const d = new Date(data + "T00:00:00");
+    if (isNaN(d)) return data;
+
     return d.toLocaleDateString("pt-BR");
   },
 
@@ -57,36 +62,36 @@ window.contasPagarModule = {
   limparFormulario() {
     this.editandoId = null;
 
-    this.setValor("cpFornecedor", "");
-    this.setValor("cpDocumento", "");
-    this.setValor("cpCategoria", "");
-    this.setValor("cpVencimento", "");
-    this.setValor("cpValor", "");
-    this.setValor("cpNfe", "");
+    [
+      "cpFornecedor",
+      "cpDocumento",
+      "cpCategoria",
+      "cpVencimento",
+      "cpValor",
+      "cpNfe",
+      "cpDescricao"
+    ].forEach((id) => this.setValor(id, ""));
+
     this.setValor("cpBoleto", "false");
-    this.setValor("cpDescricao", "");
   },
 
-montarPayload() {
-  const { mes, ano } = this.getMesAno();
+  montarPayload() {
+    const { mes, ano } = this.getMesAno();
 
-  const temNfe = Boolean(this.getValor("cpNfe").trim());
-  const temBoleto = this.getValor("cpBoleto") === "true";
-
-  return {
-    mes,
-    ano,
-    fornecedor: this.getValor("cpFornecedor").trim(),
-    documento: this.getValor("cpDocumento").trim(),
-    categoria: this.getValor("cpCategoria").trim(),
-    vencimento: this.getValor("cpVencimento") || null,
-    valor: this.numero(this.getValor("cpValor")),
-    tem_nfe: temNfe,
-    tem_boleto: temBoleto,
-    descricao: this.getValor("cpDescricao").trim(),
-    status: "pendente"
-  };
-},
+    return {
+      mes,
+      ano,
+      fornecedor: this.getValor("cpFornecedor").trim(),
+      documento: this.getValor("cpDocumento").trim(),
+      categoria: this.getValor("cpCategoria").trim(),
+      vencimento: this.getValor("cpVencimento") || null,
+      valor: this.numero(this.getValor("cpValor")),
+      tem_nfe: this.getValor("cpNfe").trim() !== "",
+      tem_boleto: this.getValor("cpBoleto") === "true",
+      descricao: this.getValor("cpDescricao").trim(),
+      status: "pendente"
+    };
+  },
 
   async salvar() {
     try {
@@ -98,7 +103,7 @@ montarPayload() {
       }
 
       if (!payload.valor || payload.valor <= 0) {
-        alert("Informe um valor válido.");
+        alert("Informe o valor.");
         return;
       }
 
@@ -110,8 +115,10 @@ montarPayload() {
 
       this.limparFormulario();
       await this.listar();
+
+      alert("Conta salva com sucesso.");
     } catch (error) {
-      console.error("Erro ao salvar conta a pagar:", error);
+      console.error(error);
       alert("Erro ao salvar conta a pagar: " + error.message);
     }
   },
@@ -123,75 +130,54 @@ montarPayload() {
         "select=*&order=vencimento.asc"
       );
 
-      this.dados = Array.isArray(dados)
-        ? dados.filter((item) => String(item.status || "pendente").toLowerCase() !== "pago")
-        : [];
+      this.dados = (dados || []).filter(
+        (item) => String(item.status || "").toLowerCase() !== "pago"
+      );
 
       this.filtrados = [...this.dados];
 
       this.renderizar();
       this.atualizarResumo();
     } catch (error) {
-      console.error("Erro ao carregar contas a pagar:", error);
-      alert("Erro ao carregar contas a pagar: " + error.message);
+      console.error(error);
+      alert("Erro ao carregar contas.");
     }
   },
 
   aplicarFiltros() {
-    const busca = String(document.getElementById("cpBusca")?.value || "")
-      .trim()
-      .toLowerCase();
-
-    const fornecedor = String(document.getElementById("cpFiltroFornecedor")?.value || "")
-      .trim()
-      .toLowerCase();
-
-    const categoria = String(document.getElementById("cpFiltroCategoria")?.value || "")
-      .trim()
-      .toLowerCase();
-
-    const vencimentoInicio = document.getElementById("cpVencimentoInicio")?.value || "";
-    const vencimentoFim = document.getElementById("cpVencimentoFim")?.value || "";
+    const busca = this.getValor("cpBusca").toLowerCase();
+    const fornecedor = this.getValor("cpFiltroFornecedor").toLowerCase();
+    const categoria = this.getValor("cpFiltroCategoria").toLowerCase();
+    const dtIni = this.getValor("cpVencimentoInicio");
+    const dtFim = this.getValor("cpVencimentoFim");
 
     this.filtrados = this.dados.filter((item) => {
-      const textoItem = [
-        item.fornecedor,
-        item.documento,
-        item.categoria,
-        item.descricao
-      ].join(" ").toLowerCase();
+      const texto = `
+        ${item.fornecedor || ""}
+        ${item.documento || ""}
+        ${item.categoria || ""}
+        ${item.descricao || ""}
+      `.toLowerCase();
 
-      const bateBusca = !busca || textoItem.includes(busca);
+      let ok = true;
 
-      const bateFornecedor =
-        !fornecedor ||
-        String(item.fornecedor || "").toLowerCase().includes(fornecedor);
+      if (busca && !texto.includes(busca)) ok = false;
+      if (
+        fornecedor &&
+        !(item.fornecedor || "").toLowerCase().includes(fornecedor)
+      )
+        ok = false;
 
-      const bateCategoria =
-        !categoria ||
-        String(item.categoria || "").toLowerCase().includes(categoria);
+      if (
+        categoria &&
+        !(item.categoria || "").toLowerCase().includes(categoria)
+      )
+        ok = false;
 
-      let bateData = true;
+      if (dtIni && item.vencimento < dtIni) ok = false;
+      if (dtFim && item.vencimento > dtFim) ok = false;
 
-      if (vencimentoInicio || vencimentoFim) {
-        if (!item.vencimento) {
-          bateData = false;
-        } else {
-          const dataItem = new Date(String(item.vencimento) + "T00:00:00");
-
-          if (vencimentoInicio) {
-            const dataInicio = new Date(vencimentoInicio + "T00:00:00");
-            if (dataItem < dataInicio) bateData = false;
-          }
-
-          if (vencimentoFim) {
-            const dataFim = new Date(vencimentoFim + "T23:59:59");
-            if (dataItem > dataFim) bateData = false;
-          }
-        }
-      }
-
-      return bateBusca && bateFornecedor && bateCategoria && bateData;
+      return ok;
     });
 
     this.renderizar();
@@ -199,11 +185,13 @@ montarPayload() {
   },
 
   limparFiltros() {
-    this.setValor("cpBusca", "");
-    this.setValor("cpFiltroFornecedor", "");
-    this.setValor("cpFiltroCategoria", "");
-    this.setValor("cpVencimentoInicio", "");
-    this.setValor("cpVencimentoFim", "");
+    [
+      "cpBusca",
+      "cpFiltroFornecedor",
+      "cpFiltroCategoria",
+      "cpVencimentoInicio",
+      "cpVencimentoFim"
+    ].forEach((id) => this.setValor(id, ""));
 
     this.filtrados = [...this.dados];
     this.renderizar();
@@ -214,86 +202,72 @@ montarPayload() {
     const tbody = document.getElementById("tabelaContasPagar");
     if (!tbody) return;
 
-    const lista = this.filtrados || [];
-
-    if (!lista.length) {
+    if (!this.filtrados.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" class="muted">Nenhuma conta a pagar encontrada.</td>
+          <td colspan="9">Nenhuma conta encontrada.</td>
         </tr>
       `;
       return;
     }
 
-    tbody.innerHTML = lista.map((item) => {
-      const id = Number(item.id);
-      const selecionado = this.selecionados.has(id);
-      const nfeOk = Boolean(item.tem_nfe);
-      const boletoOk = Boolean(item.tem_boleto);
+    tbody.innerHTML = this.filtrados
+      .map((item) => {
+        const id = Number(item.id);
+        const marcado = this.selecionados.has(id);
 
-      return `
-        <tr class="${selecionado ? "linha-selecionada linha-vermelha" : ""}">
+        return `
+        <tr class="${marcado ? "linha-vermelha" : ""}">
           <td>
-            <input
-              type="checkbox"
-              ${selecionado ? "checked" : ""}
-              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
-            >
+            <input type="checkbox"
+              ${marcado ? "checked" : ""}
+              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)">
           </td>
 
-          <td><strong>${item.fornecedor || "-"}</strong></td>
+          <td>${item.fornecedor || "-"}</td>
           <td>${item.documento || "-"}</td>
-          <td><strong>${this.moeda(item.valor || 0)}</strong></td>
+          <td>${this.moeda(item.valor)}</td>
           <td>${this.dataBR(item.vencimento)}</td>
           <td>${item.categoria || "-"}</td>
           <td>${item.descricao || "-"}</td>
 
           <td>
-            <button
-              class="doc-btn ${nfeOk ? "ok" : "warn"}"
-              onclick="contasPagarModule.marcarNfe(${id})"
-            >
-              ${nfeOk ? "NFE OK" : "NFE"}
+            <button class="doc-btn ${
+              item.tem_nfe ? "ok" : "warn"
+            }" onclick="contasPagarModule.marcarNfe(${id})">
+              ${item.tem_nfe ? "NFE OK" : "NFE"}
             </button>
 
-            <button
-              class="doc-btn ${boletoOk ? "ok" : "warn"}"
-              onclick="contasPagarModule.marcarBoleto(${id})"
-            >
-              ${boletoOk ? "Boleto OK" : "Boleto"}
+            <button class="doc-btn ${
+              item.tem_boleto ? "ok" : "warn"
+            }" onclick="contasPagarModule.marcarBoleto(${id})">
+              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
             </button>
           </td>
 
           <td>
-            <button class="secondary-btn action-btn-blue" onclick="contasPagarModule.editar(${id})">
-              Editar
-            </button>
-
-            <button class="secondary-btn" onclick="contasPagarModule.duplicar(${id})">
-              Duplicar
-            </button>
-
-            <button class="secondary-btn action-btn-green" onclick="contasPagarModule.marcarPago(${id})">
-              Pagar
-            </button>
-
-            <button class="secondary-btn action-btn-red" onclick="contasPagarModule.excluir(${id})">
-              Excluir
-            </button>
+            <button onclick="contasPagarModule.editar(${id})">Editar</button>
+            <button onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
+            <button onclick="contasPagarModule.marcarPago(${id})">Pagar</button>
+            <button onclick="contasPagarModule.excluir(${id})">Excluir</button>
           </td>
         </tr>
       `;
-    }).join("");
+      })
+      .join("");
   },
 
   atualizarResumo() {
-    const total = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
+    const total = this.filtrados.reduce(
+      (acc, item) => acc + this.numero(item.valor),
+      0
+    );
 
-    const selecionados = this.filtrados.filter((item) =>
+    const selecionadas = this.filtrados.filter((item) =>
       this.selecionados.has(Number(item.id))
     );
 
-    const totalSelecionado = selecionados.reduce(
+    const totalSel = selecionadas.reduce(
       (acc, item) => acc + this.numero(item.valor),
       0
     );
@@ -301,150 +275,121 @@ montarPayload() {
     const qtd = document.getElementById("cpQtd");
     const totalEl = document.getElementById("cpTotal");
     const qtdSel = document.getElementById("cpSelecionadas");
-    const totalSel = document.getElementById("cpTotalSelecionado");
+    const totalSelEl = document.getElementById("cpTotalSelecionado");
 
     if (qtd) qtd.textContent = this.filtrados.length;
     if (totalEl) totalEl.textContent = this.moeda(total);
-    if (qtdSel) qtdSel.textContent = selecionados.length;
-    if (totalSel) totalSel.textContent = this.moeda(totalSelecionado);
+    if (qtdSel) qtdSel.textContent = selecionadas.length;
+    if (totalSelEl) totalSelEl.textContent = this.moeda(totalSel);
   },
 
-  toggleSelecionado(id, marcado) {
-    id = Number(id);
+  toggleSelecionado(id, checked) {
+    if (checked) this.selecionados.add(Number(id));
+    else this.selecionados.delete(Number(id));
 
-    if (marcado) {
-      this.selecionados.add(id);
-    } else {
-      this.selecionados.delete(id);
-    }
-
-    this.renderizar();
-    this.atualizarResumo();
-  },
-
-  selecionarTodos() {
-    this.filtrados.forEach((item) => {
-      this.selecionados.add(Number(item.id));
-    });
-
-    this.renderizar();
-    this.atualizarResumo();
-  },
-
-  limparSelecao() {
-    this.selecionados.clear();
     this.renderizar();
     this.atualizarResumo();
   },
 
   editar(id) {
-    const item = this.dados.find((i) => Number(i.id) === Number(id));
+    const item = this.dados.find((x) => Number(x.id) === Number(id));
     if (!item) return;
 
-    this.editandoId = Number(id);
+    this.editandoId = id;
 
-    this.setValor("cpFornecedor", item.fornecedor || "");
-    this.setValor("cpDocumento", item.documento || "");
-    this.setValor("cpCategoria", item.categoria || "");
-    this.setValor("cpVencimento", item.vencimento || "");
-    this.setValor("cpValor", item.valor || "");
+    this.setValor("cpFornecedor", item.fornecedor);
+    this.setValor("cpDocumento", item.documento);
+    this.setValor("cpCategoria", item.categoria);
+    this.setValor("cpVencimento", item.vencimento);
+    this.setValor("cpValor", item.valor);
     this.setValor("cpNfe", item.tem_nfe ? "OK" : "");
     this.setValor("cpBoleto", item.tem_boleto ? "true" : "false");
-    this.setValor("cpDescricao", item.descricao || "");
+    this.setValor("cpDescricao", item.descricao);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   },
 
   async duplicar(id) {
     try {
-      const item = this.dados.find((i) => Number(i.id) === Number(id));
+      const item = this.dados.find((x) => Number(x.id) === Number(id));
       if (!item) return;
 
-      const copia = { ...item };
+      const novo = { ...item };
+      delete novo.id;
+      delete novo.created_at;
+      delete novo.updated_at;
 
-      delete copia.id;
-      delete copia.created_at;
-      delete copia.updated_at;
-      delete copia.data_pagamento;
+      novo.documento = (novo.documento || "") + "-COPIA";
+      novo.status = "pendente";
 
-      copia.status = "pendente";
-      copia.documento = copia.documento ? `${copia.documento}-CÓPIA` : "CÓPIA";
-
-      await api.insert("contas_pagar", copia);
+      await api.insert("contas_pagar", novo);
       await this.listar();
     } catch (error) {
-      console.error("Erro ao duplicar conta:", error);
-      alert("Erro ao duplicar conta: " + error.message);
+      alert("Erro ao duplicar.");
     }
   },
 
   async marcarNfe(id) {
     try {
-      const item = this.dados.find((i) => Number(i.id) === Number(id));
-      if (!item) return;
+      const item = this.dados.find((x) => Number(x.id) === Number(id));
 
       await api.update("contas_pagar", id, {
-        tem_nfe: !Boolean(item.tem_nfe)
+        tem_nfe: !item.tem_nfe
       });
 
       await this.listar();
     } catch (error) {
-      console.error("Erro ao atualizar NFE:", error);
-      alert("Erro ao atualizar NFE: " + error.message);
+      alert("Erro ao atualizar NFE.");
     }
   },
 
   async marcarBoleto(id) {
     try {
-      const item = this.dados.find((i) => Number(i.id) === Number(id));
-      if (!item) return;
+      const item = this.dados.find((x) => Number(x.id) === Number(id));
 
       await api.update("contas_pagar", id, {
-        tem_boleto: !Boolean(item.tem_boleto)
+        tem_boleto: !item.tem_boleto
       });
 
       await this.listar();
     } catch (error) {
-      console.error("Erro ao atualizar boleto:", error);
-      alert("Erro ao atualizar boleto: " + error.message);
+      alert("Erro ao atualizar boleto.");
     }
   },
 
-async marcarPago(id) {
-  try {
-    const item = this.dados.find((i) => Number(i.id) === Number(id));
-    if (!item) return;
+  async marcarPago(id) {
+    try {
+      const item = this.dados.find((x) => Number(x.id) === Number(id));
+      if (!item) return;
 
-    const confirmar = confirm(
-      `Confirmar pagamento?\n\nFornecedor: ${item.fornecedor || "-"}\nDocumento: ${item.documento || "-"}\nValor: ${this.moeda(item.valor || 0)}`
-    );
+      const ok = confirm(
+        `Confirmar pagamento?\n\nFornecedor: ${
+          item.fornecedor
+        }\nValor: ${this.moeda(item.valor)}`
+      );
 
-    if (!confirmar) return;
+      if (!ok) return;
 
-    const hoje = new Date().toISOString().slice(0, 10);
+      const hoje = new Date().toISOString().slice(0, 10);
 
-    await api.update("contas_pagar", id, {
-      status: "pago",
-      data_pagamento: hoje
-    });
+      await api.update("contas_pagar", id, {
+        status: "pago",
+        data_pagamento: hoje
+      });
 
-    this.selecionados.delete(Number(id));
+      this.selecionados.delete(Number(id));
 
-    await this.listar();
+      await this.listar();
 
-    if (window.contasPagasModule?.carregar) {
-      await contasPagasModule.carregar();
+      if (window.contasPagasModule?.carregar) {
+        await contasPagasModule.carregar();
+      }
+
+      alert("Conta paga com sucesso.");
+    } catch (error) {
+      alert("Erro ao pagar conta.");
     }
-
-    alert("Conta paga com sucesso.");
-  } catch (error) {
-    console.error("Erro ao pagar conta:", error);
-    alert("Erro ao pagar conta: " + error.message);
-  }
-}
+  },
 
   async pagarSelecionadas() {
     if (!this.selecionados.size) {
@@ -452,11 +397,13 @@ async marcarPago(id) {
       return;
     }
 
-    if (!confirm(`Deseja pagar ${this.selecionados.size} conta(s) selecionada(s)?`)) {
-      return;
-    }
+    const ok = confirm(
+      `Deseja pagar ${this.selecionados.size} conta(s)?`
+    );
 
-    const ids = Array.from(this.selecionados);
+    if (!ok) return;
+
+    const ids = [...this.selecionados];
 
     for (const id of ids) {
       await this.marcarPago(id);
@@ -467,7 +414,8 @@ async marcarPago(id) {
   },
 
   async excluir(id) {
-    if (!confirm("Deseja excluir esta conta?")) return;
+    const ok = confirm("Deseja excluir esta conta?");
+    if (!ok) return;
 
     try {
       await api.delete("contas_pagar", id);
@@ -475,8 +423,7 @@ async marcarPago(id) {
       this.selecionados.delete(Number(id));
       await this.listar();
     } catch (error) {
-      console.error("Erro ao excluir conta:", error);
-      alert("Erro ao excluir conta: " + error.message);
+      alert("Erro ao excluir.");
     }
   }
 };
