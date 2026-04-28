@@ -540,3 +540,22 @@ tbody tr:hover{
   background:#dcfce7 !important;
   color:#166534 !important;
 }
+#tabelaContasPagar button{
+  border:none;
+  padding:7px 12px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  margin:2px;
+}
+
+#tabelaContasPagar button:not(.ok){
+  background:#fee2e2;
+  color:#b91c1c;
+}
+
+#tabelaContasPagar button.ok{
+  background:#dcfce7;
+  color:#166534;
+}
