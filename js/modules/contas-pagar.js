@@ -67,26 +67,26 @@ window.contasPagarModule = {
     this.setValor("cpDescricao", "");
   },
 
-  montarPayload() {
-    const { mes, ano } = this.getMesAno();
+montarPayload() {
+  const { mes, ano } = this.getMesAno();
 
-    const temNfe = Boolean(this.getValor("cpNfe").trim());
-    const temBoleto = this.getValor("cpBoleto") === "true";
+  const temNfe = Boolean(this.getValor("cpNfe").trim());
+  const temBoleto = this.getValor("cpBoleto") === "true";
 
-    return {
-      mes,
-      ano,
-      fornecedor: this.getValor("cpFornecedor").trim(),
-      documento: this.getValor("cpDocumento").trim(),
-      categoria: this.getValor("cpCategoria").trim(),
-      vencimento: this.getValor("cpVencimento") || null,
-      valor: this.numero(this.getValor("cpValor")),
-      tem_nfe: temNfe,
-      tem_boleto: temBoleto,
-      descricao: this.getValor("cpDescricao").trim(),
-      status: "pendente"
-    };
-  },
+  return {
+    mes,
+    ano,
+    fornecedor: this.getValor("cpFornecedor").trim(),
+    documento: this.getValor("cpDocumento").trim(),
+    categoria: this.getValor("cpCategoria").trim(),
+    vencimento: this.getValor("cpVencimento") || null,
+    valor: this.numero(this.getValor("cpValor")),
+    tem_nfe: temNfe,
+    tem_boleto: temBoleto,
+    descricao: this.getValor("cpDescricao").trim(),
+    status: "pendente"
+  };
+},
 
   async salvar() {
     try {
