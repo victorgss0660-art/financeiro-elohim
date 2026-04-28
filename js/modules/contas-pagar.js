@@ -70,8 +70,8 @@ window.contasPagarModule = {
   montarPayload() {
     const { mes, ano } = this.getMesAno();
 
-    const nfe = this.getValor("cpNfe").trim();
-    const boleto = this.getValor("cpBoleto") === "true";
+    const temNfe = Boolean(this.getValor("cpNfe").trim());
+    const temBoleto = this.getValor("cpBoleto") === "true";
 
     return {
       mes,
@@ -81,9 +81,8 @@ window.contasPagarModule = {
       categoria: this.getValor("cpCategoria").trim(),
       vencimento: this.getValor("cpVencimento") || null,
       valor: this.numero(this.getValor("cpValor")),
-      nfe,
-      tem_nfe: Boolean(nfe),
-      tem_boleto: boleto,
+      tem_nfe: temNfe,
+      tem_boleto: temBoleto,
       descricao: this.getValor("cpDescricao").trim(),
       status: "pendente"
     };
@@ -125,10 +124,7 @@ window.contasPagarModule = {
       );
 
       this.dados = Array.isArray(dados)
-        ? dados.filter((item) => {
-            const status = String(item.status || "pendente").toLowerCase();
-            return status !== "pago";
-          })
+        ? dados.filter((item) => String(item.status || "pendente").toLowerCase() !== "pago")
         : [];
 
       this.filtrados = [...this.dados];
@@ -162,8 +158,7 @@ window.contasPagarModule = {
         item.fornecedor,
         item.documento,
         item.categoria,
-        item.descricao,
-        item.nfe
+        item.descricao
       ].join(" ").toLowerCase();
 
       const bateBusca = !busca || textoItem.includes(busca);
@@ -233,7 +228,7 @@ window.contasPagarModule = {
     tbody.innerHTML = lista.map((item) => {
       const id = Number(item.id);
       const selecionado = this.selecionados.has(id);
-      const nfeOk = Boolean(item.tem_nfe || item.nfe);
+      const nfeOk = Boolean(item.tem_nfe);
       const boletoOk = Boolean(item.tem_boleto);
 
       return `
@@ -353,11 +348,8 @@ window.contasPagarModule = {
     this.setValor("cpCategoria", item.categoria || "");
     this.setValor("cpVencimento", item.vencimento || "");
     this.setValor("cpValor", item.valor || "");
-    this.setValor("cpNfe", item.nfe || "");
-    this.setValor(
-      "cpBoleto",
-      Boolean(item.tem_boleto) ? "true" : "false"
-    );
+    this.setValor("cpNfe", item.tem_nfe ? "OK" : "");
+    this.setValor("cpBoleto", item.tem_boleto ? "true" : "false");
     this.setValor("cpDescricao", item.descricao || "");
 
     window.scrollTo({
@@ -394,22 +386,9 @@ window.contasPagarModule = {
       const item = this.dados.find((i) => Number(i.id) === Number(id));
       if (!item) return;
 
-      const nfeOk = Boolean(item.tem_nfe || item.nfe);
-
-      if (nfeOk) {
-        await api.update("contas_pagar", id, {
-          nfe: "",
-          tem_nfe: false
-        });
-      } else {
-        const nfe = prompt("Informe o número da NFE:", item.documento || "");
-        if (nfe === null) return;
-
-        await api.update("contas_pagar", id, {
-          nfe: nfe.trim() || "OK",
-          tem_nfe: true
-        });
-      }
+      await api.update("contas_pagar", id, {
+        tem_nfe: !Boolean(item.tem_nfe)
+      });
 
       await this.listar();
     } catch (error) {
@@ -423,10 +402,8 @@ window.contasPagarModule = {
       const item = this.dados.find((i) => Number(i.id) === Number(id));
       if (!item) return;
 
-      const novoStatus = !Boolean(item.tem_boleto || item.boleto_recebido);
-
       await api.update("contas_pagar", id, {
-        tem_boleto: novoStatus,
+        tem_boleto: !Boolean(item.tem_boleto)
       });
 
       await this.listar();
