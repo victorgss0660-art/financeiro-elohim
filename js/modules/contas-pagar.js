@@ -398,7 +398,7 @@ async marcarPago(id) {
     await api.update("contas_pagar", id, {
       status: "pago",
       data_pagamento: dataPagamento,
-      juros_multa: valorJuros,
+      multa: valorJuros,
       desconto: valorDesconto,
       valor_pago: valorPago
     });
