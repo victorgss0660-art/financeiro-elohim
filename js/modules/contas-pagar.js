@@ -257,5 +257,13 @@ renderizar() {
     }
   }
 };
+contasPagarModule.selecionados = new Set();
+
+contasPagarModule.toggleSelecionado = function(id, checked) {
+  if (checked) this.selecionados.add(Number(id));
+  else this.selecionados.delete(Number(id));
+
+  this.renderizar();
+};
 
 window.listarContasPagar = () => contasPagarModule.listar();
