@@ -451,3 +451,11 @@ tbody tr:hover{
     width:100%;
   }
 }
+#tab-contas-pagar .linha-vermelha td {
+  background: #fee2e2 !important;
+  color: #7f1d1d;
+}
+
+#tab-contas-pagar .linha-vermelha td strong {
+  color: #7f1d1d;
+}
