@@ -68,7 +68,6 @@ window.contasPagarModule = {
       this.filtrados = [...this.dados];
 
       this.renderizar();
-      this.resumo();
 
     } catch (error) {
       console.error(error);
@@ -76,74 +75,86 @@ window.contasPagarModule = {
     }
   },
 
-renderizar() {
-  const tbody = this.get("tabelaContasPagar");
-  if (!tbody) return;
+  renderizar() {
+    const tbody = this.get("tabelaContasPagar");
+    if (!tbody) return;
 
-  const lista = this.filtrados || this.dados || [];
+    const lista = this.filtrados || [];
 
-  if (!lista.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="9">Nenhuma conta encontrada.</td>
-      </tr>
-    `;
-    return;
-  }
+    if (!lista.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9">Nenhuma conta encontrada.</td>
+        </tr>
+      `;
+      this.resumo();
+      return;
+    }
 
-  tbody.innerHTML = lista.map((item) => {
-    const id = Number(item.id);
-    const marcado = this.selecionados.has(id);
+    tbody.innerHTML = lista.map((item) => {
+      const id = Number(item.id);
+      const marcado = this.selecionados.has(id);
 
-    return `
-      <tr class="${marcado ? "linha-vermelha" : ""}">
+      return `
+        <tr class="${marcado ? "linha-vermelha" : ""}">
+          <td>
+            <input
+              type="checkbox"
+              ${marcado ? "checked" : ""}
+              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+            >
+          </td>
 
-        <td>
-          <input
-            type="checkbox"
-            ${marcado ? "checked" : ""}
-            onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
-          >
-        </td>
+          <td>${item.fornecedor || "-"}</td>
+          <td>${item.documento || "-"}</td>
+          <td>${this.moeda(item.valor)}</td>
+          <td>${this.dataBR(item.vencimento)}</td>
+          <td>${item.categoria || "-"}</td>
+          <td>${item.descricao || "-"}</td>
 
-        <td>${item.fornecedor || "-"}</td>
-        <td>${item.documento || "-"}</td>
-        <td>${this.moeda(item.valor)}</td>
-        <td>${this.dataBR(item.vencimento)}</td>
-        <td>${item.categoria || "-"}</td>
-        <td>${item.descricao || "-"}</td>
+          <td>
+            <button
+              class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
+              onclick="contasPagarModule.toggleNfe(${id})"
+            >
+              ${item.tem_nfe ? "NFE OK" : "NFE"}
+            </button>
 
-<td>
-  <button
-    class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
-    onclick="contasPagarModule.toggleNfe(${id})"
-  >
-    ${item.tem_nfe ? "NFE OK" : "NFE"}
-  </button>
+            <button
+              class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
+              onclick="contasPagarModule.toggleBoleto(${id})"
+            >
+              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+            </button>
+          </td>
 
-  <button
-    class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
-    onclick="contasPagarModule.toggleBoleto(${id})"
-  >
-    ${item.tem_boleto ? "Boleto OK" : "Boleto"}
-  </button>
-</td>
+          <td>
+            <button class="btn-editar"
+              onclick="contasPagarModule.editar(${id})">
+              Editar
+            </button>
 
-        <td>
-          <div class="row-actions">
-            <button class="btn-editar" onclick="contasPagarModule.editar(${id})">Editar</button>
-            <button class="btn-duplicar" onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
-            <button class="btn-pagar" onclick="contasPagarModule.pagar(${id})">Pagar</button>
-            <button class="btn-excluir" onclick="contasPagarModule.excluir(${id})">Excluir</button>
-          </div>
-        </td>
+            <button class="btn-duplicar"
+              onclick="contasPagarModule.duplicar(${id})">
+              Duplicar
+            </button>
 
-      </tr>
-    `;
-  }).join("");
+            <button class="btn-pagar"
+              onclick="contasPagarModule.pagar(${id})">
+              Pagar
+            </button>
 
-  this.resumo();
-}
+            <button class="btn-excluir"
+              onclick="contasPagarModule.excluir(${id})">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    this.resumo();
+  },
 
   resumo() {
     const qtd = this.get("cpQtd");
@@ -187,16 +198,8 @@ renderizar() {
       `.toLowerCase();
 
       if (busca && !texto.includes(busca)) return false;
-      if (
-        fornecedor &&
-        !(item.fornecedor || "").toLowerCase().includes(fornecedor)
-      ) return false;
-
-      if (
-        categoria &&
-        !(item.categoria || "").toLowerCase().includes(categoria)
-      ) return false;
-
+      if (fornecedor && !(item.fornecedor || "").toLowerCase().includes(fornecedor)) return false;
+      if (categoria && !(item.categoria || "").toLowerCase().includes(categoria)) return false;
       if (dtIni && item.vencimento < dtIni) return false;
       if (dtFim && item.vencimento > dtFim) return false;
 
@@ -204,7 +207,6 @@ renderizar() {
     });
 
     this.renderizar();
-    this.resumo();
   },
 
   limparFiltros() {
@@ -217,9 +219,7 @@ renderizar() {
     ].forEach((id) => this.set(id, ""));
 
     this.filtrados = [...this.dados];
-
     this.renderizar();
-    this.resumo();
   },
 
   limparFormulario() {
@@ -234,7 +234,6 @@ renderizar() {
     ].forEach((id) => this.set(id, ""));
 
     this.set("cpBoleto", "false");
-
     this.editandoId = null;
   },
 
@@ -246,7 +245,7 @@ renderizar() {
       vencimento: this.valor("cpVencimento") || null,
       valor: this.numero(this.valor("cpValor")),
       descricao: this.valor("cpDescricao").trim(),
-      tem_nfe: this.valor("cpNfe").trim() !== "",
+      tem_nfe: this.valor("cpNfe") !== "",
       tem_boleto: this.valor("cpBoleto") === "true",
       status: "pendente"
     };
@@ -257,12 +256,12 @@ renderizar() {
       const payload = this.montarPayload();
 
       if (!payload.fornecedor) {
-        alert("Informe o fornecedor.");
+        alert("Informe fornecedor.");
         return;
       }
 
       if (!payload.valor || payload.valor <= 0) {
-        alert("Informe o valor.");
+        alert("Informe valor.");
         return;
       }
 
@@ -277,7 +276,7 @@ renderizar() {
 
     } catch (error) {
       console.error(error);
-      alert("Erro ao salvar conta.");
+      alert("Erro ao salvar.");
     }
   },
 
@@ -299,10 +298,7 @@ renderizar() {
     this.set("cpNfe", item.tem_nfe ? "OK" : "");
     this.set("cpBoleto", item.tem_boleto ? "true" : "false");
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   },
 
   async duplicar(id) {
@@ -313,7 +309,7 @@ renderizar() {
 
       if (!item) return;
 
-      const novo = {
+      await api.insert("contas_pagar", {
         fornecedor: item.fornecedor,
         documento: (item.documento || "") + "-COPIA",
         categoria: item.categoria,
@@ -323,9 +319,8 @@ renderizar() {
         tem_nfe: item.tem_nfe,
         tem_boleto: item.tem_boleto,
         status: "pendente"
-      };
+      });
 
-      await api.insert("contas_pagar", novo);
       await this.listar();
 
     } catch (error) {
@@ -334,13 +329,11 @@ renderizar() {
   },
 
   async excluir(id) {
-    if (!confirm("Deseja excluir esta conta?")) return;
+    if (!confirm("Excluir conta?")) return;
 
     try {
       await api.delete("contas_pagar", id);
-
       this.selecionados.delete(Number(id));
-
       await this.listar();
 
     } catch (error) {
@@ -354,8 +347,6 @@ renderizar() {
         (x) => Number(x.id) === Number(id)
       );
 
-      if (!item) return;
-
       await api.update("contas_pagar", id, {
         tem_nfe: !item.tem_nfe
       });
@@ -363,7 +354,7 @@ renderizar() {
       await this.listar();
 
     } catch (error) {
-      alert("Erro ao atualizar NFE.");
+      alert("Erro NFE.");
     }
   },
 
@@ -373,8 +364,6 @@ renderizar() {
         (x) => Number(x.id) === Number(id)
       );
 
-      if (!item) return;
-
       await api.update("contas_pagar", id, {
         tem_boleto: !item.tem_boleto
       });
@@ -382,27 +371,18 @@ renderizar() {
       await this.listar();
 
     } catch (error) {
-      alert("Erro ao atualizar boleto.");
+      alert("Erro boleto.");
     }
   },
 
   async pagar(id) {
     try {
-      const item = this.dados.find(
-        (x) => Number(x.id) === Number(id)
-      );
-
-      if (!item) return;
-
-      const hoje = new Date()
-        .toISOString()
-        .slice(0, 10);
+      const hoje = new Date().toISOString().slice(0,10);
 
       const dataPagamento = prompt(
-        "Data do pagamento:",
+        "Data pagamento:",
         hoje
       );
-
       if (!dataPagamento) return;
 
       const multa = prompt("Multa/Juros:", "0");
@@ -423,7 +403,7 @@ renderizar() {
       await this.listar();
 
       if (window.contasPagasModule?.carregar) {
-        await contasPagasModule.carregar();
+        contasPagasModule.carregar();
       }
 
     } catch (error) {
@@ -432,14 +412,10 @@ renderizar() {
   },
 
   toggleSelecionado(id, marcado) {
-    if (marcado) {
-      this.selecionados.add(Number(id));
-    } else {
-      this.selecionados.delete(Number(id));
-    }
+    if (marcado) this.selecionados.add(Number(id));
+    else this.selecionados.delete(Number(id));
 
     this.renderizar();
-    this.resumo();
   },
 
   selecionarTodos() {
@@ -448,30 +424,26 @@ renderizar() {
     );
 
     this.renderizar();
-    this.resumo();
   },
 
   limparSelecao() {
     this.selecionados.clear();
-
     this.renderizar();
-    this.resumo();
   },
 
   async pagarSelecionadas() {
-    if (!this.selecionados.size) {
-      alert("Nenhuma conta selecionada.");
+    const ids = [...this.selecionados];
+
+    if (!ids.length) {
+      alert("Nenhuma selecionada.");
       return;
     }
-
-    const ids = [...this.selecionados];
 
     for (const id of ids) {
       await this.pagar(id);
     }
 
     this.selecionados.clear();
-
     await this.listar();
   }
 };
