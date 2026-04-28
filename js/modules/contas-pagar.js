@@ -69,6 +69,7 @@ window.contasPagarModule = {
 
   montarPayload() {
     const { mes, ano } = this.getMesAno();
+
     const nfe = this.getValor("cpNfe").trim();
     const boleto = this.getValor("cpBoleto") === "true";
 
@@ -354,7 +355,10 @@ window.contasPagarModule = {
     this.setValor("cpVencimento", item.vencimento || "");
     this.setValor("cpValor", item.valor || "");
     this.setValor("cpNfe", item.nfe || "");
-    this.setValor("cpBoleto", Boolean(item.tem_boleto || item.boleto_recebido) ? "true" : "false");
+    this.setValor(
+      "cpBoleto",
+      Boolean(item.tem_boleto || item.boleto_recebido) ? "true" : "false"
+    );
     this.setValor("cpDescricao", item.descricao || "");
 
     window.scrollTo({
@@ -373,11 +377,10 @@ window.contasPagarModule = {
       delete copia.id;
       delete copia.created_at;
       delete copia.updated_at;
+      delete copia.data_pagamento;
 
       copia.status = "pendente";
-      copia.documento = copia.documento
-        ? `${copia.documento}-CÓPIA`
-        : "CÓPIA";
+      copia.documento = copia.documento ? `${copia.documento}-CÓPIA` : "CÓPIA";
 
       await api.insert("contas_pagar", copia);
       await this.listar();
@@ -435,30 +438,30 @@ window.contasPagarModule = {
     }
   },
 
-async marcarPago(id) {
-  try {
-    const item = this.dados.find((i) => Number(i.id) === Number(id));
-    if (!item) return;
+  async marcarPago(id) {
+    try {
+      const item = this.dados.find((i) => Number(i.id) === Number(id));
+      if (!item) return;
 
-    const hoje = new Date().toISOString().slice(0, 10);
+      const hoje = new Date().toISOString().slice(0, 10);
 
-    await api.update("contas_pagar", id, {
-      status: "pago",
-      data_pagamento: hoje
-    });
+      await api.update("contas_pagar", id, {
+        status: "pago",
+        data_pagamento: hoje
+      });
 
-    this.selecionados.delete(Number(id));
+      this.selecionados.delete(Number(id));
 
-    await this.listar();
+      await this.listar();
 
-    if (window.contasPagasModule?.carregar) {
-      await contasPagasModule.carregar();
+      if (window.contasPagasModule?.carregar) {
+        await contasPagasModule.carregar();
+      }
+    } catch (error) {
+      console.error("Erro ao pagar conta:", error);
+      alert("Erro ao pagar conta: " + error.message);
     }
-  } catch (error) {
-    console.error("Erro ao pagar conta:", error);
-    alert("Erro ao pagar conta: " + error.message);
-  }
-}
+  },
 
   async pagarSelecionadas() {
     if (!this.selecionados.size) {
