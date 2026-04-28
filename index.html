@@ -187,10 +187,12 @@
           <div class="panel-head">
             <h3>Contas em Aberto</h3>
 
-            <div class="actions-row">
-              <button class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">Selecionar todas</button>
-              <button class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
-            </div>
+<div class="actions-row">
+  <button class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">Selecionar todas</button>
+  <button class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
+  <button class="secondary-btn action-btn-green" onclick="contasPagarModule.pagarSelecionadas()">Pagar selecionadas</button>
+  <button class="secondary-btn" onclick="contasPagarModule.limparFiltros()">Limpar filtros</button>
+</div>
           </div>
 <div class="form-grid" style="margin-bottom: 14px;">
   <div>
