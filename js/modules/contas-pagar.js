@@ -68,54 +68,63 @@ window.contasPagarModule = {
     }
   },
 
-  renderizar() {
-    const tbody = this.get("tabelaContasPagar");
-    if (!tbody) return;
+renderizar() {
+  const tbody = this.get("tabelaContasPagar");
+  if (!tbody) return;
 
-    if (!this.dados.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="9">Nenhuma conta encontrada.</td>
-        </tr>
-      `;
-      return;
-    }
+  if (!this.dados.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9">Nenhuma conta encontrada.</td>
+      </tr>
+    `;
+    return;
+  }
 
-    tbody.innerHTML = this.dados.map((item) => {
-      const id = Number(item.id);
+  tbody.innerHTML = this.dados.map((item) => {
+    const id = Number(item.id);
+    const marcado = this.selecionados?.has(id);
 
-      return `
-        <tr>
-          <td>${item.fornecedor || "-"}</td>
-          <td>${item.documento || "-"}</td>
-          <td>${this.moeda(item.valor)}</td>
-          <td>${this.dataBR(item.vencimento)}</td>
-          <td>${item.categoria || "-"}</td>
-          <td>${item.descricao || "-"}</td>
+    return `
+      <tr class="${marcado ? "linha-vermelha" : ""}">
+        <td>
+          <input
+            type="checkbox"
+            ${marcado ? "checked" : ""}
+            onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+          >
+        </td>
 
-          <td>
-            <button 
-              class="doc-btn ${item.tem_nfe ? "ok" : "warn"}"
-              onclick="contasPagarModule.toggleNfe(${id})"
-            >
-              ${item.tem_nfe ? "NFE OK" : "NFE"}
-            </button>
+        <td>${item.fornecedor || "-"}</td>
+        <td>${item.documento || "-"}</td>
+        <td>${this.moeda(item.valor)}</td>
+        <td>${this.dataBR(item.vencimento)}</td>
+        <td>${item.categoria || "-"}</td>
+        <td>${item.descricao || "-"}</td>
 
-            <button 
-              class="doc-btn ${item.tem_boleto ? "ok" : "warn"}"
-              onclick="contasPagarModule.toggleBoleto(${id})"
-            >
-              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
-            </button>
-          </td>
+        <td>
+          <button
+            class="doc-btn ${item.tem_nfe ? "ok" : "warn"}"
+            onclick="contasPagarModule.toggleNfe(${id})"
+          >
+            ${item.tem_nfe ? "NFE OK" : "NFE"}
+          </button>
 
-          <td>
-            <button onclick="contasPagarModule.pagar(${id})">Pagar</button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-  },
+          <button
+            class="doc-btn ${item.tem_boleto ? "ok" : "warn"}"
+            onclick="contasPagarModule.toggleBoleto(${id})"
+          >
+            ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+          </button>
+        </td>
+
+        <td>
+          <button onclick="contasPagarModule.pagar(${id})">Pagar</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+},
 
   async salvar() {
     try {
