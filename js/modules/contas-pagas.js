@@ -1,175 +1,159 @@
 window.contasPagasModule = {
-  lista: [],
-  chartMes: null,
-  chartCategoria: null,
+  dados: [],
+  filtrados: [],
 
-  async carregarContasPagas() {
+  async carregar() {
+    await this.listar();
+  },
+
+  numero(valor) {
+    if (typeof valor === "number") return Number.isFinite(valor) ? valor : 0;
+    if (!valor) return 0;
+
+    let texto = String(valor).replace(/R\$/g, "").replace(/\s/g, "").trim();
+
+    if (texto.includes(",") && texto.includes(".")) {
+      texto = texto.replace(/\./g, "").replace(",", ".");
+    } else if (texto.includes(",")) {
+      texto = texto.replace(",", ".");
+    }
+
+    const n = Number(texto);
+    return Number.isFinite(n) ? n : 0;
+  },
+
+  moeda(valor) {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    }).format(Number(valor || 0));
+  },
+
+  dataBR(data) {
+    if (!data) return "-";
+    const d = new Date(String(data) + "T00:00:00");
+    if (Number.isNaN(d.getTime())) return data;
+    return d.toLocaleDateString("pt-BR");
+  },
+
+  async listar() {
     try {
-      const data = await api.restGet(
+      const dados = await api.restGet(
         "contas_pagar",
-        "select=*&status=eq.pago"
+        "select=*&status=eq.pago&order=data_pagamento.desc"
       );
 
-      this.lista = Array.isArray(data) ? data : [];
+      this.dados = Array.isArray(dados) ? dados : [];
+      this.filtrados = [...this.dados];
 
-      this.renderTabela();
-      this.renderCards();
-      this.renderGraficoMes();
-      this.renderGraficoCategoria();
-      this.renderRankingFornecedores();
-    } catch (e) {
-      utils.setAppMsg("Erro ao carregar contas pagas", "err");
+      this.renderizar();
+      this.atualizarResumo();
+    } catch (error) {
+      console.error("Erro ao carregar contas pagas:", error);
+      alert("Erro ao carregar contas pagas: " + error.message);
     }
   },
 
-  renderTabela() {
+  aplicarFiltros() {
+    const busca = String(document.getElementById("pagasBusca")?.value || "")
+      .trim()
+      .toLowerCase();
+
+    const dataInicio = document.getElementById("pagasDataInicio")?.value || "";
+    const dataFim = document.getElementById("pagasDataFim")?.value || "";
+
+    this.filtrados = this.dados.filter((item) => {
+      const textoItem = [
+        item.fornecedor,
+        item.documento,
+        item.categoria,
+        item.descricao,
+        item.nfe
+      ].join(" ").toLowerCase();
+
+      const bateBusca = !busca || textoItem.includes(busca);
+
+      let bateData = true;
+
+      if (dataInicio || dataFim) {
+        const dataBase = item.data_pagamento || item.vencimento;
+
+        if (!dataBase) {
+          bateData = false;
+        } else {
+          const dataItem = new Date(String(dataBase) + "T00:00:00");
+
+          if (dataInicio) {
+            const inicio = new Date(dataInicio + "T00:00:00");
+            if (dataItem < inicio) bateData = false;
+          }
+
+          if (dataFim) {
+            const fim = new Date(dataFim + "T23:59:59");
+            if (dataItem > fim) bateData = false;
+          }
+        }
+      }
+
+      return bateBusca && bateData;
+    });
+
+    this.renderizar();
+    this.atualizarResumo();
+  },
+
+  limparFiltros() {
+    const campos = ["pagasBusca", "pagasDataInicio", "pagasDataFim"];
+    campos.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+
+    this.filtrados = [...this.dados];
+    this.renderizar();
+    this.atualizarResumo();
+  },
+
+  renderizar() {
     const tbody = document.getElementById("tabelaContasPagas");
     if (!tbody) return;
 
-    if (!this.lista.length) {
+    const lista = this.filtrados || [];
+
+    if (!lista.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="muted">Nenhuma conta paga.</td>
+          <td colspan="7" class="muted">Nenhuma conta paga encontrada.</td>
         </tr>
       `;
       return;
     }
 
-    tbody.innerHTML = this.lista.map(i => `
+    tbody.innerHTML = lista.map((item) => `
       <tr>
-        <td>${i.fornecedor || "-"}</td>
-        <td>${i.documento || "-"}</td>
-        <td>${i.categoria || "-"}</td>
-        <td>${utils.moeda(i.valor || 0)}</td>
-        <td>${i.data_pagamento || "-"}</td>
+        <td><strong>${item.fornecedor || "-"}</strong></td>
+        <td>${item.documento || "-"}</td>
+        <td>${item.categoria || "-"}</td>
+        <td>${this.dataBR(item.vencimento)}</td>
+        <td>${this.dataBR(item.data_pagamento)}</td>
+        <td>${item.descricao || "-"}</td>
+        <td><strong>${this.moeda(item.valor || 0)}</strong></td>
       </tr>
     `).join("");
   },
 
-  renderCards() {
-    const total = this.lista.reduce((acc, i) => acc + Number(i.valor || 0), 0);
-    const qtd = this.lista.length;
-    const media = qtd ? total / qtd : 0;
-    const maior = Math.max(...this.lista.map(i => Number(i.valor || 0)), 0);
+  atualizarResumo() {
+    const total = this.filtrados.reduce(
+      (acc, item) => acc + this.numero(item.valor),
+      0
+    );
 
-    const totalEl = document.getElementById("cpPagasTotalCard");
-    const qtdEl = document.getElementById("cpPagasQtdCard");
-    const mediaEl = document.getElementById("cpPagasMedia");
-    const maiorEl = document.getElementById("cpPagasMaior");
+    const qtdEl = document.getElementById("pagasQtd");
+    const totalEl = document.getElementById("pagasTotal");
 
-    if (totalEl) totalEl.textContent = utils.moeda(total);
-    if (qtdEl) qtdEl.textContent = String(qtd);
-    if (mediaEl) mediaEl.textContent = utils.moeda(media);
-    if (maiorEl) maiorEl.textContent = utils.moeda(maior);
-  },
-
-  renderGraficoMes() {
-    const ctx = document.getElementById("chartPagasMes");
-    if (!ctx || typeof Chart === "undefined") return;
-
-    const dados = {};
-
-    this.lista.forEach(i => {
-      if (!i.data_pagamento) return;
-      const mes = String(i.data_pagamento).slice(0, 7);
-      dados[mes] = (dados[mes] || 0) + Number(i.valor || 0);
-    });
-
-    const labels = Object.keys(dados).sort();
-    const valores = labels.map(l => dados[l]);
-
-    if (this.chartMes) this.chartMes.destroy();
-
-    this.chartMes = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "Pagamentos",
-          data: valores,
-          tension: 0.35
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-  },
-
-  renderGraficoCategoria() {
-    const ctx = document.getElementById("chartPagasCategoria");
-    if (!ctx || typeof Chart === "undefined") return;
-
-    const dados = {};
-
-    this.lista.forEach(i => {
-      const cat = i.categoria || "Outros";
-      dados[cat] = (dados[cat] || 0) + Number(i.valor || 0);
-    });
-
-    const labels = Object.keys(dados);
-    const valores = Object.values(dados);
-
-    if (this.chartCategoria) this.chartCategoria.destroy();
-
-    this.chartCategoria = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels,
-        datasets: [{
-          data: valores
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-  },
-
-  renderRankingFornecedores() {
-    const el = document.getElementById("rankingFornecedoresPagas");
-    if (!el) return;
-
-    if (!this.lista.length) {
-      el.innerHTML = `<div class="muted">Nenhum dado disponível.</div>`;
-      return;
-    }
-
-    const mapa = {};
-
-    this.lista.forEach(item => {
-      const fornecedor = item.fornecedor || "Sem fornecedor";
-      if (!mapa[fornecedor]) {
-        mapa[fornecedor] = {
-          fornecedor,
-          total: 0,
-          quantidade: 0
-        };
-      }
-
-      mapa[fornecedor].total += Number(item.valor || 0);
-      mapa[fornecedor].quantidade += 1;
-    });
-
-    const ranking = Object.values(mapa)
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 10);
-
-    el.innerHTML = ranking.map((item, index) => `
-      <div class="alert-item">
-        <strong>#${index + 1} ${item.fornecedor}</strong><br>
-        Total pago: ${utils.moeda(item.total)}<br>
-        Quantidade de pagamentos: ${item.quantidade}
-      </div>
-    `).join("");
-  },
-
-  exportarPlanilha() {
-    const ws = XLSX.utils.json_to_sheet(this.lista);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Pagas");
-    XLSX.writeFile(wb, "contas_pagas.xlsx");
+    if (qtdEl) qtdEl.textContent = this.filtrados.length;
+    if (totalEl) totalEl.textContent = this.moeda(total);
   }
 };
+
+window.listarContasPagas = () => contasPagasModule.listar();
