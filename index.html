@@ -481,14 +481,41 @@
         <div class="panel empty-state">Módulo será recriado depois.</div>
       </section>
 
-      <section id="tab-planejamento" class="tab-section">
-        <div class="page-head">
-          <h2>Planejamento</h2>
-          <p>Forecast, fluxo futuro e cenários financeiros.</p>
-        </div>
+ <section id="tab-planejamento" class="tab-section">
+  <div class="page-head">
+    <h2>Planejamento 12 Semanas</h2>
+    <p>Previsão de contas a receber, contas a pagar e saldo projetado por semana.</p>
+  </div>
 
-        <div class="panel empty-state">Módulo será recriado depois.</div>
-      </section>
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Fluxo projetado</h3>
+      <button class="secondary-btn" onclick="planejamentoModule.carregar()">
+        Atualizar
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Semana</th>
+            <th>Período</th>
+            <th>A Receber</th>
+            <th>A Pagar</th>
+            <th>Saldo Projetado</th>
+          </tr>
+        </thead>
+
+        <tbody id="tabelaPlanejamento">
+          <tr>
+            <td colspan="5" class="muted">Nenhuma informação carregada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
       <section id="tab-dre" class="tab-section">
         <div class="page-head">
