@@ -49,54 +49,63 @@
         </div>
       </header>
 
-      <section id="tab-dashboard" class="tab-section active">
-        <div class="page-head">
-          <h2>Dashboard</h2>
-          <p>Visão executiva do mês selecionado.</p>
-        </div>
+<section id="dashboard" class="tab-page active">
 
-        <section class="cards-grid">
-          <div class="card">
-            <span>Faturamento</span>
-            <strong id="dashFaturamento">R$ 0,00</strong>
-          </div>
+  <h2>Dashboard Premium</h2>
+  <p>Visão financeira em tempo real.</p>
 
-          <div class="card">
-            <span>Gastos</span>
-            <strong id="dashGastos">R$ 0,00</strong>
-          </div>
+  <div class="grid-4">
 
-          <div class="card">
-            <span>Lucro</span>
-            <strong id="dashLucro">R$ 0,00</strong>
-          </div>
+    <div class="card">
+      <small>Total em Aberto</small>
+      <h2 id="dashTotalAberto">R$ 0,00</h2>
+    </div>
 
-          <div class="card">
-            <span>Margem</span>
-            <strong id="dashMargem">0%</strong>
-          </div>
-        </section>
+    <div class="card">
+      <small>Vencidas</small>
+      <h2 id="dashTotalVencidas">R$ 0,00</h2>
+    </div>
 
-        <section class="grid-2">
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Gastos x Meta</h3>
-            </div>
-            <div class="chart-box">
-              <canvas id="chartGastosMeta"></canvas>
-            </div>
-          </div>
+    <div class="card">
+      <small>Pagas no Mês</small>
+      <h2 id="dashPagasMes">R$ 0,00</h2>
+    </div>
 
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Distribuição por Categoria</h3>
-            </div>
-            <div class="chart-box">
-              <canvas id="chartCategorias"></canvas>
-            </div>
-          </div>
-        </section>
-      </section>
+    <div class="card">
+      <small>Vence Hoje</small>
+      <h2 id="dashVenceHoje">R$ 0,00</h2>
+    </div>
+
+  </div>
+
+  <div class="grid-2 mt20">
+
+    <div class="card">
+      <h3>Próximos Vencimentos</h3>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Fornecedor</th>
+            <th>Documento</th>
+            <th>Vencimento</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+
+        <tbody id="dashboardVencimentos"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Top Fornecedores</h3>
+
+      <div id="dashboardTopFornecedores"></div>
+    </div>
+
+  </div>
+
+</section>
 
       <section id="tab-contas-pagar" class="tab-section">
         <div class="page-head">
