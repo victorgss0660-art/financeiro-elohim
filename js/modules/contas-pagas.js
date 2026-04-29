@@ -10,32 +10,26 @@ window.contasPagasModule = {
     return this.get(id)?.value || "";
   },
 
-numero(valor) {
-  if (typeof valor === "number") return valor;
-  if (valor === null || valor === undefined || valor === "") return 0;
+  numero(valor) {
+    if (typeof valor === "number") return valor;
+    if (valor === null || valor === undefined || valor === "") return 0;
 
-  let txt = String(valor).trim();
+    let txt = String(valor).trim();
+    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
 
-  txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
+    const temVirgula = txt.includes(",");
+    const temPonto = txt.includes(".");
 
-  const temVirgula = txt.includes(",");
-  const temPonto = txt.includes(".");
+    if (temVirgula && temPonto) {
+      txt = txt.replace(/\./g, "").replace(",", ".");
+    } else if (temVirgula && !temPonto) {
+      txt = txt.replace(",", ".");
+    }
 
-  if (temVirgula && temPonto) {
-    /* 1.706,67 */
-    txt = txt.replace(/\./g, "").replace(",", ".");
-  } else if (temVirgula && !temPonto) {
-    /* 1706,67 */
-    txt = txt.replace(",", ".");
-  } else if (temPonto && !temVirgula) {
-    /* 1706.67  -> mantém */
-  } else {
-    /* inteiro */
-  }
+    const n = parseFloat(txt);
+    return isNaN(n) ? 0 : n;
+  },
 
-  const n = parseFloat(txt);
-  return isNaN(n) ? 0 : n;
-}
   moeda(valor) {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -45,10 +39,8 @@ numero(valor) {
 
   dataBR(data) {
     if (!data) return "-";
-
     const d = new Date(data + "T00:00:00");
     if (isNaN(d.getTime())) return data;
-
     return d.toLocaleDateString("pt-BR");
   },
 
@@ -64,17 +56,13 @@ numero(valor) {
       );
 
       this.dados = Array.isArray(dados)
-        ? dados.filter(
-            (item) =>
-              String(item.status || "").toLowerCase() === "pago"
-          )
+        ? dados.filter(item => String(item.status || "").toLowerCase() === "pago")
         : [];
 
       this.filtrados = [...this.dados];
 
       this.renderizar();
       this.resumo();
-
     } catch (error) {
       console.error(error);
       alert("Erro ao carregar contas pagas.");
@@ -88,15 +76,11 @@ numero(valor) {
     const lista = this.filtrados || [];
 
     if (!lista.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="8">Nenhuma conta paga encontrada.</td>
-        </tr>
-      `;
+      tbody.innerHTML = `<tr><td colspan="8">Nenhuma conta paga encontrada.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = lista.map((item) => `
+    tbody.innerHTML = lista.map(item => `
       <tr>
         <td>${item.fornecedor || "-"}</td>
         <td>${item.documento || "-"}</td>
@@ -105,12 +89,8 @@ numero(valor) {
         <td>${this.dataBR(item.data_pagamento)}</td>
         <td>${item.descricao || "-"}</td>
         <td>${this.moeda(item.valor)}</td>
-
         <td>
-          <button
-            class="btn-excluir"
-            onclick="contasPagasModule.cancelar(${item.id})"
-          >
+          <button class="btn-excluir" onclick="contasPagasModule.cancelar(${item.id})">
             Cancelar
           </button>
         </td>
@@ -119,16 +99,10 @@ numero(valor) {
   },
 
   resumo() {
-    const qtd = this.get("pagasQtd");
-    const total = this.get("pagasTotal");
+    const soma = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
 
-    const soma = this.filtrados.reduce(
-      (acc, item) => acc + this.numero(item.valor),
-      0
-    );
-
-    if (qtd) qtd.textContent = this.filtrados.length;
-    if (total) total.textContent = this.moeda(soma);
+    if (this.get("pagasQtd")) this.get("pagasQtd").textContent = this.filtrados.length;
+    if (this.get("pagasTotal")) this.get("pagasTotal").textContent = this.moeda(soma);
   },
 
   aplicarFiltros() {
@@ -136,7 +110,7 @@ numero(valor) {
     const dtIni = this.valor("pagasDataInicio");
     const dtFim = this.valor("pagasDataFim");
 
-    this.filtrados = this.dados.filter((item) => {
+    this.filtrados = this.dados.filter(item => {
       const texto = `
         ${item.fornecedor || ""}
         ${item.documento || ""}
@@ -158,24 +132,18 @@ numero(valor) {
   },
 
   limparFiltros() {
-    ["pagasBusca", "pagasDataInicio", "pagasDataFim"]
-      .forEach((id) => {
-        const el = this.get(id);
-        if (el) el.value = "";
-      });
+    ["pagasBusca", "pagasDataInicio", "pagasDataFim"].forEach(id => {
+      const el = this.get(id);
+      if (el) el.value = "";
+    });
 
     this.filtrados = [...this.dados];
-
     this.renderizar();
     this.resumo();
   },
 
   async cancelar(id) {
-    const ok = confirm(
-      "Deseja cancelar este pagamento?\nA conta voltará para Contas a Pagar."
-    );
-
-    if (!ok) return;
+    if (!confirm("Deseja cancelar este pagamento? A conta voltará para Contas a Pagar.")) return;
 
     try {
       await api.update("contas_pagar", id, {
@@ -192,7 +160,6 @@ numero(valor) {
       }
 
       alert("Pagamento cancelado.");
-
     } catch (error) {
       console.error(error);
       alert("Erro ao cancelar pagamento.");
@@ -200,5 +167,4 @@ numero(valor) {
   }
 };
 
-window.listarContasPagas = () =>
-  contasPagasModule.listar();
+window.listarContasPagas = () => contasPagasModule.listar();
