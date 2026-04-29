@@ -78,7 +78,7 @@ window.contasPagasModule = {
     if (!lista.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="7">Nenhuma conta paga encontrada.</td>
+          <td colspan="8">Nenhuma conta paga encontrada.</td>
         </tr>
       `;
       return;
@@ -93,6 +93,15 @@ window.contasPagasModule = {
         <td>${this.dataBR(item.data_pagamento)}</td>
         <td>${item.descricao || "-"}</td>
         <td>${this.moeda(item.valor)}</td>
+
+        <td>
+          <button
+            class="btn-excluir"
+            onclick="contasPagasModule.cancelar(${item.id})"
+          >
+            Cancelar
+          </button>
+        </td>
       </tr>
     `).join("");
   },
@@ -147,6 +156,35 @@ window.contasPagasModule = {
 
     this.renderizar();
     this.resumo();
+  },
+
+  async cancelar(id) {
+    const ok = confirm(
+      "Deseja cancelar este pagamento?\nA conta voltará para Contas a Pagar."
+    );
+
+    if (!ok) return;
+
+    try {
+      await api.update("contas_pagar", id, {
+        status: "pendente",
+        data_pagamento: null,
+        multa: 0,
+        desconto: 0
+      });
+
+      await this.listar();
+
+      if (window.contasPagarModule?.carregar) {
+        await contasPagarModule.carregar();
+      }
+
+      alert("Pagamento cancelado.");
+
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao cancelar pagamento.");
+    }
   }
 };
 
