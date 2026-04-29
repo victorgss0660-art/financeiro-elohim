@@ -387,14 +387,81 @@
         </div>
       </section>
 
-      <section id="tab-contas-receber" class="tab-section">
-        <div class="page-head">
-          <h2>Contas a Receber</h2>
-          <p>Controle de clientes, notas e recebimentos.</p>
-        </div>
+<section id="contas-receber" class="tab-page">
 
-        <div class="panel empty-state">Módulo será recriado depois.</div>
-      </section>
+  <h2>Contas a Receber</h2>
+
+  <div class="card">
+    <div class="grid-6">
+
+      <input id="receberCliente" placeholder="Cliente">
+
+      <input id="receberDocumento" placeholder="NF / Pedido / FAT">
+
+      <input id="receberCategoria" placeholder="Categoria">
+
+      <input id="receberVencimento" type="date">
+
+      <input id="receberValor" placeholder="Valor">
+
+      <input id="receberDescricao" placeholder="Descrição">
+
+    </div>
+
+    <div style="margin-top:12px;">
+      <button onclick="contasReceberModule.salvar()">
+        Salvar
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="grid-4">
+
+      <input
+        id="receberBusca"
+        placeholder="Buscar..."
+        oninput="contasReceberModule.filtrar()"
+      >
+
+      <div>
+        <strong>Total:</strong>
+        <span id="receberTotal">R$ 0,00</span>
+      </div>
+
+      <div>
+        <strong>Em aberto:</strong>
+        <span id="receberAberto">R$ 0,00</span>
+      </div>
+
+      <div>
+        <strong>Qtd:</strong>
+        <span id="receberQtd">0</span>
+      </div>
+
+    </div>
+
+    <table class="table" style="margin-top:15px;">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Documento</th>
+          <th>Categoria</th>
+          <th>Vencimento</th>
+          <th>Recebido em</th>
+          <th>Descrição</th>
+          <th>Valor</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+
+      <tbody id="tabelaContasReceber"></tbody>
+    </table>
+
+  </div>
+
+</section>
 
       <section id="tab-faturamento" class="tab-section">
         <div class="page-head">
