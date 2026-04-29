@@ -79,32 +79,40 @@ window.planejamentoModule = {
     );
   },
 
-  renderizarSaldos() {
-    const tbody = this.get("tabelaSaldosBancarios");
-    const totalEl = this.get("planejamentoSaldoInicial");
+renderizarSaldos() {
+  const tbody = this.get("tabelaSaldosBancarios");
+  const totalEl = this.get("planejamentoSaldoInicial");
 
-    if (totalEl) {
-      totalEl.textContent = this.moeda(this.saldoInicialTotal());
-    }
+  if (totalEl) {
+    totalEl.textContent = this.moeda(this.saldoInicialTotal());
+  }
 
-    if (!tbody) return;
+  if (!tbody) return;
 
-    if (!this.saldos.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="2">Nenhum saldo bancário encontrado.</td>
-        </tr>
-      `;
-      return;
-    }
-
-    tbody.innerHTML = this.saldos.map(item => `
+  if (!this.saldos.length) {
+    tbody.innerHTML = `
       <tr>
-        <td>${item.conta || "-"}</td>
-        <td><strong>${this.moeda(item.saldo)}</strong></td>
+        <td colspan="3">Nenhum saldo bancário encontrado.</td>
       </tr>
-    `).join("");
-  },
+    `;
+    return;
+  }
+
+  tbody.innerHTML = this.saldos.map(item => `
+    <tr>
+      <td>${item.conta || "-"}</td>
+      <td><strong>${this.moeda(item.saldo)}</strong></td>
+      <td>
+        <button
+          class="btn-editar"
+          onclick="planejamentoModule.editarSaldoBanco(${Number(item.id)})"
+        >
+          Editar
+        </button>
+      </td>
+    </tr>
+  `).join("");
+},
 
   renderizarPlanejamento() {
     const tbody = this.get("tabelaPlanejamento");
