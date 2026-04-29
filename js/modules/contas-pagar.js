@@ -431,22 +431,81 @@ window.contasPagarModule = {
     this.renderizar();
   },
 
-  async pagarSelecionadas() {
-    const ids = [...this.selecionados];
+async pagarSelecionadas() {
+  const ids = [...this.selecionados];
 
-    if (!ids.length) {
-      alert("Nenhuma selecionada.");
-      return;
-    }
-
-    for (const id of ids) {
-      await this.pagar(id);
-    }
-
-    this.selecionados.clear();
-    await this.listar();
+  if (!ids.length) {
+    alert("Nenhuma conta selecionada.");
+    return;
   }
-};
+
+  const contas = this.filtrados.filter((item) =>
+    ids.includes(Number(item.id))
+  );
+
+  const totalOriginal = contas.reduce(
+    (acc, item) => acc + this.numero(item.valor),
+    0
+  );
+
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  const dataPagamento = prompt(
+    `Data do pagamento para ${contas.length} conta(s):\n\nTotal original: ${this.moeda(totalOriginal)}`,
+    hoje
+  );
+
+  if (!dataPagamento) return;
+
+  const multa = prompt(
+    "Informe multa/juros total para as contas selecionadas:",
+    "0"
+  );
+
+  if (multa === null) return;
+
+  const desconto = prompt(
+    "Informe desconto total para as contas selecionadas:",
+    "0"
+  );
+
+  if (desconto === null) return;
+
+  const valorMulta = this.numero(multa);
+  const valorDesconto = this.numero(desconto);
+  const valorFinal = totalOriginal + valorMulta - valorDesconto;
+
+  const confirmar = confirm(
+    `Confirmar pagamento em lote?\n\n` +
+    `Quantidade: ${contas.length}\n` +
+    `Total original: ${this.moeda(totalOriginal)}\n` +
+    `Multa/Juros total: ${this.moeda(valorMulta)}\n` +
+    `Desconto total: ${this.moeda(valorDesconto)}\n` +
+    `Valor final: ${this.moeda(valorFinal)}\n` +
+    `Data pagamento: ${dataPagamento}`
+  );
+
+  if (!confirmar) return;
+
+  for (const item of contas) {
+    await api.update("contas_pagar", item.id, {
+      status: "pago",
+      data_pagamento: dataPagamento,
+      multa: valorMulta / contas.length,
+      desconto: valorDesconto / contas.length
+    });
+  }
+
+  this.selecionados.clear();
+
+  await this.listar();
+
+  if (window.contasPagasModule?.carregar) {
+    await contasPagasModule.carregar();
+  }
+
+  alert("Contas pagas com sucesso.");
+}
 
 window.listarContasPagar = () =>
   contasPagarModule.listar();
