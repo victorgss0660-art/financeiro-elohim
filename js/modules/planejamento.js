@@ -196,5 +196,31 @@ renderizarSaldos() {
     if (saldoFinalEl) saldoFinalEl.textContent = this.moeda(saldoAcumulado);
   }
 };
+async editarSaldoBanco(id) {
+  const item = this.saldos.find(x => Number(x.id) === Number(id));
+  if (!item) return;
+
+  const novoSaldo = prompt(
+    `Novo saldo para ${item.conta}:`,
+    String(item.saldo || 0).replace(".", ",")
+  );
+
+  if (novoSaldo === null) return;
+
+  const valor = this.numero(novoSaldo);
+
+  try {
+    await api.update("saldos_bancarios", id, {
+      saldo: valor
+    });
+
+    await this.carregar();
+
+    alert("Saldo atualizado com sucesso.");
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao atualizar saldo bancário.");
+  }
+}
 
 window.carregarPlanejamento = () => planejamentoModule.carregar();
