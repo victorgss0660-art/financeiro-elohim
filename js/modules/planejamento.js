@@ -221,6 +221,6 @@ async editarSaldoBanco(id) {
     console.error(error);
     alert("Erro ao atualizar saldo bancário.");
   }
-}
+},
 
 window.carregarPlanejamento = () => planejamentoModule.carregar();
