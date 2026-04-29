@@ -10,20 +10,32 @@ window.contasPagasModule = {
     return this.get(id)?.value || "";
   },
 
-  numero(valor) {
-    if (typeof valor === "number") return valor;
-    if (!valor) return 0;
+numero(valor) {
+  if (typeof valor === "number") return valor;
+  if (valor === null || valor === undefined || valor === "") return 0;
 
-    let txt = String(valor)
-      .replace(/R\$/g, "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .trim();
+  let txt = String(valor).trim();
 
-    const n = parseFloat(txt);
-    return isNaN(n) ? 0 : n;
-  },
+  txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
 
+  const temVirgula = txt.includes(",");
+  const temPonto = txt.includes(".");
+
+  if (temVirgula && temPonto) {
+    /* 1.706,67 */
+    txt = txt.replace(/\./g, "").replace(",", ".");
+  } else if (temVirgula && !temPonto) {
+    /* 1706,67 */
+    txt = txt.replace(",", ".");
+  } else if (temPonto && !temVirgula) {
+    /* 1706.67  -> mantém */
+  } else {
+    /* inteiro */
+  }
+
+  const n = parseFloat(txt);
+  return isNaN(n) ? 0 : n;
+}
   moeda(valor) {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
