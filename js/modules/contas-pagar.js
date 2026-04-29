@@ -17,32 +17,25 @@ window.contasPagarModule = {
     if (el) el.value = valor ?? "";
   },
 
-numero(valor) {
-  if (typeof valor === "number") return valor;
-  if (valor === null || valor === undefined || valor === "") return 0;
+  numero(valor) {
+    if (typeof valor === "number") return valor;
+    if (valor === null || valor === undefined || valor === "") return 0;
 
-  let txt = String(valor).trim();
+    let txt = String(valor).trim();
+    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
 
-  txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
+    const temVirgula = txt.includes(",");
+    const temPonto = txt.includes(".");
 
-  const temVirgula = txt.includes(",");
-  const temPonto = txt.includes(".");
+    if (temVirgula && temPonto) {
+      txt = txt.replace(/\./g, "").replace(",", ".");
+    } else if (temVirgula && !temPonto) {
+      txt = txt.replace(",", ".");
+    }
 
-  if (temVirgula && temPonto) {
-    /* 1.706,67 */
-    txt = txt.replace(/\./g, "").replace(",", ".");
-  } else if (temVirgula && !temPonto) {
-    /* 1706,67 */
-    txt = txt.replace(",", ".");
-  } else if (temPonto && !temVirgula) {
-    /* 1706.67  -> mantém */
-  } else {
-    /* inteiro */
-  }
-
-  const n = parseFloat(txt);
-  return isNaN(n) ? 0 : n;
-}
+    const n = parseFloat(txt);
+    return isNaN(n) ? 0 : n;
+  },
 
   moeda(valor) {
     return new Intl.NumberFormat("pt-BR", {
@@ -53,10 +46,8 @@ numero(valor) {
 
   dataBR(data) {
     if (!data) return "-";
-
     const d = new Date(data + "T00:00:00");
     if (isNaN(d.getTime())) return data;
-
     return d.toLocaleDateString("pt-BR");
   },
 
@@ -66,22 +57,14 @@ numero(valor) {
 
   async listar() {
     try {
-      const dados = await api.restGet(
-        "contas_pagar",
-        "select=*&order=vencimento.asc"
-      );
+      const dados = await api.restGet("contas_pagar", "select=*&order=vencimento.asc");
 
       this.dados = Array.isArray(dados)
-        ? dados.filter(
-            (item) =>
-              String(item.status || "pendente").toLowerCase() !== "pago"
-          )
+        ? dados.filter(item => String(item.status || "pendente").toLowerCase() !== "pago")
         : [];
 
       this.filtrados = [...this.dados];
-
       this.renderizar();
-
     } catch (error) {
       console.error(error);
       alert("Erro ao carregar contas a pagar.");
@@ -95,72 +78,42 @@ numero(valor) {
     const lista = this.filtrados || [];
 
     if (!lista.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="9">Nenhuma conta encontrada.</td>
-        </tr>
-      `;
+      tbody.innerHTML = `<tr><td colspan="9">Nenhuma conta encontrada.</td></tr>`;
       this.resumo();
       return;
     }
 
-    tbody.innerHTML = lista.map((item) => {
+    tbody.innerHTML = lista.map(item => {
       const id = Number(item.id);
       const marcado = this.selecionados.has(id);
 
       return `
         <tr class="${marcado ? "linha-vermelha" : ""}">
           <td>
-            <input
-              type="checkbox"
-              ${marcado ? "checked" : ""}
-              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
-            >
+            <input type="checkbox" ${marcado ? "checked" : ""}
+              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)">
           </td>
-
           <td>${item.fornecedor || "-"}</td>
           <td>${item.documento || "-"}</td>
           <td>${this.moeda(item.valor)}</td>
           <td>${this.dataBR(item.vencimento)}</td>
           <td>${item.categoria || "-"}</td>
           <td>${item.descricao || "-"}</td>
-
           <td>
-            <button
-              class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
-              onclick="contasPagarModule.toggleNfe(${id})"
-            >
+            <button class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
+              onclick="contasPagarModule.toggleNfe(${id})">
               ${item.tem_nfe ? "NFE OK" : "NFE"}
             </button>
-
-            <button
-              class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
-              onclick="contasPagarModule.toggleBoleto(${id})"
-            >
+            <button class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
+              onclick="contasPagarModule.toggleBoleto(${id})">
               ${item.tem_boleto ? "Boleto OK" : "Boleto"}
             </button>
           </td>
-
           <td>
-            <button class="btn-editar"
-              onclick="contasPagarModule.editar(${id})">
-              Editar
-            </button>
-
-            <button class="btn-duplicar"
-              onclick="contasPagarModule.duplicar(${id})">
-              Duplicar
-            </button>
-
-            <button class="btn-pagar"
-              onclick="contasPagarModule.pagar(${id})">
-              Pagar
-            </button>
-
-            <button class="btn-excluir"
-              onclick="contasPagarModule.excluir(${id})">
-              Excluir
-            </button>
+            <button class="btn-editar" onclick="contasPagarModule.editar(${id})">Editar</button>
+            <button class="btn-duplicar" onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
+            <button class="btn-pagar" onclick="contasPagarModule.pagar(${id})">Pagar</button>
+            <button class="btn-excluir" onclick="contasPagarModule.excluir(${id})">Excluir</button>
           </td>
         </tr>
       `;
@@ -170,29 +123,18 @@ numero(valor) {
   },
 
   resumo() {
-    const qtd = this.get("cpQtd");
-    const total = this.get("cpTotal");
-    const qtdSel = this.get("cpSelecionadas");
-    const totalSel = this.get("cpTotalSelecionado");
+    const soma = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
 
-    const soma = this.filtrados.reduce(
-      (acc, item) => acc + this.numero(item.valor),
-      0
-    );
-
-    const selecionadas = this.filtrados.filter((item) =>
+    const selecionadas = this.filtrados.filter(item =>
       this.selecionados.has(Number(item.id))
     );
 
-    const somaSel = selecionadas.reduce(
-      (acc, item) => acc + this.numero(item.valor),
-      0
-    );
+    const somaSel = selecionadas.reduce((acc, item) => acc + this.numero(item.valor), 0);
 
-    if (qtd) qtd.textContent = this.filtrados.length;
-    if (total) total.textContent = this.moeda(soma);
-    if (qtdSel) qtdSel.textContent = selecionadas.length;
-    if (totalSel) totalSel.textContent = this.moeda(somaSel);
+    if (this.get("cpQtd")) this.get("cpQtd").textContent = this.filtrados.length;
+    if (this.get("cpTotal")) this.get("cpTotal").textContent = this.moeda(soma);
+    if (this.get("cpSelecionadas")) this.get("cpSelecionadas").textContent = selecionadas.length;
+    if (this.get("cpTotalSelecionado")) this.get("cpTotalSelecionado").textContent = this.moeda(somaSel);
   },
 
   aplicarFiltros() {
@@ -202,7 +144,7 @@ numero(valor) {
     const dtIni = this.valor("cpVencimentoInicio");
     const dtFim = this.valor("cpVencimentoFim");
 
-    this.filtrados = this.dados.filter((item) => {
+    this.filtrados = this.dados.filter(item => {
       const texto = `
         ${item.fornecedor || ""}
         ${item.documento || ""}
@@ -223,28 +165,16 @@ numero(valor) {
   },
 
   limparFiltros() {
-    [
-      "cpBusca",
-      "cpFiltroFornecedor",
-      "cpFiltroCategoria",
-      "cpVencimentoInicio",
-      "cpVencimentoFim"
-    ].forEach((id) => this.set(id, ""));
+    ["cpBusca", "cpFiltroFornecedor", "cpFiltroCategoria", "cpVencimentoInicio", "cpVencimentoFim"]
+      .forEach(id => this.set(id, ""));
 
     this.filtrados = [...this.dados];
     this.renderizar();
   },
 
   limparFormulario() {
-    [
-      "cpFornecedor",
-      "cpDocumento",
-      "cpCategoria",
-      "cpVencimento",
-      "cpValor",
-      "cpNfe",
-      "cpDescricao"
-    ].forEach((id) => this.set(id, ""));
+    ["cpFornecedor", "cpDocumento", "cpCategoria", "cpVencimento", "cpValor", "cpNfe", "cpDescricao"]
+      .forEach(id => this.set(id, ""));
 
     this.set("cpBoleto", "false");
     this.editandoId = null;
@@ -286,7 +216,6 @@ numero(valor) {
 
       this.limparFormulario();
       await this.listar();
-
     } catch (error) {
       console.error(error);
       alert("Erro ao salvar.");
@@ -294,10 +223,7 @@ numero(valor) {
   },
 
   editar(id) {
-    const item = this.dados.find(
-      (x) => Number(x.id) === Number(id)
-    );
-
+    const item = this.dados.find(x => Number(x.id) === Number(id));
     if (!item) return;
 
     this.editandoId = id;
@@ -316,10 +242,7 @@ numero(valor) {
 
   async duplicar(id) {
     try {
-      const item = this.dados.find(
-        (x) => Number(x.id) === Number(id)
-      );
-
+      const item = this.dados.find(x => Number(x.id) === Number(id));
       if (!item) return;
 
       await api.insert("contas_pagar", {
@@ -327,7 +250,7 @@ numero(valor) {
         documento: (item.documento || "") + "-COPIA",
         categoria: item.categoria,
         vencimento: item.vencimento,
-        valor: item.valor,
+        valor: this.numero(item.valor),
         descricao: item.descricao,
         tem_nfe: item.tem_nfe,
         tem_boleto: item.tem_boleto,
@@ -335,8 +258,8 @@ numero(valor) {
       });
 
       await this.listar();
-
     } catch (error) {
+      console.error(error);
       alert("Erro ao duplicar.");
     }
   },
@@ -348,24 +271,19 @@ numero(valor) {
       await api.delete("contas_pagar", id);
       this.selecionados.delete(Number(id));
       await this.listar();
-
     } catch (error) {
+      console.error(error);
       alert("Erro ao excluir.");
     }
   },
 
   async toggleNfe(id) {
     try {
-      const item = this.dados.find(
-        (x) => Number(x.id) === Number(id)
-      );
+      const item = this.dados.find(x => Number(x.id) === Number(id));
+      if (!item) return;
 
-      await api.update("contas_pagar", id, {
-        tem_nfe: !item.tem_nfe
-      });
-
+      await api.update("contas_pagar", id, { tem_nfe: !item.tem_nfe });
       await this.listar();
-
     } catch (error) {
       alert("Erro NFE.");
     }
@@ -373,16 +291,11 @@ numero(valor) {
 
   async toggleBoleto(id) {
     try {
-      const item = this.dados.find(
-        (x) => Number(x.id) === Number(id)
-      );
+      const item = this.dados.find(x => Number(x.id) === Number(id));
+      if (!item) return;
 
-      await api.update("contas_pagar", id, {
-        tem_boleto: !item.tem_boleto
-      });
-
+      await api.update("contas_pagar", id, { tem_boleto: !item.tem_boleto });
       await this.listar();
-
     } catch (error) {
       alert("Erro boleto.");
     }
@@ -390,12 +303,9 @@ numero(valor) {
 
   async pagar(id) {
     try {
-      const hoje = new Date().toISOString().slice(0,10);
+      const hoje = new Date().toISOString().slice(0, 10);
 
-      const dataPagamento = prompt(
-        "Data pagamento:",
-        hoje
-      );
+      const dataPagamento = prompt("Data pagamento:", hoje);
       if (!dataPagamento) return;
 
       const multa = prompt("Multa/Juros:", "0");
@@ -412,14 +322,13 @@ numero(valor) {
       });
 
       this.selecionados.delete(Number(id));
-
       await this.listar();
 
       if (window.contasPagasModule?.carregar) {
         contasPagasModule.carregar();
       }
-
     } catch (error) {
+      console.error(error);
       alert("Erro ao pagar.");
     }
   },
@@ -432,10 +341,7 @@ numero(valor) {
   },
 
   selecionarTodos() {
-    this.filtrados.forEach((item) =>
-      this.selecionados.add(Number(item.id))
-    );
-
+    this.filtrados.forEach(item => this.selecionados.add(Number(item.id)));
     this.renderizar();
   },
 
@@ -444,81 +350,54 @@ numero(valor) {
     this.renderizar();
   },
 
-async pagarSelecionadas() {
-  const ids = [...this.selecionados];
+  async pagarSelecionadas() {
+    const ids = [...this.selecionados];
 
-  if (!ids.length) {
-    alert("Nenhuma conta selecionada.");
-    return;
+    if (!ids.length) {
+      alert("Nenhuma selecionada.");
+      return;
+    }
+
+    const contas = this.filtrados.filter(item => ids.includes(Number(item.id)));
+    const totalOriginal = contas.reduce((acc, item) => acc + this.numero(item.valor), 0);
+    const hoje = new Date().toISOString().slice(0, 10);
+
+    const dataPagamento = prompt(
+      `Data do pagamento para ${contas.length} conta(s):\nTotal original: ${this.moeda(totalOriginal)}`,
+      hoje
+    );
+
+    if (!dataPagamento) return;
+
+    const multa = prompt("Multa/Juros total:", "0");
+    if (multa === null) return;
+
+    const desconto = prompt("Desconto total:", "0");
+    if (desconto === null) return;
+
+    const valorMulta = this.numero(multa);
+    const valorDesconto = this.numero(desconto);
+
+    if (!confirm(
+      `Confirmar pagamento?\n\nQuantidade: ${contas.length}\nTotal: ${this.moeda(totalOriginal)}\nMulta/Juros: ${this.moeda(valorMulta)}\nDesconto: ${this.moeda(valorDesconto)}`
+    )) return;
+
+    for (const item of contas) {
+      await api.update("contas_pagar", item.id, {
+        status: "pago",
+        data_pagamento: dataPagamento,
+        multa: valorMulta / contas.length,
+        desconto: valorDesconto / contas.length
+      });
+    }
+
+    this.selecionados.clear();
+    await this.listar();
+
+    if (window.contasPagasModule?.carregar) {
+      contasPagasModule.carregar();
+    }
   }
+};
 
-  const contas = this.filtrados.filter((item) =>
-    ids.includes(Number(item.id))
-  );
-
-  const totalOriginal = contas.reduce(
-    (acc, item) => acc + this.numero(item.valor),
-    0
-  );
-
-  const hoje = new Date().toISOString().slice(0, 10);
-
-  const dataPagamento = prompt(
-    `Data do pagamento para ${contas.length} conta(s):\n\nTotal original: ${this.moeda(totalOriginal)}`,
-    hoje
-  );
-
-  if (!dataPagamento) return;
-
-  const multa = prompt(
-    "Informe multa/juros total para as contas selecionadas:",
-    "0"
-  );
-
-  if (multa === null) return;
-
-  const desconto = prompt(
-    "Informe desconto total para as contas selecionadas:",
-    "0"
-  );
-
-  if (desconto === null) return;
-
-  const valorMulta = this.numero(multa);
-  const valorDesconto = this.numero(desconto);
-  const valorFinal = totalOriginal + valorMulta - valorDesconto;
-
-  const confirmar = confirm(
-    `Confirmar pagamento em lote?\n\n` +
-    `Quantidade: ${contas.length}\n` +
-    `Total original: ${this.moeda(totalOriginal)}\n` +
-    `Multa/Juros total: ${this.moeda(valorMulta)}\n` +
-    `Desconto total: ${this.moeda(valorDesconto)}\n` +
-    `Valor final: ${this.moeda(valorFinal)}\n` +
-    `Data pagamento: ${dataPagamento}`
-  );
-
-  if (!confirmar) return;
-
-  for (const item of contas) {
-    await api.update("contas_pagar", item.id, {
-      status: "pago",
-      data_pagamento: dataPagamento,
-      multa: valorMulta / contas.length,
-      desconto: valorDesconto / contas.length
-    });
-  }
-
-  this.selecionados.clear();
-
-  await this.listar();
-
-  if (window.contasPagasModule?.carregar) {
-    await contasPagasModule.carregar();
-  }
-
-  alert("Contas pagas com sucesso.");
-}
-
-window.listarContasPagar = () =>
-  contasPagarModule.listar();
+window.listarContasPagar = () => contasPagarModule.listar();
