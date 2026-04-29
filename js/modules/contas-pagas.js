@@ -10,32 +10,45 @@ window.contasPagasModule = {
     return this.get(id)?.value || "";
   },
 
-  numero(valor) {
-    if (typeof valor === "number") return valor;
-    if (valor === null || valor === undefined || valor === "") return 0;
-
-    let txt = String(valor).trim();
-    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
-
-    const temVirgula = txt.includes(",");
-    const temPonto = txt.includes(".");
-
-    if (temVirgula && temPonto) {
-      txt = txt.replace(/\./g, "").replace(",", ".");
-    } else if (temVirgula && !temPonto) {
-      txt = txt.replace(",", ".");
-    }
-
-    const n = parseFloat(txt);
-    return isNaN(n) ? 0 : n;
-  },
-
-  moeda(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    }).format(this.numero(valor));
-  },
+ numero(valor) {
+   if (typeof valor === "number") return valor;
+   if (valor === null || valor === undefined || valor === "") return 0;
+ 
+   let txt = String(valor).trim();
+ 
+   txt = txt.replace("R$", "").replace(/\s/g, "");
+ 
+   const virgulas = (txt.match(/,/g) || []).length;
+   const pontos = (txt.match(/\./g) || []).length;
+ 
+   /* Formato BR: 1.706,67 */
+   if (virgulas === 1 && pontos >= 1) {
+     txt = txt.replace(/\./g, "").replace(",", ".");
+   }
+ 
+   /* Formato BR simples: 1706,67 */
+   else if (virgulas === 1 && pontos === 0) {
+     txt = txt.replace(",", ".");
+   }
+ 
+   /* Formato EUA: 1706.67 */
+   else if (pontos === 1 && virgulas === 0) {
+     /* mantém */
+   }
+ 
+   /* Inteiro: 1706 */
+   else if (pontos === 0 && virgulas === 0) {
+     /* mantém */
+   }
+ 
+   /* Ex: 1.706.670 */
+   else if (pontos > 1 && virgulas === 0) {
+     txt = txt.replace(/\./g, "");
+   }
+ 
+   const n = parseFloat(txt);
+   return isNaN(n) ? 0 : n;
+ }
 
   dataBR(data) {
     if (!data) return "-";
