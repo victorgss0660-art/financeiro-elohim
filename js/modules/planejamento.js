@@ -11,7 +11,8 @@ window.planejamentoModule = {
     if (typeof valor === "number") return valor;
     if (valor === null || valor === undefined || valor === "") return 0;
 
-    let txt = String(valor).trim().replace(/R\$/g, "").replace(/\s/g, "");
+    let txt = String(valor).trim();
+    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
 
     const temVirgula = txt.includes(",");
     const temPonto = txt.includes(".");
@@ -35,19 +36,21 @@ window.planejamentoModule = {
 
   dataBR(data) {
     if (!data) return "-";
-    const d = new Date(data + "T00:00:00");
+
+    const d = new Date(String(data) + "T00:00:00");
     if (isNaN(d.getTime())) return data;
+
     return d.toLocaleDateString("pt-BR");
   },
 
   addDias(data, dias) {
-    const d = new Date(data + "T00:00:00");
+    const d = new Date(String(data) + "T00:00:00");
     d.setDate(d.getDate() + dias);
     return d.toISOString().slice(0, 10);
   },
 
   inicioSemana(data) {
-    const d = new Date(data + "T00:00:00");
+    const d = new Date(String(data) + "T00:00:00");
     const dia = d.getDay();
     const ajuste = dia === 0 ? -6 : 1 - dia;
     d.setDate(d.getDate() + ajuste);
@@ -67,8 +70,8 @@ window.planejamentoModule = {
       this.renderizarSaldos();
       this.renderizarPlanejamento();
     } catch (error) {
-      console.error(error);
-      alert("Erro ao carregar planejamento.");
+      console.error("Erro ao carregar planejamento:", error);
+      alert("Erro ao carregar planejamento: " + error.message);
     }
   },
 
@@ -79,40 +82,40 @@ window.planejamentoModule = {
     );
   },
 
-renderizarSaldos() {
-  const tbody = this.get("tabelaSaldosBancarios");
-  const totalEl = this.get("planejamentoSaldoInicial");
+  renderizarSaldos() {
+    const tbody = this.get("tabelaSaldosBancarios");
+    const totalEl = this.get("planejamentoSaldoInicial");
 
-  if (totalEl) {
-    totalEl.textContent = this.moeda(this.saldoInicialTotal());
-  }
+    if (totalEl) {
+      totalEl.textContent = this.moeda(this.saldoInicialTotal());
+    }
 
-  if (!tbody) return;
+    if (!tbody) return;
 
-  if (!this.saldos.length) {
-    tbody.innerHTML = `
+    if (!this.saldos.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="3">Nenhum saldo bancário encontrado.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = this.saldos.map(item => `
       <tr>
-        <td colspan="3">Nenhum saldo bancário encontrado.</td>
+        <td>${item.conta || "-"}</td>
+        <td><strong>${this.moeda(item.saldo)}</strong></td>
+        <td>
+          <button
+            class="btn-editar"
+            onclick="planejamentoModule.editarSaldoBanco(${Number(item.id)})"
+          >
+            Editar
+          </button>
+        </td>
       </tr>
-    `;
-    return;
-  }
-
-  tbody.innerHTML = this.saldos.map(item => `
-    <tr>
-      <td>${item.conta || "-"}</td>
-      <td><strong>${this.moeda(item.saldo)}</strong></td>
-      <td>
-        <button
-          class="btn-editar"
-          onclick="planejamentoModule.editarSaldoBanco(${Number(item.id)})"
-        >
-          Editar
-        </button>
-      </td>
-    </tr>
-  `).join("");
-},
+    `).join("");
+  },
 
   renderizarPlanejamento() {
     const tbody = this.get("tabelaPlanejamento");
@@ -135,7 +138,6 @@ renderizarSaldos() {
         .filter(item => {
           const status = String(item.status || "pendente").toLowerCase();
           const data = item.vencimento || "";
-
           return status !== "recebido" && data >= inicio && data <= fim;
         })
         .reduce((acc, item) => acc + this.numero(item.valor), 0);
@@ -144,7 +146,6 @@ renderizarSaldos() {
         .filter(item => {
           const status = String(item.status || "pendente").toLowerCase();
           const data = item.vencimento || "";
-
           return status !== "pago" && data >= inicio && data <= fim;
         })
         .reduce((acc, item) => acc + this.numero(item.valor), 0);
@@ -194,33 +195,34 @@ renderizarSaldos() {
     if (receberEl) receberEl.textContent = this.moeda(totalReceber);
     if (pagarEl) pagarEl.textContent = this.moeda(totalPagar);
     if (saldoFinalEl) saldoFinalEl.textContent = this.moeda(saldoAcumulado);
+  },
+
+  async editarSaldoBanco(id) {
+    const item = this.saldos.find(x => Number(x.id) === Number(id));
+    if (!item) return;
+
+    const novoSaldo = prompt(
+      `Novo saldo para ${item.conta}:`,
+      String(item.saldo || 0).replace(".", ",")
+    );
+
+    if (novoSaldo === null) return;
+
+    const valor = this.numero(novoSaldo);
+
+    try {
+      await api.update("saldos_bancarios", id, {
+        saldo: valor
+      });
+
+      await this.carregar();
+
+      alert("Saldo atualizado.");
+    } catch (error) {
+      console.error("Erro ao atualizar saldo:", error);
+      alert("Erro ao atualizar saldo bancário.");
+    }
   }
 };
-async editarSaldoBanco(id) {
-  const item = this.saldos.find(x => Number(x.id) === Number(id));
-  if (!item) return;
-
-  const novoSaldo = prompt(
-    `Novo saldo para ${item.conta}:`,
-    String(item.saldo || 0).replace(".", ",")
-  );
-
-  if (novoSaldo === null) return;
-
-  const valor = this.numero(novoSaldo);
-
-  try {
-    await api.update("saldos_bancarios", id, {
-      saldo: valor
-    });
-
-    await this.carregar();
-
-    alert("Saldo atualizado com sucesso.");
-  } catch (error) {
-    console.error(error);
-    alert("Erro ao atualizar saldo bancário.");
-  }
-},
 
 window.carregarPlanejamento = () => planejamentoModule.carregar();
