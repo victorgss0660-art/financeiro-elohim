@@ -1,5 +1,7 @@
 window.dashboardModule = {
   dados: [],
+  chartMensal: null,
+  chartCategoria: null,
 
   get(id) {
     return document.getElementById(id);
@@ -32,19 +34,30 @@ window.dashboardModule = {
     }).format(this.numero(valor));
   },
 
-  hojeISO() {
-    return new Date().toISOString().slice(0, 10);
+  mesNumero(nome) {
+    const meses = {
+      Janeiro: "01",
+      Fevereiro: "02",
+      Março: "03",
+      Abril: "04",
+      Maio: "05",
+      Junho: "06",
+      Julho: "07",
+      Agosto: "08",
+      Setembro: "09",
+      Outubro: "10",
+      Novembro: "11",
+      Dezembro: "12"
+    };
+
+    return meses[nome] || String(new Date().getMonth() + 1).padStart(2, "0");
   },
 
-  mesAtualISO() {
-    return new Date().toISOString().slice(0, 7);
-  },
-
-  dataBR(data) {
-    if (!data) return "-";
-    const d = new Date(data + "T00:00:00");
-    if (isNaN(d.getTime())) return data;
-    return d.toLocaleDateString("pt-BR");
+  getMesAno() {
+    return {
+      mes: this.get("mesSelect")?.value || "Janeiro",
+      ano: String(this.get("anoSelect")?.value || new Date().getFullYear())
+    };
   },
 
   async carregar() {
@@ -53,170 +66,208 @@ window.dashboardModule = {
 
       this.dados = Array.isArray(dados) ? dados : [];
 
-      this.renderizar();
+      this.renderizarCards();
+      this.renderizarGraficoMensal();
+      this.renderizarGraficoCategoria();
+
     } catch (error) {
       console.error(error);
       alert("Erro ao carregar dashboard.");
     }
   },
 
-  renderizar() {
-    this.cards();
-    this.proximosVencimentos();
-    this.topFornecedores();
-    this.porCategoria();
-  },
+  renderizarCards() {
+    const { mes, ano } = this.getMesAno();
+    const mesNum = this.mesNumero(mes);
 
-  cards() {
-    const hoje = this.hojeISO();
-    const mesAtual = this.mesAtualISO();
+    const contasMes = this.dados.filter(item => {
+      const data = item.vencimento || item.data_pagamento || "";
+      return data.startsWith(`${ano}-${mesNum}`);
+    });
 
-    const abertas = this.dados.filter(
-      item => String(item.status || "pendente").toLowerCase() !== "pago"
+    const despesas = contasMes.reduce(
+      (acc, item) => acc + this.numero(item.valor),
+      0
     );
 
-    const pagas = this.dados.filter(
+    const pagas = contasMes.filter(
       item => String(item.status || "").toLowerCase() === "pago"
     );
 
-    const totalAberto = abertas.reduce((acc, item) => acc + this.numero(item.valor), 0);
-
-    const vencidas = abertas.filter(
-      item => item.vencimento && item.vencimento < hoje
+    const totalPago = pagas.reduce(
+      (acc, item) => acc + this.numero(item.valor),
+      0
     );
 
-    const totalVencidas = vencidas.reduce((acc, item) => acc + this.numero(item.valor), 0);
-
-    const venceHoje = abertas.filter(
-      item => item.vencimento === hoje
+    const abertas = contasMes.filter(
+      item => String(item.status || "pendente").toLowerCase() !== "pago"
     );
 
-    const totalHoje = venceHoje.reduce((acc, item) => acc + this.numero(item.valor), 0);
-
-    const pagasMes = pagas.filter(
-      item => item.data_pagamento && item.data_pagamento.slice(0, 7) === mesAtual
+    const totalAberto = abertas.reduce(
+      (acc, item) => acc + this.numero(item.valor),
+      0
     );
 
-    const totalPagasMes = pagasMes.reduce((acc, item) => acc + this.numero(item.valor), 0);
+    if (this.get("dashFaturamento")) this.get("dashFaturamento").textContent = this.moeda(0);
+    if (this.get("dashGastos")) this.get("dashGastos").textContent = this.moeda(despesas);
+    if (this.get("dashLucro")) this.get("dashLucro").textContent = this.moeda(0 - despesas);
+    if (this.get("dashMargem")) this.get("dashMargem").textContent = "0%";
 
     if (this.get("dashTotalAberto")) this.get("dashTotalAberto").textContent = this.moeda(totalAberto);
-    if (this.get("dashTotalVencidas")) this.get("dashTotalVencidas").textContent = this.moeda(totalVencidas);
-    if (this.get("dashVenceHoje")) this.get("dashVenceHoje").textContent = this.moeda(totalHoje);
-    if (this.get("dashPagasMes")) this.get("dashPagasMes").textContent = this.moeda(totalPagasMes);
-
-    if (this.get("dashQtdAberto")) this.get("dashQtdAberto").textContent = `${abertas.length} conta(s)`;
-    if (this.get("dashQtdVencidas")) this.get("dashQtdVencidas").textContent = `${vencidas.length} vencida(s)`;
-    if (this.get("dashQtdHoje")) this.get("dashQtdHoje").textContent = `${venceHoje.length} hoje`;
-    if (this.get("dashQtdPagasMes")) this.get("dashQtdPagasMes").textContent = `${pagasMes.length} paga(s)`;
+    if (this.get("dashPagasMes")) this.get("dashPagasMes").textContent = this.moeda(totalPago);
   },
 
-  proximosVencimentos() {
-    const tbody = this.get("dashboardVencimentos");
-    if (!tbody) return;
+  montarMesesAno() {
+    const { ano } = this.getMesAno();
 
-    const hoje = this.hojeISO();
+    const meses = [
+      ["01", "Jan"],
+      ["02", "Fev"],
+      ["03", "Mar"],
+      ["04", "Abr"],
+      ["05", "Mai"],
+      ["06", "Jun"],
+      ["07", "Jul"],
+      ["08", "Ago"],
+      ["09", "Set"],
+      ["10", "Out"],
+      ["11", "Nov"],
+      ["12", "Dez"]
+    ];
 
-    const lista = this.dados
-      .filter(item =>
-        String(item.status || "pendente").toLowerCase() !== "pago" &&
-        item.vencimento &&
-        item.vencimento >= hoje
-      )
-      .sort((a, b) => String(a.vencimento).localeCompare(String(b.vencimento)))
-      .slice(0, 10);
+    return meses.map(([num, nome]) => {
+      const contas = this.dados.filter(item => {
+        const data = item.vencimento || item.data_pagamento || "";
+        return data.startsWith(`${ano}-${num}`);
+      });
 
-    if (!lista.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="4">Nenhum vencimento próximo.</td>
-        </tr>
-      `;
-      return;
-    }
+      const despesas = contas.reduce(
+        (acc, item) => acc + this.numero(item.valor),
+        0
+      );
 
-    tbody.innerHTML = lista.map(item => `
-      <tr>
-        <td>${item.fornecedor || "-"}</td>
-        <td>${item.documento || "-"}</td>
-        <td>${this.dataBR(item.vencimento)}</td>
-        <td>${this.moeda(item.valor)}</td>
-      </tr>
-    `).join("");
-  },
-
-  topFornecedores() {
-    const box = this.get("dashboardTopFornecedores");
-    if (!box) return;
-
-    const abertas = this.dados.filter(
-      item => String(item.status || "pendente").toLowerCase() !== "pago"
-    );
-
-    const mapa = {};
-
-    abertas.forEach(item => {
-      const fornecedor = item.fornecedor || "Sem fornecedor";
-      mapa[fornecedor] = (mapa[fornecedor] || 0) + this.numero(item.valor);
+      return {
+        mes: nome,
+        faturamento: 0,
+        despesas,
+        lucro: 0 - despesas
+      };
     });
-
-    const ranking = Object.entries(mapa)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6);
-
-    if (!ranking.length) {
-      box.innerHTML = `<p class="dash-muted">Sem dados.</p>`;
-      return;
-    }
-
-    const maior = ranking[0][1] || 1;
-
-    box.innerHTML = ranking.map(([nome, valor], index) => {
-      const largura = Math.max(8, (valor / maior) * 100);
-
-      return `
-        <div class="dash-rank-item">
-          <div class="dash-rank-head">
-            <span>${index + 1}. ${nome}</span>
-            <strong>${this.moeda(valor)}</strong>
-          </div>
-          <div class="dash-bar">
-            <div class="dash-bar-fill" style="width:${largura}%"></div>
-          </div>
-        </div>
-      `;
-    }).join("");
   },
 
-  porCategoria() {
-    const box = this.get("dashboardCategorias");
-    if (!box) return;
+  renderizarGraficoMensal() {
+    const canvas = this.get("chartGastosMeta") || this.get("chartEvolucaoMensal");
+    if (!canvas || typeof Chart === "undefined") return;
 
-    const abertas = this.dados.filter(
-      item => String(item.status || "pendente").toLowerCase() !== "pago"
-    );
+    const dados = this.montarMesesAno();
+
+    if (this.chartMensal) {
+      this.chartMensal.destroy();
+    }
+
+    this.chartMensal = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: dados.map(item => item.mes),
+        datasets: [
+          {
+            label: "Faturamento",
+            data: dados.map(item => item.faturamento),
+            type: "line",
+            borderWidth: 3,
+            tension: 0.35
+          },
+          {
+            label: "Despesas",
+            data: dados.map(item => item.despesas),
+            borderWidth: 1
+          },
+          {
+            label: "Lucro",
+            data: dados.map(item => item.lucro),
+            type: "line",
+            borderWidth: 3,
+            tension: 0.35
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top"
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`
+            }
+          }
+        },
+        scales: {
+          y: {
+            ticks: {
+              callback: (value) => this.moeda(value)
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderizarGraficoCategoria() {
+    const canvas = this.get("chartCategorias");
+    if (!canvas || typeof Chart === "undefined") return;
+
+    const { mes, ano } = this.getMesAno();
+    const mesNum = this.mesNumero(mes);
 
     const mapa = {};
 
-    abertas.forEach(item => {
+    this.dados.forEach(item => {
+      const data = item.vencimento || item.data_pagamento || "";
+
+      if (!data.startsWith(`${ano}-${mesNum}`)) return;
+
       const categoria = item.categoria || "Sem categoria";
       mapa[categoria] = (mapa[categoria] || 0) + this.numero(item.valor);
     });
 
     const ranking = Object.entries(mapa)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 8);
+      .slice(0, 12);
 
-    if (!ranking.length) {
-      box.innerHTML = `<p class="dash-muted">Sem dados.</p>`;
-      return;
+    if (this.chartCategoria) {
+      this.chartCategoria.destroy();
     }
 
-    box.innerHTML = ranking.map(([categoria, valor]) => `
-      <div class="dash-category">
-        <span>${categoria}</span>
-        <strong>${this.moeda(valor)}</strong>
-      </div>
-    `).join("");
+    this.chartCategoria = new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: ranking.map(item => item[0]),
+        datasets: [
+          {
+            label: "Despesas",
+            data: ranking.map(item => item[1]),
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom"
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${this.moeda(ctx.raw)}`
+            }
+          }
+        }
+      }
+    });
   }
 };
 
