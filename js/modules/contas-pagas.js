@@ -48,7 +48,7 @@ window.contasPagasModule = {
  
    const n = parseFloat(txt);
    return isNaN(n) ? 0 : n;
- }
+ },
 
   dataBR(data) {
     if (!data) return "-";
