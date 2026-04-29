@@ -10,50 +10,44 @@ window.contasPagasModule = {
     return this.get(id)?.value || "";
   },
 
- numero(valor) {
-   if (typeof valor === "number") return valor;
-   if (valor === null || valor === undefined || valor === "") return 0;
- 
-   let txt = String(valor).trim();
- 
-   txt = txt.replace("R$", "").replace(/\s/g, "");
- 
-   const virgulas = (txt.match(/,/g) || []).length;
-   const pontos = (txt.match(/\./g) || []).length;
- 
-   /* Formato BR: 1.706,67 */
-   if (virgulas === 1 && pontos >= 1) {
-     txt = txt.replace(/\./g, "").replace(",", ".");
-   }
- 
-   /* Formato BR simples: 1706,67 */
-   else if (virgulas === 1 && pontos === 0) {
-     txt = txt.replace(",", ".");
-   }
- 
-   /* Formato EUA: 1706.67 */
-   else if (pontos === 1 && virgulas === 0) {
-     /* mantém */
-   }
- 
-   /* Inteiro: 1706 */
-   else if (pontos === 0 && virgulas === 0) {
-     /* mantém */
-   }
- 
-   /* Ex: 1.706.670 */
-   else if (pontos > 1 && virgulas === 0) {
-     txt = txt.replace(/\./g, "");
-   }
- 
-   const n = parseFloat(txt);
-   return isNaN(n) ? 0 : n;
- },
+  set(id, valor) {
+    const el = this.get(id);
+    if (el) el.value = valor ?? "";
+  },
+
+  numero(valor) {
+    if (typeof valor === "number") return valor;
+    if (valor === null || valor === undefined || valor === "") return 0;
+
+    let txt = String(valor).trim();
+    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
+
+    const temVirgula = txt.includes(",");
+    const temPonto = txt.includes(".");
+
+    if (temVirgula && temPonto) {
+      txt = txt.replace(/\./g, "").replace(",", ".");
+    } else if (temVirgula && !temPonto) {
+      txt = txt.replace(",", ".");
+    }
+
+    const n = parseFloat(txt);
+    return isNaN(n) ? 0 : n;
+  },
+
+  moeda(valor) {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    }).format(this.numero(valor));
+  },
 
   dataBR(data) {
     if (!data) return "-";
-    const d = new Date(data + "T00:00:00");
+
+    const d = new Date(String(data) + "T00:00:00");
     if (isNaN(d.getTime())) return data;
+
     return d.toLocaleDateString("pt-BR");
   },
 
@@ -69,7 +63,9 @@ window.contasPagasModule = {
       );
 
       this.dados = Array.isArray(dados)
-        ? dados.filter(item => String(item.status || "").toLowerCase() === "pago")
+        ? dados.filter(
+            item => String(item.status || "").toLowerCase() === "pago"
+          )
         : [];
 
       this.filtrados = [...this.dados];
@@ -89,7 +85,12 @@ window.contasPagasModule = {
     const lista = this.filtrados || [];
 
     if (!lista.length) {
-      tbody.innerHTML = `<tr><td colspan="8">Nenhuma conta paga encontrada.</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8">Nenhuma conta paga encontrada.</td>
+        </tr>
+      `;
+      this.resumo();
       return;
     }
 
@@ -103,19 +104,30 @@ window.contasPagasModule = {
         <td>${item.descricao || "-"}</td>
         <td>${this.moeda(item.valor)}</td>
         <td>
-          <button class="btn-excluir" onclick="contasPagasModule.cancelar(${item.id})">
+          <button
+            class="btn-excluir"
+            onclick="contasPagasModule.cancelar(${Number(item.id)})"
+          >
             Cancelar
           </button>
         </td>
       </tr>
     `).join("");
+
+    this.resumo();
   },
 
   resumo() {
-    const soma = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
+    const qtd = this.get("pagasQtd");
+    const total = this.get("pagasTotal");
 
-    if (this.get("pagasQtd")) this.get("pagasQtd").textContent = this.filtrados.length;
-    if (this.get("pagasTotal")) this.get("pagasTotal").textContent = this.moeda(soma);
+    const soma = (this.filtrados || []).reduce(
+      (acc, item) => acc + this.numero(item.valor),
+      0
+    );
+
+    if (qtd) qtd.textContent = (this.filtrados || []).length;
+    if (total) total.textContent = this.moeda(soma);
   },
 
   aplicarFiltros() {
@@ -146,17 +158,19 @@ window.contasPagasModule = {
 
   limparFiltros() {
     ["pagasBusca", "pagasDataInicio", "pagasDataFim"].forEach(id => {
-      const el = this.get(id);
-      if (el) el.value = "";
+      this.set(id, "");
     });
 
     this.filtrados = [...this.dados];
+
     this.renderizar();
     this.resumo();
   },
 
   async cancelar(id) {
-    if (!confirm("Deseja cancelar este pagamento? A conta voltará para Contas a Pagar.")) return;
+    if (!confirm("Deseja cancelar este pagamento? A conta voltará para Contas a Pagar.")) {
+      return;
+    }
 
     try {
       await api.update("contas_pagar", id, {
