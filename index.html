@@ -49,62 +49,89 @@
         </div>
       </header>
 
-<section id="dashboard" class="tab-page active">
+<section id="tab-dashboard" class="tab-section active">
+  <div class="dash-black">
 
-  <h2>Dashboard Premium</h2>
-  <p>Visão financeira em tempo real.</p>
+    <div class="dash-hero">
+      <div>
+        <span class="dash-eyebrow">Painel Executivo</span>
+        <h2>Dashboard Black Premium</h2>
+        <p>Visão estratégica de contas, vencimentos e pagamentos.</p>
+      </div>
 
-  <div class="grid-4">
-
-    <div class="card">
-      <small>Total em Aberto</small>
-      <h2 id="dashTotalAberto">R$ 0,00</h2>
+      <div class="dash-badge">
+        Financeiro Elohim
+      </div>
     </div>
 
-    <div class="card">
-      <small>Vencidas</small>
-      <h2 id="dashTotalVencidas">R$ 0,00</h2>
+    <div class="dash-cards">
+      <div class="dash-card">
+        <span>Total em aberto</span>
+        <strong id="dashTotalAberto">R$ 0,00</strong>
+        <small id="dashQtdAberto">0 conta(s)</small>
+      </div>
+
+      <div class="dash-card danger">
+        <span>Vencidas</span>
+        <strong id="dashTotalVencidas">R$ 0,00</strong>
+        <small id="dashQtdVencidas">0 vencida(s)</small>
+      </div>
+
+      <div class="dash-card warning">
+        <span>Vence hoje</span>
+        <strong id="dashVenceHoje">R$ 0,00</strong>
+        <small id="dashQtdHoje">0 hoje</small>
+      </div>
+
+      <div class="dash-card success">
+        <span>Pagas no mês</span>
+        <strong id="dashPagasMes">R$ 0,00</strong>
+        <small id="dashQtdPagasMes">0 paga(s)</small>
+      </div>
     </div>
 
-    <div class="card">
-      <small>Pagas no Mês</small>
-      <h2 id="dashPagasMes">R$ 0,00</h2>
+    <div class="dash-grid">
+      <div class="dash-panel">
+        <div class="dash-panel-head">
+          <h3>Próximos vencimentos</h3>
+          <span>Top 10</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="dash-table">
+            <thead>
+              <tr>
+                <th>Fornecedor</th>
+                <th>Documento</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardVencimentos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dash-panel">
+        <div class="dash-panel-head">
+          <h3>Top fornecedores</h3>
+          <span>Em aberto</span>
+        </div>
+
+        <div id="dashboardTopFornecedores"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <small>Vence Hoje</small>
-      <h2 id="dashVenceHoje">R$ 0,00</h2>
+    <div class="dash-panel">
+      <div class="dash-panel-head">
+        <h3>Distribuição por categoria</h3>
+        <span>Contas em aberto</span>
+      </div>
+
+      <div id="dashboardCategorias" class="dash-categories"></div>
     </div>
 
   </div>
-
-  <div class="grid-2 mt20">
-
-    <div class="card">
-      <h3>Próximos Vencimentos</h3>
-
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Fornecedor</th>
-            <th>Documento</th>
-            <th>Vencimento</th>
-            <th>Valor</th>
-          </tr>
-        </thead>
-
-        <tbody id="dashboardVencimentos"></tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <h3>Top Fornecedores</h3>
-
-      <div id="dashboardTopFornecedores"></div>
-    </div>
-
-  </div>
-
 </section>
 
       <section id="tab-contas-pagar" class="tab-section">
