@@ -1,10 +1,20 @@
-window.dashboardModule = {
+window.contasPagarModule = {
   dados: [],
-  chartMensal: null,
-  chartCategoria: null,
+  filtrados: [],
+  selecionados: new Set(),
+  editandoId: null,
 
   get(id) {
     return document.getElementById(id);
+  },
+
+  valor(id) {
+    return this.get(id)?.value || "";
+  },
+
+  set(id, valor) {
+    const el = this.get(id);
+    if (el) el.value = valor ?? "";
   },
 
   numero(valor) {
@@ -34,241 +44,360 @@ window.dashboardModule = {
     }).format(this.numero(valor));
   },
 
-  mesNumero(nome) {
-    const meses = {
-      Janeiro: "01",
-      Fevereiro: "02",
-      Março: "03",
-      Abril: "04",
-      Maio: "05",
-      Junho: "06",
-      Julho: "07",
-      Agosto: "08",
-      Setembro: "09",
-      Outubro: "10",
-      Novembro: "11",
-      Dezembro: "12"
-    };
-
-    return meses[nome] || String(new Date().getMonth() + 1).padStart(2, "0");
-  },
-
-  getMesAno() {
-    return {
-      mes: this.get("mesSelect")?.value || "Janeiro",
-      ano: String(this.get("anoSelect")?.value || new Date().getFullYear())
-    };
+  dataBR(data) {
+    if (!data) return "-";
+    const d = new Date(data + "T00:00:00");
+    if (isNaN(d.getTime())) return data;
+    return d.toLocaleDateString("pt-BR");
   },
 
   async carregar() {
+    await this.listar();
+  },
+
+  async listar() {
     try {
-      const dados = await api.restGet("contas_pagar", "select=*");
+      const dados = await api.restGet("contas_pagar", "select=*&order=vencimento.asc");
 
-      this.dados = Array.isArray(dados) ? dados : [];
+      this.dados = Array.isArray(dados)
+        ? dados.filter(item => String(item.status || "pendente").toLowerCase() !== "pago")
+        : [];
 
-      this.renderizarCards();
-      this.renderizarGraficoMensal();
-      this.renderizarGraficoCategoria();
-
+      this.filtrados = [...this.dados];
+      this.renderizar();
     } catch (error) {
       console.error(error);
-      alert("Erro ao carregar dashboard.");
+      alert("Erro ao carregar contas a pagar.");
     }
   },
 
-  renderizarCards() {
-    const { mes, ano } = this.getMesAno();
-    const mesNum = this.mesNumero(mes);
+  renderizar() {
+    const tbody = this.get("tabelaContasPagar");
+    if (!tbody) return;
 
-    const contasMes = this.dados.filter(item => {
-      const data = item.vencimento || item.data_pagamento || "";
-      return data.startsWith(`${ano}-${mesNum}`);
-    });
+    const lista = this.filtrados || [];
 
-    const despesas = contasMes.reduce(
-      (acc, item) => acc + this.numero(item.valor),
-      0
-    );
+    if (!lista.length) {
+      tbody.innerHTML = `<tr><td colspan="9">Nenhuma conta encontrada.</td></tr>`;
+      this.resumo();
+      return;
+    }
 
-    const pagas = contasMes.filter(
-      item => String(item.status || "").toLowerCase() === "pago"
-    );
+    tbody.innerHTML = lista.map(item => {
+      const id = Number(item.id);
+      const marcado = this.selecionados.has(id);
 
-    const totalPago = pagas.reduce(
-      (acc, item) => acc + this.numero(item.valor),
-      0
-    );
+      return `
+        <tr class="${marcado ? "linha-vermelha" : ""}">
+          <td>
+            <input type="checkbox" ${marcado ? "checked" : ""}
+              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)">
+          </td>
+          <td>${item.fornecedor || "-"}</td>
+          <td>${item.documento || "-"}</td>
+          <td>${this.moeda(item.valor)}</td>
+          <td>${this.dataBR(item.vencimento)}</td>
+          <td>${item.categoria || "-"}</td>
+          <td>${item.descricao || "-"}</td>
+          <td>
+            <button class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
+              onclick="contasPagarModule.toggleNfe(${id})">
+              ${item.tem_nfe ? "NFE OK" : "NFE"}
+            </button>
+            <button class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
+              onclick="contasPagarModule.toggleBoleto(${id})">
+              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+            </button>
+          </td>
+          <td>
+            <button class="btn-editar" onclick="contasPagarModule.editar(${id})">Editar</button>
+            <button class="btn-duplicar" onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
+            <button class="btn-pagar" onclick="contasPagarModule.pagar(${id})">Pagar</button>
+            <button class="btn-excluir" onclick="contasPagarModule.excluir(${id})">Excluir</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
 
-    const abertas = contasMes.filter(
-      item => String(item.status || "pendente").toLowerCase() !== "pago"
-    );
-
-    const totalAberto = abertas.reduce(
-      (acc, item) => acc + this.numero(item.valor),
-      0
-    );
-
-    if (this.get("dashFaturamento")) this.get("dashFaturamento").textContent = this.moeda(0);
-    if (this.get("dashGastos")) this.get("dashGastos").textContent = this.moeda(despesas);
-    if (this.get("dashLucro")) this.get("dashLucro").textContent = this.moeda(0 - despesas);
-    if (this.get("dashMargem")) this.get("dashMargem").textContent = "0%";
-
-    if (this.get("dashTotalAberto")) this.get("dashTotalAberto").textContent = this.moeda(totalAberto);
-    if (this.get("dashPagasMes")) this.get("dashPagasMes").textContent = this.moeda(totalPago);
+    this.resumo();
   },
 
-  montarMesesAno() {
-    const { ano } = this.getMesAno();
+  resumo() {
+    const soma = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
 
-    const meses = [
-      ["01", "Jan"],
-      ["02", "Fev"],
-      ["03", "Mar"],
-      ["04", "Abr"],
-      ["05", "Mai"],
-      ["06", "Jun"],
-      ["07", "Jul"],
-      ["08", "Ago"],
-      ["09", "Set"],
-      ["10", "Out"],
-      ["11", "Nov"],
-      ["12", "Dez"]
-    ];
+    const selecionadas = this.filtrados.filter(item =>
+      this.selecionados.has(Number(item.id))
+    );
 
-    return meses.map(([num, nome]) => {
-      const contas = this.dados.filter(item => {
-        const data = item.vencimento || item.data_pagamento || "";
-        return data.startsWith(`${ano}-${num}`);
+    const somaSel = selecionadas.reduce((acc, item) => acc + this.numero(item.valor), 0);
+
+    if (this.get("cpQtd")) this.get("cpQtd").textContent = this.filtrados.length;
+    if (this.get("cpTotal")) this.get("cpTotal").textContent = this.moeda(soma);
+    if (this.get("cpSelecionadas")) this.get("cpSelecionadas").textContent = selecionadas.length;
+    if (this.get("cpTotalSelecionado")) this.get("cpTotalSelecionado").textContent = this.moeda(somaSel);
+  },
+
+  aplicarFiltros() {
+    const busca = this.valor("cpBusca").toLowerCase();
+    const fornecedor = this.valor("cpFiltroFornecedor").toLowerCase();
+    const categoria = this.valor("cpFiltroCategoria").toLowerCase();
+    const dtIni = this.valor("cpVencimentoInicio");
+    const dtFim = this.valor("cpVencimentoFim");
+
+    this.filtrados = this.dados.filter(item => {
+      const texto = `
+        ${item.fornecedor || ""}
+        ${item.documento || ""}
+        ${item.categoria || ""}
+        ${item.descricao || ""}
+      `.toLowerCase();
+
+      if (busca && !texto.includes(busca)) return false;
+      if (fornecedor && !(item.fornecedor || "").toLowerCase().includes(fornecedor)) return false;
+      if (categoria && !(item.categoria || "").toLowerCase().includes(categoria)) return false;
+      if (dtIni && item.vencimento < dtIni) return false;
+      if (dtFim && item.vencimento > dtFim) return false;
+
+      return true;
+    });
+
+    this.renderizar();
+  },
+
+  limparFiltros() {
+    ["cpBusca", "cpFiltroFornecedor", "cpFiltroCategoria", "cpVencimentoInicio", "cpVencimentoFim"]
+      .forEach(id => this.set(id, ""));
+
+    this.filtrados = [...this.dados];
+    this.renderizar();
+  },
+
+  limparFormulario() {
+    ["cpFornecedor", "cpDocumento", "cpCategoria", "cpVencimento", "cpValor", "cpNfe", "cpDescricao"]
+      .forEach(id => this.set(id, ""));
+
+    this.set("cpBoleto", "false");
+    this.editandoId = null;
+  },
+
+  montarPayload() {
+    return {
+      fornecedor: this.valor("cpFornecedor").trim(),
+      documento: this.valor("cpDocumento").trim(),
+      categoria: this.valor("cpCategoria").trim(),
+      vencimento: this.valor("cpVencimento") || null,
+      valor: this.numero(this.valor("cpValor")),
+      descricao: this.valor("cpDescricao").trim(),
+      tem_nfe: this.valor("cpNfe") !== "",
+      tem_boleto: this.valor("cpBoleto") === "true",
+      status: "pendente"
+    };
+  },
+
+  async salvar() {
+    try {
+      const payload = this.montarPayload();
+
+      if (!payload.fornecedor) {
+        alert("Informe fornecedor.");
+        return;
+      }
+
+      if (!payload.valor || payload.valor <= 0) {
+        alert("Informe valor.");
+        return;
+      }
+
+      if (this.editandoId) {
+        await api.update("contas_pagar", this.editandoId, payload);
+      } else {
+        await api.insert("contas_pagar", payload);
+      }
+
+      this.limparFormulario();
+      await this.listar();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao salvar.");
+    }
+  },
+
+  editar(id) {
+    const item = this.dados.find(x => Number(x.id) === Number(id));
+    if (!item) return;
+
+    this.editandoId = id;
+
+    this.set("cpFornecedor", item.fornecedor);
+    this.set("cpDocumento", item.documento);
+    this.set("cpCategoria", item.categoria);
+    this.set("cpVencimento", item.vencimento);
+    this.set("cpValor", item.valor);
+    this.set("cpDescricao", item.descricao);
+    this.set("cpNfe", item.tem_nfe ? "OK" : "");
+    this.set("cpBoleto", item.tem_boleto ? "true" : "false");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  },
+
+  async duplicar(id) {
+    try {
+      const item = this.dados.find(x => Number(x.id) === Number(id));
+      if (!item) return;
+
+      await api.insert("contas_pagar", {
+        fornecedor: item.fornecedor,
+        documento: (item.documento || "") + "-COPIA",
+        categoria: item.categoria,
+        vencimento: item.vencimento,
+        valor: this.numero(item.valor),
+        descricao: item.descricao,
+        tem_nfe: item.tem_nfe,
+        tem_boleto: item.tem_boleto,
+        status: "pendente"
       });
 
-      const despesas = contas.reduce(
-        (acc, item) => acc + this.numero(item.valor),
-        0
-      );
-
-      return {
-        mes: nome,
-        faturamento: 0,
-        despesas,
-        lucro: 0 - despesas
-      };
-    });
+      await this.listar();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao duplicar.");
+    }
   },
 
-  renderizarGraficoMensal() {
-    const canvas = this.get("chartGastosMeta") || this.get("chartEvolucaoMensal");
-    if (!canvas || typeof Chart === "undefined") return;
+  async excluir(id) {
+    if (!confirm("Excluir conta?")) return;
 
-    const dados = this.montarMesesAno();
-
-    if (this.chartMensal) {
-      this.chartMensal.destroy();
+    try {
+      await api.delete("contas_pagar", id);
+      this.selecionados.delete(Number(id));
+      await this.listar();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao excluir.");
     }
-
-    this.chartMensal = new Chart(canvas, {
-      type: "bar",
-      data: {
-        labels: dados.map(item => item.mes),
-        datasets: [
-          {
-            label: "Faturamento",
-            data: dados.map(item => item.faturamento),
-            type: "line",
-            borderWidth: 3,
-            tension: 0.35
-          },
-          {
-            label: "Despesas",
-            data: dados.map(item => item.despesas),
-            borderWidth: 1
-          },
-          {
-            label: "Lucro",
-            data: dados.map(item => item.lucro),
-            type: "line",
-            borderWidth: 3,
-            tension: 0.35
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: "top"
-          },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`
-            }
-          }
-        },
-        scales: {
-          y: {
-            ticks: {
-              callback: (value) => this.moeda(value)
-            }
-          }
-        }
-      }
-    });
   },
 
-  renderizarGraficoCategoria() {
-    const canvas = this.get("chartCategorias");
-    if (!canvas || typeof Chart === "undefined") return;
+  async toggleNfe(id) {
+    try {
+      const item = this.dados.find(x => Number(x.id) === Number(id));
+      if (!item) return;
 
-    const { mes, ano } = this.getMesAno();
-    const mesNum = this.mesNumero(mes);
+      await api.update("contas_pagar", id, { tem_nfe: !item.tem_nfe });
+      await this.listar();
+    } catch (error) {
+      alert("Erro NFE.");
+    }
+  },
 
-    const mapa = {};
+  async toggleBoleto(id) {
+    try {
+      const item = this.dados.find(x => Number(x.id) === Number(id));
+      if (!item) return;
 
-    this.dados.forEach(item => {
-      const data = item.vencimento || item.data_pagamento || "";
+      await api.update("contas_pagar", id, { tem_boleto: !item.tem_boleto });
+      await this.listar();
+    } catch (error) {
+      alert("Erro boleto.");
+    }
+  },
 
-      if (!data.startsWith(`${ano}-${mesNum}`)) return;
+  async pagar(id) {
+    try {
+      const hoje = new Date().toISOString().slice(0, 10);
 
-      const categoria = item.categoria || "Sem categoria";
-      mapa[categoria] = (mapa[categoria] || 0) + this.numero(item.valor);
-    });
+      const dataPagamento = prompt("Data pagamento:", hoje);
+      if (!dataPagamento) return;
 
-    const ranking = Object.entries(mapa)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 12);
+      const multa = prompt("Multa/Juros:", "0");
+      if (multa === null) return;
 
-    if (this.chartCategoria) {
-      this.chartCategoria.destroy();
+      const desconto = prompt("Desconto:", "0");
+      if (desconto === null) return;
+
+      await api.update("contas_pagar", id, {
+        status: "pago",
+        data_pagamento: dataPagamento,
+        multa: this.numero(multa),
+        desconto: this.numero(desconto)
+      });
+
+      this.selecionados.delete(Number(id));
+      await this.listar();
+
+      if (window.contasPagasModule?.carregar) {
+        contasPagasModule.carregar();
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao pagar.");
+    }
+  },
+
+  toggleSelecionado(id, marcado) {
+    if (marcado) this.selecionados.add(Number(id));
+    else this.selecionados.delete(Number(id));
+
+    this.renderizar();
+  },
+
+  selecionarTodos() {
+    this.filtrados.forEach(item => this.selecionados.add(Number(item.id)));
+    this.renderizar();
+  },
+
+  limparSelecao() {
+    this.selecionados.clear();
+    this.renderizar();
+  },
+
+  async pagarSelecionadas() {
+    const ids = [...this.selecionados];
+
+    if (!ids.length) {
+      alert("Nenhuma selecionada.");
+      return;
     }
 
-    this.chartCategoria = new Chart(canvas, {
-      type: "doughnut",
-      data: {
-        labels: ranking.map(item => item[0]),
-        datasets: [
-          {
-            label: "Despesas",
-            data: ranking.map(item => item[1]),
-            borderWidth: 2
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: "bottom"
-          },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => `${ctx.label}: ${this.moeda(ctx.raw)}`
-            }
-          }
-        }
-      }
-    });
+    const contas = this.filtrados.filter(item => ids.includes(Number(item.id)));
+    const totalOriginal = contas.reduce((acc, item) => acc + this.numero(item.valor), 0);
+    const hoje = new Date().toISOString().slice(0, 10);
+
+    const dataPagamento = prompt(
+      `Data do pagamento para ${contas.length} conta(s):\nTotal original: ${this.moeda(totalOriginal)}`,
+      hoje
+    );
+
+    if (!dataPagamento) return;
+
+    const multa = prompt("Multa/Juros total:", "0");
+    if (multa === null) return;
+
+    const desconto = prompt("Desconto total:", "0");
+    if (desconto === null) return;
+
+    const valorMulta = this.numero(multa);
+    const valorDesconto = this.numero(desconto);
+
+    if (!confirm(
+      `Confirmar pagamento?\n\nQuantidade: ${contas.length}\nTotal: ${this.moeda(totalOriginal)}\nMulta/Juros: ${this.moeda(valorMulta)}\nDesconto: ${this.moeda(valorDesconto)}`
+    )) return;
+
+    for (const item of contas) {
+      await api.update("contas_pagar", item.id, {
+        status: "pago",
+        data_pagamento: dataPagamento,
+        multa: valorMulta / contas.length,
+        desconto: valorDesconto / contas.length
+      });
+    }
+
+    this.selecionados.clear();
+    await this.listar();
+
+    if (window.contasPagasModule?.carregar) {
+      contasPagasModule.carregar();
+    }
   }
 };
 
-window.carregarDashboard = () => dashboardModule.carregar();
+window.listarContasPagar = () => contasPagarModule.listar();
