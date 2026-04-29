@@ -481,15 +481,37 @@
         <div class="panel empty-state">Módulo será recriado depois.</div>
       </section>
 
- <section id="tab-planejamento" class="tab-section">
+<section id="tab-planejamento" class="tab-section">
   <div class="page-head">
     <h2>Planejamento 12 Semanas</h2>
-    <p>Previsão de contas a receber, contas a pagar e saldo projetado por semana.</p>
+    <p>Fluxo projetado com contas a receber, contas a pagar e saldos bancários.</p>
   </div>
+
+  <section class="cards-grid">
+    <div class="card">
+      <span>Saldo inicial bancos</span>
+      <strong id="planejamentoSaldoInicial">R$ 0,00</strong>
+    </div>
+
+    <div class="card">
+      <span>Total a receber</span>
+      <strong id="planejamentoTotalReceber">R$ 0,00</strong>
+    </div>
+
+    <div class="card">
+      <span>Total a pagar</span>
+      <strong id="planejamentoTotalPagar">R$ 0,00</strong>
+    </div>
+
+    <div class="card">
+      <span>Saldo final projetado</span>
+      <strong id="planejamentoSaldoFinal">R$ 0,00</strong>
+    </div>
+  </section>
 
   <div class="panel">
     <div class="panel-head">
-      <h3>Fluxo projetado</h3>
+      <h3>Saldos Bancários</h3>
       <button class="secondary-btn" onclick="planejamentoModule.carregar()">
         Atualizar
       </button>
@@ -499,17 +521,43 @@
       <table>
         <thead>
           <tr>
+            <th>Banco / Conta</th>
+            <th>Saldo Atual</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody id="tabelaSaldosBancarios">
+          <tr>
+            <td colspan="3" class="muted">Nenhum saldo carregado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Fluxo Futuro — 12 Semanas</h3>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
             <th>Semana</th>
             <th>Período</th>
+            <th>Saldo Inicial</th>
             <th>A Receber</th>
             <th>A Pagar</th>
-            <th>Saldo Projetado</th>
+            <th>Saldo da Semana</th>
+            <th>Saldo Final</th>
           </tr>
         </thead>
 
         <tbody id="tabelaPlanejamento">
           <tr>
-            <td colspan="5" class="muted">Nenhuma informação carregada.</td>
+            <td colspan="7" class="muted">Nenhum planejamento carregado.</td>
           </tr>
         </tbody>
       </table>
