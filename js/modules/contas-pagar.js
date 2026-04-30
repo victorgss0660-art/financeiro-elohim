@@ -71,56 +71,75 @@ window.contasPagarModule = {
     }
   },
 
-  renderizar() {
-    const tbody = this.get("tabelaContasPagar");
-    if (!tbody) return;
+renderizar() {
+  const tbody = this.get("tabelaContasPagar");
+  if (!tbody) return;
 
-    const lista = this.filtrados || [];
+  const lista = this.filtrados || [];
 
-    if (!lista.length) {
-      tbody.innerHTML = `<tr><td colspan="9">Nenhuma conta encontrada.</td></tr>`;
-      this.resumo();
-      return;
-    }
-
-    tbody.innerHTML = lista.map(item => {
-      const id = Number(item.id);
-      const marcado = this.selecionados.has(id);
-
-      return `
-        <tr class="${marcado ? "linha-vermelha" : ""}">
-          <td>
-            <input type="checkbox" ${marcado ? "checked" : ""}
-              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)">
-          </td>
-          <td>${item.fornecedor || "-"}</td>
-          <td>${item.documento || "-"}</td>
-          <td>${this.moeda(item.valor)}</td>
-          <td>${this.dataBR(item.vencimento)}</td>
-          <td>${item.categoria || "-"}</td>
-          <td>${item.descricao || "-"}</td>
-          <td>
-            <button class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
-              onclick="contasPagarModule.toggleNfe(${id})">
-              ${item.tem_nfe ? "NFE OK" : "NFE"}
-            </button>
-            <button class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
-              onclick="contasPagarModule.toggleBoleto(${id})">
-              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
-            </button>
-          </td>
-          <td>
-            <button class="btn-editar" onclick="contasPagarModule.editar(${id})">Editar</button>
-            <button class="btn-duplicar" onclick="contasPagarModule.duplicar(${id})">Duplicar</button>
-            <button class="btn-pagar" onclick="contasPagarModule.pagar(${id})">Pagar</button>
-            <button class="btn-excluir" onclick="contasPagarModule.excluir(${id})">Excluir</button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-
+  if (!lista.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="muted">Nenhuma conta encontrada.</td>
+      </tr>
+    `;
     this.resumo();
-  },
+    return;
+  }
+
+  tbody.innerHTML = lista.map(item => {
+    const id = Number(item.id);
+    const marcado = this.selecionados.has(id);
+
+    return `
+      <tr
+        class="${marcado ? "linha-vermelha" : ""}"
+        onclick="contasPagarModule.toggleSelecionadoLinha(${id}, event)"
+      >
+        <td>
+          <input
+            type="checkbox"
+            ${marcado ? "checked" : ""}
+            onclick="event.stopPropagation()"
+            onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+          >
+        </td>
+
+        <td><strong>${item.fornecedor || "-"}</strong></td>
+        <td>${item.documento || "-"}</td>
+        <td><strong>${this.moeda(item.valor)}</strong></td>
+        <td>${this.dataBR(item.vencimento)}</td>
+        <td>${item.categoria || "-"}</td>
+        <td>${item.descricao || "-"}</td>
+
+        <td>
+          <button
+            class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
+            onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})"
+          >
+            ${item.tem_nfe ? "NFE OK" : "NFE"}
+          </button>
+
+          <button
+            class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
+            onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})"
+          >
+            ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+          </button>
+        </td>
+
+        <td>
+          <button class="btn-editar" onclick="event.stopPropagation(); contasPagarModule.editar(${id})">Editar</button>
+          <button class="btn-duplicar" onclick="event.stopPropagation(); contasPagarModule.duplicar(${id})">Duplicar</button>
+          <button class="btn-pagar" onclick="event.stopPropagation(); contasPagarModule.pagar(${id})">Pagar</button>
+          <button class="btn-excluir" onclick="event.stopPropagation(); contasPagarModule.excluir(${id})">Excluir</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  this.resumo();
+},
 
   resumo() {
     const soma = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
