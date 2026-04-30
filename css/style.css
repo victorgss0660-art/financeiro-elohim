@@ -704,3 +704,74 @@ main {
 .container {
   margin: 0 !important;
 }
+/* ===== SIDEBAR PREMIUM RESTAURADA ===== */
+
+.sidebar {
+  width: 240px !important;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #111827, #020617);
+  color: white;
+  padding: 22px 16px;
+  box-shadow: 12px 0 30px rgba(15, 23, 42, 0.25);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.brand-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f59e0b, #dc2626);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: white;
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35);
+}
+
+.brand h2 {
+  color: white;
+  font-size: 18px;
+  margin: 0;
+}
+
+.brand span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu button {
+  width: 100%;
+  background: transparent;
+  color: #cbd5e1;
+  border: none;
+  text-align: left;
+  padding: 11px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.menu button:hover {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+.menu button.active {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: white;
+  box-shadow: 0 8px 22px rgba(220, 38, 38, 0.35);
+}
