@@ -803,3 +803,85 @@ main {
   color: #94a3b8;
   font-size: 11px;
 }
+/* ===== SIDEBAR NÍVEL BANCO ===== */
+
+.sidebar {
+  width: 260px !important;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(220,38,38,.22), transparent 35%),
+    linear-gradient(180deg, #020617, #111827);
+  color: #fff;
+  padding: 24px 18px;
+  box-shadow: 18px 0 45px rgba(2, 6, 23, .35);
+  border-right: 1px solid rgba(255,255,255,.08);
+}
+
+.brand {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 24px;
+}
+
+.brand-img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 14px;
+  padding: 5px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
+}
+
+.brand h2 {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.brand span {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu button {
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid transparent;
+  text-align: left;
+  padding: 0 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.menu button:hover {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border-color: rgba(255,255,255,.10);
+  transform: translateX(3px);
+}
+
+.menu button.active {
+  background: linear-gradient(135deg, #dc2626, #7f1d1d);
+  color: #fff;
+  border-color: rgba(255,255,255,.16);
+  box-shadow: 0 14px 32px rgba(220,38,38,.35);
+}
+
+.main {
+  background: #f8fafc !important;
+}
