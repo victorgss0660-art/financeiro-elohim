@@ -55,86 +55,141 @@
       </header>
 
       <!-- DASHBOARD -->
-      <section id="tab-dashboard" class="tab-section active">
-        <div class="dash-black">
-          <div class="dash-hero">
-            <div>
-              <span class="dash-eyebrow">Painel Executivo</span>
-              <h2>Dashboard Black Premium</h2>
-              <p>Visão estratégica de contas, vencimentos e pagamentos.</p>
-            </div>
+<section id="tab-dashboard" class="tab-section active">
 
-            <div class="dash-badge">Financeiro Elohim</div>
-          </div>
+  <div class="page-head">
+    <h2>Dashboard Executivo</h2>
+    <p>Visão estratégica do financeiro da empresa</p>
+  </div>
 
-          <div class="dash-cards">
-            <div class="dash-card">
-              <span>Total em aberto</span>
-              <strong id="dashTotalAberto">R$ 0,00</strong>
-              <small id="dashQtdAberto">0 conta(s)</small>
-            </div>
+  <!-- KPI PRINCIPAIS -->
+  <section class="cards-grid">
 
-            <div class="dash-card danger">
-              <span>Vencidas</span>
-              <strong id="dashTotalVencidas">R$ 0,00</strong>
-              <small id="dashQtdVencidas">0 vencida(s)</small>
-            </div>
+    <div class="card">
+      <span>A Receber (aberto)</span>
+      <strong id="dashCEOReceberAberto">R$ 0,00</strong>
+      <small id="dashCEOQtdReceber"></small>
+    </div>
 
-            <div class="dash-card warning">
-              <span>Vence hoje</span>
-              <strong id="dashVenceHoje">R$ 0,00</strong>
-              <small id="dashQtdHoje">0 hoje</small>
-            </div>
+    <div class="card">
+      <span>A Pagar (aberto)</span>
+      <strong id="dashCEOPagarAberto">R$ 0,00</strong>
+      <small id="dashCEOQtdPagar"></small>
+    </div>
 
-            <div class="dash-card success">
-              <span>Pagas no mês</span>
-              <strong id="dashPagasMes">R$ 0,00</strong>
-              <small id="dashQtdPagasMes">0 paga(s)</small>
-            </div>
-          </div>
+    <div class="card">
+      <span>Saldo Projetado</span>
+      <strong id="dashCEOSaldoProjetado">R$ 0,00</strong>
+    </div>
 
-          <div class="dash-grid">
-            <div class="dash-panel">
-              <div class="dash-panel-head">
-                <h3>Próximos vencimentos</h3>
-                <span>Top 10</span>
-              </div>
+    <div class="card">
+      <span>Lucro no Mês</span>
+      <strong id="dashCEOLucroMes">R$ 0,00</strong>
+    </div>
 
-              <div class="table-wrap">
-                <table class="dash-table">
-                  <thead>
-                    <tr>
-                      <th>Fornecedor</th>
-                      <th>Documento</th>
-                      <th>Vencimento</th>
-                      <th>Valor</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dashboardVencimentos"></tbody>
-                </table>
-              </div>
-            </div>
+  </section>
 
-            <div class="dash-panel">
-              <div class="dash-panel-head">
-                <h3>Top fornecedores</h3>
-                <span>Em aberto</span>
-              </div>
+  <!-- KPI SECUNDÁRIOS -->
+  <section class="cards-grid">
 
-              <div id="dashboardTopFornecedores"></div>
-            </div>
-          </div>
+    <div class="card">
+      <span>Recebido no mês</span>
+      <strong id="dashCEORecebidoMes">R$ 0,00</strong>
+    </div>
 
-          <div class="dash-panel">
-            <div class="dash-panel-head">
-              <h3>Distribuição por categoria</h3>
-              <span>Contas em aberto</span>
-            </div>
+    <div class="card">
+      <span>Pago no mês</span>
+      <strong id="dashCEOPagoMes">R$ 0,00</strong>
+    </div>
 
-            <div id="dashboardCategorias" class="dash-categories"></div>
-          </div>
-        </div>
-      </section>
+    <div class="card">
+      <span>Contas vencidas</span>
+      <strong id="dashCEOVencidas">R$ 0,00</strong>
+    </div>
+
+    <div class="card">
+      <span>A receber vencido</span>
+      <strong id="dashCEOReceberVencido">R$ 0,00</strong>
+    </div>
+
+  </section>
+
+  <!-- STATUS EXECUTIVO -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Status Financeiro</h3>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <strong id="dashCEOStatus">CARREGANDO...</strong>
+      <span id="dashCEOStatusDetalhe" class="muted"></span>
+    </div>
+  </div>
+
+  <!-- GRÁFICOS -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Fluxo Financeiro (Ano)</h3>
+    </div>
+
+    <div class="chart-box">
+      <canvas id="chartCEOFluxo"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Distribuição por Categoria</h3>
+    </div>
+
+    <div class="chart-box">
+      <canvas id="chartCEOCategorias"></canvas>
+    </div>
+  </div>
+
+  <!-- GRID FINAL -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Próximos Vencimentos</h3>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fornecedor</th>
+            <th>Documento</th>
+            <th>Vencimento</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+
+        <tbody id="dashboardCEOVencimentos">
+          <tr>
+            <td colspan="4" class="muted">Carregando...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Top Fornecedores</h3>
+    </div>
+
+    <div id="dashboardCEOTopFornecedores"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Categorias (Contas a Pagar)</h3>
+    </div>
+
+    <div id="dashboardCEOCategorias" class="cards-grid"></div>
+  </div>
+
+</section>
 
       <!-- CONTAS A PAGAR -->
       <section id="tab-contas-pagar" class="tab-section">
