@@ -885,3 +885,12 @@ main {
 .main {
   background: #f8fafc !important;
 }
+/* ===== CONTROLE DE ABAS (FORÇA TOTAL) ===== */
+
+.tab-section {
+  display: none !important;
+}
+
+.tab-section.active {
+  display: block !important;
+}
