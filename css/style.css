@@ -1122,3 +1122,46 @@ button:hover {
 #tab-planejamento button:hover {
   background: #1e293b;
 }
+/* ===== AJUSTE DE LEITURA (NUMEROS) ===== */
+
+#tab-planejamento td {
+  color: #0f172a !important; /* texto principal escuro */
+  font-weight: 600;
+}
+
+/* ENTRADAS (verde forte) */
+#tab-planejamento td:nth-child(4) {
+  color: #16a34a !important;
+  font-weight: 800;
+}
+
+/* SAIDAS (vermelho forte) */
+#tab-planejamento td:nth-child(5) {
+  color: #dc2626 !important;
+  font-weight: 800;
+}
+
+/* RESULTADO */
+#tab-planejamento td:nth-child(6) {
+  color: #0f172a !important;
+  font-weight: 700;
+}
+
+/* SALDO FINAL (mais destaque) */
+#tab-planejamento td:nth-child(7) {
+  font-weight: 900;
+  color: #020617 !important;
+  font-size: 14px;
+}
+
+/* NEGATIVO DESTACADO */
+#tab-planejamento tr[style*="fee2e2"] td {
+  color: #991b1b !important;
+  font-weight: 900;
+}
+
+/* CABEÇALHO MAIS LEGÍVEL */
+#tab-planejamento th {
+  color: #475569 !important;
+  font-weight: 700;
+}
