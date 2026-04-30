@@ -39,15 +39,12 @@ h1, h2, h3 {
 }
 
 .tab-section {
-
   display: none;
-
+  padding: 20px;
 }
 
 .tab-section.active {
-
   display: block;
-
 }
 
 /* ===== HEADER ===== */
