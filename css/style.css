@@ -426,3 +426,29 @@ button:hover {
 main {
   width: 100%;
 }
+/* EMERGÊNCIA — FAZER CONTEÚDO VOLTAR */
+.app {
+  display: flex !important;
+  min-height: 100vh !important;
+  width: 100% !important;
+}
+
+.main {
+  flex: 1 !important;
+  padding: 28px !important;
+  overflow: auto !important;
+  background: #f8fafc !important;
+}
+
+.tab-section {
+  display: none !important;
+  width: 100% !important;
+}
+
+.tab-section.active {
+  display: block !important;
+}
+
+#tab-dashboard {
+  display: block !important;
+}
