@@ -73,6 +73,39 @@ window.app = {
     this.carregarModulo(nome);
   },
 
+  // ===== NAVEGAÇÃO ENTRE ABAS =====
+
+function abrirTab(id) {
+
+  // esconder todas
+  document.querySelectorAll(".tab-section").forEach(sec => {
+    sec.style.display = "none";
+    sec.classList.remove("active");
+  });
+
+  // mostrar somente a clicada
+  const ativa = document.getElementById(id);
+  if (ativa) {
+    ativa.style.display = "block";
+    ativa.classList.add("active");
+  }
+
+  // destacar botão ativo
+  document.querySelectorAll(".menu button").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  const btnAtivo = document.querySelector(`[onclick="abrirTab('${id}')"]`);
+  if (btnAtivo) btnAtivo.classList.add("active");
+}
+
+
+// ===== INICIAR SISTEMA =====
+
+window.onload = () => {
+  abrirTab("tab-dashboard");
+};
+
   async carregarModulo(nome) {
     try {
       if (nome === "dashboard" && window.dashboardModule?.carregar) {
