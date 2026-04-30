@@ -484,8 +484,8 @@
       
 <section id="tab-planejamento" class="tab-section">
   <div class="page-head">
-    <h2>Planejamento 12 Semanas</h2>
-    <p>Fluxo projetado com contas a receber, contas a pagar e saldos bancários.</p>
+    <h2>Planejamento Inteligente</h2>
+    <p>Fluxo de caixa projetado para 12 semanas com saldos bancários, contas a receber, contas a pagar e previsão automática.</p>
   </div>
 
   <section class="cards-grid">
@@ -513,9 +513,7 @@
   <div class="panel">
     <div class="panel-head">
       <h3>Saldos Bancários</h3>
-      <button class="secondary-btn" onclick="planejamentoModule.carregar()">
-        Atualizar
-      </button>
+      <button class="secondary-btn" onclick="planejamentoModule.carregar()">Atualizar</button>
     </div>
 
     <div class="table-wrap">
@@ -539,7 +537,19 @@
 
   <div class="panel">
     <div class="panel-head">
-      <h3>Fluxo Futuro — 12 Semanas</h3>
+      <h3>Fluxo de Caixa — 12 Semanas</h3>
+      <span class="muted">Entradas, saídas e caixa projetado</span>
+    </div>
+
+    <div class="chart-box">
+      <canvas id="chartPlanejamento"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Previsão Inteligente</h3>
+      <span class="muted">Inclui previsão automática quando não houver lançamento previsto</span>
     </div>
 
     <div class="table-wrap">
@@ -551,14 +561,15 @@
             <th>Saldo Inicial</th>
             <th>A Receber</th>
             <th>A Pagar</th>
-            <th>Saldo da Semana</th>
+            <th>Saldo Semana</th>
             <th>Saldo Final</th>
+            <th>Status</th>
           </tr>
         </thead>
 
         <tbody id="tabelaPlanejamento">
           <tr>
-            <td colspan="7" class="muted">Nenhum planejamento carregado.</td>
+            <td colspan="8" class="muted">Nenhum planejamento carregado.</td>
           </tr>
         </tbody>
       </table>
