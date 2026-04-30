@@ -1,4 +1,5 @@
 window.planejamentoModule = {
+
   contasPagar: [],
   contasReceber: [],
   saldos: [],
@@ -48,6 +49,7 @@ window.planejamentoModule = {
 
       this.renderizarSaldos();
       this.renderizarPlanejamento();
+
     } catch (e) {
       console.error(e);
       alert("Erro ao carregar planejamento");
@@ -93,6 +95,7 @@ window.planejamentoModule = {
     let html = "";
 
     for (let i = 0; i < 12; i++) {
+
       const fim = this.addDias(inicio, 6);
 
       const receber = this.contasReceber
@@ -104,23 +107,33 @@ window.planejamentoModule = {
         .reduce((t, c) => t + this.numero(c.valor), 0);
 
       const saldoSemana = receber - pagar;
+      const saldoAnterior = saldo;
       saldo += saldoSemana;
 
       totalReceber += receber;
       totalPagar += pagar;
 
+      const risco = saldo < 0;
+
       html += `
-        <tr>
+        <tr style="${risco ? 'background:#ffe2e2' : ''}">
           <td>${i+1}</td>
           <td>${inicio} até ${fim}</td>
-          <td>${this.moeda(saldo - saldoSemana)}</td>
-          <td>${this.moeda(receber)}</td>
-          <td>${this.moeda(pagar)}</td>
-          <td style="color:${saldoSemana>=0?'green':'red'}">
+
+          <td>${this.moeda(saldoAnterior)}</td>
+          <td style="color:green">${this.moeda(receber)}</td>
+          <td style="color:red">${this.moeda(pagar)}</td>
+
+          <td style="font-weight:bold;color:${saldoSemana>=0?'green':'red'}">
             ${this.moeda(saldoSemana)}
           </td>
-          <td style="font-weight:bold">
+
+          <td style="font-weight:bold;color:${saldo>=0?'green':'red'}">
             ${this.moeda(saldo)}
+          </td>
+
+          <td>
+            ${risco ? '⚠️ RISCO DE CAIXA' : 'OK'}
           </td>
         </tr>
       `;
@@ -129,12 +142,13 @@ window.planejamentoModule = {
     }
 
     html += `
-      <tr style="font-weight:bold;background:#f1f5f9">
+      <tr style="font-weight:bold;background:#111;color:white">
         <td colspan="3">TOTAL</td>
         <td>${this.moeda(totalReceber)}</td>
         <td>${this.moeda(totalPagar)}</td>
-        <td>${this.moeda(totalReceber-totalPagar)}</td>
+        <td>${this.moeda(totalReceber - totalPagar)}</td>
         <td>${this.moeda(saldo)}</td>
+        <td></td>
       </tr>
     `;
 
@@ -143,6 +157,14 @@ window.planejamentoModule = {
     this.get("planejamentoTotalReceber").textContent = this.moeda(totalReceber);
     this.get("planejamentoTotalPagar").textContent = this.moeda(totalPagar);
     this.get("planejamentoSaldoFinal").textContent = this.moeda(saldo);
+
+    this.alertaExecutivo(saldo);
+  },
+
+  alertaExecutivo(saldo) {
+    if (saldo < 0) {
+      alert("⚠️ Atenção: projeção indica caixa negativo nas próximas semanas.");
+    }
   },
 
   async editarSaldo(id) {
@@ -158,6 +180,7 @@ window.planejamentoModule = {
 
     this.carregar();
   }
+
 };
 
 window.carregarPlanejamento = () => planejamentoModule.carregar();
