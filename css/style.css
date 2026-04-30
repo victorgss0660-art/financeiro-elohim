@@ -737,3 +737,139 @@ tbody tr:hover{
     align-items:flex-start;
   }
 }
+/* ===== PLANEJAMENTO CFO ===== */
+
+#tab-planejamento {
+  background: #f8fafc;
+}
+
+/* CARDS SUPERIORES */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card span {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.card strong {
+  font-size: 22px;
+  font-weight: 800;
+  margin-top: 6px;
+  display: block;
+}
+
+/* PAINÉIS */
+.panel {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.panel-head h3 {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.panel-head span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* TABELAS */
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-wrap th {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  text-align: left;
+  padding: 10px;
+}
+
+.table-wrap td {
+  padding: 10px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 13px;
+}
+
+/* LINHAS DE RISCO */
+.table-wrap tr[style*="ffe2e2"] {
+  background: #fee2e2 !important;
+}
+
+/* CORES FINANCEIRAS */
+td[style*="color:green"] {
+  color: #16a34a !important;
+}
+
+td[style*="color:red"] {
+  color: #dc2626 !important;
+}
+
+/* BOTÕES */
+button {
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e293b;
+}
+
+/* GRÁFICO */
+.chart-box {
+  height: 260px;
+}
+
+/* TEXTO AUXILIAR */
+.muted {
+  color: #94a3b8;
+}
+
+/* RESPONSIVO */
+@media (max-width: 1100px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
