@@ -1,155 +1,111 @@
-window.app = {
+const app = {
   abaAtual: "dashboard",
 
   meses: [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro"
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
   ],
 
-  init() {
-    this.preencherMeses();
-    this.preencherAno();
+  iniciar() {
+    this.preencherFiltros();
     this.configurarMenu();
     this.abrirAba("dashboard");
   },
 
-  preencherMeses() {
-    const select = document.getElementById("mesSelect");
-    if (!select) return;
+  preencherFiltros() {
+    const mesSelect = document.getElementById("mesSelect");
+    const anoSelect = document.getElementById("anoSelect");
 
-    select.innerHTML = this.meses
-      .map(mes => `<option value="${mes}">${mes}</option>`)
-      .join("");
+    if (mesSelect && !mesSelect.options.length) {
+      this.meses.forEach((mes) => {
+        const option = document.createElement("option");
+        option.value = mes;
+        option.textContent = mes;
+        mesSelect.appendChild(option);
+      });
 
-    const atual = new Date().getMonth();
-    select.value = this.meses[atual];
-  },
+      mesSelect.value = this.meses[new Date().getMonth()];
+    }
 
-  preencherAno() {
-    const ano = document.getElementById("anoSelect");
-    if (!ano) return;
-
-    ano.value = new Date().getFullYear();
+    if (anoSelect && !anoSelect.value) {
+      anoSelect.value = new Date().getFullYear();
+    }
   },
 
   configurarMenu() {
-    const botoes = document.querySelectorAll("[data-tab]");
+    const botoes = document.querySelectorAll(".menu button");
 
-    botoes.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const aba = btn.getAttribute("data-tab");
-        this.abrirAba(aba);
+    botoes.forEach((botao) => {
+      botao.addEventListener("click", () => {
+        const nomeAba = botao.dataset.tab;
+        if (nomeAba) {
+          this.abrirAba(nomeAba);
+        }
       });
     });
   },
 
-  abrirAba(nome) {
-    this.abaAtual = nome;
+  async abrirAba(nomeAba) {
+    this.abaAtual = nomeAba;
 
-    document.querySelectorAll(".tab-section").forEach(sec => {
-      sec.classList.remove("active");
+    document.querySelectorAll(".tab-section").forEach((section) => {
+      section.classList.remove("active");
+      section.style.display = "none";
     });
 
-    document.querySelectorAll("[data-tab]").forEach(btn => {
-      btn.classList.remove("active");
+    const sectionAtiva = document.getElementById(`tab-${nomeAba}`);
+
+    if (sectionAtiva) {
+      sectionAtiva.classList.add("active");
+      sectionAtiva.style.display = "block";
+    }
+
+    document.querySelectorAll(".menu button").forEach((botao) => {
+      botao.classList.toggle("active", botao.dataset.tab === nomeAba);
     });
 
-    const secao = document.getElementById(`tab-${nome}`);
-    if (secao) secao.classList.add("active");
-
-    const botao = document.querySelector(`[data-tab="${nome}"]`);
-    if (botao) botao.classList.add("active");
-
-    this.carregarModulo(nome);
+    await this.carregarModulo(nomeAba);
   },
 
-// ===== NAVEGAÇÃO VIA data-tab =====
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const botoes = document.querySelectorAll(".menu button");
-
-  botoes.forEach(btn => {
-    btn.addEventListener("click", () => {
-
-      const tab = btn.getAttribute("data-tab");
-
-      // esconder todas
-      document.querySelectorAll(".tab-section").forEach(sec => {
-        sec.style.display = "none";
-        sec.classList.remove("active");
-      });
-
-      // mostrar selecionada
-      const ativa = document.getElementById(`tab-${tab}`);
-      if (ativa) {
-        ativa.style.display = "block";
-        ativa.classList.add("active");
-      }
-
-      // botão ativo
-      botoes.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-    });
-  });
-
-  // abrir dashboard ao iniciar
-  const first = document.querySelector('[data-tab="dashboard"]');
-  if (first) first.click();
-
-}); 
-
-  async carregarModulo(nome) {
+  async carregarModulo(nomeAba) {
     try {
-      if (nome === "dashboard" && window.dashboardModule?.carregar) {
+      if (nomeAba === "dashboard" && window.dashboardModule?.carregar) {
         await dashboardModule.carregar();
       }
 
-      if (nome === "contas-pagar" && window.contasPagarModule?.carregar) {
+      if (nomeAba === "contas-pagar" && window.contasPagarModule?.carregar) {
         await contasPagarModule.carregar();
       }
 
-      if (nome === "contas-pagas" && window.contasPagasModule?.carregar) {
+      if (nomeAba === "contas-pagas" && window.contasPagasModule?.carregar) {
         await contasPagasModule.carregar();
       }
 
-      if (nome === "contas-receber" && window.contasReceberModule?.carregar) {
+      if (nomeAba === "contas-receber" && window.contasReceberModule?.carregar) {
         await contasReceberModule.carregar();
       }
 
-      if (nome === "faturamento" && window.faturamentoModule?.carregar) {
-        await faturamentoModule.carregar();
-      }
-
-      if (nome === "metas" && window.metasModule?.carregar) {
-        await metasModule.carregar();
-      }
-
-      if (nome === "planejamento" && window.planejamentoModule?.carregar) {
+      if (nomeAba === "planejamento" && window.planejamentoModule?.carregar) {
         await planejamentoModule.carregar();
       }
 
-      if (nome === "dre" && window.dreModule?.carregar) {
+      if (nomeAba === "faturamento" && window.faturamentoModule?.carregar) {
+        await faturamentoModule.carregar();
+      }
+
+      if (nomeAba === "metas" && window.metasModule?.carregar) {
+        await metasModule.carregar();
+      }
+
+      if (nomeAba === "dre" && window.dreModule?.carregar) {
         await dreModule.carregar();
       }
 
-      if (nome === "importar" && window.importarModule?.carregar) {
+      if (nomeAba === "importar" && window.importarModule?.carregar) {
         await importarModule.carregar();
       }
-
     } catch (error) {
-      console.error("Erro ao carregar módulo:", nome, error);
+      console.error("Erro ao carregar módulo:", nomeAba, error);
     }
   },
 
@@ -158,6 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 };
 
+window.app = app;
+
 document.addEventListener("DOMContentLoaded", () => {
-  app.init();
+  app.iniciar();
 });
