@@ -65,6 +65,9 @@ window.planejamentoModule = {
     let totalReceber = 0;
     let totalPagar = 0;
 
+    let menorSaldo = saldo;
+    let semanaCritica = "-";
+
     let labels = [];
     let entradas = [];
     let saidas = [];
@@ -91,23 +94,33 @@ window.planejamentoModule = {
         .filter(c => c.vencimento >= inicioStr && c.vencimento <= fimStr && c.status !== "pago")
         .reduce((t,c)=>t+this.numero(c.valor),0);
 
-      const delta = receber - pagar;
-      saldo += delta;
+      const saldoAntes = saldo;
+      const resultado = receber - pagar;
+
+      saldo += resultado;
 
       totalReceber += receber;
       totalPagar += pagar;
 
-      const negativo = saldo < 0;
+      if(saldo < menorSaldo){
+        menorSaldo = saldo;
+        semanaCritica = i+1;
+      }
+
+      const risco = saldo < 0;
 
       html += `
-        <tr style="${negativo ? 'background:#fee2e2' : ''}">
+        <tr style="${risco ? 'background:#fee2e2' : ''}">
           <td>${i+1}</td>
           <td>${inicioStr} até ${fimStr}</td>
+          <td>${this.moeda(saldoAntes)}</td>
           <td style="color:#22c55e">${this.moeda(receber)}</td>
           <td style="color:#ef4444">${this.moeda(pagar)}</td>
-          <td style="font-weight:bold;color:${negativo ? '#ef4444' : '#22c55e'}">
+          <td style="font-weight:bold">${this.moeda(resultado)}</td>
+          <td style="font-weight:bold;color:${risco ? '#ef4444' : '#22c55e'}">
             ${this.moeda(saldo)}
           </td>
+          <td>${risco ? "⚠️ Risco" : "OK"}</td>
         </tr>
       `;
 
@@ -125,9 +138,18 @@ window.planejamentoModule = {
     this.get("planejamentoTotalPagar").textContent = this.moeda(totalPagar);
     this.get("planejamentoSaldoFinal").textContent = this.moeda(saldo);
 
-    // ===== ALERTA =====
-    if(saldo < 0){
-      alert("⚠️ Atenção: previsão indica caixa negativo");
+    // ===== INDICADORES CFO =====
+    this.get("planejamentoMenorSaldo").textContent = this.moeda(menorSaldo);
+    this.get("planejamentoSemanaCritica").textContent = semanaCritica;
+
+    if(menorSaldo < 0){
+      this.get("planejamentoStatusCaixa").textContent = "CRÍTICO";
+      this.get("planejamentoStatusCaixa").style.color = "#ef4444";
+      this.get("planejamentoNecessidadeCaixa").textContent = this.moeda(Math.abs(menorSaldo));
+    } else {
+      this.get("planejamentoStatusCaixa").textContent = "SAUDÁVEL";
+      this.get("planejamentoStatusCaixa").style.color = "#22c55e";
+      this.get("planejamentoNecessidadeCaixa").textContent = "R$ 0,00";
     }
 
     // ===== GRÁFICO =====
