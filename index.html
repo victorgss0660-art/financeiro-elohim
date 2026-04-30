@@ -196,21 +196,19 @@
               <input id="cpCategoria" type="text" />
             </div>
 
-            <div>
+            <div class="toggle-group">
               <label>NFE recebida</label>
-              <select id="cpNfe">
-                <option value="">Não</option>
-                <option value="OK">Sim</option>
-              </select>
+              <button id="btnNfe" class="toggle-btn" onclick="contasPagarModule.toggleInput('nfe')">
+                Não
+              </button>
             </div>
 
-            <div>
-              <label>Boleto recebido</label>
-              <select id="cpBoleto">
-                <option value="false">Não</option>
-                <option value="true">Sim</option>
-              </select>
-            </div>
+<div class="toggle-group">
+  <label>Boleto recebido</label>
+  <button id="btnBoleto" class="toggle-btn" onclick="contasPagarModule.toggleInput('boleto')">
+    Não
+  </button>
+</div>
 
             <div>
               <label>Descrição</label>
