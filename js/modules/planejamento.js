@@ -328,5 +328,12 @@ datasets: [
     }
   }
 };
+if (saldo < 0) {
+  this.get("indicadorRisco").textContent = "CRÍTICO";
+  this.get("indicadorRisco").style.color = "#ef4444";
+} else {
+  this.get("indicadorRisco").textContent = "CONTROLADO";
+  this.get("indicadorRisco").style.color = "#22c55e";
+}
 
 window.carregarPlanejamento = () => planejamentoModule.carregar();
