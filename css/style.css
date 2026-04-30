@@ -1212,3 +1212,33 @@ main {
 #tab-contas-pagar td:nth-child(8) {
   white-space: nowrap;
 }
+/* ===== TOGGLE BUTTON (NÍVEL BANCO) ===== */
+
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toggle-btn {
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+/* hover */
+.toggle-btn:hover {
+  border-color: #dc2626;
+}
+
+/* ativo */
+.toggle-btn.ativo {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
