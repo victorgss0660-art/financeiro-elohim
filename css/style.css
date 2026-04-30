@@ -891,3 +891,12 @@ main {
 .tab-section.active {
   display: block !important;
 }
+/* ===== CONTROLE FINAL DE ABAS ===== */
+
+.tab-section {
+  display: none !important;
+}
+
+.tab-section.active {
+  display: block !important;
+}
