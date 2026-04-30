@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Financeiro Empresarial</title>
+  <title>Financeiro Empresarial - Elohim</title>
 
-  <link rel="stylesheet" href="./css/style.css" />
-  <link rel="stylesheet" href="css/planejamento.css">
+  <link rel="stylesheet" href="css/style.css" />
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -14,17 +14,21 @@
   <div class="app">
 
     <aside class="sidebar">
-<div class="brand">
-  <img src="https://raw.githubusercontent.com/victorgss0660-art/financeiro-elohim/main/logo-elohim.png" class="brand-img">
+      <div class="brand">
+        <img
+          src="https://raw.githubusercontent.com/victorgss0660-art/financeiro-elohim/main/logo-elohim.png"
+          class="brand-img"
+          alt="Logo Elohim"
+        />
 
-  <div>
-    <h2>Elohim</h2>
-    <span>Usinagem e Caldeiraria</span>
-  </div>
-</div>
+        <div>
+          <h2>Elohim</h2>
+          <span>Usinagem e Caldeiraria</span>
+        </div>
+      </div>
 
       <nav class="menu">
-        <button class="active" data-tab="dashboard">Dashboard</button>
+        <button data-tab="dashboard" class="active">Dashboard</button>
         <button data-tab="contas-pagar">Contas a Pagar</button>
         <button data-tab="contas-pagas">Contas Pagas</button>
         <button data-tab="contas-receber">Contas a Receber</button>
@@ -37,7 +41,6 @@
     </aside>
 
     <main class="main">
-
       <header class="topbar">
         <div>
           <h1>Financeiro Empresarial</h1>
@@ -47,95 +50,93 @@
         <div class="global-filters">
           <select id="mesSelect"></select>
           <input id="anoSelect" type="number" />
-          <button class="primary-btn" onclick="app.recarregarAbaAtual()">Carregar</button>
+          <button onclick="app.recarregarAbaAtual()">Carregar</button>
         </div>
       </header>
 
-<section id="tab-dashboard" class="tab-section">
-  <div class="dash-black">
+      <!-- DASHBOARD -->
+      <section id="tab-dashboard" class="tab-section active">
+        <div class="dash-black">
+          <div class="dash-hero">
+            <div>
+              <span class="dash-eyebrow">Painel Executivo</span>
+              <h2>Dashboard Black Premium</h2>
+              <p>Visão estratégica de contas, vencimentos e pagamentos.</p>
+            </div>
 
-    <div class="dash-hero">
-      <div>
-        <span class="dash-eyebrow">Painel Executivo</span>
-        <h2>Dashboard Black Premium</h2>
-        <p>Visão estratégica de contas, vencimentos e pagamentos.</p>
-      </div>
+            <div class="dash-badge">Financeiro Elohim</div>
+          </div>
 
-      <div class="dash-badge">
-        Financeiro Elohim
-      </div>
-    </div>
+          <div class="dash-cards">
+            <div class="dash-card">
+              <span>Total em aberto</span>
+              <strong id="dashTotalAberto">R$ 0,00</strong>
+              <small id="dashQtdAberto">0 conta(s)</small>
+            </div>
 
-    <div class="dash-cards">
-      <div class="dash-card">
-        <span>Total em aberto</span>
-        <strong id="dashTotalAberto">R$ 0,00</strong>
-        <small id="dashQtdAberto">0 conta(s)</small>
-      </div>
+            <div class="dash-card danger">
+              <span>Vencidas</span>
+              <strong id="dashTotalVencidas">R$ 0,00</strong>
+              <small id="dashQtdVencidas">0 vencida(s)</small>
+            </div>
 
-      <div class="dash-card danger">
-        <span>Vencidas</span>
-        <strong id="dashTotalVencidas">R$ 0,00</strong>
-        <small id="dashQtdVencidas">0 vencida(s)</small>
-      </div>
+            <div class="dash-card warning">
+              <span>Vence hoje</span>
+              <strong id="dashVenceHoje">R$ 0,00</strong>
+              <small id="dashQtdHoje">0 hoje</small>
+            </div>
 
-      <div class="dash-card warning">
-        <span>Vence hoje</span>
-        <strong id="dashVenceHoje">R$ 0,00</strong>
-        <small id="dashQtdHoje">0 hoje</small>
-      </div>
+            <div class="dash-card success">
+              <span>Pagas no mês</span>
+              <strong id="dashPagasMes">R$ 0,00</strong>
+              <small id="dashQtdPagasMes">0 paga(s)</small>
+            </div>
+          </div>
 
-      <div class="dash-card success">
-        <span>Pagas no mês</span>
-        <strong id="dashPagasMes">R$ 0,00</strong>
-        <small id="dashQtdPagasMes">0 paga(s)</small>
-      </div>
-    </div>
+          <div class="dash-grid">
+            <div class="dash-panel">
+              <div class="dash-panel-head">
+                <h3>Próximos vencimentos</h3>
+                <span>Top 10</span>
+              </div>
 
-    <div class="dash-grid">
-      <div class="dash-panel">
-        <div class="dash-panel-head">
-          <h3>Próximos vencimentos</h3>
-          <span>Top 10</span>
+              <div class="table-wrap">
+                <table class="dash-table">
+                  <thead>
+                    <tr>
+                      <th>Fornecedor</th>
+                      <th>Documento</th>
+                      <th>Vencimento</th>
+                      <th>Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardVencimentos"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="dash-panel">
+              <div class="dash-panel-head">
+                <h3>Top fornecedores</h3>
+                <span>Em aberto</span>
+              </div>
+
+              <div id="dashboardTopFornecedores"></div>
+            </div>
+          </div>
+
+          <div class="dash-panel">
+            <div class="dash-panel-head">
+              <h3>Distribuição por categoria</h3>
+              <span>Contas em aberto</span>
+            </div>
+
+            <div id="dashboardCategorias" class="dash-categories"></div>
+          </div>
         </div>
+      </section>
 
-        <div class="table-wrap">
-          <table class="dash-table">
-            <thead>
-              <tr>
-                <th>Fornecedor</th>
-                <th>Documento</th>
-                <th>Vencimento</th>
-                <th>Valor</th>
-              </tr>
-            </thead>
-            <tbody id="dashboardVencimentos"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="dash-panel">
-        <div class="dash-panel-head">
-          <h3>Top fornecedores</h3>
-          <span>Em aberto</span>
-        </div>
-
-        <div id="dashboardTopFornecedores"></div>
-      </div>
-    </div>
-
-    <div class="dash-panel">
-      <div class="dash-panel-head">
-        <h3>Distribuição por categoria</h3>
-        <span>Contas em aberto</span>
-      </div>
-
-      <div id="dashboardCategorias" class="dash-categories"></div>
-    </div>
-
-  </div>
-</section>
-
+      <!-- CONTAS A PAGAR -->
       <section id="tab-contas-pagar" class="tab-section">
         <div class="page-head">
           <h2>Contas a Pagar</h2>
@@ -218,7 +219,7 @@
           </div>
 
           <div class="actions-row">
-            <button class="primary-btn" onclick="contasPagarModule.salvar()">Salvar conta</button>
+            <button onclick="contasPagarModule.salvar()">Salvar conta</button>
             <button class="secondary-btn" onclick="contasPagarModule.limparFormulario()">Limpar</button>
           </div>
         </div>
@@ -230,58 +231,35 @@
             <div class="actions-row">
               <button class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">Selecionar todas</button>
               <button class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
-              <button class="secondary-btn action-btn-green" onclick="contasPagarModule.pagarSelecionadas()">Pagar selecionadas</button>
+              <button onclick="contasPagarModule.pagarSelecionadas()">Pagar selecionadas</button>
               <button class="secondary-btn" onclick="contasPagarModule.limparFiltros()">Limpar filtros</button>
             </div>
           </div>
 
-          <div class="form-grid" style="margin-bottom: 14px;">
+          <div class="form-grid">
             <div>
               <label>Buscar</label>
-              <input
-                id="cpBusca"
-                type="text"
-                placeholder="Fornecedor, documento, categoria ou descrição"
-                oninput="contasPagarModule.aplicarFiltros()"
-              />
+              <input id="cpBusca" type="text" placeholder="Fornecedor, documento, categoria ou descrição" oninput="contasPagarModule.aplicarFiltros()" />
             </div>
 
             <div>
               <label>Fornecedor</label>
-              <input
-                id="cpFiltroFornecedor"
-                type="text"
-                placeholder="Filtrar fornecedor"
-                oninput="contasPagarModule.aplicarFiltros()"
-              />
+              <input id="cpFiltroFornecedor" type="text" oninput="contasPagarModule.aplicarFiltros()" />
             </div>
 
             <div>
               <label>Categoria</label>
-              <input
-                id="cpFiltroCategoria"
-                type="text"
-                placeholder="Filtrar categoria"
-                oninput="contasPagarModule.aplicarFiltros()"
-              />
+              <input id="cpFiltroCategoria" type="text" oninput="contasPagarModule.aplicarFiltros()" />
             </div>
 
             <div>
               <label>Vencimento inicial</label>
-              <input
-                id="cpVencimentoInicio"
-                type="date"
-                onchange="contasPagarModule.aplicarFiltros()"
-              />
+              <input id="cpVencimentoInicio" type="date" onchange="contasPagarModule.aplicarFiltros()" />
             </div>
 
             <div>
               <label>Vencimento final</label>
-              <input
-                id="cpVencimentoFim"
-                type="date"
-                onchange="contasPagarModule.aplicarFiltros()"
-              />
+              <input id="cpVencimentoFim" type="date" onchange="contasPagarModule.aplicarFiltros()" />
             </div>
           </div>
 
@@ -311,6 +289,7 @@
         </div>
       </section>
 
+      <!-- CONTAS PAGAS -->
       <section id="tab-contas-pagas" class="tab-section">
         <div class="page-head">
           <h2>Contas Pagas</h2>
@@ -330,33 +309,20 @@
         </section>
 
         <div class="panel">
-          <div class="form-grid" style="margin-bottom: 14px;">
+          <div class="form-grid">
             <div>
               <label>Buscar</label>
-              <input
-                id="pagasBusca"
-                type="text"
-                placeholder="Fornecedor, documento, categoria ou descrição"
-                oninput="contasPagasModule.aplicarFiltros()"
-              />
+              <input id="pagasBusca" type="text" placeholder="Fornecedor, documento, categoria ou descrição" oninput="contasPagasModule.aplicarFiltros()" />
             </div>
 
             <div>
               <label>Data inicial</label>
-              <input
-                id="pagasDataInicio"
-                type="date"
-                onchange="contasPagasModule.aplicarFiltros()"
-              />
+              <input id="pagasDataInicio" type="date" onchange="contasPagasModule.aplicarFiltros()" />
             </div>
 
             <div>
               <label>Data final</label>
-              <input
-                id="pagasDataFim"
-                type="date"
-                onchange="contasPagasModule.aplicarFiltros()"
-              />
+              <input id="pagasDataFim" type="date" onchange="contasPagasModule.aplicarFiltros()" />
             </div>
 
             <div>
@@ -376,12 +342,13 @@
                   <th>Pagamento</th>
                   <th>Descrição</th>
                   <th>Valor</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
 
-              <tbody id="tabelaContasPagas"></tbody>
+              <tbody id="tabelaContasPagas">
                 <tr>
-                  <td colspan="7" class="muted">Nenhuma conta paga carregada.</td>
+                  <td colspan="8" class="muted">Nenhuma conta paga carregada.</td>
                 </tr>
               </tbody>
             </table>
@@ -389,243 +356,245 @@
         </div>
       </section>
 
-<section id="tab-contas-receber" class="tab-section">
+      <!-- CONTAS A RECEBER -->
+      <section id="tab-contas-receber" class="tab-section">
+        <div class="page-head">
+          <h2>Contas a Receber</h2>
+          <p>Controle de clientes, notas fiscais e recebimentos.</p>
+        </div>
 
-  <h2>Contas a Receber</h2>
+        <section class="cards-grid">
+          <div class="card">
+            <span>Quantidade</span>
+            <strong id="receberQtd">0</strong>
+          </div>
 
-  <div class="card">
-    <div class="grid-6">
+          <div class="card">
+            <span>Total</span>
+            <strong id="receberTotal">R$ 0,00</strong>
+          </div>
 
-      <input id="receberCliente" placeholder="Cliente">
+          <div class="card">
+            <span>Em aberto</span>
+            <strong id="receberAberto">R$ 0,00</strong>
+          </div>
+        </section>
 
-      <input id="receberDocumento" placeholder="NF / Pedido / FAT">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Lançar Recebimento</h3>
+          </div>
 
-      <input id="receberCategoria" placeholder="Categoria">
+          <div class="form-grid">
+            <input id="receberCliente" placeholder="Cliente" />
+            <input id="receberDocumento" placeholder="NF / Pedido / FAT" />
+            <input id="receberCategoria" placeholder="Categoria" />
+            <input id="receberVencimento" type="date" />
+            <input id="receberValor" placeholder="Valor" />
+            <input id="receberDescricao" placeholder="Descrição" />
+          </div>
 
-      <input id="receberVencimento" type="date">
+          <div class="actions-row">
+            <button onclick="contasReceberModule.salvar()">Salvar</button>
+            <button class="secondary-btn" onclick="contasReceberModule.limparFormulario()">Limpar</button>
+          </div>
+        </div>
 
-      <input id="receberValor" placeholder="Valor">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Recebimentos</h3>
+            <input id="receberBusca" placeholder="Buscar..." oninput="contasReceberModule.filtrar()" />
+          </div>
 
-      <input id="receberDescricao" placeholder="Descrição">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Documento</th>
+                  <th>Categoria</th>
+                  <th>Vencimento</th>
+                  <th>Recebido em</th>
+                  <th>Descrição</th>
+                  <th>Valor</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
 
-    </div>
+              <tbody id="tabelaContasReceber">
+                <tr>
+                  <td colspan="8" class="muted">Nenhum lançamento carregado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-    <div style="margin-top:12px;">
-      <button onclick="contasReceberModule.salvar()">
-        Salvar
-      </button>
-    </div>
-  </div>
-
-  <div class="card">
-
-    <div class="grid-4">
-
-      <input
-        id="receberBusca"
-        placeholder="Buscar..."
-        oninput="contasReceberModule.filtrar()"
-      >
-
-      <div>
-        <strong>Total:</strong>
-        <span id="receberTotal">R$ 0,00</span>
-      </div>
-
-      <div>
-        <strong>Em aberto:</strong>
-        <span id="receberAberto">R$ 0,00</span>
-      </div>
-
-      <div>
-        <strong>Qtd:</strong>
-        <span id="receberQtd">0</span>
-      </div>
-
-    </div>
-
-    <table class="table" style="margin-top:15px;">
-      <thead>
-        <tr>
-          <th>Cliente</th>
-          <th>Documento</th>
-          <th>Categoria</th>
-          <th>Vencimento</th>
-          <th>Recebido em</th>
-          <th>Descrição</th>
-          <th>Valor</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-
-      <tbody id="tabelaContasReceber"></tbody>
-    </table>
-
-  </div>
-
-</section>
-
+      <!-- FATURAMENTO -->
       <section id="tab-faturamento" class="tab-section">
         <div class="page-head">
           <h2>Faturamento</h2>
-          <p>Faturado, a faturar e previsão total.</p>
+          <p>Módulo em construção.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado depois.</div>
+        <div class="panel empty-state">Em breve.</div>
       </section>
 
+      <!-- METAS -->
       <section id="tab-metas" class="tab-section">
         <div class="page-head">
           <h2>Metas</h2>
-          <p>Metas por categoria em percentual ou valor.</p>
+          <p>Módulo em construção.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado depois.</div>
-
+        <div class="panel empty-state">Em breve.</div>
       </section>
-      
-<section id="tab-planejamento" class="tab-section">
-  <div class="page-head">
-    <h2>Planejamento CFO</h2>
-    <p>Fluxo de caixa executivo com saldos bancários, projeção semanal, risco e gráfico financeiro.</p>
-  </div>
 
-  <section class="cards-grid">
-    <div class="card">
-      <span>Saldo inicial bancos</span>
-      <strong id="planejamentoSaldoInicial">R$ 0,00</strong>
-    </div>
+      <!-- PLANEJAMENTO -->
+      <section id="tab-planejamento" class="tab-section">
+        <div class="page-head">
+          <h2>Planejamento CFO</h2>
+          <p>Fluxo de caixa executivo com saldos bancários, projeção semanal, risco e gráfico financeiro.</p>
+        </div>
 
-    <div class="card">
-      <span>Total a receber</span>
-      <strong id="planejamentoTotalReceber">R$ 0,00</strong>
-    </div>
+        <section class="cards-grid">
+          <div class="card">
+            <span>Saldo inicial bancos</span>
+            <strong id="planejamentoSaldoInicial">R$ 0,00</strong>
+          </div>
 
-    <div class="card">
-      <span>Total a pagar</span>
-      <strong id="planejamentoTotalPagar">R$ 0,00</strong>
-    </div>
+          <div class="card">
+            <span>Total a receber</span>
+            <strong id="planejamentoTotalReceber">R$ 0,00</strong>
+          </div>
 
-    <div class="card">
-      <span>Saldo final projetado</span>
-      <strong id="planejamentoSaldoFinal">R$ 0,00</strong>
-    </div>
-  </section>
+          <div class="card">
+            <span>Total a pagar</span>
+            <strong id="planejamentoTotalPagar">R$ 0,00</strong>
+          </div>
 
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Indicador Executivo</h3>
-      <button class="secondary-btn" onclick="planejamentoModule.carregar()">Atualizar</button>
-    </div>
+          <div class="card">
+            <span>Saldo final projetado</span>
+            <strong id="planejamentoSaldoFinal">R$ 0,00</strong>
+          </div>
+        </section>
 
-    <div class="cards-grid">
-      <div class="card">
-        <span>Status do caixa</span>
-        <strong id="planejamentoStatusCaixa">Carregando...</strong>
-      </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Indicador Executivo</h3>
+            <button class="secondary-btn" onclick="planejamentoModule.carregar()">Atualizar</button>
+          </div>
 
-      <div class="card">
-        <span>Menor saldo previsto</span>
-        <strong id="planejamentoMenorSaldo">R$ 0,00</strong>
-      </div>
+          <section class="cards-grid">
+            <div class="card">
+              <span>Status do caixa</span>
+              <strong id="planejamentoStatusCaixa">Carregando...</strong>
+            </div>
 
-      <div class="card">
-        <span>Semana crítica</span>
-        <strong id="planejamentoSemanaCritica">-</strong>
-      </div>
+            <div class="card">
+              <span>Menor saldo previsto</span>
+              <strong id="planejamentoMenorSaldo">R$ 0,00</strong>
+            </div>
 
-      <div class="card">
-        <span>Necessidade de caixa</span>
-        <strong id="planejamentoNecessidadeCaixa">R$ 0,00</strong>
-      </div>
-    </div>
-  </div>
+            <div class="card">
+              <span>Semana crítica</span>
+              <strong id="planejamentoSemanaCritica">-</strong>
+            </div>
 
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Saldos Bancários</h3>
-      <span class="muted">Edite os saldos para recalcular a projeção</span>
-    </div>
+            <div class="card">
+              <span>Necessidade de caixa</span>
+              <strong id="planejamentoNecessidadeCaixa">R$ 0,00</strong>
+            </div>
+          </section>
+        </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Banco / Conta</th>
-            <th>Saldo Atual</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Saldos Bancários</h3>
+            <span class="muted">Edite os saldos para recalcular a projeção</span>
+          </div>
 
-        <tbody id="tabelaSaldosBancarios">
-          <tr>
-            <td colspan="3" class="muted">Nenhum saldo carregado.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Banco / Conta</th>
+                  <th>Saldo Atual</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
 
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Gráfico de Fluxo de Caixa</h3>
-      <span class="muted">Entradas, saídas e saldo projetado em 12 semanas</span>
-    </div>
+              <tbody id="tabelaSaldosBancarios">
+                <tr>
+                  <td colspan="3" class="muted">Nenhum saldo carregado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-    <div class="chart-box">
-      <canvas id="chartPlanejamento"></canvas>
-    </div>
-  </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Gráfico de Fluxo de Caixa</h3>
+            <span class="muted">Entradas, saídas e saldo projetado em 12 semanas</span>
+          </div>
 
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Projeção 12 Semanas</h3>
-      <span class="muted">Visão semanal para tomada de decisão</span>
-    </div>
+          <div class="chart-box">
+            <canvas id="chartPlanejamento"></canvas>
+          </div>
+        </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Semana</th>
-            <th>Período</th>
-            <th>Saldo Inicial</th>
-            <th>Entradas</th>
-            <th>Saídas</th>
-            <th>Resultado</th>
-            <th>Saldo Final</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Projeção 12 Semanas</h3>
+            <span class="muted">Visão semanal para tomada de decisão</span>
+          </div>
 
-        <tbody id="tabelaPlanejamento">
-          <tr>
-            <td colspan="8" class="muted">Nenhum planejamento carregado.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Semana</th>
+                  <th>Período</th>
+                  <th>Saldo Inicial</th>
+                  <th>Entradas</th>
+                  <th>Saídas</th>
+                  <th>Resultado</th>
+                  <th>Saldo Final</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
 
+              <tbody id="tabelaPlanejamento">
+                <tr>
+                  <td colspan="8" class="muted">Nenhum planejamento carregado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- DRE -->
       <section id="tab-dre" class="tab-section">
         <div class="page-head">
           <h2>DRE</h2>
-          <p>Demonstrativo de resultado gerencial.</p>
+          <p>Módulo em construção.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado depois.</div>
+        <div class="panel empty-state">Em breve.</div>
       </section>
 
+      <!-- IMPORTAR -->
       <section id="tab-importar" class="tab-section">
         <div class="page-head">
           <h2>Importar</h2>
-          <p>Importação de planilhas de despesas.</p>
+          <p>Módulo em construção.</p>
         </div>
 
-        <div class="panel empty-state">Módulo será recriado depois.</div>
+        <div class="panel empty-state">Em breve.</div>
       </section>
-
     </main>
   </div>
 
