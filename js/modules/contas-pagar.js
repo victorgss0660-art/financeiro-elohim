@@ -44,27 +44,26 @@ window.contasPagarModule = {
     }).format(this.numero(valor));
   },
 
-  toggleInput(tipo) {
-  
-    if (!this.inputs) {
-      this.inputs = {
-        nfe: false,
-        boleto: false
-      };
-    }
-  
-    this.inputs[tipo] = !this.inputs[tipo];
-  
-    const btn = document.getElementById(tipo === "nfe" ? "btnNfe" : "btnBoleto");
-  
-    if (this.inputs[tipo]) {
-      btn.classList.add("ativo");
-      btn.innerText = "Sim";
-    } else {
-      btn.classList.remove("ativo");
-      btn.innerText = "Não";
-    }
-  },
+toggleInput(tipo) {
+  if (!this.inputs) {
+    this.inputs = { nfe: false, boleto: false };
+  }
+
+  this.inputs[tipo] = !this.inputs[tipo];
+
+  const btn = document.getElementById(tipo === "nfe" ? "btnNfe" : "btnBoleto");
+  if (!btn) return;
+
+  const texto = btn.querySelector(".toggle-text");
+
+  if (this.inputs[tipo]) {
+    btn.classList.add("ativo");
+    texto.textContent = tipo === "nfe" ? "NFE recebida" : "Boleto recebido";
+  } else {
+    btn.classList.remove("ativo");
+    texto.textContent = tipo === "nfe" ? "Não recebida" : "Não recebido";
+  }
+},
   
   dataBR(data) {
     if (!data) return "-";
