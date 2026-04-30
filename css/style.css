@@ -1478,3 +1478,188 @@ main {
     grid-template-columns: 1fr;
   }
 }
+/* ===== DASHBOARD CEO - VISUAL BANCO ===== */
+
+#tab-dashboard {
+  background: #f8fafc;
+}
+
+/* HEADER */
+#tab-dashboard .page-head h2 {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+#tab-dashboard .page-head p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* CARDS */
+#tab-dashboard .cards-grid {
+  gap: 18px;
+}
+
+#tab-dashboard .card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: all .2s ease;
+}
+
+#tab-dashboard .card:hover {
+  transform: translateY(-3px);
+}
+
+#tab-dashboard .card span {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+#tab-dashboard .card strong {
+  font-size: 26px;
+  font-weight: 900;
+  margin-top: 6px;
+  display: block;
+}
+
+#tab-dashboard .card small {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* STATUS */
+#dashCEOStatus {
+  font-size: 18px;
+  font-weight: 900;
+  padding: 6px 12px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.status-ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-alerta {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-critico {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* PANELS */
+#tab-dashboard .panel {
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+#tab-dashboard .panel-head h3 {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+/* GRÁFICOS */
+#tab-dashboard .chart-box {
+  height: 260px;
+}
+
+/* TABELA */
+#tab-dashboard table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#tab-dashboard th {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 800;
+  padding: 10px;
+}
+
+#tab-dashboard td {
+  padding: 10px;
+  border-top: 1px solid #eef2f7;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#tab-dashboard tbody tr:hover {
+  background: #f1f5f9;
+}
+
+/* FORNECEDORES */
+.dash-line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.dash-line span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dash-line strong {
+  font-size: 13px;
+}
+
+.dash-progress {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.dash-progress div {
+  height: 100%;
+  background: linear-gradient(90deg, #dc2626, #7f1d1d);
+}
+
+/* CATEGORIAS */
+#dashboardCEOCategorias {
+  gap: 12px;
+}
+
+.dash-category {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.dash-category span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.dash-category strong {
+  display: block;
+  margin-top: 4px;
+  font-weight: 900;
+}
+
+/* RESPONSIVO */
+@media (max-width: 1000px) {
+  #tab-dashboard .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  #tab-dashboard .cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
