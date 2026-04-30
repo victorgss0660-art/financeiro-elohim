@@ -520,3 +520,7 @@ main {
 .tab-section {
   width: 100%;
 }
+main {
+  width: 100%;
+  flex: 1;
+}
