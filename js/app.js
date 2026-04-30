@@ -1,60 +1,34 @@
-const app = {
-  abaAtual: "dashboard",
+// ===== APP GLOBAL =====
 
-  meses: [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-  ],
+let abaAtual = "dashboard";
 
-  iniciar() {
-    this.preencherFiltros();
-    this.configurarMenu();
-    this.abrirAba("dashboard");
-  },
+// ===== INICIALIZAÇÃO =====
+document.addEventListener("DOMContentLoaded", () => {
 
-  preencherFiltros() {
-    const mesSelect = document.getElementById("mesSelect");
-    const anoSelect = document.getElementById("anoSelect");
+  const botoes = document.querySelectorAll(".menu button");
 
-    if (mesSelect && !mesSelect.options.length) {
-      this.meses.forEach((mes) => {
-        const option = document.createElement("option");
-        option.value = mes;
-        option.textContent = mes;
-        mesSelect.appendChild(option);
-      });
-
-      mesSelect.value = this.meses[new Date().getMonth()];
-    }
-
-    if (anoSelect && !anoSelect.value) {
-      anoSelect.value = new Date().getFullYear();
-    }
-  },
-
-  configurarMenu() {
-    const botoes = document.querySelectorAll(".menu button");
-
-    botoes.forEach((botao) => {
-      botao.addEventListener("click", () => {
-        const nomeAba = botao.dataset.tab;
-        if (nomeAba) {
-          this.abrirAba(nomeAba);
-        }
-      });
+  botoes.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const nomeAba = btn.dataset.tab;
+      abrirAba(nomeAba);
     });
-  },
+  });
 
-async abrirAba(nomeAba) {
+  abrirAba("dashboard");
+});
 
-  this.abaAtual = nomeAba;
 
-  // remove active de todas
+// ===== TROCA DE ABAS =====
+function abrirAba(nomeAba) {
+
+  abaAtual = nomeAba;
+
+  // esconder todas
   document.querySelectorAll(".tab-section").forEach(sec => {
     sec.classList.remove("active");
   });
 
-  // ativa só a correta
+  // mostrar a correta
   const ativa = document.getElementById(`tab-${nomeAba}`);
   if (ativa) ativa.classList.add("active");
 
@@ -66,58 +40,47 @@ async abrirAba(nomeAba) {
   const btn = document.querySelector(`.menu button[data-tab="${nomeAba}"]`);
   if (btn) btn.classList.add("active");
 
-  // carregar módulo
-  await this.carregarModulo(nomeAba);
+  carregarModulo(nomeAba);
 }
-  async carregarModulo(nomeAba) {
-    try {
-      if (nomeAba === "dashboard" && window.dashboardModule?.carregar) {
-        await dashboardModule.carregar();
-      }
 
-      if (nomeAba === "contas-pagar" && window.contasPagarModule?.carregar) {
-        await contasPagarModule.carregar();
-      }
 
-      if (nomeAba === "contas-pagas" && window.contasPagasModule?.carregar) {
-        await contasPagasModule.carregar();
-      }
+// ===== CARREGAMENTO DOS MÓDULOS =====
+function carregarModulo(nomeAba) {
 
-      if (nomeAba === "contas-receber" && window.contasReceberModule?.carregar) {
-        await contasReceberModule.carregar();
-      }
+  try {
 
-      if (nomeAba === "planejamento" && window.planejamentoModule?.carregar) {
-        await planejamentoModule.carregar();
-      }
-
-      if (nomeAba === "faturamento" && window.faturamentoModule?.carregar) {
-        await faturamentoModule.carregar();
-      }
-
-      if (nomeAba === "metas" && window.metasModule?.carregar) {
-        await metasModule.carregar();
-      }
-
-      if (nomeAba === "dre" && window.dreModule?.carregar) {
-        await dreModule.carregar();
-      }
-
-      if (nomeAba === "importar" && window.importarModule?.carregar) {
-        await importarModule.carregar();
-      }
-    } catch (error) {
-      console.error("Erro ao carregar módulo:", nomeAba, error);
+    if (nomeAba === "dashboard" && window.dashboardModule?.carregar) {
+      dashboardModule.carregar();
     }
-  },
 
-  async recarregarAbaAtual() {
-    await this.carregarModulo(this.abaAtual);
+    if (nomeAba === "contas-pagar" && window.contasPagarModule?.carregar) {
+      contasPagarModule.carregar();
+    }
+
+    if (nomeAba === "contas-pagas" && window.contasPagasModule?.carregar) {
+      contasPagasModule.carregar();
+    }
+
+    if (nomeAba === "contas-receber" && window.contasReceberModule?.carregar) {
+      contasReceberModule.carregar();
+    }
+
+    if (nomeAba === "planejamento" && window.planejamentoModule?.carregar) {
+      planejamentoModule.carregar();
+    }
+
+  } catch (e) {
+    console.error("Erro ao carregar módulo:", nomeAba, e);
   }
+}
+
+
+// ===== RECARREGAR =====
+function recarregarAbaAtual() {
+  carregarModulo(abaAtual);
+}
+
+// expõe global
+window.app = {
+  recarregarAbaAtual
 };
-
-window.app = app;
-
-document.addEventListener("DOMContentLoaded", () => {
-  app.iniciar();
-});
