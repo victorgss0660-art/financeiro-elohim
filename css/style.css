@@ -488,3 +488,35 @@ main {
   width: 100%;
   flex: 1;
 }
+/* ===== FIX LAYOUT PRINCIPAL ===== */
+
+.app {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+/* ÁREA PRINCIPAL */
+.main {
+  flex: 1;
+  width: 100%;
+  padding: 30px;
+  background: #f8fafc;
+}
+
+/* GARANTIR QUE CONTEÚDO EXPANDA */
+.container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* SEÇÕES */
+.tab-section {
+  width: 100%;
+}
