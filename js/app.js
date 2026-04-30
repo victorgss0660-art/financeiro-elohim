@@ -45,28 +45,30 @@ const app = {
     });
   },
 
-  async abrirAba(nomeAba) {
-    this.abaAtual = nomeAba;
+async abrirAba(nomeAba) {
 
-    document.querySelectorAll(".tab-section").forEach((section) => {
-      section.classList.remove("active");
-      section.style.display = "none";
-    });
+  this.abaAtual = nomeAba;
 
-    const sectionAtiva = document.getElementById(`tab-${nomeAba}`);
+  // remove active de todas
+  document.querySelectorAll(".tab-section").forEach(sec => {
+    sec.classList.remove("active");
+  });
 
-    if (sectionAtiva) {
-      sectionAtiva.classList.add("active");
-      sectionAtiva.style.display = "block";
-    }
+  // ativa só a correta
+  const ativa = document.getElementById(`tab-${nomeAba}`);
+  if (ativa) ativa.classList.add("active");
 
-    document.querySelectorAll(".menu button").forEach((botao) => {
-      botao.classList.toggle("active", botao.dataset.tab === nomeAba);
-    });
+  // botão ativo
+  document.querySelectorAll(".menu button").forEach(btn => {
+    btn.classList.remove("active");
+  });
 
-    await this.carregarModulo(nomeAba);
-  },
+  const btn = document.querySelector(`.menu button[data-tab="${nomeAba}"]`);
+  if (btn) btn.classList.add("active");
 
+  // carregar módulo
+  await this.carregarModulo(nomeAba);
+}
   async carregarModulo(nomeAba) {
     try {
       if (nomeAba === "dashboard" && window.dashboardModule?.carregar) {
