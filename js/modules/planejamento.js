@@ -261,26 +261,29 @@ window.planejamentoModule = {
     this.chart = new Chart(canvas, {
       data: {
         labels,
-        datasets: [
-          {
-            type: "bar",
-            label: "Entradas previstas",
-            data: entradas
-          },
-          {
-            type: "bar",
-            label: "Saídas previstas",
-            data: saidas
-          },
-          {
-            type: "line",
-            label: "Caixa projetado",
-            data: caixa,
-            tension: 0.35,
-            borderWidth: 3
-          }
-        ]
-      },
+datasets: [
+  {
+    type: "bar",
+    label: "Entradas",
+    data: entradas,
+    backgroundColor: "#22c55e"
+  },
+  {
+    type: "bar",
+    label: "Saídas",
+    data: saidas,
+    backgroundColor: "#ef4444"
+  },
+  {
+    type: "line",
+    label: "Caixa",
+    data: caixa,
+    borderColor: "#38bdf8",
+    backgroundColor: "#38bdf8",
+    tension: 0.4,
+    borderWidth: 3
+  }
+]
       options: {
         responsive: true,
         maintainAspectRatio: false,
