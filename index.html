@@ -482,104 +482,65 @@
 
       </section>
       
-<section id="tab-planejamento" class="tab-section bank-ui">
-  <div class="page-head">
-    <h2>Planejamento Inteligente</h2>
-    <p>Fluxo de caixa projetado para 12 semanas com saldos bancários, contas a receber, contas a pagar e previsão automática.</p>
-  </div>
+<section id="tab-planejamento" class="tab-section">
 
-  <section class="cards-grid">
+  <h2>Planejamento 12 Semanas</h2>
+
+  <div class="cards-grid">
     <div class="card">
-      <span>Saldo inicial bancos</span>
+      <span>Saldo Inicial</span>
       <strong id="planejamentoSaldoInicial">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>Total a receber</span>
+      <span>Total a Receber</span>
       <strong id="planejamentoTotalReceber">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>Total a pagar</span>
+      <span>Total a Pagar</span>
       <strong id="planejamentoTotalPagar">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>Saldo final projetado</span>
+      <span>Saldo Final</span>
       <strong id="planejamentoSaldoFinal">R$ 0,00</strong>
     </div>
-  </section>
-  
-  <div class="bank-indicator">
-    <span>Risco de caixa</span>
-    <strong id="indicadorRisco">Seguro</strong>
-  </div>
-  
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Saldos Bancários</h3>
-      <button class="secondary-btn" onclick="planejamentoModule.carregar()">Atualizar</button>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Banco / Conta</th>
-            <th>Saldo Atual</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-
-        <tbody id="tabelaSaldosBancarios">
-          <tr>
-            <td colspan="3" class="muted">Nenhum saldo carregado.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </div>
 
   <div class="panel">
-    <div class="panel-head">
-      <h3>Fluxo de Caixa — 12 Semanas</h3>
-      <span class="muted">Entradas, saídas e caixa projetado</span>
-    </div>
+    <h3>Saldos Bancários</h3>
 
-    <div class="chart-box">
-      <canvas id="chartPlanejamento"></canvas>
-    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Conta</th>
+          <th>Saldo</th>
+        </tr>
+      </thead>
+
+      <tbody id="tabelaSaldosBancarios"></tbody>
+    </table>
   </div>
 
   <div class="panel">
-    <div class="panel-head">
-      <h3>Previsão Inteligente</h3>
-      <span class="muted">Inclui previsão automática quando não houver lançamento previsto</span>
-    </div>
+    <h3>Fluxo de Caixa</h3>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Semana</th>
-            <th>Período</th>
-            <th>Saldo Inicial</th>
-            <th>A Receber</th>
-            <th>A Pagar</th>
-            <th>Saldo Semana</th>
-            <th>Saldo Final</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+    <table>
+      <thead>
+        <tr>
+          <th>Semana</th>
+          <th>Período</th>
+          <th>Entradas</th>
+          <th>Saídas</th>
+          <th>Saldo</th>
+        </tr>
+      </thead>
 
-        <tbody id="tabelaPlanejamento">
-          <tr>
-            <td colspan="8" class="muted">Nenhum planejamento carregado.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <tbody id="tabelaPlanejamento"></tbody>
+    </table>
   </div>
+
 </section>
 
       <section id="tab-dre" class="tab-section">
