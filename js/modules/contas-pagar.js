@@ -44,6 +44,28 @@ window.contasPagarModule = {
     }).format(this.numero(valor));
   },
 
+  toggleInput(tipo) {
+  
+    if (!this.inputs) {
+      this.inputs = {
+        nfe: false,
+        boleto: false
+      };
+    }
+  
+    this.inputs[tipo] = !this.inputs[tipo];
+  
+    const btn = document.getElementById(tipo === "nfe" ? "btnNfe" : "btnBoleto");
+  
+    if (this.inputs[tipo]) {
+      btn.classList.add("ativo");
+      btn.innerText = "Sim";
+    } else {
+      btn.classList.remove("ativo");
+      btn.innerText = "Não";
+    }
+  },
+  
   dataBR(data) {
     if (!data) return "-";
     const d = new Date(data + "T00:00:00");
