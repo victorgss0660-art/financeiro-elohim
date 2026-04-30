@@ -198,17 +198,19 @@
 
             <div class="toggle-group">
               <label>NFE recebida</label>
-              <button id="btnNfe" class="toggle-btn" onclick="contasPagarModule.toggleInput('nfe')">
-                Não
+              <button type="button" id="btnNfe" class="toggle-bank" onclick="contasPagarModule.toggleInput('nfe')">
+                <span class="toggle-icon">✓</span>
+                <span class="toggle-text">Não recebida</span>
               </button>
             </div>
-
-<div class="toggle-group">
-  <label>Boleto recebido</label>
-  <button id="btnBoleto" class="toggle-btn" onclick="contasPagarModule.toggleInput('boleto')">
-    Não
-  </button>
-</div>
+            
+            <div class="toggle-group">
+              <label>Boleto recebido</label>
+              <button type="button" id="btnBoleto" class="toggle-bank" onclick="contasPagarModule.toggleInput('boleto')">
+                <span class="toggle-icon">✓</span>
+                <span class="toggle-text">Não recebido</span>
+              </button>
+            </div>
 
             <div>
               <label>Descrição</label>
