@@ -1042,3 +1042,83 @@ button:hover {
   color: #38bdf8;
   font-weight: 900;
 }
+/* ===== PLANEJAMENTO LIGHT PREMIUM ===== */
+
+#tab-planejamento {
+  background: #f8fafc;
+}
+
+#tab-planejamento .card {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+#tab-planejamento .card span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#tab-planejamento .card strong {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+#tab-planejamento .panel {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+#tab-planejamento table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#tab-planejamento th {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  padding: 10px;
+}
+
+#tab-planejamento td {
+  padding: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+#tab-planejamento tbody tr:hover {
+  background: #f1f5f9;
+}
+
+/* CORES FINANCEIRAS */
+#tab-planejamento td[style*="22c55e"] {
+  color: #16a34a !important;
+}
+
+#tab-planejamento td[style*="ef4444"] {
+  color: #dc2626 !important;
+}
+
+/* ALERTA */
+#tab-planejamento tr[style*="fee2e2"] {
+  background: #fee2e2 !important;
+}
+
+/* BOTÕES */
+#tab-planejamento button {
+  background: #0f172a;
+  color: white;
+  border-radius: 8px;
+  padding: 6px 10px;
+  border: none;
+}
+
+#tab-planejamento button:hover {
+  background: #1e293b;
+}
