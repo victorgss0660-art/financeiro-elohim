@@ -873,3 +873,95 @@ button:hover {
     grid-template-columns: 1fr;
   }
 }
+/* ===== BANK UI ===== */
+
+.bank-ui {
+  background: #020617;
+  color: #e2e8f0;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+/* CARDS */
+.bank-ui .card {
+  background: linear-gradient(145deg, #020617, #0f172a);
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.bank-ui .card span {
+  color: #94a3b8;
+}
+
+.bank-ui .card strong {
+  color: #f8fafc;
+  font-size: 24px;
+}
+
+/* CORES FINANCEIRAS */
+.valor-positivo {
+  color: #22c55e;
+}
+
+.valor-negativo {
+  color: #ef4444;
+}
+
+/* PAINÉIS */
+.bank-ui .panel {
+  background: linear-gradient(145deg, #020617, #0f172a);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* TABELA */
+.bank-ui table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bank-ui th {
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.bank-ui td {
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* LINHA DE ALERTA */
+.bank-ui tr[style*="ffe2e2"] {
+  background: rgba(239,68,68,0.15) !important;
+}
+
+/* BOTÃO */
+.bank-ui button {
+  background: #0ea5e9;
+  color: white;
+  border-radius: 8px;
+}
+
+.bank-ui button:hover {
+  background: #0284c7;
+}
+
+/* GRÁFICO */
+.bank-ui .chart-box {
+  height: 300px;
+}
+
+/* INDICADOR EXECUTIVO */
+.bank-indicator {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.bank-indicator span {
+  color: #94a3b8;
+}
+
+.bank-indicator strong {
+  font-size: 16px;
+}
