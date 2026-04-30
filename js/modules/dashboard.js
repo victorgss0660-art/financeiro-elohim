@@ -1,165 +1,197 @@
-window.dashboardModule = {
-  dados: [],
-  chartFinanceiro: null,
-  chartCategorias: null,
-
-  get(id) {
-    return document.getElementById(id);
-  },
-
-  numero(valor) {
-    if (typeof valor === "number") return valor;
-    if (!valor) return 0;
-
-    let txt = String(valor).trim();
-    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
-
-    if (txt.includes(",") && txt.includes(".")) {
-      txt = txt.replace(/\./g, "").replace(",", ".");
-    } else if (txt.includes(",")) {
-      txt = txt.replace(",", ".");
-    }
-
-    const n = parseFloat(txt);
-    return isNaN(n) ? 0 : n;
-  },
-
-  moeda(v) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    }).format(this.numero(v));
-  },
+const dashboardModule = {
 
   async carregar() {
     try {
-      const dados = await api.restGet("contas_pagar", "select=*");
+      console.log("Carregando dashboard...");
 
-      this.dados = Array.isArray(dados) ? dados : [];
+      const contasPagar = await api.restGet("contas_pagar", "select=*");
+      const contasReceber = await api.restGet("contas_receber", "select=*");
 
-      this.cards();
-      this.graficoFinanceiro();
-      this.graficoCategorias();
+      this.processar(contasPagar || [], contasReceber || []);
 
     } catch (e) {
-      console.error(e);
-      alert("Erro ao carregar dashboard.");
+      console.error("Erro no dashboard:", e);
     }
   },
 
-  cards() {
-    const hoje = new Date().toISOString().slice(0,10);
+  processar(contasPagar, contasReceber) {
 
-    const abertas = this.dados.filter(x =>
-      String(x.status || "pendente").toLowerCase() !== "pago"
-    );
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
 
-    const pagas = this.dados.filter(x =>
-      String(x.status || "").toLowerCase() === "pago"
-    );
+    let totalAberto = 0;
+    let totalVencidas = 0;
+    let totalHoje = 0;
+    let totalPagasMes = 0;
 
-    const vencidas = abertas.filter(x =>
-      x.vencimento && x.vencimento < hoje
-    );
+    let qtdAberto = 0;
+    let qtdVencidas = 0;
+    let qtdHoje = 0;
+    let qtdPagasMes = 0;
 
-    const totalAberto = abertas.reduce((a,b)=>a+this.numero(b.valor),0);
-    const totalPago = pagas.reduce((a,b)=>a+this.numero(b.valor),0);
-    const totalVencido = vencidas.reduce((a,b)=>a+this.numero(b.valor),0);
+    const vencimentos = [];
+    const fornecedoresMap = {};
+    const categoriasMap = {};
 
-    if(this.get("dashFaturamento")) this.get("dashFaturamento").textContent = this.moeda(totalPago);
-    if(this.get("dashGastos")) this.get("dashGastos").textContent = this.moeda(totalAberto);
-    if(this.get("dashLucro")) this.get("dashLucro").textContent = this.moeda(totalPago-totalAberto);
+    // ===== CONTAS A PAGAR =====
+    contasPagar.forEach(item => {
 
-    const margem = totalPago > 0
-      ? (((totalPago-totalAberto)/totalPago)*100).toFixed(1)
-      : 0;
+      if (item.pago) {
+        const dataPagamento = new Date(item.data_pagamento);
+        if (
+          dataPagamento.getMonth() === hoje.getMonth() &&
+          dataPagamento.getFullYear() === hoje.getFullYear()
+        ) {
+          totalPagasMes += Number(item.valor || 0);
+          qtdPagasMes++;
+        }
+        return;
+      }
 
-    if(this.get("dashMargem")) this.get("dashMargem").textContent = margem + "%";
+      const valor = Number(item.valor || 0);
+      const vencimento = new Date(item.vencimento);
 
-    if(this.get("dashVencidas")) this.get("dashVencidas").textContent = this.moeda(totalVencido);
+      totalAberto += valor;
+      qtdAberto++;
+
+      if (vencimento < hoje) {
+        totalVencidas += valor;
+        qtdVencidas++;
+      }
+
+      if (vencimento.getTime() === hoje.getTime()) {
+        totalHoje += valor;
+        qtdHoje++;
+      }
+
+      vencimentos.push(item);
+
+      // fornecedores
+      const fornecedor = item.fornecedor || "Sem nome";
+      fornecedoresMap[fornecedor] = (fornecedoresMap[fornecedor] || 0) + valor;
+
+      // categorias
+      const categoria = item.categoria || "Outros";
+      categoriasMap[categoria] = (categoriasMap[categoria] || 0) + valor;
+
+    });
+
+    this.renderKPIs({
+      totalAberto,
+      totalVencidas,
+      totalHoje,
+      totalPagasMes,
+      qtdAberto,
+      qtdVencidas,
+      qtdHoje,
+      qtdPagasMes
+    });
+
+    this.renderVencimentos(vencimentos);
+    this.renderFornecedores(fornecedoresMap);
+    this.renderCategorias(categoriasMap);
   },
 
-  graficoFinanceiro() {
-    const canvas = this.get("chartGastosMeta");
-    if (!canvas || typeof Chart === "undefined") return;
+  // ===== KPI =====
+  renderKPIs(d) {
 
-    const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+    this.set("dashTotalAberto", this.moeda(d.totalAberto));
+    this.set("dashQtdAberto", `${d.qtdAberto} conta(s)`);
 
-    const pagos = Array(12).fill(0);
-    const abertos = Array(12).fill(0);
+    this.set("dashTotalVencidas", this.moeda(d.totalVencidas));
+    this.set("dashQtdVencidas", `${d.qtdVencidas} vencida(s)`);
 
-    this.dados.forEach(item => {
-      const data = item.data_pagamento || item.vencimento;
-      if (!data) return;
+    this.set("dashVenceHoje", this.moeda(d.totalHoje));
+    this.set("dashQtdHoje", `${d.qtdHoje} hoje`);
 
-      const mes = Number(data.slice(5,7)) - 1;
-      if (mes < 0) return;
+    this.set("dashPagasMes", this.moeda(d.totalPagasMes));
+    this.set("dashQtdPagasMes", `${d.qtdPagasMes} paga(s)`);
+  },
 
-      const valor = this.numero(item.valor);
+  // ===== TABELA =====
+  renderVencimentos(lista) {
+    const tbody = document.getElementById("dashboardVencimentos");
+    if (!tbody) return;
 
-      if(String(item.status || "").toLowerCase()==="pago"){
-        pagos[mes]+=valor;
-      } else {
-        abertos[mes]+=valor;
-      }
-    });
+    if (!lista.length) {
+      tbody.innerHTML = `<tr><td colspan="4">Sem dados</td></tr>`;
+      return;
+    }
 
-    if (this.chartFinanceiro) this.chartFinanceiro.destroy();
+    lista.sort((a,b) => new Date(a.vencimento) - new Date(b.vencimento));
 
-    this.chartFinanceiro = new Chart(canvas,{
-      type:"bar",
-      data:{
-        labels:meses,
-        datasets:[
-          {
-            label:"Pagas",
-            data:pagos
-          },
-          {
-            label:"Em Aberto",
-            data:abertos
-          }
-        ]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false
-      }
+    tbody.innerHTML = lista.slice(0, 10).map(item => `
+      <tr>
+        <td>${item.fornecedor || "-"}</td>
+        <td>${item.documento || "-"}</td>
+        <td>${this.dataBR(item.vencimento)}</td>
+        <td><strong>${this.moeda(item.valor)}</strong></td>
+      </tr>
+    `).join("");
+  },
+
+  // ===== FORNECEDORES =====
+  renderFornecedores(map) {
+    const el = document.getElementById("dashboardTopFornecedores");
+    if (!el) return;
+
+    const lista = Object.entries(map)
+      .sort((a,b) => b[1] - a[1])
+      .slice(0,5);
+
+    if (!lista.length) {
+      el.innerHTML = "Sem dados";
+      return;
+    }
+
+    el.innerHTML = lista.map(([nome, valor]) => `
+      <div class="dash-line">
+        <span>${nome}</span>
+        <strong>${this.moeda(valor)}</strong>
+      </div>
+    `).join("");
+  },
+
+  // ===== CATEGORIAS =====
+  renderCategorias(map) {
+    const el = document.getElementById("dashboardCategorias");
+    if (!el) return;
+
+    const lista = Object.entries(map)
+      .sort((a,b) => b[1] - a[1])
+      .slice(0,6);
+
+    if (!lista.length) {
+      el.innerHTML = "Sem dados";
+      return;
+    }
+
+    el.innerHTML = lista.map(([nome, valor]) => `
+      <div class="dash-category">
+        <span>${nome}</span>
+        <strong>${this.moeda(valor)}</strong>
+      </div>
+    `).join("");
+  },
+
+  // ===== HELPERS =====
+  moeda(v) {
+    return Number(v || 0).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
     });
   },
 
-  graficoCategorias() {
-    const canvas = this.get("chartCategorias");
-    if (!canvas || typeof Chart === "undefined") return;
+  dataBR(d) {
+    if (!d) return "-";
+    return new Date(d).toLocaleDateString("pt-BR");
+  },
 
-    const mapa = {};
-
-    this.dados.forEach(item => {
-      const cat = item.categoria || "Outros";
-      mapa[cat] = (mapa[cat] || 0) + this.numero(item.valor);
-    });
-
-    const labels = Object.keys(mapa);
-    const valores = Object.values(mapa);
-
-    if (this.chartCategorias) this.chartCategorias.destroy();
-
-    this.chartCategorias = new Chart(canvas,{
-      type:"doughnut",
-      data:{
-        labels,
-        datasets:[
-          {
-            data:valores
-          }
-        ]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false
-      }
-    });
+  set(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = val;
   }
+
 };
 
-window.carregarDashboard = () => dashboardModule.carregar();
+window.dashboardModule = dashboardModule;
