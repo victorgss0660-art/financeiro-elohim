@@ -141,6 +141,22 @@ renderizar() {
   this.resumo();
 },
 
+  toggleSelecionadoLinha(id, event) {
+  const tag = event.target.tagName.toLowerCase();
+
+  if (tag === "button" || tag === "input") return;
+
+  id = Number(id);
+
+  if (this.selecionados.has(id)) {
+    this.selecionados.delete(id);
+  } else {
+    this.selecionados.add(id);
+  }
+
+  this.renderizar();
+},
+
   resumo() {
     const soma = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
 
