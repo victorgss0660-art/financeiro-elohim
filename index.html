@@ -483,64 +483,127 @@
       </section>
       
 <section id="tab-planejamento" class="tab-section">
+  <div class="page-head">
+    <h2>Planejamento CFO</h2>
+    <p>Fluxo de caixa executivo com saldos bancários, projeção semanal, risco e gráfico financeiro.</p>
+  </div>
 
-  <h2>Planejamento 12 Semanas</h2>
-
-  <div class="cards-grid">
+  <section class="cards-grid">
     <div class="card">
-      <span>Saldo Inicial</span>
+      <span>Saldo inicial bancos</span>
       <strong id="planejamentoSaldoInicial">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>Total a Receber</span>
+      <span>Total a receber</span>
       <strong id="planejamentoTotalReceber">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>Total a Pagar</span>
+      <span>Total a pagar</span>
       <strong id="planejamentoTotalPagar">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>Saldo Final</span>
+      <span>Saldo final projetado</span>
       <strong id="planejamentoSaldoFinal">R$ 0,00</strong>
+    </div>
+  </section>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Indicador Executivo</h3>
+      <button class="secondary-btn" onclick="planejamentoModule.carregar()">Atualizar</button>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <span>Status do caixa</span>
+        <strong id="planejamentoStatusCaixa">Carregando...</strong>
+      </div>
+
+      <div class="card">
+        <span>Menor saldo previsto</span>
+        <strong id="planejamentoMenorSaldo">R$ 0,00</strong>
+      </div>
+
+      <div class="card">
+        <span>Semana crítica</span>
+        <strong id="planejamentoSemanaCritica">-</strong>
+      </div>
+
+      <div class="card">
+        <span>Necessidade de caixa</span>
+        <strong id="planejamentoNecessidadeCaixa">R$ 0,00</strong>
+      </div>
     </div>
   </div>
 
   <div class="panel">
-    <h3>Saldos Bancários</h3>
+    <div class="panel-head">
+      <h3>Saldos Bancários</h3>
+      <span class="muted">Edite os saldos para recalcular a projeção</span>
+    </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Conta</th>
-          <th>Saldo</th>
-        </tr>
-      </thead>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Banco / Conta</th>
+            <th>Saldo Atual</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
 
-      <tbody id="tabelaSaldosBancarios"></tbody>
-    </table>
+        <tbody id="tabelaSaldosBancarios">
+          <tr>
+            <td colspan="3" class="muted">Nenhum saldo carregado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="panel">
-    <h3>Fluxo de Caixa</h3>
+    <div class="panel-head">
+      <h3>Gráfico de Fluxo de Caixa</h3>
+      <span class="muted">Entradas, saídas e saldo projetado em 12 semanas</span>
+    </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Semana</th>
-          <th>Período</th>
-          <th>Entradas</th>
-          <th>Saídas</th>
-          <th>Saldo</th>
-        </tr>
-      </thead>
-
-      <tbody id="tabelaPlanejamento"></tbody>
-    </table>
+    <div class="chart-box">
+      <canvas id="chartPlanejamento"></canvas>
+    </div>
   </div>
 
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Projeção 12 Semanas</h3>
+      <span class="muted">Visão semanal para tomada de decisão</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Semana</th>
+            <th>Período</th>
+            <th>Saldo Inicial</th>
+            <th>Entradas</th>
+            <th>Saídas</th>
+            <th>Resultado</th>
+            <th>Saldo Final</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody id="tabelaPlanejamento">
+          <tr>
+            <td colspan="8" class="muted">Nenhum planejamento carregado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </section>
 
       <section id="tab-dre" class="tab-section">
