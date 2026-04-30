@@ -1,23 +1,19 @@
 window.planejamentoModule = {
-
   contasPagar: [],
   contasReceber: [],
   saldos: [],
+  chart: null,
 
   get(id) {
     return document.getElementById(id);
   },
 
   numero(v) {
+    if (typeof v === "number") return v;
     if (!v) return 0;
-    return typeof v === "number"
-      ? v
-      : parseFloat(
-          String(v)
-            .replace("R$", "")
-            .replace(/\./g, "")
-            .replace(",", ".")
-        ) || 0;
+    return parseFloat(
+      String(v).replace("R$", "").replace(/\./g, "").replace(",", ".")
+    ) || 0;
   },
 
   moeda(v) {
@@ -48,8 +44,7 @@ window.planejamentoModule = {
       this.contasReceber = await api.restGet("contas_receber", "select=*");
 
       this.renderizarSaldos();
-      this.renderizarPlanejamento();
-
+      this.renderizar();
     } catch (e) {
       console.error(e);
       alert("Erro ao carregar planejamento");
@@ -65,7 +60,6 @@ window.planejamentoModule = {
     const total = this.get("planejamentoSaldoInicial");
 
     if (total) total.textContent = this.moeda(this.saldoInicial());
-
     if (!el) return;
 
     el.innerHTML = this.saldos.map(s => `
@@ -73,21 +67,27 @@ window.planejamentoModule = {
         <td>${s.conta}</td>
         <td>${this.moeda(s.saldo)}</td>
         <td>
-          <button onclick="planejamentoModule.editarSaldo(${s.id})">
-            Editar
-          </button>
+          <button onclick="planejamentoModule.editarSaldo(${s.id})">Editar</button>
         </td>
       </tr>
     `).join("");
   },
 
-  renderizarPlanejamento() {
-    const el = this.get("tabelaPlanejamento");
-    if (!el) return;
+  renderizar() {
+    const tabela = this.get("tabelaPlanejamento");
+    const ctx = this.get("chartPlanejamento");
+
+    if (!tabela) return;
 
     let hoje = new Date().toISOString().slice(0,10);
     let inicio = this.inicioSemana(hoje);
+
     let saldo = this.saldoInicial();
+
+    let labels = [];
+    let entradasArr = [];
+    let saidasArr = [];
+    let caixaArr = [];
 
     let totalReceber = 0;
     let totalPagar = 0;
@@ -95,7 +95,6 @@ window.planejamentoModule = {
     let html = "";
 
     for (let i = 0; i < 12; i++) {
-
       const fim = this.addDias(inicio, 6);
 
       const receber = this.contasReceber
@@ -119,52 +118,64 @@ window.planejamentoModule = {
         <tr style="${risco ? 'background:#ffe2e2' : ''}">
           <td>${i+1}</td>
           <td>${inicio} até ${fim}</td>
-
           <td>${this.moeda(saldoAnterior)}</td>
           <td style="color:green">${this.moeda(receber)}</td>
           <td style="color:red">${this.moeda(pagar)}</td>
-
-          <td style="font-weight:bold;color:${saldoSemana>=0?'green':'red'}">
-            ${this.moeda(saldoSemana)}
-          </td>
-
-          <td style="font-weight:bold;color:${saldo>=0?'green':'red'}">
-            ${this.moeda(saldo)}
-          </td>
-
-          <td>
-            ${risco ? '⚠️ RISCO DE CAIXA' : 'OK'}
-          </td>
+          <td>${this.moeda(saldoSemana)}</td>
+          <td style="font-weight:bold">${this.moeda(saldo)}</td>
+          <td>${risco ? "⚠️" : "OK"}</td>
         </tr>
       `;
+
+      labels.push("S" + (i+1));
+      entradasArr.push(receber);
+      saidasArr.push(pagar);
+      caixaArr.push(saldo);
 
       inicio = this.addDias(inicio, 7);
     }
 
-    html += `
-      <tr style="font-weight:bold;background:#111;color:white">
-        <td colspan="3">TOTAL</td>
-        <td>${this.moeda(totalReceber)}</td>
-        <td>${this.moeda(totalPagar)}</td>
-        <td>${this.moeda(totalReceber - totalPagar)}</td>
-        <td>${this.moeda(saldo)}</td>
-        <td></td>
-      </tr>
-    `;
-
-    el.innerHTML = html;
+    tabela.innerHTML = html;
 
     this.get("planejamentoTotalReceber").textContent = this.moeda(totalReceber);
     this.get("planejamentoTotalPagar").textContent = this.moeda(totalPagar);
     this.get("planejamentoSaldoFinal").textContent = this.moeda(saldo);
 
-    this.alertaExecutivo(saldo);
+    this.renderizarGrafico(ctx, labels, entradasArr, saidasArr, caixaArr);
   },
 
-  alertaExecutivo(saldo) {
-    if (saldo < 0) {
-      alert("⚠️ Atenção: projeção indica caixa negativo nas próximas semanas.");
-    }
+  renderizarGrafico(canvas, labels, entradas, saidas, caixa) {
+    if (!canvas || typeof Chart === "undefined") return;
+
+    if (this.chart) this.chart.destroy();
+
+    this.chart = new Chart(canvas, {
+      data: {
+        labels,
+        datasets: [
+          {
+            type: "bar",
+            label: "Entradas",
+            data: entradas,
+          },
+          {
+            type: "bar",
+            label: "Saídas",
+            data: saidas,
+          },
+          {
+            type: "line",
+            label: "Caixa",
+            data: caixa,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
   },
 
   async editarSaldo(id) {
@@ -180,7 +191,6 @@ window.planejamentoModule = {
 
     this.carregar();
   }
-
 };
 
 window.carregarPlanejamento = () => planejamentoModule.carregar();
