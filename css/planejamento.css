@@ -1,0 +1,72 @@
+/* ===== PLANEJAMENTO LIMPO ===== */
+
+#tab-planejamento {
+  background: #f8fafc;
+  padding: 20px;
+}
+
+/* CARDS */
+#tab-planejamento .card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+#tab-planejamento .card strong {
+  font-size: 22px;
+  font-weight: 900;
+  color: #020617;
+}
+
+/* TABELA */
+#tab-planejamento table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#tab-planejamento th {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 10px;
+}
+
+#tab-planejamento td {
+  padding: 10px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 14px;
+  color: #020617;
+  font-weight: 600;
+}
+
+/* CORES */
+.valor-entrada {
+  color: #15803d;
+  font-weight: 900;
+}
+
+.valor-saida {
+  color: #b91c1c;
+  font-weight: 900;
+}
+
+.valor-saldo {
+  font-weight: 900;
+}
+
+.valor-saldo.positivo {
+  color: #166534;
+}
+
+.valor-saldo.negativo {
+  color: #991b1b;
+  background: #fee2e2;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+
+/* HOVER */
+#tab-planejamento tbody tr:hover {
+  background: #f1f5f9;
+}
