@@ -1242,3 +1242,54 @@ main {
   color: #fff;
   border-color: #dc2626;
 }
+/* ===== TOGGLE NÍVEL BANCO ===== */
+
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toggle-bank {
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 900;
+  font-size: 13px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+
+.toggle-bank .toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.toggle-bank:hover {
+  border-color: #94a3b8;
+  background: #ffffff;
+}
+
+.toggle-bank.ativo {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.toggle-bank.ativo .toggle-icon {
+  background: #16a34a;
+  color: #ffffff;
+}
