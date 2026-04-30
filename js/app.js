@@ -73,38 +73,42 @@ window.app = {
     this.carregarModulo(nome);
   },
 
-  // ===== NAVEGAÇÃO ENTRE ABAS =====
+// ===== NAVEGAÇÃO VIA data-tab =====
 
-function abrirTab(id) {
+document.addEventListener("DOMContentLoaded", () => {
 
-  // esconder todas
-  document.querySelectorAll(".tab-section").forEach(sec => {
-    sec.style.display = "none";
-    sec.classList.remove("active");
+  const botoes = document.querySelectorAll(".menu button");
+
+  botoes.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+      const tab = btn.getAttribute("data-tab");
+
+      // esconder todas
+      document.querySelectorAll(".tab-section").forEach(sec => {
+        sec.style.display = "none";
+        sec.classList.remove("active");
+      });
+
+      // mostrar selecionada
+      const ativa = document.getElementById(`tab-${tab}`);
+      if (ativa) {
+        ativa.style.display = "block";
+        ativa.classList.add("active");
+      }
+
+      // botão ativo
+      botoes.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+    });
   });
 
-  // mostrar somente a clicada
-  const ativa = document.getElementById(id);
-  if (ativa) {
-    ativa.style.display = "block";
-    ativa.classList.add("active");
-  }
+  // abrir dashboard ao iniciar
+  const first = document.querySelector('[data-tab="dashboard"]');
+  if (first) first.click();
 
-  // destacar botão ativo
-  document.querySelectorAll(".menu button").forEach(btn => {
-    btn.classList.remove("active");
-  });
-
-  const btnAtivo = document.querySelector(`[onclick="abrirTab('${id}')"]`);
-  if (btnAtivo) btnAtivo.classList.add("active");
-}
-
-
-// ===== INICIAR SISTEMA =====
-
-window.onload = () => {
-  abrirTab("tab-dashboard");
-};
+}); 
 
   async carregarModulo(nome) {
     try {
