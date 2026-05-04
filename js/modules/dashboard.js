@@ -1,352 +1,201 @@
 window.dashboardModule = {
-  gastos: [],
-  meses: [],
-  metas: [],
-  chartFluxo: null,
-  chartCategorias: null,
-  chartMetaReal: null,
+
+  chartMeta: null,
+  chartDistribuicao: null,
+  chartEvolucao: null,
 
   async carregar() {
     try {
+
       const gastos = await api.restGet("gastos", "select=*");
       const meses = await api.restGet("meses", "select=*");
       const metas = await api.restGet("metas", "select=*");
 
-      this.gastos = Array.isArray(gastos) ? gastos : [];
-      this.meses = Array.isArray(meses) ? meses : [];
-      this.metas = Array.isArray(metas) ? metas : [];
+      this.gastos = gastos || [];
+      this.meses = meses || [];
+      this.metas = metas || [];
 
       this.renderizar();
-    } catch (error) {
-      console.error("Erro ao carregar dashboard:", error);
-      alert("Erro ao carregar dashboard.");
+
+    } catch (e) {
+      console.error(e);
+      alert("Erro ao carregar dashboard");
     }
   },
 
-  get(id) {
-    return document.getElementById(id);
+  numero(v) {
+    if (!v) return 0;
+    return parseFloat(String(v).replace(",", ".")) || 0;
   },
 
-  set(id, valor) {
-    const el = this.get(id);
-    if (el) el.textContent = valor;
-  },
-
-  numero(valor) {
-    if (typeof valor === "number") return valor;
-    if (valor === null || valor === undefined || valor === "") return 0;
-
-    let txt = String(valor).trim();
-    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
-
-    if (txt.includes(",") && txt.includes(".")) {
-      txt = txt.replace(/\./g, "").replace(",", ".");
-    } else if (txt.includes(",")) {
-      txt = txt.replace(",", ".");
-    }
-
-    const n = parseFloat(txt);
-    return isNaN(n) ? 0 : n;
-  },
-
-  moeda(valor) {
+  moeda(v) {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL"
-    }).format(this.numero(valor));
+    }).format(this.numero(v));
   },
 
-  mesSelecionado() {
-    return this.get("mesSelect")?.value || new Date().toLocaleString("pt-BR", { month: "long" });
-  },
-
-  anoSelecionado() {
-    return String(this.get("anoSelect")?.value || new Date().getFullYear());
-  },
-
-  filtrarMes(lista) {
-    const mes = this.mesSelecionado();
-    const ano = this.anoSelecionado();
-
-    return lista.filter(item =>
-      String(item.mes || "").toLowerCase() === String(mes).toLowerCase() &&
-      String(item.ano || "") === ano
-    );
-  },
-
-  renderizar() {
-    const gastosMes = this.filtrarMes(this.gastos);
-    const mesesMes = this.filtrarMes(this.meses);
-    const metasMes = this.filtrarMes(this.metas);
-
-    const totalGastos = gastosMes.reduce((acc, item) => acc + this.numero(item.valor), 0);
-
-    const faturamento = mesesMes.reduce((acc, item) => {
-      return acc + this.numero(item.faturamento);
-    }, 0);
-
-    const faturado = mesesMes.reduce((acc, item) => {
-      return acc + this.numero(item.faturado);
-    }, 0);
-
-    const aFaturar = mesesMes.reduce((acc, item) => {
-      return acc + this.numero(item.a_faturar);
-    }, 0);
-
-    const lucro = faturamento - totalGastos;
-    const margem = faturamento > 0 ? (lucro / faturamento) * 100 : 0;
-
-    this.set("dashCEOReceberAberto", this.moeda(faturamento));
-    this.set("dashCEOPagarAberto", this.moeda(totalGastos));
-    this.set("dashCEOSaldoProjetado", this.moeda(lucro));
-    this.set("dashCEOLucroMes", this.moeda(lucro));
-
-    this.set("dashCEORecebidoMes", this.moeda(faturado));
-    this.set("dashCEOPagoMes", this.moeda(totalGastos));
-    this.set("dashCEOVencidas", this.moeda(aFaturar));
-    this.set("dashCEOReceberVencido", `${margem.toFixed(1)}%`);
-
-    this.set("dashCEOQtdReceber", "Faturamento do mês");
-    this.set("dashCEOQtdPagar", `${gastosMes.length} lançamento(s)`);
-
-    this.renderizarStatus(totalGastos, faturamento, lucro, margem);
-    this.renderizarTopCategorias(gastosMes);
-    this.renderizarCategoriasCards(gastosMes);
-    this.renderizarMetaVsReal(gastosMes, metasMes, faturamento);
-    this.renderizarGraficoFluxo();
-    this.renderizarGraficoCategorias(gastosMes);
-    this.renderizarTabelaResumo(gastosMes);
-  },
-
-  renderizarStatus(totalGastos, faturamento, lucro, margem) {
-    let status = "SAUDÁVEL";
-    let detalhe = "Operação dentro do controle esperado.";
-
-    if (faturamento <= 0) {
-      status = "SEM FATURAMENTO";
-      detalhe = "Informe o faturamento do mês em Inserir Dados.";
-    } else if (lucro < 0) {
-      status = "CRÍTICO";
-      detalhe = "Os gastos do mês estão acima do faturamento.";
-    } else if (margem < 10) {
-      status = "ATENÇÃO";
-      detalhe = "Margem baixa. Revise as principais categorias de gasto.";
-    }
-
-    this.set("dashCEOStatus", status);
-    this.set("dashCEOStatusDetalhe", detalhe);
-
-    const el = this.get("dashCEOStatus");
-    if (el) {
-      el.className = "";
-      el.classList.add(
-        status === "CRÍTICO" ? "status-critico" :
-        status === "ATENÇÃO" ? "status-alerta" :
-        "status-ok"
-      );
-    }
-
-    this.set("dashCEODiasCaixa", faturamento > 0 ? `${margem.toFixed(1)}%` : "—");
-    this.set("dashCEOFluxoMensal", this.moeda(lucro));
-  },
-
-  agruparPorCategoria(gastos) {
+  agruparCategorias(lista) {
     const mapa = {};
 
-    gastos.forEach(item => {
-      const categoria = String(item.categoria || "SEM CATEGORIA").toUpperCase();
-      mapa[categoria] = (mapa[categoria] || 0) + this.numero(item.valor);
+    lista.forEach(i => {
+      const cat = (i.categoria || "OUTROS").toUpperCase();
+      mapa[cat] = (mapa[cat] || 0) + this.numero(i.valor);
     });
 
     return mapa;
   },
 
-  renderizarTopCategorias(gastos) {
-    const tbody = this.get("dashboardCEOVencimentos");
-    if (!tbody) return;
+  renderizar() {
 
-    const mapa = this.agruparPorCategoria(gastos);
+    const gastos = this.gastos;
+    const meses = this.meses;
+    const metas = this.metas;
 
-    const lista = Object.entries(mapa)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
+    const totalGastos = gastos.reduce((a, b) => a + this.numero(b.valor), 0);
+    const faturamento = meses.reduce((a, b) => a + this.numero(b.faturamento), 0);
 
-    if (!lista.length) {
-      tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum gasto importado neste mês.</td></tr>`;
-      return;
-    }
+    const lucro = faturamento - totalGastos;
+    const margem = faturamento ? (lucro / faturamento) * 100 : 0;
 
-    tbody.innerHTML = lista.map(([categoria, valor]) => `
-      <tr>
-        <td><strong>${categoria}</strong></td>
-        <td>Gasto importado</td>
-        <td>${this.mesSelecionado()}/${this.anoSelecionado()}</td>
-        <td><strong>${this.moeda(valor)}</strong></td>
-      </tr>
-    `).join("");
+    document.getElementById("dashFaturamento").innerText = this.moeda(faturamento);
+    document.getElementById("dashGastos").innerText = this.moeda(totalGastos);
+    document.getElementById("dashLucro").innerText = this.moeda(lucro);
+    document.getElementById("dashMargem").innerText = margem.toFixed(1) + "%";
+
+    this.status(lucro, margem, faturamento);
+
+    this.graficoDistribuicao(gastos);
+    this.graficoMeta(gastos, metas, faturamento);
+    this.graficoEvolucao();
+
+    this.tabelaCategorias(gastos);
   },
 
-  renderizarCategoriasCards(gastos) {
-    const box = this.get("dashboardCEOCategorias");
-    if (!box) return;
+  status(lucro, margem, faturamento) {
+    let status = "SAUDÁVEL";
+    let desc = "Operação sob controle";
 
-    const mapa = this.agruparPorCategoria(gastos);
-
-    const lista = Object.entries(mapa)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8);
-
-    if (!lista.length) {
-      box.innerHTML = `<p class="muted">Sem categorias importadas.</p>`;
-      return;
+    if (faturamento === 0) {
+      status = "SEM DADOS";
+      desc = "Insira faturamento";
+    } else if (lucro < 0) {
+      status = "CRÍTICO";
+      desc = "Prejuízo operacional";
+    } else if (margem < 10) {
+      status = "ATENÇÃO";
+      desc = "Margem baixa";
     }
 
-    box.innerHTML = lista.map(([categoria, valor]) => `
-      <div class="dash-category">
-        <span>${categoria}</span>
-        <strong>${this.moeda(valor)}</strong>
-      </div>
-    `).join("");
+    document.getElementById("dashStatus").innerText = status;
+    document.getElementById("dashStatusDesc").innerText = desc;
   },
 
-  renderizarMetaVsReal(gastos, metas, faturamento) {
-    const box = this.get("dashboardCEOTopFornecedores");
-    if (!box) return;
+  graficoDistribuicao(gastos) {
+    const ctx = document.getElementById("chartDistribuicao");
 
-    const gastosMap = this.agruparPorCategoria(gastos);
+    const mapa = this.agruparCategorias(gastos);
 
-    if (!metas.length) {
-      box.innerHTML = `<p class="muted">Nenhuma meta cadastrada para este mês.</p>`;
-      return;
-    }
+    if (this.chartDistribuicao) this.chartDistribuicao.destroy();
 
-    box.innerHTML = metas.map(meta => {
-      const categoria = String(meta.categoria || "").toUpperCase();
-      const percentual = this.numero(meta.percentual_meta);
-      const limite = (faturamento * percentual) / 100;
-      const real = gastosMap[categoria] || 0;
-      const usado = limite > 0 ? (real / limite) * 100 : 0;
-      const estourou = limite > 0 && real > limite;
-
-      return `
-        <div class="dash-line">
-          <div>
-            <span>${categoria} — Meta ${percentual}%</span>
-            <strong>
-              ${this.moeda(real)} / ${this.moeda(limite)}
-              ${estourou ? " 🔴" : " 🟢"}
-            </strong>
-          </div>
-
-          <div class="dash-progress">
-            <div style="width:${Math.min(100, Math.max(5, usado))}%; background:${estourou ? "#dc2626" : "#16a34a"};"></div>
-          </div>
-        </div>
-      `;
-    }).join("");
-  },
-
-  renderizarGraficoFluxo() {
-    const canvas = this.get("chartCEOFluxo");
-    if (!canvas || typeof Chart === "undefined") return;
-
-    const ano = this.anoSelecionado();
-
-    const mesesOrdem = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
-
-    const labels = [];
-    const faturamentoArr = [];
-    const gastosArr = [];
-    const lucroArr = [];
-
-    mesesOrdem.forEach(mes => {
-      const gastosMes = this.gastos.filter(item =>
-        String(item.mes || "").toLowerCase() === mes.toLowerCase() &&
-        String(item.ano || "") === ano
-      );
-
-      const mesesMes = this.meses.filter(item =>
-        String(item.mes || "").toLowerCase() === mes.toLowerCase() &&
-        String(item.ano || "") === ano
-      );
-
-      const gastos = gastosMes.reduce((acc, item) => acc + this.numero(item.valor), 0);
-      const faturamento = mesesMes.reduce((acc, item) => acc + this.numero(item.faturamento), 0);
-
-      labels.push(mes.slice(0, 3));
-      faturamentoArr.push(faturamento);
-      gastosArr.push(gastos);
-      lucroArr.push(faturamento - gastos);
-    });
-
-    if (this.chartFluxo) this.chartFluxo.destroy();
-
-    this.chartFluxo = new Chart(canvas, {
+    this.chartDistribuicao = new Chart(ctx, {
+      type: "doughnut",
       data: {
-        labels,
+        labels: Object.keys(mapa),
+        datasets: [{
+          data: Object.values(mapa)
+        }]
+      }
+    });
+  },
+
+  graficoMeta(gastos, metas, faturamento) {
+    const ctx = document.getElementById("chartMetaCategoria");
+
+    const gastosMap = this.agruparCategorias(gastos);
+
+    const categorias = metas.map(m => m.categoria.toUpperCase());
+    const metaValores = metas.map(m => (this.numero(m.percentual_meta) / 100) * faturamento);
+    const realValores = categorias.map(c => gastosMap[c] || 0);
+
+    if (this.chartMeta) this.chartMeta.destroy();
+
+    this.chartMeta = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: categorias,
         datasets: [
           {
-            type: "bar",
-            label: "Faturamento",
-            data: faturamentoArr,
-            backgroundColor: "#16a34a"
-          },
-          {
-            type: "bar",
-            label: "Gastos",
-            data: gastosArr,
+            label: "Real",
+            data: realValores,
             backgroundColor: "#dc2626"
           },
           {
-            type: "line",
-            label: "Lucro",
-            data: lucroArr,
-            borderColor: "#2563eb",
-            backgroundColor: "#2563eb",
-            borderWidth: 3,
-            tension: 0.35
+            label: "Meta",
+            data: metaValores,
+            backgroundColor: "#16a34a"
           }
         ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
       }
     });
   },
 
-  renderizarGraficoCategorias(gastos) {
-    const canvas = this.get("chartCEOCategorias");
-    if (!canvas || typeof Chart === "undefined") return;
+  graficoEvolucao() {
+    const ctx = document.getElementById("chartEvolucao");
 
-    const mapa = this.agruparPorCategoria(gastos);
-    const lista = Object.entries(mapa).sort((a, b) => b[1] - a[1]);
+    const mesesOrdem = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
-    if (this.chartCategorias) this.chartCategorias.destroy();
+    const faturamento = [];
+    const gastos = [];
+    const lucro = [];
 
-    this.chartCategorias = new Chart(canvas, {
-      type: "doughnut",
+    mesesOrdem.forEach((m, i) => {
+
+      const mesNome = [
+        "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+        "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+      ][i];
+
+      const g = this.gastos.filter(x => x.mes === mesNome)
+        .reduce((a,b)=>a+this.numero(b.valor),0);
+
+      const f = this.meses.filter(x => x.mes === mesNome)
+        .reduce((a,b)=>a+this.numero(b.faturamento),0);
+
+      faturamento.push(f);
+      gastos.push(g);
+      lucro.push(f-g);
+    });
+
+    if (this.chartEvolucao) this.chartEvolucao.destroy();
+
+    this.chartEvolucao = new Chart(ctx, {
       data: {
-        labels: lista.map(item => item[0]),
+        labels: mesesOrdem,
         datasets: [
-          {
-            data: lista.map(item => item[1])
-          }
+          { type:"bar", label:"Faturamento", data:faturamento },
+          { type:"bar", label:"Gastos", data:gastos },
+          { type:"line", label:"Lucro", data:lucro }
         ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
       }
     });
   },
 
-  renderizarTabelaResumo(gastos) {
-    // Mantido separado para futuras expansões.
+  tabelaCategorias(gastos) {
+    const tbody = document.getElementById("tabelaTopCategorias");
+
+    const mapa = this.agruparCategorias(gastos);
+
+    const lista = Object.entries(mapa).sort((a,b)=>b[1]-a[1]);
+
+    tbody.innerHTML = lista.map(([cat,val])=>`
+      <tr>
+        <td>${cat}</td>
+        <td>${this.moeda(val)}</td>
+      </tr>
+    `).join("");
   }
+
 };
 
 window.carregarDashboard = () => dashboardModule.carregar();
