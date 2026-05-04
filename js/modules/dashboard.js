@@ -109,36 +109,56 @@ window.dashboardModule = {
     });
   },
 
-  graficoMeta(gastos, metas, faturamento) {
-    const ctx = document.getElementById("chartMetaCategoria");
+graficoMeta(gastos, metas, faturamento) {
 
-    const gastosMap = this.agruparCategorias(gastos);
+  const ctx = document.getElementById("chartMetaCategoria");
+  if (!ctx) return;
 
-    const categorias = metas.map(m => m.categoria.toUpperCase());
-    const metaValores = metas.map(m => (this.numero(m.percentual_meta) / 100) * faturamento);
-    const realValores = categorias.map(c => gastosMap[c] || 0);
+  const gastosMap = this.agruparCategorias(gastos);
 
-    if (this.chartMeta) this.chartMeta.destroy();
+  const categorias = metas.map(m => m.categoria.toUpperCase());
 
-    this.chartMeta = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: categorias,
-        datasets: [
-          {
-            label: "Real",
-            data: realValores,
-            backgroundColor: "#dc2626"
-          },
-          {
-            label: "Meta",
-            data: metaValores,
-            backgroundColor: "#16a34a"
-          }
-        ]
+  const metaValores = metas.map(m => {
+    return (this.numero(m.percentual_meta) / 100) * faturamento;
+  });
+
+  const realValores = categorias.map(cat => gastosMap[cat] || 0);
+
+  if (this.chartMeta) this.chartMeta.destroy();
+
+  this.chartMeta = new Chart(ctx, {
+    data: {
+      labels: categorias,
+      datasets: [
+        {
+          type: "bar",
+          label: "Gasto Real",
+          data: realValores,
+          backgroundColor: "#dc2626"
+        },
+        {
+          type: "line",
+          label: "Meta",
+          data: metaValores,
+          borderColor: "#16a34a",
+          backgroundColor: "#16a34a",
+          borderWidth: 3,
+          tension: 0.3,
+          pointRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "top"
+        }
       }
-    });
-  },
+    }
+  });
+}
 
   graficoEvolucao() {
     const ctx = document.getElementById("chartEvolucao");
