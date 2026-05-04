@@ -84,6 +84,20 @@ function recarregarAbaAtual() {
   carregarModulo(abaAtual);
 }
 
+function inserirDadosUI(tipo) {
+
+  document.querySelectorAll(".input-section").forEach(el => {
+    el.style.display = "none";
+  });
+
+  document.querySelectorAll(".input-tab").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  document.querySelector(`[data-section="${tipo}"]`).style.display = "block";
+  event.target.classList.add("active");
+}
+
 // expõe global
 window.app = {
   recarregarAbaAtual
