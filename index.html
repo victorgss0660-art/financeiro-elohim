@@ -58,158 +58,93 @@
 
   <div class="page-head">
     <h2>Dashboard Executivo</h2>
-    <p>Visão estratégica do financeiro da empresa</p>
+    <p>Visão financeira estratégica da operação</p>
   </div>
 
-  <!-- KPI PRINCIPAIS -->
+  <!-- KPIs -->
   <section class="cards-grid">
 
     <div class="card">
-      <span>A Receber (aberto)</span>
-      <strong id="dashCEOReceberAberto">R$ 0,00</strong>
-      <small id="dashCEOQtdReceber"></small>
+      <span>Faturamento</span>
+      <strong id="dashFaturamento">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>A Pagar (aberto)</span>
-      <strong id="dashCEOPagarAberto">R$ 0,00</strong>
-      <small id="dashCEOQtdPagar"></small>
+      <span>Gastos</span>
+      <strong id="dashGastos">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>Saldo Projetado</span>
-      <strong id="dashCEOSaldoProjetado">R$ 0,00</strong>
+      <span>Lucro</span>
+      <strong id="dashLucro">R$ 0,00</strong>
     </div>
 
     <div class="card">
-      <span>Lucro no Mês</span>
-      <strong id="dashCEOLucroMes">R$ 0,00</strong>
-    </div>
-    <div class="panel">
-  <div class="panel-head">
-    <h3>Inteligência Financeira</h3>
-  </div>
-
-  <div class="cards-grid">
-    <div class="card">
-      <span>Dias de Caixa</span>
-      <strong id="dashCEODiasCaixa">-</strong>
-    </div>
-
-    <div class="card">
-      <span>Fluxo Mensal</span>
-      <strong id="dashCEOFluxoMensal">-</strong>
-    </div>
-  </div>
-</div>
-
-  </section>
-
-  <!-- KPI SECUNDÁRIOS -->
-  <section class="cards-grid">
-
-    <div class="card">
-      <span>Recebido no mês</span>
-      <strong id="dashCEORecebidoMes">R$ 0,00</strong>
-    </div>
-
-    <div class="card">
-      <span>Pago no mês</span>
-      <strong id="dashCEOPagoMes">R$ 0,00</strong>
-    </div>
-
-    <div class="card">
-      <span>Contas vencidas</span>
-      <strong id="dashCEOVencidas">R$ 0,00</strong>
-    </div>
-
-    <div class="card">
-      <span>A receber vencido</span>
-      <strong id="dashCEOReceberVencido">R$ 0,00</strong>
+      <span>Margem</span>
+      <strong id="dashMargem">0%</strong>
     </div>
 
   </section>
 
-  <!-- STATUS EXECUTIVO -->
+  <!-- STATUS -->
   <div class="panel">
     <div class="panel-head">
       <h3>Status Financeiro</h3>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      <strong id="dashCEOStatus">CARREGANDO...</strong>
-      <span id="dashCEOStatusDetalhe" class="muted"></span>
+    <div class="status-box">
+      <h2 id="dashStatus">—</h2>
+      <p id="dashStatusDesc"></p>
     </div>
   </div>
 
   <!-- GRÁFICOS -->
-<div class="panel">
-  <div class="panel-head">
-    <h3>Gastos x Meta por Categoria</h3>
-  </div>
-  <div class="chart-box">
-    <canvas id="chartMetaCategoria"></canvas>
-  </div>
-</div>
+  <div class="grid-2">
 
-<div class="panel">
-  <div class="panel-head">
-    <h3>Distribuição de Gastos</h3>
-  </div>
-  <div class="chart-box">
-    <canvas id="chartDistribuicaoGastos"></canvas>
-  </div>
-</div>
-
-<div class="panel">
-  <div class="panel-head">
-    <h3>Evolução Anual — Faturamento, Gastos e Lucro</h3>
-  </div>
-  <div class="chart-box">
-    <canvas id="chartEvolucaoAnual"></canvas>
-  </div>
-</div>
-
-  <!-- GRID FINAL -->
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Próximos Vencimentos</h3>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Gastos x Meta por Categoria</h3>
+      </div>
+      <div class="chart-box">
+        <canvas id="chartMetaCategoria"></canvas>
+      </div>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Fornecedor</th>
-            <th>Documento</th>
-            <th>Vencimento</th>
-            <th>Valor</th>
-          </tr>
-        </thead>
-
-        <tbody id="dashboardCEOVencimentos">
-          <tr>
-            <td colspan="4" class="muted">Carregando...</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Distribuição de Gastos</h3>
+      </div>
+      <div class="chart-box">
+        <canvas id="chartDistribuicao"></canvas>
+      </div>
     </div>
+
   </div>
 
   <div class="panel">
     <div class="panel-head">
-      <h3>Top Fornecedores</h3>
+      <h3>Evolução Anual</h3>
     </div>
-
-    <div id="dashboardCEOTopFornecedores"></div>
+    <div class="chart-box">
+      <canvas id="chartEvolucao"></canvas>
+    </div>
   </div>
 
+  <!-- TABELA -->
   <div class="panel">
     <div class="panel-head">
-      <h3>Categorias (Contas a Pagar)</h3>
+      <h3>Top Categorias</h3>
     </div>
 
-    <div id="dashboardCEOCategorias" class="cards-grid"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Categoria</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaTopCategorias"></tbody>
+    </table>
   </div>
 
 </section>
