@@ -638,79 +638,191 @@
 
       <!-- IMPORTAR DADOS -->
       
-      <section id="tab-inserir-dados" class="tab-section">
+<section id="tab-inserir-dados" class="tab-section">
   <div class="page-head">
     <h2>Inserir Dados</h2>
-    <p>Central para lançamento de faturamento, metas e importação de planilhas.</p>
+    <p>Central de lançamento de contas pagas, metas mensais e faturamento.</p>
   </div>
 
   <section class="cards-grid">
     <div class="card">
-      <span>Faturamento</span>
-      <strong>Dados mensais</strong>
+      <span>Contas Pagas</span>
+      <strong>Importar mês</strong>
     </div>
 
     <div class="card">
       <span>Metas</span>
-      <strong>Objetivos financeiros</strong>
+      <strong>Gastos mensais</strong>
     </div>
 
     <div class="card">
-      <span>Importação</span>
-      <strong>Excel / CSV</strong>
+      <span>Faturamento</span>
+      <strong>Receita mensal</strong>
     </div>
   </section>
 
+  <!-- IMPORTAR CONTAS PAGAS -->
   <div class="panel">
     <div class="panel-head">
-      <h3>Faturamento</h3>
+      <h3>Importar Planilha de Contas Pagas</h3>
     </div>
 
     <div class="form-grid">
       <div>
         <label>Mês</label>
-        <input id="dadosMes" type="text" placeholder="Ex: Maio" />
+        <select id="importMes">
+          <option>Janeiro</option>
+          <option>Fevereiro</option>
+          <option>Março</option>
+          <option>Abril</option>
+          <option>Maio</option>
+          <option>Junho</option>
+          <option>Julho</option>
+          <option>Agosto</option>
+          <option>Setembro</option>
+          <option>Outubro</option>
+          <option>Novembro</option>
+          <option>Dezembro</option>
+        </select>
       </div>
 
       <div>
         <label>Ano</label>
-        <input id="dadosAno" type="number" placeholder="2026" />
+        <input id="importAno" type="number" value="2026">
       </div>
 
       <div>
-        <label>Faturamento realizado</label>
-        <input id="dadosFaturamento" type="text" placeholder="R$ 0,00" />
-      </div>
-
-      <div>
-        <label>Meta de faturamento</label>
-        <input id="dadosMetaFaturamento" type="text" placeholder="R$ 0,00" />
+        <label>Planilha Excel / CSV</label>
+        <input id="importArquivo" type="file" accept=".csv,.xlsx,.xls">
       </div>
     </div>
 
     <div class="actions-row">
-      <button onclick="alert('Depois vamos ligar essa parte ao Supabase.')">
-        Salvar dados
-      </button>
+      <button onclick="inserirDadosModule.importarContasPagas()">Importar contas pagas</button>
     </div>
   </div>
 
+  <!-- METAS -->
   <div class="panel">
     <div class="panel-head">
-      <h3>Importar Planilha</h3>
+      <h3>Metas de Gastos do Mês</h3>
     </div>
 
     <div class="form-grid">
       <div>
-        <label>Arquivo Excel / CSV</label>
-        <input id="dadosArquivo" type="file" accept=".xlsx,.xls,.csv" />
+        <label>Mês</label>
+        <select id="metaMes">
+          <option>Janeiro</option>
+          <option>Fevereiro</option>
+          <option>Março</option>
+          <option>Abril</option>
+          <option>Maio</option>
+          <option>Junho</option>
+          <option>Julho</option>
+          <option>Agosto</option>
+          <option>Setembro</option>
+          <option>Outubro</option>
+          <option>Novembro</option>
+          <option>Dezembro</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Ano</label>
+        <input id="metaAno" type="number" value="2026">
+      </div>
+
+      <div>
+        <label>Categoria</label>
+        <input id="metaCategoria" type="text" placeholder="Ex: Fornecedores">
+      </div>
+
+      <div>
+        <label>Meta de gasto</label>
+        <input id="metaValor" type="text" placeholder="R$ 0,00">
       </div>
     </div>
 
     <div class="actions-row">
-      <button class="secondary-btn" onclick="alert('Importação será configurada depois.')">
-        Importar arquivo
-      </button>
+      <button onclick="inserirDadosModule.salvarMeta()">Salvar meta</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th>Ano</th>
+            <th>Categoria</th>
+            <th>Meta</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaMetasMensais">
+          <tr>
+            <td colspan="5" class="muted">Nenhuma meta carregada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FATURAMENTO -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Faturamento Mensal</h3>
+    </div>
+
+    <div class="form-grid">
+      <div>
+        <label>Mês</label>
+        <select id="fatMes">
+          <option>Janeiro</option>
+          <option>Fevereiro</option>
+          <option>Março</option>
+          <option>Abril</option>
+          <option>Maio</option>
+          <option>Junho</option>
+          <option>Julho</option>
+          <option>Agosto</option>
+          <option>Setembro</option>
+          <option>Outubro</option>
+          <option>Novembro</option>
+          <option>Dezembro</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Ano</label>
+        <input id="fatAno" type="number" value="2026">
+      </div>
+
+      <div>
+        <label>Faturamento realizado</label>
+        <input id="fatValor" type="text" placeholder="R$ 0,00">
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button onclick="inserirDadosModule.salvarFaturamento()">Salvar faturamento</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th>Ano</th>
+            <th>Faturamento</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaFaturamentoMensal">
+          <tr>
+            <td colspan="4" class="muted">Nenhum faturamento carregado.</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
