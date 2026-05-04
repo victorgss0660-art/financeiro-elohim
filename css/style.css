@@ -1596,3 +1596,10 @@ main {
 .chart-box {
   height: 280px;
 }
+.tab-section {
+  display: none !important;
+}
+
+.tab-section.active {
+  display: block !important;
+}
