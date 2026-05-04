@@ -32,11 +32,9 @@
         <button data-tab="contas-pagar">Contas a Pagar</button>
         <button data-tab="contas-pagas">Contas Pagas</button>
         <button data-tab="contas-receber">Contas a Receber</button>
-        <button data-tab="faturamento">Faturamento</button>
-        <button data-tab="metas">Metas</button>
         <button data-tab="planejamento">Planejamento</button>
-        <button data-tab="dre">DRE</button>
         <button data-tab="importar">Importar</button>
+        <button data-tab="dre">DRE</button>
       </nav>
     </aside>
 
@@ -503,26 +501,6 @@
         </div>
       </section>
 
-      <!-- FATURAMENTO -->
-      <section id="tab-faturamento" class="tab-section">
-        <div class="page-head">
-          <h2>Faturamento</h2>
-          <p>Módulo em construção.</p>
-        </div>
-
-        <div class="panel empty-state">Em breve.</div>
-      </section>
-
-      <!-- METAS -->
-      <section id="tab-metas" class="tab-section">
-        <div class="page-head">
-          <h2>Metas</h2>
-          <p>Módulo em construção.</p>
-        </div>
-
-        <div class="panel empty-state">Em breve.</div>
-      </section>
-
       <!-- PLANEJAMENTO -->
       <section id="tab-planejamento" class="tab-section">
         <div class="page-head">
@@ -658,15 +636,84 @@
         <div class="panel empty-state">Em breve.</div>
       </section>
 
-      <!-- IMPORTAR -->
-      <section id="tab-importar" class="tab-section">
-        <div class="page-head">
-          <h2>Importar</h2>
-          <p>Módulo em construção.</p>
-        </div>
+      <!-- IMPORTAR DADOS -->
+      
+      <section id="tab-inserir-dados" class="tab-section">
+  <div class="page-head">
+    <h2>Inserir Dados</h2>
+    <p>Central para lançamento de faturamento, metas e importação de planilhas.</p>
+  </div>
 
-        <div class="panel empty-state">Em breve.</div>
-      </section>
+  <section class="cards-grid">
+    <div class="card">
+      <span>Faturamento</span>
+      <strong>Dados mensais</strong>
+    </div>
+
+    <div class="card">
+      <span>Metas</span>
+      <strong>Objetivos financeiros</strong>
+    </div>
+
+    <div class="card">
+      <span>Importação</span>
+      <strong>Excel / CSV</strong>
+    </div>
+  </section>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Faturamento</h3>
+    </div>
+
+    <div class="form-grid">
+      <div>
+        <label>Mês</label>
+        <input id="dadosMes" type="text" placeholder="Ex: Maio" />
+      </div>
+
+      <div>
+        <label>Ano</label>
+        <input id="dadosAno" type="number" placeholder="2026" />
+      </div>
+
+      <div>
+        <label>Faturamento realizado</label>
+        <input id="dadosFaturamento" type="text" placeholder="R$ 0,00" />
+      </div>
+
+      <div>
+        <label>Meta de faturamento</label>
+        <input id="dadosMetaFaturamento" type="text" placeholder="R$ 0,00" />
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button onclick="alert('Depois vamos ligar essa parte ao Supabase.')">
+        Salvar dados
+      </button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Importar Planilha</h3>
+    </div>
+
+    <div class="form-grid">
+      <div>
+        <label>Arquivo Excel / CSV</label>
+        <input id="dadosArquivo" type="file" accept=".xlsx,.xls,.csv" />
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="secondary-btn" onclick="alert('Importação será configurada depois.')">
+        Importar arquivo
+      </button>
+    </div>
+  </div>
+</section>
     </main>
   </div>
 
