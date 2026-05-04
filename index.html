@@ -722,98 +722,48 @@
   </div>
 
   <!-- METAS -->
-  <div class="input-section" data-section="metas" style="display:none;">
-    <section class="cards-grid">
-      <div class="card">
-        <span>Módulo</span>
-        <strong>Metas mensais</strong>
-      </div>
+<div class="form-grid">
 
-      <div class="card">
-        <span>Controle</span>
-        <strong>Por categoria</strong>
-      </div>
-
-      <div class="card">
-        <span>Uso</span>
-        <strong>Dashboard</strong>
-      </div>
-    </section>
-
-    <div class="panel">
-      <div class="panel-head">
-        <h3>Metas de Gastos do Mês</h3>
-        <span class="muted">Defina limites de gastos por categoria.</span>
-      </div>
-
-      <div class="form-grid">
-        <div>
-          <label>Mês</label>
-          <select id="metaMes">
-            <option>Janeiro</option>
-            <option>Fevereiro</option>
-            <option>Março</option>
-            <option>Abril</option>
-            <option>Maio</option>
-            <option>Junho</option>
-            <option>Julho</option>
-            <option>Agosto</option>
-            <option>Setembro</option>
-            <option>Outubro</option>
-            <option>Novembro</option>
-            <option>Dezembro</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Ano</label>
-          <input id="metaAno" type="number" value="2026" />
-        </div>
-
-        <div>
-          <label>Categoria</label>
-          <input id="metaCategoria" type="text" placeholder="Ex: FRETE, MP, MC" />
-        </div>
-
-        <div>
-          <label>Percentual da meta (%)</label>
-          <input id="metaPercentual" type="text" placeholder="Ex: 25" />
-        </div>
-
-        <div>
-          <label>Valor da meta</label>
-          <input id="metaValor" type="text" placeholder="R$ 0,00" />
-        </div>
-      </div>
-
-      <div class="actions-row">
-        <button type="button" onclick="inserirDadosModule.salvarMeta()">
-          Salvar meta
-        </button>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Mês</th>
-              <th>Ano</th>
-              <th>Categoria</th>
-              <th>% Meta</th>
-              <th>Valor Meta</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-
-          <tbody id="tabelaMetasMensais">
-            <tr>
-              <td colspan="6" class="muted">Nenhuma meta carregada.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+  <div>
+    <label>Mês</label>
+    <select id="metaMes">
+      <option>Janeiro</option>
+      <option>Fevereiro</option>
+      <option>Março</option>
+      <option>Abril</option>
+      <option>Maio</option>
+      <option>Junho</option>
+      <option>Julho</option>
+      <option>Agosto</option>
+      <option>Setembro</option>
+      <option>Outubro</option>
+      <option>Novembro</option>
+      <option>Dezembro</option>
+    </select>
   </div>
+
+  <div>
+    <label>Ano</label>
+    <input id="metaAno" type="number" value="2026" />
+  </div>
+
+  <div>
+    <label>Categoria</label>
+    <input id="metaCategoria" placeholder="Ex: MC, DESP, FRETE" />
+  </div>
+
+  <div>
+    <label>% do faturamento</label>
+    <input id="metaPercentual" type="number" placeholder="Ex: 25" />
+  </div>
+
+</div>
+
+<div class="actions-row">
+  <button onclick="inserirDadosModule.salvarMetaPercentual()">
+    Salvar meta %
+  </button>
+</div>
 
   <!-- FATURAMENTO -->
   <div class="input-section" data-section="faturamento" style="display:none;">
@@ -910,65 +860,6 @@
   </div>
 </section>
 
-  <!-- FATURAMENTO -->
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Faturamento Mensal</h3>
-    </div>
-
-    <div class="form-grid">
-      <div>
-        <label>Mês</label>
-        <select id="fatMes">
-          <option>Janeiro</option>
-          <option>Fevereiro</option>
-          <option>Março</option>
-          <option>Abril</option>
-          <option>Maio</option>
-          <option>Junho</option>
-          <option>Julho</option>
-          <option>Agosto</option>
-          <option>Setembro</option>
-          <option>Outubro</option>
-          <option>Novembro</option>
-          <option>Dezembro</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Ano</label>
-        <input id="fatAno" type="number" value="2026">
-      </div>
-
-      <div>
-        <label>Faturamento realizado</label>
-        <input id="fatValor" type="text" placeholder="R$ 0,00">
-      </div>
-    </div>
-
-    <div class="actions-row">
-      <button onclick="inserirDadosModule.salvarFaturamento()">Salvar faturamento</button>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Mês</th>
-            <th>Ano</th>
-            <th>Faturamento</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaFaturamentoMensal">
-          <tr>
-            <td colspan="4" class="muted">Nenhum faturamento carregado.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
     </main>
   </div>
 
