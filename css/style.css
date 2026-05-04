@@ -1587,3 +1587,12 @@ main {
 .table-wrap tr:hover {
   background: #f1f5f9;
 }
+.grid-2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.chart-box {
+  height: 280px;
+}
