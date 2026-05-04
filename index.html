@@ -639,139 +639,276 @@
       <!-- IMPORTAR DADOS -->
       
 <section id="tab-inserir-dados" class="tab-section">
-<div class="page-head">
-  <h2>Inserir Dados</h2>
-  <p>Gestão de custos, metas e faturamento mensal</p>
-</div>
+  <div class="page-head">
+    <h2>Inserir Dados</h2>
+    <p>Central de lançamento de contas pagas, metas mensais e faturamento.</p>
+  </div>
 
-<div class="input-tabs">
-  <button class="input-tab active" onclick="inserirDadosUI('import')">Contas Pagas</button>
-  <button class="input-tab" onclick="inserirDadosUI('metas')">Metas</button>
-  <button class="input-tab" onclick="inserirDadosUI('faturamento')">Faturamento</button>
-</div>
+  <div class="input-tabs">
+    <button class="input-tab active" type="button" onclick="inserirDadosUI('import')">
+      Contas Pagas
+    </button>
 
-  <section class="cards-grid">
-    <div class="card">
-      <span>Contas Pagas</span>
-      <strong>Importar mês</strong>
-    </div>
+    <button class="input-tab" type="button" onclick="inserirDadosUI('metas')">
+      Metas
+    </button>
 
-    <div class="card">
-      <span>Metas</span>
-      <strong>Gastos mensais</strong>
-    </div>
-
-    <div class="card">
-      <span>Faturamento</span>
-      <strong>Receita mensal</strong>
-    </div>
-  </section>
+    <button class="input-tab" type="button" onclick="inserirDadosUI('faturamento')">
+      Faturamento
+    </button>
+  </div>
 
   <!-- IMPORTAR CONTAS PAGAS -->
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Importar Planilha de Contas Pagas</h3>
-    </div>
-
-    <div class="form-grid">
-      <div>
-        <label>Mês</label>
-        <select id="importMes">
-          <option>Janeiro</option>
-          <option>Fevereiro</option>
-          <option>Março</option>
-          <option>Abril</option>
-          <option>Maio</option>
-          <option>Junho</option>
-          <option>Julho</option>
-          <option>Agosto</option>
-          <option>Setembro</option>
-          <option>Outubro</option>
-          <option>Novembro</option>
-          <option>Dezembro</option>
-        </select>
+  <div class="input-section" data-section="import">
+    <section class="cards-grid">
+      <div class="card">
+        <span>Módulo</span>
+        <strong>Importar contas pagas</strong>
       </div>
 
-      <div>
-        <label>Ano</label>
-        <input id="importAno" type="number" value="2026">
+      <div class="card">
+        <span>Origem</span>
+        <strong>Excel / CSV</strong>
       </div>
 
-      <div>
-        <label>Planilha Excel / CSV</label>
-        <input id="importArquivo" type="file" accept=".csv,.xlsx,.xls">
+      <div class="card">
+        <span>Destino</span>
+        <strong>Tabela gastos</strong>
       </div>
-    </div>
+    </section>
 
-    <div class="actions-row">
-      <button onclick="inserirDadosModule.importarContasPagas()">Importar contas pagas</button>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Importar Planilha de Contas Pagas</h3>
+        <span class="muted">Use uma planilha com mês, ano, categoria e valor.</span>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <label>Mês</label>
+          <select id="importMes">
+            <option>Janeiro</option>
+            <option>Fevereiro</option>
+            <option>Março</option>
+            <option>Abril</option>
+            <option>Maio</option>
+            <option>Junho</option>
+            <option>Julho</option>
+            <option>Agosto</option>
+            <option>Setembro</option>
+            <option>Outubro</option>
+            <option>Novembro</option>
+            <option>Dezembro</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Ano</label>
+          <input id="importAno" type="number" value="2026" />
+        </div>
+
+        <div>
+          <label>Arquivo Excel / CSV</label>
+          <input id="importArquivo" type="file" accept=".csv,.xlsx,.xls" />
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" onclick="inserirDadosModule.importarContasPagas()">
+          Importar contas pagas
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- METAS -->
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Metas de Gastos do Mês</h3>
-    </div>
-
-    <div class="form-grid">
-      <div>
-        <label>Mês</label>
-        <select id="metaMes">
-          <option>Janeiro</option>
-          <option>Fevereiro</option>
-          <option>Março</option>
-          <option>Abril</option>
-          <option>Maio</option>
-          <option>Junho</option>
-          <option>Julho</option>
-          <option>Agosto</option>
-          <option>Setembro</option>
-          <option>Outubro</option>
-          <option>Novembro</option>
-          <option>Dezembro</option>
-        </select>
+  <div class="input-section" data-section="metas" style="display:none;">
+    <section class="cards-grid">
+      <div class="card">
+        <span>Módulo</span>
+        <strong>Metas mensais</strong>
       </div>
 
-      <div>
-        <label>Ano</label>
-        <input id="metaAno" type="number" value="2026">
+      <div class="card">
+        <span>Controle</span>
+        <strong>Por categoria</strong>
       </div>
 
-      <div>
-        <label>Categoria</label>
-        <input id="metaCategoria" type="text" placeholder="Ex: Fornecedores">
+      <div class="card">
+        <span>Uso</span>
+        <strong>Dashboard</strong>
+      </div>
+    </section>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Metas de Gastos do Mês</h3>
+        <span class="muted">Defina limites de gastos por categoria.</span>
       </div>
 
-      <div>
-        <label>Meta de gasto</label>
-        <input id="metaValor" type="text" placeholder="R$ 0,00">
+      <div class="form-grid">
+        <div>
+          <label>Mês</label>
+          <select id="metaMes">
+            <option>Janeiro</option>
+            <option>Fevereiro</option>
+            <option>Março</option>
+            <option>Abril</option>
+            <option>Maio</option>
+            <option>Junho</option>
+            <option>Julho</option>
+            <option>Agosto</option>
+            <option>Setembro</option>
+            <option>Outubro</option>
+            <option>Novembro</option>
+            <option>Dezembro</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Ano</label>
+          <input id="metaAno" type="number" value="2026" />
+        </div>
+
+        <div>
+          <label>Categoria</label>
+          <input id="metaCategoria" type="text" placeholder="Ex: FRETE, MP, MC" />
+        </div>
+
+        <div>
+          <label>Percentual da meta (%)</label>
+          <input id="metaPercentual" type="text" placeholder="Ex: 25" />
+        </div>
+
+        <div>
+          <label>Valor da meta</label>
+          <input id="metaValor" type="text" placeholder="R$ 0,00" />
+        </div>
       </div>
-    </div>
 
-    <div class="actions-row">
-      <button onclick="inserirDadosModule.salvarMeta()">Salvar meta</button>
-    </div>
+      <div class="actions-row">
+        <button type="button" onclick="inserirDadosModule.salvarMeta()">
+          Salvar meta
+        </button>
+      </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Mês</th>
-            <th>Ano</th>
-            <th>Categoria</th>
-            <th>Meta</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaMetasMensais">
-          <tr>
-            <td colspan="5" class="muted">Nenhuma meta carregada.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Ano</th>
+              <th>Categoria</th>
+              <th>% Meta</th>
+              <th>Valor Meta</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaMetasMensais">
+            <tr>
+              <td colspan="6" class="muted">Nenhuma meta carregada.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
+
+  <!-- FATURAMENTO -->
+  <div class="input-section" data-section="faturamento" style="display:none;">
+    <section class="cards-grid">
+      <div class="card">
+        <span>Módulo</span>
+        <strong>Faturamento mensal</strong>
+      </div>
+
+      <div class="card">
+        <span>Controle</span>
+        <strong>Faturado / A faturar</strong>
+      </div>
+
+      <div class="card">
+        <span>Uso</span>
+        <strong>Gráficos CEO</strong>
+      </div>
+    </section>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Faturamento Mensal</h3>
+        <span class="muted">Informe o faturamento total, valor faturado e valor a faturar.</span>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <label>Mês</label>
+          <select id="fatMes">
+            <option>Janeiro</option>
+            <option>Fevereiro</option>
+            <option>Março</option>
+            <option>Abril</option>
+            <option>Maio</option>
+            <option>Junho</option>
+            <option>Julho</option>
+            <option>Agosto</option>
+            <option>Setembro</option>
+            <option>Outubro</option>
+            <option>Novembro</option>
+            <option>Dezembro</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Ano</label>
+          <input id="fatAno" type="number" value="2026" />
+        </div>
+
+        <div>
+          <label>Faturamento total</label>
+          <input id="fatValor" type="text" placeholder="R$ 0,00" />
+        </div>
+
+        <div>
+          <label>Faturado</label>
+          <input id="fatFaturado" type="text" placeholder="R$ 0,00" />
+        </div>
+
+        <div>
+          <label>A faturar</label>
+          <input id="fatAFaturar" type="text" placeholder="R$ 0,00" />
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" onclick="inserirDadosModule.salvarFaturamento()">
+          Salvar faturamento
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Ano</th>
+              <th>Faturamento</th>
+              <th>Faturado</th>
+              <th>A Faturar</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaFaturamentoMensal">
+            <tr>
+              <td colspan="6" class="muted">Nenhum faturamento carregado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
 
   <!-- FATURAMENTO -->
   <div class="panel">
