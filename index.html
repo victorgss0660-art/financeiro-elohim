@@ -1,144 +1,859 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Financeiro Empresarial</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financeiro Empresarial - Elohim</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css" />
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
+  <div class="app">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+    <aside class="sidebar">
+      <div class="brand">
+        <img
+          src="https://raw.githubusercontent.com/victorgss0660-art/financeiro-elohim/main/logo-elohim.png"
+          class="brand-img"
+          alt="Logo Elohim"
+        />
 
-    <div class="logo">
-      <strong>ME</strong>
-      <span>Financeiro</span>
+        <div>
+          <h2>Elohim</h2>
+          <span>Usinagem e Caldeiraria</span>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <button data-tab="dashboard" class="active">Dashboard</button>
+        <button data-tab="contas-pagar">Contas a Pagar</button>
+        <button data-tab="contas-pagas">Contas Pagas</button>
+        <button data-tab="contas-receber">Contas a Receber</button>
+        <button data-tab="planejamento">Planejamento</button>
+        <button data-tab="inserir-dados">Inserir Dados</button>
+        <button data-tab="dre">DRE</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Financeiro Empresarial</h1>
+          <p>Sistema de gestão financeira, metas, contas e planejamento.</p>
+        </div>
+
+        <div class="global-filters">
+          <select id="mesSelect"></select>
+          <input id="anoSelect" type="number" />
+          <button onclick="app.recarregarAbaAtual()">Carregar</button>
+        </div>
+      </header>
+
+      <!-- DASHBOARD -->
+<section id="tab-dashboard" class="tab-section active">
+
+  <div class="page-head">
+    <h2>Dashboard Executivo</h2>
+    <p>Visão financeira estratégica da operação</p>
+  </div>
+
+  <!-- KPIs -->
+  <section class="cards-grid">
+
+    <div class="card">
+      <span>Faturamento</span>
+      <strong id="dashFaturamento">R$ 0,00</strong>
     </div>
 
-    <nav class="menu">
-      <button data-tab="dashboard" class="active">Dashboard</button>
-      <button data-tab="contas-pagar">Contas a Pagar</button>
-      <button data-tab="contas-pagas">Contas Pagas</button>
-      <button data-tab="contas-receber">Contas a Receber</button>
-      <button data-tab="planejamento">Planejamento</button>
-      <button data-tab="inserir-dados">Inserir Dados</button>
-    </nav>
+    <div class="card">
+      <span>Gastos</span>
+      <strong id="dashGastos">R$ 0,00</strong>
+    </div>
 
-  </aside>
+    <div class="card">
+      <span>Lucro</span>
+      <strong id="dashLucro">R$ 0,00</strong>
+    </div>
 
-  <!-- CONTEÚDO -->
-  <main class="content">
+    <div class="card">
+      <span>Margem</span>
+      <strong id="dashMargem">0%</strong>
+    </div>
 
-    <!-- HEADER -->
-    <header class="topbar">
-      <div>
-        <h1>Financeiro Empresarial</h1>
-        <p>Sistema de gestão financeira</p>
-      </div>
+  </section>
 
-      <div class="filtros">
-        <select id="mesSelect"></select>
-        <input type="number" id="anoSelect">
-        <button onclick="app.recarregarAbaAtual()">Atualizar</button>
-      </div>
-    </header>
+  <!-- STATUS -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Status Financeiro</h3>
+    </div>
 
-    <!-- DASHBOARD -->
-    <section id="tab-dashboard" class="tab-section active">
-      <div class="cards">
+    <div class="status-box">
+      <h2 id="dashStatus">—</h2>
+      <p id="dashStatusDesc"></p>
+    </div>
+  </div>
 
-        <div class="card">
-          <span>Faturamento</span>
-          <strong id="dashFaturamento">R$ 0,00</strong>
+  <!-- GRÁFICOS -->
+<div class="grid-2">
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Gastos x Meta por Categoria</h3>
+    </div>
+    <div class="chart-box">
+      <canvas id="chartMetaCategoria"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Distribuição de Gastos</h3>
+    </div>
+    <div class="chart-box">
+      <canvas id="chartDistribuicao"></canvas>
+    </div>
+  </div>
+
+</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Evolução Anual</h3>
+    </div>
+    <div class="chart-box">
+      <canvas id="chartEvolucao"></canvas>
+    </div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Top Categorias</h3>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Categoria</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaTopCategorias"></tbody>
+    </table>
+  </div>
+
+</section>
+
+      <!-- CONTAS A PAGAR -->
+      <section id="tab-contas-pagar" class="tab-section">
+        <div class="page-head">
+          <h2>Contas a Pagar</h2>
+          <p>Controle de contas pendentes, boletos, notas fiscais e pagamentos.</p>
         </div>
 
-        <div class="card">
-          <span>Gastos</span>
-          <strong id="dashGastos">R$ 0,00</strong>
-        </div>
+        <section class="cards-grid">
+          <div class="card">
+            <span>Quantidade</span>
+            <strong id="cpQtd">0</strong>
+          </div>
 
-        <div class="card">
-          <span>Lucro</span>
-          <strong id="dashLucro">R$ 0,00</strong>
-        </div>
+          <div class="card">
+            <span>Total em aberto</span>
+            <strong id="cpTotal">R$ 0,00</strong>
+          </div>
 
-        <div class="card">
-          <span>Margem</span>
-          <strong id="dashMargem">0%</strong>
-        </div>
+          <div class="card">
+            <span>Selecionadas</span>
+            <strong id="cpSelecionadas">0</strong>
+          </div>
 
-      </div>
-
-      <div class="grid-2">
+          <div class="card">
+            <span>Total selecionado</span>
+            <strong id="cpTotalSelecionado">R$ 0,00</strong>
+          </div>
+        </section>
 
         <div class="panel">
-          <h3>Gastos x Meta</h3>
-          <div class="chart-box">
-            <canvas id="chartMetaCategoria"></canvas>
+          <div class="panel-head">
+            <h3>Lançar Conta</h3>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label>Fornecedor</label>
+              <input id="cpFornecedor" type="text" />
+            </div>
+
+            <div>
+              <label>Documento</label>
+              <input id="cpDocumento" type="text" />
+            </div>
+
+            <div>
+              <label>Valor</label>
+              <input id="cpValor" type="text" />
+            </div>
+
+            <div>
+              <label>Vencimento</label>
+              <input id="cpVencimento" type="date" />
+            </div>
+
+            <div>
+              <label>Categoria</label>
+              <input id="cpCategoria" type="text" />
+            </div>
+
+            <div class="toggle-group">
+              <label>NFE recebida</label>
+              <button type="button" id="btnNfe" class="toggle-bank" onclick="contasPagarModule.toggleInput('nfe')">
+                <span class="toggle-icon">✓</span>
+                <span class="toggle-text">Não recebida</span>
+              </button>
+            </div>
+            
+            <div class="toggle-group">
+              <label>Boleto recebido</label>
+              <button type="button" id="btnBoleto" class="toggle-bank" onclick="contasPagarModule.toggleInput('boleto')">
+                <span class="toggle-icon">✓</span>
+                <span class="toggle-text">Não recebido</span>
+              </button>
+            </div>
+
+            <div>
+              <label>Descrição</label>
+              <input id="cpDescricao" type="text" />
+            </div>
+          </div>
+
+          <div class="actions-row">
+            <button onclick="contasPagarModule.salvar()">Salvar conta</button>
+            <button class="secondary-btn" onclick="contasPagarModule.limparFormulario()">Limpar</button>
           </div>
         </div>
 
         <div class="panel">
-          <h3>Distribuição</h3>
-          <div class="chart-box">
-            <canvas id="chartDistribuicao"></canvas>
+          <div class="panel-head">
+            <h3>Contas em Aberto</h3>
+
+            <div class="actions-row">
+              <button class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">Selecionar todas</button>
+              <button class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
+              <button onclick="contasPagarModule.pagarSelecionadas()">Pagar selecionadas</button>
+              <button class="secondary-btn" onclick="contasPagarModule.limparFiltros()">Limpar filtros</button>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label>Buscar</label>
+              <input id="cpBusca" type="text" placeholder="Fornecedor, documento, categoria ou descrição" oninput="contasPagarModule.aplicarFiltros()" />
+            </div>
+
+            <div>
+              <label>Fornecedor</label>
+              <input id="cpFiltroFornecedor" type="text" oninput="contasPagarModule.aplicarFiltros()" />
+            </div>
+
+            <div>
+              <label>Categoria</label>
+              <input id="cpFiltroCategoria" type="text" oninput="contasPagarModule.aplicarFiltros()" />
+            </div>
+
+            <div>
+              <label>Vencimento inicial</label>
+              <input id="cpVencimentoInicio" type="date" onchange="contasPagarModule.aplicarFiltros()" />
+            </div>
+
+            <div>
+              <label>Vencimento final</label>
+              <input id="cpVencimentoFim" type="date" onchange="contasPagarModule.aplicarFiltros()" />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Selecionar</th>
+                  <th>Fornecedor</th>
+                  <th>Documento</th>
+                  <th>Valor</th>
+                  <th>Vencimento</th>
+                  <th>Categoria</th>
+                  <th>Descrição</th>
+                  <th>NFE / Boleto</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="tabelaContasPagar">
+                <tr>
+                  <td colspan="9" class="muted">Nenhuma conta carregada.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTAS PAGAS -->
+      <section id="tab-contas-pagas" class="tab-section">
+        <div class="page-head">
+          <h2>Contas Pagas</h2>
+          <p>Histórico de pagamentos realizados.</p>
+        </div>
+
+        <section class="cards-grid">
+          <div class="card">
+            <span>Quantidade</span>
+            <strong id="pagasQtd">0</strong>
+          </div>
+
+          <div class="card">
+            <span>Total pago</span>
+            <strong id="pagasTotal">R$ 0,00</strong>
+          </div>
+        </section>
+
+        <div class="panel">
+          <div class="form-grid">
+            <div>
+              <label>Buscar</label>
+              <input id="pagasBusca" type="text" placeholder="Fornecedor, documento, categoria ou descrição" oninput="contasPagasModule.aplicarFiltros()" />
+            </div>
+
+            <div>
+              <label>Data inicial</label>
+              <input id="pagasDataInicio" type="date" onchange="contasPagasModule.aplicarFiltros()" />
+            </div>
+
+            <div>
+              <label>Data final</label>
+              <input id="pagasDataFim" type="date" onchange="contasPagasModule.aplicarFiltros()" />
+            </div>
+
+            <div>
+              <label>Ações</label>
+              <button class="secondary-btn" onclick="contasPagasModule.limparFiltros()">Limpar filtros</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fornecedor</th>
+                  <th>Documento</th>
+                  <th>Categoria</th>
+                  <th>Vencimento</th>
+                  <th>Pagamento</th>
+                  <th>Descrição</th>
+                  <th>Valor</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="tabelaContasPagas">
+                <tr>
+                  <td colspan="8" class="muted">Nenhuma conta paga carregada.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTAS A RECEBER -->
+      <section id="tab-contas-receber" class="tab-section">
+        <div class="page-head">
+          <h2>Contas a Receber</h2>
+          <p>Controle de clientes, notas fiscais e recebimentos.</p>
+        </div>
+
+        <section class="cards-grid">
+          <div class="card">
+            <span>Quantidade</span>
+            <strong id="receberQtd">0</strong>
+          </div>
+
+          <div class="card">
+            <span>Total</span>
+            <strong id="receberTotal">R$ 0,00</strong>
+          </div>
+
+          <div class="card">
+            <span>Em aberto</span>
+            <strong id="receberAberto">R$ 0,00</strong>
+          </div>
+        </section>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Lançar Recebimento</h3>
+          </div>
+
+          <div class="form-grid">
+            <input id="receberCliente" placeholder="Cliente" />
+            <input id="receberDocumento" placeholder="NF / Pedido / FAT" />
+            <input id="receberCategoria" placeholder="Categoria" />
+            <input id="receberVencimento" type="date" />
+            <input id="receberValor" placeholder="Valor" />
+            <input id="receberDescricao" placeholder="Descrição" />
+          </div>
+
+          <div class="actions-row">
+            <button onclick="contasReceberModule.salvar()">Salvar</button>
+            <button class="secondary-btn" onclick="contasReceberModule.limparFormulario()">Limpar</button>
           </div>
         </div>
 
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Recebimentos</h3>
+            <input id="receberBusca" placeholder="Buscar..." oninput="contasReceberModule.filtrar()" />
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Documento</th>
+                  <th>Categoria</th>
+                  <th>Vencimento</th>
+                  <th>Recebido em</th>
+                  <th>Descrição</th>
+                  <th>Valor</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="tabelaContasReceber">
+                <tr>
+                  <td colspan="8" class="muted">Nenhum lançamento carregado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLANEJAMENTO -->
+      <section id="tab-planejamento" class="tab-section">
+        <div class="page-head">
+          <h2>Planejamento CFO</h2>
+          <p>Fluxo de caixa executivo com saldos bancários, projeção semanal, risco e gráfico financeiro.</p>
+        </div>
+
+        <section class="cards-grid">
+          <div class="card">
+            <span>Saldo inicial bancos</span>
+            <strong id="planejamentoSaldoInicial">R$ 0,00</strong>
+          </div>
+
+          <div class="card">
+            <span>Total a receber</span>
+            <strong id="planejamentoTotalReceber">R$ 0,00</strong>
+          </div>
+
+          <div class="card">
+            <span>Total a pagar</span>
+            <strong id="planejamentoTotalPagar">R$ 0,00</strong>
+          </div>
+
+          <div class="card">
+            <span>Saldo final projetado</span>
+            <strong id="planejamentoSaldoFinal">R$ 0,00</strong>
+          </div>
+        </section>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Indicador Executivo</h3>
+            <button class="secondary-btn" onclick="planejamentoModule.carregar()">Atualizar</button>
+          </div>
+
+          <section class="cards-grid">
+            <div class="card">
+              <span>Status do caixa</span>
+              <strong id="planejamentoStatusCaixa">Carregando...</strong>
+            </div>
+
+            <div class="card">
+              <span>Menor saldo previsto</span>
+              <strong id="planejamentoMenorSaldo">R$ 0,00</strong>
+            </div>
+
+            <div class="card">
+              <span>Semana crítica</span>
+              <strong id="planejamentoSemanaCritica">-</strong>
+            </div>
+
+            <div class="card">
+              <span>Necessidade de caixa</span>
+              <strong id="planejamentoNecessidadeCaixa">R$ 0,00</strong>
+            </div>
+          </section>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Saldos Bancários</h3>
+            <span class="muted">Edite os saldos para recalcular a projeção</span>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Banco / Conta</th>
+                  <th>Saldo Atual</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="tabelaSaldosBancarios">
+                <tr>
+                  <td colspan="3" class="muted">Nenhum saldo carregado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Gráfico de Fluxo de Caixa</h3>
+            <span class="muted">Entradas, saídas e saldo projetado em 12 semanas</span>
+          </div>
+
+          <div class="chart-box">
+            <canvas id="chartPlanejamento"></canvas>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Projeção 12 Semanas</h3>
+            <span class="muted">Visão semanal para tomada de decisão</span>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Semana</th>
+                  <th>Período</th>
+                  <th>Saldo Inicial</th>
+                  <th>Entradas</th>
+                  <th>Saídas</th>
+                  <th>Resultado</th>
+                  <th>Saldo Final</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody id="tabelaPlanejamento">
+                <tr>
+                  <td colspan="8" class="muted">Nenhum planejamento carregado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- DRE -->
+      <section id="tab-dre" class="tab-section">
+        <div class="page-head">
+          <h2>DRE</h2>
+          <p>Módulo em construção.</p>
+        </div>
+
+        <div class="panel empty-state">Em breve.</div>
+      </section>
+
+      <!-- IMPORTAR DADOS -->
+      
+<section id="tab-inserir-dados" class="tab-section">
+
+  <div class="page-head">
+    <h2>Inserir Dados</h2>
+    <p>Central de importação de gastos, metas por percentual e faturamento mensal.</p>
+  </div>
+
+  <div class="input-tabs">
+    <button class="input-tab active" type="button" onclick="inserirDadosUI('import')">
+      Contas Pagas
+    </button>
+
+    <button class="input-tab" type="button" onclick="inserirDadosUI('metas')">
+      Metas
+    </button>
+
+    <button class="input-tab" type="button" onclick="inserirDadosUI('faturamento')">
+      Faturamento
+    </button>
+  </div>
+
+  <!-- CONTAS PAGAS / IMPORTAÇÃO -->
+  <div class="input-section" data-section="import">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Importar Contas Pagas</h3>
+        <span class="muted">A planilha precisa ter pelo menos as colunas Categoria e Valor.</span>
       </div>
 
-      <div class="panel">
-        <h3>Evolução Anual</h3>
-        <div class="chart-box">
-          <canvas id="chartEvolucao"></canvas>
+      <section class="cards-grid">
+        <div class="card">
+          <span>Destino</span>
+          <strong>Tabela gastos</strong>
+        </div>
+
+        <div class="card">
+          <span>Formato</span>
+          <strong>Excel / CSV</strong>
+        </div>
+
+        <div class="card">
+          <span>Campos mínimos</span>
+          <strong>Categoria + Valor</strong>
+        </div>
+      </section>
+
+      <div class="form-grid">
+        <div>
+          <label>Mês</label>
+          <select id="importMes">
+            <option>Janeiro</option>
+            <option>Fevereiro</option>
+            <option>Março</option>
+            <option>Abril</option>
+            <option>Maio</option>
+            <option>Junho</option>
+            <option>Julho</option>
+            <option>Agosto</option>
+            <option>Setembro</option>
+            <option>Outubro</option>
+            <option>Novembro</option>
+            <option>Dezembro</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Ano</label>
+          <input id="importAno" type="number" value="2026" />
+        </div>
+
+        <div>
+          <label>Planilha</label>
+          <input id="importArquivo" type="file" accept=".xlsx,.xls,.csv" />
         </div>
       </div>
 
-    </section>
+      <div class="actions-row">
+        <button type="button" onclick="inserirDadosModule.importarContasPagas()">
+          Importar planilha
+        </button>
+      </div>
+    </div>
+  </div>
 
-    <!-- CONTAS A PAGAR -->
-    <section id="tab-contas-pagar" class="tab-section">
-      <h2>Contas a Pagar</h2>
-      <div id="contasPagarContainer"></div>
-    </section>
+  <!-- METAS -->
+  <div class="input-section" data-section="metas" style="display:none;">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Metas por Categoria</h3>
+        <span class="muted">Defina o percentual máximo do faturamento para cada categoria.</span>
+      </div>
 
-    <!-- CONTAS PAGAS -->
-    <section id="tab-contas-pagas" class="tab-section">
-      <h2>Contas Pagas</h2>
-      <div id="contasPagasContainer"></div>
-    </section>
+      <section class="cards-grid">
+        <div class="card">
+          <span>Exemplo</span>
+          <strong>MC = 25%</strong>
+        </div>
 
-    <!-- CONTAS A RECEBER -->
-    <section id="tab-contas-receber" class="tab-section">
-      <h2>Contas a Receber</h2>
-      <div id="contasReceberContainer"></div>
-    </section>
+        <div class="card">
+          <span>Exemplo</span>
+          <strong>DESP = 12%</strong>
+        </div>
 
-    <!-- PLANEJAMENTO -->
-    <section id="tab-planejamento" class="tab-section">
-      <h2>Planejamento</h2>
-      <div id="planejamentoContainer"></div>
-    </section>
+        <div class="card">
+          <span>Uso</span>
+          <strong>Meta x Real</strong>
+        </div>
+      </section>
 
-    <!-- INSERIR DADOS -->
-    <section id="tab-inserir-dados" class="tab-section">
-      <h2>Inserir Dados</h2>
-      <div id="inserirDadosContainer"></div>
-    </section>
+      <div class="form-grid">
+        <div>
+          <label>Mês</label>
+          <select id="metaMes">
+            <option>Janeiro</option>
+            <option>Fevereiro</option>
+            <option>Março</option>
+            <option>Abril</option>
+            <option>Maio</option>
+            <option>Junho</option>
+            <option>Julho</option>
+            <option>Agosto</option>
+            <option>Setembro</option>
+            <option>Outubro</option>
+            <option>Novembro</option>
+            <option>Dezembro</option>
+          </select>
+        </div>
 
-  </main>
+        <div>
+          <label>Ano</label>
+          <input id="metaAno" type="number" value="2026" />
+        </div>
 
-  <!-- JS -->
-  <script src="js/api.js"></script>
-  <script src="js/app.js"></script>
+        <div>
+          <label>Categoria</label>
+          <input id="metaCategoria" type="text" placeholder="Ex: MC, DESP, FRETE" />
+        </div>
+
+        <div>
+          <label>% do faturamento</label>
+          <input id="metaPercentual" type="number" placeholder="Ex: 25" />
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" onclick="inserirDadosModule.salvarMetaPercentual()">
+          Salvar meta
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Ano</th>
+              <th>Categoria</th>
+              <th>% Meta</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaMetasMensais">
+            <tr>
+              <td colspan="5" class="muted">Nenhuma meta cadastrada.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- FATURAMENTO -->
+  <div class="input-section" data-section="faturamento" style="display:none;">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Faturamento Mensal</h3>
+        <span class="muted">Informe o faturamento total, o faturado e o valor a faturar.</span>
+      </div>
+
+      <section class="cards-grid">
+        <div class="card">
+          <span>Total</span>
+          <strong>Faturamento</strong>
+        </div>
+
+        <div class="card">
+          <span>Realizado</span>
+          <strong>Faturado</strong>
+        </div>
+
+        <div class="card">
+          <span>Pendente</span>
+          <strong>A faturar</strong>
+        </div>
+      </section>
+
+      <div class="form-grid">
+        <div>
+          <label>Mês</label>
+          <select id="fatMes">
+            <option>Janeiro</option>
+            <option>Fevereiro</option>
+            <option>Março</option>
+            <option>Abril</option>
+            <option>Maio</option>
+            <option>Junho</option>
+            <option>Julho</option>
+            <option>Agosto</option>
+            <option>Setembro</option>
+            <option>Outubro</option>
+            <option>Novembro</option>
+            <option>Dezembro</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Ano</label>
+          <input id="fatAno" type="number" value="2026" />
+        </div>
+
+        <div>
+          <label>Faturamento total</label>
+          <input id="fatValor" type="text" placeholder="R$ 0,00" />
+        </div>
+
+        <div>
+          <label>Faturado</label>
+          <input id="fatFaturado" type="text" placeholder="R$ 0,00" />
+        </div>
+
+        <div>
+          <label>A faturar</label>
+          <input id="fatAFaturar" type="text" placeholder="R$ 0,00" />
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" onclick="inserirDadosModule.salvarFaturamento()">
+          Salvar faturamento
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Ano</th>
+              <th>Faturamento Total</th>
+              <th>Faturado</th>
+              <th>A Faturar</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaFaturamentoMensal">
+            <tr>
+              <td colspan="6" class="muted">Nenhum faturamento cadastrado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
+      
+    </main>
+  </div>
+
+  <script src="js/api/supabase.js"></script>
 
   <script src="js/modules/dashboard.js"></script>
   <script src="js/modules/contas-pagar.js"></script>
@@ -147,5 +862,6 @@
   <script src="js/modules/planejamento.js"></script>
   <script src="js/modules/inserir-dados.js"></script>
 
+  <script src="js/app.js"></script>
 </body>
 </html>
