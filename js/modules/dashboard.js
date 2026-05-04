@@ -226,72 +226,78 @@ window.dashboardModule = {
     });
   },
 
-  graficoEvolucao(ano) {
-    const ctx = this.get("chartEvolucao");
-    if (!ctx || typeof Chart === "undefined") return;
+graficoEvolucao(ano) {
+  const ctx = this.get("chartEvolucao");
+  if (!ctx || typeof Chart === "undefined") return;
 
-    const mesesNome = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
+  const mesesNome = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ];
 
-    const mesesCurto = [
-      "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-      "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-    ];
+  const mesesCurto = [
+    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+  ];
 
-    const faturamentoArr = [];
-    const gastosArr = [];
-    const lucroArr = [];
+  const faturamentoArr = [];
+  const gastosArr = [];
+  const lucroArr = [];
 
-    mesesNome.forEach((mes) => {
-      const gastosMes = this.gastos.filter((item) => this.mesmoMesAno(item, mes, ano));
-      const mesesMes = this.meses.filter((item) => this.mesmoMesAno(item, mes, ano));
+  mesesNome.forEach((mes) => {
+    const gastosMes = this.gastos.filter((item) => this.mesmoMesAno(item, mes, ano));
+    const mesesMes = this.meses.filter((item) => this.mesmoMesAno(item, mes, ano));
 
-      const gastos = gastosMes.reduce((acc, item) => acc + this.numero(item.valor), 0);
-      const faturamento = mesesMes.reduce((acc, item) => acc + this.numero(item.faturamento), 0);
+    const gastos = gastosMes.reduce((acc, item) => acc + this.numero(item.valor), 0);
+    const faturamento = mesesMes.reduce((acc, item) => acc + this.numero(item.faturamento), 0);
 
-      faturamentoArr.push(faturamento);
-      gastosArr.push(gastos);
-      lucroArr.push(faturamento - gastos);
-    });
+    faturamentoArr.push(faturamento);
+    gastosArr.push(gastos);
+    lucroArr.push(faturamento - gastos);
+  });
 
-    if (this.chartEvolucao) this.chartEvolucao.destroy();
+  if (this.chartEvolucao) this.chartEvolucao.destroy();
 
-    this.chartEvolucao = new Chart(ctx, {
-      data: {
-        labels: mesesCurto,
-        datasets: [
-          {
-            type: "bar",
-            label: "Faturamento",
-            data: faturamentoArr,
-            backgroundColor: "#16a34a"
-          },
-          {
-            type: "bar",
-            label: "Gastos",
-            data: gastosArr,
-            backgroundColor: "#dc2626"
-          },
-          {
-            type: "line",
-            label: "Lucro",
-            data: lucroArr,
-            borderColor: "#2563eb",
-            backgroundColor: "#2563eb",
-            borderWidth: 3,
-            tension: 0.35,
-            pointRadius: 4
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-  },
+  this.chartEvolucao = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: mesesCurto,
+      datasets: [
+        {
+          label: "Faturamento",
+          data: faturamentoArr,
+          borderColor: "#16a34a",
+          backgroundColor: "#16a34a",
+          borderWidth: 3,
+          tension: 0.35,
+          pointRadius: 4
+        },
+        {
+          label: "Gastos",
+          data: gastosArr,
+          borderColor: "#dc2626",
+          backgroundColor: "#dc2626",
+          borderWidth: 3,
+          tension: 0.35,
+          pointRadius: 4
+        },
+        {
+          label: "Lucro",
+          data: lucroArr,
+          borderColor: "#2563eb",
+          backgroundColor: "#2563eb",
+          borderWidth: 3,
+          tension: 0.35,
+          pointRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  });
+}
 
   tabelaCategorias(gastos) {
     const tbody = this.get("tabelaTopCategorias");
