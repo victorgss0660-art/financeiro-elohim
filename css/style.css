@@ -1478,3 +1478,112 @@ main {
     grid-template-columns: 1fr;
   }
 }
+/* ===== INPUT TABS ===== */
+
+.input-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.input-tab {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-weight: 800;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.input-tab:hover {
+  background: #f1f5f9;
+}
+
+.input-tab.active {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+/* ===== INPUT SECTION ===== */
+
+.input-section {
+  margin-top: 10px;
+}
+
+/* ===== FORM GRID ===== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 15px;
+}
+
+.form-grid label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.form-grid input,
+.form-grid select {
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 0 10px;
+  font-weight: 600;
+}
+
+/* ===== BUTTONS ===== */
+
+.actions-row {
+  margin-top: 10px;
+}
+
+.actions-row button {
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.actions-row button:hover {
+  background: #1f2937;
+}
+
+/* ===== TABELAS ===== */
+
+.table-wrap {
+  margin-top: 15px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.table-wrap table {
+  width: 100%;
+}
+
+.table-wrap th {
+  background: #f9fafb;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 10px;
+}
+
+.table-wrap td {
+  padding: 10px;
+  font-weight: 600;
+}
+
+.table-wrap tr:hover {
+  background: #f1f5f9;
+}
