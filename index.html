@@ -639,10 +639,16 @@
       <!-- IMPORTAR DADOS -->
       
 <section id="tab-inserir-dados" class="tab-section">
-  <div class="page-head">
-    <h2>Inserir Dados</h2>
-    <p>Central de lançamento de contas pagas, metas mensais e faturamento.</p>
-  </div>
+<div class="page-head">
+  <h2>Inserir Dados</h2>
+  <p>Gestão de custos, metas e faturamento mensal</p>
+</div>
+
+<div class="input-tabs">
+  <button class="input-tab active" onclick="inserirDadosUI('import')">Contas Pagas</button>
+  <button class="input-tab" onclick="inserirDadosUI('metas')">Metas</button>
+  <button class="input-tab" onclick="inserirDadosUI('faturamento')">Faturamento</button>
+</div>
 
   <section class="cards-grid">
     <div class="card">
