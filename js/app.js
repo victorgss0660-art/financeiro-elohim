@@ -68,6 +68,10 @@ function carregarModulo(nomeAba) {
     if (nomeAba === "planejamento" && window.planejamentoModule?.carregar) {
       planejamentoModule.carregar();
     }
+    
+    if (nomeAba === "inserir-dados" && window.inserirDadosModule?.carregar) {
+      inserirDadosModule.carregar();
+    }
 
   } catch (e) {
     console.error("Erro ao carregar módulo:", nomeAba, e);
