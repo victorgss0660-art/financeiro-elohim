@@ -158,7 +158,7 @@ graficoMeta(gastos, metas, faturamento) {
       }
     }
   });
-}
+},
 
   graficoEvolucao() {
     const ctx = document.getElementById("chartEvolucao");
