@@ -1,54 +1,74 @@
-// ===== APP GLOBAL =====
-
 let abaAtual = "dashboard";
 
-// ===== INICIALIZAÇÃO =====
 document.addEventListener("DOMContentLoaded", () => {
-
-  const botoes = document.querySelectorAll(".menu button");
-
-  botoes.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const nomeAba = btn.dataset.tab;
-      abrirAba(nomeAba);
-    });
-  });
-
+  preencherFiltros();
+  configurarMenu();
   abrirAba("dashboard");
 });
 
+function preencherFiltros() {
+  const meses = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ];
 
-// ===== TROCA DE ABAS =====
+  const mesSelect = document.getElementById("mesSelect");
+  const anoSelect = document.getElementById("anoSelect");
+
+  if (mesSelect && mesSelect.options.length === 0) {
+    meses.forEach(mes => {
+      const option = document.createElement("option");
+      option.value = mes;
+      option.textContent = mes;
+      mesSelect.appendChild(option);
+    });
+
+    mesSelect.value = meses[new Date().getMonth()];
+  }
+
+  if (anoSelect && !anoSelect.value) {
+    anoSelect.value = new Date().getFullYear();
+  }
+}
+
+function configurarMenu() {
+  const botoes = document.querySelectorAll(".menu button");
+
+  botoes.forEach(botao => {
+    botao.addEventListener("click", () => {
+      const aba = botao.dataset.tab;
+      if (aba) abrirAba(aba);
+    });
+  });
+}
+
 function abrirAba(nomeAba) {
-
   abaAtual = nomeAba;
 
-  // esconder todas
-  document.querySelectorAll(".tab-section").forEach(sec => {
-    sec.classList.remove("active");
+  document.querySelectorAll(".tab-section").forEach(secao => {
+    secao.classList.remove("active");
+    secao.style.display = "none";
   });
 
-  // mostrar a correta
-  const ativa = document.getElementById(`tab-${nomeAba}`);
-  if (ativa) ativa.classList.add("active");
+  const secaoAtiva = document.getElementById(`tab-${nomeAba}`);
 
-  // botão ativo
-  document.querySelectorAll(".menu button").forEach(btn => {
-    btn.classList.remove("active");
+  if (secaoAtiva) {
+    secaoAtiva.classList.add("active");
+    secaoAtiva.style.display = "block";
+  }
+
+  document.querySelectorAll(".menu button").forEach(botao => {
+    botao.classList.remove("active");
   });
 
-  const btn = document.querySelector(`.menu button[data-tab="${nomeAba}"]`);
-  if (btn) btn.classList.add("active");
+  const botaoAtivo = document.querySelector(`.menu button[data-tab="${nomeAba}"]`);
+  if (botaoAtivo) botaoAtivo.classList.add("active");
 
   carregarModulo(nomeAba);
 }
 
-
-// ===== CARREGAMENTO DOS MÓDULOS =====
 function carregarModulo(nomeAba) {
-
   try {
-
     if (nomeAba === "dashboard" && window.dashboardModule?.carregar) {
       dashboardModule.carregar();
     }
@@ -68,37 +88,20 @@ function carregarModulo(nomeAba) {
     if (nomeAba === "planejamento" && window.planejamentoModule?.carregar) {
       planejamentoModule.carregar();
     }
-    
+
     if (nomeAba === "inserir-dados" && window.inserirDadosModule?.carregar) {
       inserirDadosModule.carregar();
     }
-
-  } catch (e) {
-    console.error("Erro ao carregar módulo:", nomeAba, e);
+  } catch (erro) {
+    console.error("Erro ao carregar módulo:", nomeAba, erro);
   }
 }
 
-
-// ===== RECARREGAR =====
 function recarregarAbaAtual() {
   carregarModulo(abaAtual);
 }
 
-function inserirDadosUI(tipo) {
-
-  document.querySelectorAll(".input-section").forEach(el => {
-    el.style.display = "none";
-  });
-
-  document.querySelectorAll(".input-tab").forEach(btn => {
-    btn.classList.remove("active");
-  });
-
-  document.querySelector(`[data-section="${tipo}"]`).style.display = "block";
-  event.target.classList.add("active");
-}
-
-// expõe global
 window.app = {
+  abrirAba,
   recarregarAbaAtual
 };
