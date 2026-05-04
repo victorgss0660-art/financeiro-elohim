@@ -297,7 +297,7 @@ graficoEvolucao(ano) {
       maintainAspectRatio: false
     }
   });
-}
+},
 
   tabelaCategorias(gastos) {
     const tbody = this.get("tabelaTopCategorias");
