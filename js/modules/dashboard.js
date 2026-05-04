@@ -1,132 +1,128 @@
-window.dashboardModule = {
-
-  contasPagar: [],
-  contasReceber: [],
+const dashboardModule = {
 
   async carregar() {
     try {
 
-      const pagar = await api.restGet("contas_pagar","select=*");
-      const receber = await api.restGet("contas_receber","select=*");
+      const gastos = await api.restGet("gastos", "select=*");
+      const meses = await api.restGet("meses", "select=*");
+      const metas = await api.restGet("metas", "select=*");
 
-      this.contasPagar = pagar || [];
-      this.contasReceber = receber || [];
-
-      this.renderKPIs();
-      this.renderInteligencia();
+      this.processar(gastos || [], meses || [], metas || []);
 
     } catch (e) {
-      console.error("Erro dashboard:", e);
+      console.error(e);
     }
   },
 
-  numero(v){
+  numero(v) {
     return parseFloat(v || 0) || 0;
   },
 
-  moeda(v){
+  moeda(v) {
     return v.toLocaleString("pt-BR", {
-      style:"currency",
-      currency:"BRL"
+      style: "currency",
+      currency: "BRL"
     });
   },
 
-  hoje(){
-    return new Date().toISOString().slice(0,10);
-  },
+  processar(gastos, meses, metas) {
 
-  // ===== BASE =====
-  contasAbertas(){
-    return this.contasPagar.filter(c => c.status !== "pago");
-  },
+    // ===== AGRUPAR GASTOS =====
+    const totalGastos = gastos.reduce((t, g) => t + this.numero(g.valor), 0);
 
-  receberAberto(){
-    return this.contasReceber.filter(c => c.status !== "recebido");
-  },
+    // ===== FATURAMENTO =====
+    const totalFaturamento = meses.reduce((t, m) => t + this.numero(m.faturamento), 0);
 
-  soma(lista){
-    return lista.reduce((t,c)=>t+this.numero(c.valor),0);
-  },
+    // ===== LUCRO =====
+    const lucro = totalFaturamento - totalGastos;
 
-  // ===== KPI =====
-  renderKPIs(){
+    // ===== METAS =====
+    const metaTotalPercent = metas.reduce((t, m) => t + this.numero(m.percentual_meta), 0);
 
-    const pagar = this.contasAbertas();
-    const receber = this.receberAberto();
+    const gastoIdeal = (totalFaturamento * metaTotalPercent) / 100;
 
-    const totalPagar = this.soma(pagar);
-    const totalReceber = this.soma(receber);
-
-    const saldo = totalReceber - totalPagar;
-
-    this.set("dashCEOReceberAberto", this.moeda(totalReceber));
-    this.set("dashCEOPagarAberto", this.moeda(totalPagar));
-    this.set("dashCEOSaldoProjetado", this.moeda(saldo));
-
-  },
-
-  // ===== INTELIGÊNCIA =====
-  renderInteligencia(){
-
-    const pagar = this.contasAbertas();
-    const receber = this.receberAberto();
-
-    const totalPagar = this.soma(pagar);
-    const totalReceber = this.soma(receber);
-
-    const saldo = totalReceber - totalPagar;
-
-    const hoje = new Date();
-
-    // ===== FLUXO MÉDIO =====
-    const saidaMensal = totalPagar / 3; // aproximação
-    const entradaMensal = totalReceber / 3;
-
-    const fluxoMensal = entradaMensal - saidaMensal;
-
-    // ===== DIAS DE CAIXA =====
-    let diasCaixa = 999;
-
-    if (saidaMensal > 0) {
-      diasCaixa = (saldo / saidaMensal) * 30;
-    }
+    const estouro = totalGastos - gastoIdeal;
 
     // ===== STATUS =====
     let status = "SAUDÁVEL";
-    let detalhe = "Situação financeira controlada";
+    let detalhe = "Operação dentro da meta";
 
-    if (saldo < 0) {
+    if (estouro > 0) {
       status = "CRÍTICO";
-      detalhe = "Você irá ficar sem caixa com os compromissos atuais";
+      detalhe = "Gastos acima da meta definida";
     }
-    else if (diasCaixa < 30) {
-      status = "ATENÇÃO";
-      detalhe = "Caixa cobre menos de 30 dias";
-    }
-    else if (diasCaixa < 60) {
-      status = "MODERADO";
-      detalhe = "Situação exige monitoramento";
+
+    if (lucro < 0) {
+      status = "CRÍTICO";
+      detalhe = "Operação com prejuízo";
     }
 
     // ===== OUTPUT =====
+    this.set("dashCEOReceberAberto", this.moeda(totalFaturamento));
+    this.set("dashCEOPagarAberto", this.moeda(totalGastos));
+    this.set("dashCEOSaldoProjetado", this.moeda(lucro));
+
     this.set("dashCEOStatus", status);
     this.set("dashCEOStatusDetalhe", detalhe);
 
-    this.set("dashCEODiasCaixa", Math.floor(diasCaixa) + " dias");
-    this.set("dashCEOFluxoMensal", this.moeda(fluxoMensal));
+    this.set("dashCEOLucroMes", this.moeda(lucro));
+    this.set("dashCEOFluxoMensal", this.moeda(lucro));
+
+    this.set("dashCEODiasCaixa", "—");
 
     const el = document.getElementById("dashCEOStatus");
     if (el) {
       el.className =
-        status === "CRÍTICO" ? "status-critico" :
-        status === "ATENÇÃO" ? "status-alerta" :
-        "status-ok";
+        status === "CRÍTICO" ? "status-critico" : "status-ok";
     }
+
+    // ===== GRÁFICO CATEGORIA =====
+    this.graficoCategorias(gastos);
+
+    // ===== GRÁFICO REAL vs META =====
+    this.graficoMeta(totalGastos, gastoIdeal);
+
   },
 
-  set(id,val){
+  graficoCategorias(gastos) {
+
+    const mapa = {};
+
+    gastos.forEach(g => {
+      const cat = g.categoria || "Outros";
+      mapa[cat] = (mapa[cat] || 0) + this.numero(g.valor);
+    });
+
+    const labels = Object.keys(mapa);
+    const valores = Object.values(mapa);
+
+    new Chart(document.getElementById("chartCEOCategorias"), {
+      type: "doughnut",
+      data: {
+        labels,
+        datasets: [{ data: valores }]
+      }
+    });
+  },
+
+  graficoMeta(real, meta) {
+
+    new Chart(document.getElementById("chartCEOFluxo"), {
+      type: "bar",
+      data: {
+        labels: ["Real", "Meta"],
+        datasets: [{
+          data: [real, meta]
+        }]
+      }
+    });
+  },
+
+  set(id, val) {
     const el = document.getElementById(id);
-    if(el) el.textContent = val;
+    if (el) el.textContent = val;
   }
 
 };
+
+window.dashboardModule = dashboardModule;
