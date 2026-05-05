@@ -10,22 +10,33 @@ window.inserirDadosModule = {
     return this.get(id)?.value || "";
   },
 
-  numero(valor) {
-    if (typeof valor === "number") return valor;
-    if (!valor) return 0;
+numero(valor) {
 
-    let txt = String(valor).trim();
-    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
+  if (typeof valor === "number") return valor;
+  if (!valor) return 0;
 
-    if (txt.includes(",") && txt.includes(".")) {
-      txt = txt.replace(/\./g, "").replace(",", ".");
-    } else if (txt.includes(",")) {
-      txt = txt.replace(",", ".");
-    }
+  let txt = String(valor).trim();
 
-    const n = parseFloat(txt);
-    return isNaN(n) ? 0 : n;
-  },
+  // remove R$, espaços e lixo
+  txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
+
+  // caso tenha ponto e vírgula → padrão BR
+  if (txt.includes(".") && txt.includes(",")) {
+    txt = txt.replace(/\./g, "").replace(",", ".");
+  }
+
+  // caso só tenha vírgula → padrão BR
+  else if (txt.includes(",")) {
+    txt = txt.replace(",", ".");
+  }
+
+  // remove qualquer coisa inválida restante
+  txt = txt.replace(/[^\d.-]/g, "");
+
+  const n = parseFloat(txt);
+
+  return isNaN(n) ? 0 : n;
+}
 
   moeda(valor) {
     return new Intl.NumberFormat("pt-BR", {
