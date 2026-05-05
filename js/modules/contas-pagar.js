@@ -2,6 +2,7 @@ window.contasPagarModule = {
   dados: [],
   filtrados: [],
   selecionados: new Set(),
+  editandoId: null,
 
   inputs: {
     nfe: false,
@@ -42,10 +43,8 @@ window.contasPagarModule = {
 
   dataBR(data) {
     if (!data) return "-";
-
     const d = new Date(String(data) + "T00:00:00");
     if (isNaN(d.getTime())) return data;
-
     return d.toLocaleDateString("pt-BR");
   },
 
@@ -58,7 +57,6 @@ window.contasPagarModule = {
 
       this.dados = Array.isArray(dados) ? dados : [];
       this.filtrados = [...this.dados];
-
       this.renderizar();
     } catch (erro) {
       console.error("Erro ao carregar contas a pagar:", erro);
@@ -67,31 +65,28 @@ window.contasPagarModule = {
   },
 
   toggleInput(tipo) {
-    if (!this.inputs) {
-      this.inputs = { nfe: false, boleto: false };
+    this.inputs[tipo] = !this.inputs[tipo];
+    this.atualizarToggleUI();
+  },
+
+  atualizarToggleUI() {
+    const btnNfe = this.get("btnNfe");
+    const btnBoleto = this.get("btnBoleto");
+
+    if (btnNfe) {
+      btnNfe.classList.toggle("ativo", this.inputs.nfe);
+      btnNfe.classList.toggle("active", this.inputs.nfe);
+
+      const txt = btnNfe.querySelector(".toggle-text");
+      if (txt) txt.textContent = this.inputs.nfe ? "NFE recebida" : "Não recebida";
     }
 
-    this.inputs[tipo] = !this.inputs[tipo];
+    if (btnBoleto) {
+      btnBoleto.classList.toggle("ativo", this.inputs.boleto);
+      btnBoleto.classList.toggle("active", this.inputs.boleto);
 
-    const btn = this.get(tipo === "nfe" ? "btnNfe" : "btnBoleto");
-    if (!btn) return;
-
-    const texto = btn.querySelector(".toggle-text");
-
-    if (this.inputs[tipo]) {
-      btn.classList.add("ativo");
-      btn.classList.add("active");
-
-      if (texto) {
-        texto.textContent = tipo === "nfe" ? "NFE recebida" : "Boleto recebido";
-      }
-    } else {
-      btn.classList.remove("ativo");
-      btn.classList.remove("active");
-
-      if (texto) {
-        texto.textContent = tipo === "nfe" ? "Não recebida" : "Não recebido";
-      }
+      const txt = btnBoleto.querySelector(".toggle-text");
+      if (txt) txt.textContent = this.inputs.boleto ? "Boleto recebido" : "Não recebido";
     }
   },
 
@@ -101,22 +96,7 @@ window.contasPagarModule = {
       boleto: false
     };
 
-    const btnNfe = this.get("btnNfe");
-    const btnBoleto = this.get("btnBoleto");
-
-    if (btnNfe) {
-      btnNfe.classList.remove("ativo");
-      btnNfe.classList.remove("active");
-      const txt = btnNfe.querySelector(".toggle-text");
-      if (txt) txt.textContent = "Não recebida";
-    }
-
-    if (btnBoleto) {
-      btnBoleto.classList.remove("ativo");
-      btnBoleto.classList.remove("active");
-      const txt = btnBoleto.querySelector(".toggle-text");
-      if (txt) txt.textContent = "Não recebido";
-    }
+    this.atualizarToggleUI();
   },
 
   async salvar() {
@@ -128,8 +108,8 @@ window.contasPagarModule = {
         vencimento: this.valor("cpVencimento"),
         categoria: this.valor("cpCategoria").trim().toUpperCase(),
         descricao: this.valor("cpDescricao").trim(),
-        tem_nfe: this.inputs?.nfe || false,
-        tem_boleto: this.inputs?.boleto || false,
+        tem_nfe: this.inputs.nfe,
+        tem_boleto: this.inputs.boleto,
         status: "pendente"
       };
 
@@ -138,12 +118,17 @@ window.contasPagarModule = {
         return;
       }
 
-      await api.insert("contas_pagar", payload);
+      if (this.editandoId) {
+        await api.update("contas_pagar", this.editandoId, payload);
+        this.editandoId = null;
+        alert("Conta atualizada com sucesso.");
+      } else {
+        await api.insert("contas_pagar", payload);
+        alert("Conta lançada com sucesso.");
+      }
 
       this.limparFormulario();
       await this.carregar();
-
-      alert("Conta lançada com sucesso.");
     } catch (erro) {
       console.error("Erro ao salvar conta:", erro);
       alert("Erro ao salvar conta.");
@@ -163,7 +148,34 @@ window.contasPagarModule = {
       if (el) el.value = "";
     });
 
+    this.editandoId = null;
     this.resetToggles();
+
+    const btnSalvar = document.querySelector("#tab-contas-pagar .actions-row button");
+    if (btnSalvar) btnSalvar.textContent = "Salvar conta";
+  },
+
+  editar(id) {
+    const item = this.dados.find(c => Number(c.id) === Number(id));
+    if (!item) return;
+
+    this.editandoId = Number(item.id);
+
+    this.get("cpFornecedor").value = item.fornecedor || "";
+    this.get("cpDocumento").value = item.documento || "";
+    this.get("cpValor").value = item.valor || "";
+    this.get("cpVencimento").value = item.vencimento || "";
+    this.get("cpCategoria").value = item.categoria || "";
+    this.get("cpDescricao").value = item.descricao || "";
+
+    this.inputs.nfe = !!item.tem_nfe;
+    this.inputs.boleto = !!item.tem_boleto;
+    this.atualizarToggleUI();
+
+    const btnSalvar = document.querySelector("#tab-contas-pagar .actions-row button");
+    if (btnSalvar) btnSalvar.textContent = "Atualizar conta";
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   },
 
   aplicarFiltros() {
@@ -260,6 +272,8 @@ window.contasPagarModule = {
         data_pagamento: new Date().toISOString().slice(0, 10)
       });
 
+      this.selecionados.delete(Number(id));
+
       await this.carregar();
 
       if (window.contasPagasModule?.carregar) {
@@ -354,10 +368,6 @@ window.contasPagarModule = {
       console.error("Erro ao excluir conta:", erro);
       alert("Erro ao excluir conta.");
     }
-  },
-
-  editar(id) {
-    alert("Edição completa será configurada no próximo passo.");
   },
 
   async duplicar(id) {
@@ -470,14 +480,9 @@ window.contasPagarModule = {
       0
     );
 
-    const qtd = this.get("cpQtd");
-    const totalEl = this.get("cpTotal");
-    const sel = this.get("cpSelecionadas");
-    const totalSel = this.get("cpTotalSelecionado");
-
-    if (qtd) qtd.textContent = this.filtrados.length;
-    if (totalEl) totalEl.textContent = this.moeda(total);
-    if (sel) sel.textContent = selecionadas.length;
-    if (totalSel) totalSel.textContent = this.moeda(totalSelecionado);
+    if (this.get("cpQtd")) this.get("cpQtd").textContent = this.filtrados.length;
+    if (this.get("cpTotal")) this.get("cpTotal").textContent = this.moeda(total);
+    if (this.get("cpSelecionadas")) this.get("cpSelecionadas").textContent = selecionadas.length;
+    if (this.get("cpTotalSelecionado")) this.get("cpTotalSelecionado").textContent = this.moeda(totalSelecionado);
   }
 };
