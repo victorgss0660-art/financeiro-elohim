@@ -252,48 +252,5 @@ window.inserirDadosModule = {
     }
   }
 };
-function initInserirDadosTabs() {
-
-  const botoes = document.querySelectorAll(".input-tab");
-  const secoes = document.querySelectorAll(".input-section");
-
-  if (!botoes.length || !secoes.length) return;
-
-  function ativarTab(tipo) {
-
-    // esconder tudo
-    secoes.forEach(sec => {
-      sec.style.display = "none";
-    });
-
-    // remover ativo
-    botoes.forEach(btn => {
-      btn.classList.remove("active");
-    });
-
-    // ativar seção correta
-    const alvo = document.querySelector(`.input-section[data-section="${tipo}"]`);
-    if (alvo) {
-      alvo.style.display = "block";
-    }
-
-    // ativar botão correto
-    const botao = document.querySelector(`.input-tab[data-tab="${tipo}"]`);
-    if (botao) {
-      botao.classList.add("active");
-    }
-  }
-
-  // bind dos botões
-  botoes.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const tipo = btn.dataset.tab;
-      ativarTab(tipo);
-    });
-  });
-
-  // inicial
-  ativarTab("import");
-}
 
 window.carregarInserirDados = () => inserirDadosModule.carregar();
