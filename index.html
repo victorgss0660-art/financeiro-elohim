@@ -12,7 +12,24 @@
 </head>
 
 <body>
-  <div class="app">
+  
+  <div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <img src="https://raw.githubusercontent.com/victorgss0660-art/financeiro-elohim/main/logo-elohim.png" class="login-logo">
+
+    <h2>Acesso Financeiro</h2>
+    <p>Entre com seu e-mail e senha para continuar.</p>
+
+    <input id="loginEmail" type="email" placeholder="E-mail">
+    <input id="loginSenha" type="password" placeholder="Senha">
+
+    <button onclick="authModule.login()">Entrar</button>
+
+    <span id="loginErro"></span>
+  </div>
+</div>
+  
+  <div class="app"> id="appSistema" style="display:none;"
 
     <aside class="sidebar">
       <div class="brand">
