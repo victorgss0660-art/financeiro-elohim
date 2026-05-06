@@ -11,26 +11,62 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
   
-  <div id="loginScreen" class="login-screen">
-  <div class="login-card">
-    <img src="https://raw.githubusercontent.com/victorgss0660-art/financeiro-elohim/main/logo-elohim.png" class="login-logo">
-
-    <h2>Acesso Financeiro</h2>
-    <p>Entre com seu e-mail e senha para continuar.</p>
-
-    <input id="loginEmail" type="email" placeholder="E-mail">
-    <input id="loginSenha" type="password" placeholder="Senha">
-
-    <button onclick="authModule.login()">Entrar</button>
-
-    <span id="loginErro"></span>
-  </div>
-</div>
-  
 <body>
-  
-  <div class="app"> id="appSistema" style="display:none;"
 
+  <!-- LOGIN -->
+  <div id="loginScreen" class="login-screen">
+
+    <div class="login-card">
+
+      <img
+        src="https://raw.githubusercontent.com/victorgss0660-art/financeiro-elohim/main/logo-elohim.png"
+        class="login-logo"
+      />
+
+      <h1>Acesso Financeiro</h1>
+
+      <p>
+        Entre com seu e-mail e senha para continuar.
+      </p>
+
+      <input
+        id="loginEmail"
+        type="email"
+        placeholder="E-mail"
+      />
+
+      <input
+        id="loginSenha"
+        type="password"
+        placeholder="Senha"
+      />
+
+      <button onclick="authModule.login()">
+        Entrar
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- SISTEMA -->
+  <div id="appSistema" style="display:none;">
+
+    <!-- TODO O SEU APP AQUI -->
+    
+    <div class="app">
+
+      <!-- SIDEBAR -->
+      <!-- MAIN -->
+      <!-- DASHBOARD -->
+      <!-- RESTANTE DO SISTEMA -->
+
+    </div>
+
+  </div>
+
+</body>
+  
     <aside class="sidebar">
       <div class="brand">
         <img
