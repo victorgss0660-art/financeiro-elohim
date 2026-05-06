@@ -1,128 +1,135 @@
 window.authModule = {
-  usuario: null,
-  permissoes: null,
 
-  get(id) {
-    return document.getElementById(id);
-  },
+  usuario: null,
 
   async iniciar() {
-    const { data } = await supabase.auth.getSession();
 
-    if (data.session?.user) {
-      this.usuario = data.session.user;
-      await this.carregarPermissoes();
-      this.mostrarSistema();
-    } else {
-      this.mostrarLogin();
+    const usuarioLogado =
+      localStorage.getItem("financeiro_user");
+
+    if (usuarioLogado) {
+
+      this.usuario =
+        JSON.parse(usuarioLogado);
+
+      this.abrirSistema();
+
+      return;
     }
-  },
 
-  async login() {
-    try {
-      const email = this.get("loginEmail").value.trim();
-      const senha = this.get("loginSenha").value;
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password: senha
-      });
-
-      if (error) {
-        this.get("loginErro").textContent = "E-mail ou senha inválidos.";
-        return;
-      }
-
-      this.usuario = data.user;
-
-      await this.carregarPermissoes();
-
-      if (!this.permissoes || !this.permissoes.ativo) {
-        await supabase.auth.signOut();
-        this.get("loginErro").textContent = "Usuário sem permissão de acesso.";
-        return;
-      }
-
-      this.mostrarSistema();
-
-    } catch (erro) {
-      console.error(erro);
-      this.get("loginErro").textContent = "Erro ao fazer login.";
-    }
-  },
-
-  async carregarPermissoes() {
-    const email = this.usuario.email;
-
-    const dados = await api.restGet(
-      "usuarios_permissoes",
-      `select=*&email=eq.${encodeURIComponent(email)}`
-    );
-
-    this.permissoes = Array.isArray(dados) ? dados[0] : null;
+    this.mostrarLogin();
   },
 
   mostrarLogin() {
-    this.get("loginScreen").style.display = "flex";
-    this.get("appSistema").style.display = "none";
+
+    document.getElementById("loginScreen").style.display = "flex";
+
+    document.getElementById("appSistema").style.display = "none";
   },
 
-  mostrarSistema() {
-    this.get("loginScreen").style.display = "none";
-    this.get("appSistema").style.display = "flex";
+  abrirSistema() {
 
-    this.aplicarPermissoes();
+    document.getElementById("loginScreen").style.display = "none";
+
+    document.getElementById("appSistema").style.display = "block";
 
     if (window.app?.iniciar) {
       app.iniciar();
     }
   },
 
-  aplicarPermissoes() {
-    const mapa = {
-      dashboard: "dashboard",
-      "contas-pagar": "contas_pagar",
-      "contas-pagas": "contas_pagas",
-      "contas-receber": "contas_receber",
-      planejamento: "planejamento",
-      "inserir-dados": "inserir_dados"
-    };
+  async login() {
 
-    document.querySelectorAll(".menu button").forEach(btn => {
-      const aba = btn.dataset.tab;
-      const campo = mapa[aba];
+    try {
 
-      if (!campo || !this.permissoes[campo]) {
-        btn.style.display = "none";
-      } else {
-        btn.style.display = "block";
+      const email =
+        document.getElementById("loginEmail").value.trim();
+
+      const senha =
+        document.getElementById("loginSenha").value.trim();
+
+      if (!email || !senha) {
+
+        alert("Preencha e-mail e senha.");
+
+        return;
       }
-    });
 
-    const primeiraAba = document.querySelector(".menu button[style='display: block;']");
+      const usuarios =
+        await api.restGet(
+          "usuarios_permissoes",
+          `select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}`
+        );
 
-    if (primeiraAba) {
-      abrirAba(primeiraAba.dataset.tab);
+      if (!usuarios.length) {
+
+        alert("Usuário ou senha inválidos.");
+
+        return;
+      }
+
+      this.usuario = usuarios[0];
+
+      localStorage.setItem(
+        "financeiro_user",
+        JSON.stringify(this.usuario)
+      );
+
+      this.aplicarPermissoes();
+
+      this.abrirSistema();
+
+    } catch (erro) {
+
+      console.error(erro);
+
+      alert("Erro ao realizar login.");
     }
   },
 
-  podeAcessar(nomeAba) {
-    const mapa = {
-      dashboard: "dashboard",
-      "contas-pagar": "contas_pagar",
-      "contas-pagas": "contas_pagas",
-      "contas-receber": "contas_receber",
-      planejamento: "planejamento",
-      "inserir-dados": "inserir_dados"
-    };
+  logout() {
 
-    const campo = mapa[nomeAba];
+    localStorage.removeItem("financeiro_user");
 
-    return campo && this.permissoes?.[campo];
+    location.reload();
   },
 
-  async logout() {
-    await supabase.auth.signOut();
-    location.reload();
+  aplicarPermissoes() {
+
+    const permissoes =
+      this.usuario.permissoes || [];
+
+    document
+      .querySelectorAll(".menu button")
+      .forEach(btn => {
+
+        const aba =
+          btn.dataset.tab;
+
+        if (
+          permissoes.includes("*") ||
+          permissoes.includes(aba)
+        ) {
+
+          btn.style.display = "flex";
+
+        } else {
+
+          btn.style.display = "none";
+        }
+      });
+  },
+
+  podeAcessar(aba) {
+
+    if (!this.usuario) return false;
+
+    const permissoes =
+      this.usuario.permissoes || [];
+
+    return (
+      permissoes.includes("*") ||
+      permissoes.includes(aba)
+    );
   }
 };
