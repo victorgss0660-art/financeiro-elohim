@@ -253,4 +253,28 @@ window.inserirDadosModule = {
   }
 };
 
+window.inserirDadosUI = function(tipo, botaoClicado) {
+  document.querySelectorAll("#tab-inserir-dados .input-section").forEach(secao => {
+    secao.style.display = "none";
+  });
+
+  document.querySelectorAll("#tab-inserir-dados .input-tab").forEach(botao => {
+    botao.classList.remove("active");
+  });
+
+  const secaoAtiva = document.querySelector(
+    `#tab-inserir-dados .input-section[data-section="${tipo}"]`
+  );
+
+  if (secaoAtiva) {
+    secaoAtiva.style.display = "block";
+  } else {
+    console.error("Seção interna não encontrada:", tipo);
+  }
+
+  if (botaoClicado) {
+    botaoClicado.classList.add("active");
+  }
+};
+
 window.carregarInserirDados = () => inserirDadosModule.carregar();
