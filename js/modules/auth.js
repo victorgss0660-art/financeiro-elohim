@@ -38,55 +38,74 @@ window.authModule = {
     }
   },
 
-  async login() {
+ async login() {
 
-    try {
+  try {
 
-      const email =
-        document.getElementById("loginEmail").value.trim();
+    const email =
+      document.getElementById("loginEmail")
+      ?.value
+      ?.trim()
+      ?.toLowerCase();
 
-      const senha =
-        document.getElementById("loginSenha").value.trim();
+    const senha =
+      document.getElementById("loginSenha")
+      ?.value
+      ?.trim();
 
-      if (!email || !senha) {
+    if (!email || !senha) {
 
-        alert("Preencha e-mail e senha.");
+      alert("Preencha e-mail e senha.");
 
-        return;
-      }
+      return;
+    }
 
-      const usuarios =
-        await api.restGet(
-          "usuarios_permissoes",
-          `select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}`
-        );
+    console.log("Tentando login:", email);
 
-      if (!usuarios.length) {
-
-        alert("Usuário ou senha inválidos.");
-
-        return;
-      }
-
-      this.usuario = usuarios[0];
-
-      localStorage.setItem(
-        "financeiro_user",
-        JSON.stringify(this.usuario)
+    const usuarios =
+      await api.restGet(
+        "usuarios_permissoes",
+        `select=*`
       );
 
-      this.aplicarPermissoes();
+    console.log("Usuarios encontrados:", usuarios);
 
-      this.abrirSistema();
+    const usuario =
+      usuarios.find(u =>
+        String(u.email || "")
+          .trim()
+          .toLowerCase() === email
+        &&
+        String(u.senha || "")
+          .trim() === senha
+      );
 
-    } catch (erro) {
+    if (!usuario) {
 
-      console.error(erro);
+      alert("Usuário ou senha inválidos.");
 
-      alert("Erro ao realizar login.");
+      return;
     }
-  },
 
+    localStorage.setItem(
+      "financeiro_user",
+      JSON.stringify(usuario)
+    );
+
+    this.usuario = usuario;
+
+    this.aplicarPermissoes();
+
+    this.abrirSistema();
+
+  } catch (erro) {
+
+    console.error("Erro login:", erro);
+
+    alert("Erro ao realizar login.");
+  }
+},
+  
   logout() {
 
     localStorage.removeItem("financeiro_user");
