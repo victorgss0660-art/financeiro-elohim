@@ -125,10 +125,44 @@ window.inserirDadosModule = {
     `).join("");
   },
 
+  async carregarCategoriasMeta() {
+
+  try {
+
+    const dados = await api.restGet(
+      "gastos",
+      "select=categoria"
+    );
+
+    const categorias = [
+      ...new Set(
+        dados
+          .map(i => String(i.categoria || "").trim().toUpperCase())
+          .filter(Boolean)
+      )
+    ].sort();
+
+    const select = this.get("metaCategoria");
+
+    if (!select) return;
+
+    select.innerHTML = `
+      <option value="">Selecione</option>
+      ${categorias.map(cat => `
+        <option value="${cat}">${cat}</option>
+      `).join("")}
+    `;
+
+  } catch (erro) {
+    console.error("Erro ao carregar categorias:", erro);
+  }
+}
+
   async excluirMeta(id) {
     if (!confirm("Excluir meta?")) return;
     await api.request(`metas?id=eq.${id}`, "", "DELETE");
     await this.listarMetas();
+    await this.carregarCategoriasMeta();
   },
 
   // =========================
