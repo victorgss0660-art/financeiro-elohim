@@ -1869,3 +1869,17 @@ main {
   width:72px;
   margin-bottom:18px;
 }
+#appSistema {
+  width: 100%;
+  min-height: 100vh;
+}
+
+#appSistema .app {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.login-screen[style*="display: none"] {
+  display: none !important;
+}
