@@ -1,6 +1,6 @@
 window.app = {
-
   abaAtual: "dashboard",
+  iniciado: false,
 
   meses: [
     "Janeiro",
@@ -18,379 +18,180 @@ window.app = {
   ],
 
   iniciar() {
-
     try {
+      if (this.iniciado) return;
+      this.iniciado = true;
 
       this.preencherFiltros();
-
       this.configurarMenu();
-
       this.restaurarUltimaAba();
-
-      this.carregarModulo(this.abaAtual);
-
     } catch (erro) {
-
-      console.error(
-        "Erro ao iniciar aplicação:",
-        erro
-      );
+      console.error("Erro ao iniciar aplicação:", erro);
     }
   },
-
-  // ======================================================
-  // HELPERS
-  // ======================================================
 
   get(id) {
     return document.getElementById(id);
   },
 
-  existe(el) {
-    return !!el;
-  },
-
-  // ======================================================
-  // FILTROS
-  // ======================================================
-
   preencherFiltros() {
-
     const mesSelect = this.get("mesSelect");
     const anoSelect = this.get("anoSelect");
 
     if (mesSelect && mesSelect.options.length === 0) {
-
       this.meses.forEach(mes => {
-
         const option = document.createElement("option");
-
         option.value = mes;
         option.textContent = mes;
-
         mesSelect.appendChild(option);
       });
 
-      mesSelect.value =
-        this.meses[new Date().getMonth()];
+      mesSelect.value = this.meses[new Date().getMonth()];
     }
 
     if (anoSelect && !anoSelect.value) {
-      anoSelect.value =
-        new Date().getFullYear();
+      anoSelect.value = new Date().getFullYear();
     }
   },
 
-  // ======================================================
-  // MENU
-  // ======================================================
-
   configurarMenu() {
-
-    const botoes =
-      document.querySelectorAll(".menu button");
+    const botoes = document.querySelectorAll(".menu button");
 
     botoes.forEach(botao => {
-
-      botao.addEventListener("click", () => {
-
-        const aba =
-          botao.dataset.tab;
-
-        if (!aba) return;
-
-        this.abrirAba(aba);
-      });
+      botao.onclick = () => {
+        const aba = botao.dataset.tab;
+        if (aba) this.abrirAba(aba);
+      };
     });
   },
 
-  // ======================================================
-  // ABAS
-  // ======================================================
-
   abrirAba(nomeAba) {
-
     try {
-
-      // =========================
-      // PERMISSÃO
-      // =========================
-
       if (
         window.authModule &&
-        typeof authModule.podeAcessar === "function"
+        typeof authModule.podeAcessar === "function" &&
+        !authModule.podeAcessar(nomeAba)
       ) {
+        alert("Você não possui permissão para acessar esta área.");
+        return;
+      }
 
-        const permitido =
-          authModule.podeAcessar(nomeAba);
+      const secaoAtiva = this.get(`tab-${nomeAba}`);
 
-        if (!permitido) {
-
-          alert(
-            "Você não possui permissão para acessar esta área."
-          );
-
-          return;
-        }
+      if (!secaoAtiva) {
+        console.warn("Aba não encontrada:", nomeAba);
+        return;
       }
 
       this.abaAtual = nomeAba;
+      localStorage.setItem("abaAtualFinanceiro", nomeAba);
 
-      localStorage.setItem(
-        "abaAtualFinanceiro",
-        nomeAba
-      );
+      document.querySelectorAll(".tab-section").forEach(secao => {
+        secao.classList.remove("active");
+        secao.style.display = "none";
+      });
 
-      // =========================
-      // ESCONDER ABAS
-      // =========================
+      secaoAtiva.style.display = "block";
+      secaoAtiva.classList.add("active");
 
-      document
-        .querySelectorAll(".tab-section")
-        .forEach(secao => {
+      document.querySelectorAll(".menu button").forEach(botao => {
+        botao.classList.remove("active");
+      });
 
-          secao.classList.remove("active");
-
-          secao.style.display = "none";
-        });
-
-      // =========================
-      // REMOVER ACTIVE MENU
-      // =========================
-
-      document
-        .querySelectorAll(".menu button")
-        .forEach(botao => {
-
-          botao.classList.remove("active");
-        });
-
-      // =========================
-      // MOSTRAR ABA
-      // =========================
-
-      const secaoAtiva =
-        this.get(`tab-${nomeAba}`);
-
-      if (secaoAtiva) {
-
-        secaoAtiva.style.display = "block";
-
-        secaoAtiva.classList.add("active");
-      }
-
-      // =========================
-      // ATIVAR BOTÃO MENU
-      // =========================
-
-      const botaoAtivo =
-        document.querySelector(
-          `.menu button[data-tab="${nomeAba}"]`
-        );
-
-      if (botaoAtivo) {
-
-        botaoAtivo.classList.add("active");
-      }
-
-      // =========================
-      // CARREGAR MÓDULO
-      // =========================
+      const botaoAtivo = document.querySelector(`.menu button[data-tab="${nomeAba}"]`);
+      if (botaoAtivo) botaoAtivo.classList.add("active");
 
       this.carregarModulo(nomeAba);
-
     } catch (erro) {
-
-      console.error(
-        "Erro ao abrir aba:",
-        nomeAba,
-        erro
-      );
+      console.error("Erro ao abrir aba:", nomeAba, erro);
     }
   },
 
-restaurarUltimaAba() {
-  const ultima = localStorage.getItem("abaAtualFinanceiro");
+  restaurarUltimaAba() {
+    const ultima = localStorage.getItem("abaAtualFinanceiro");
 
-  if (
-    ultima &&
-    (!window.authModule?.podeAcessar || authModule.podeAcessar(ultima))
-  ) {
-    this.abrirAba(ultima);
-    return;
-  }
+    if (
+      ultima &&
+      (!window.authModule?.podeAcessar || authModule.podeAcessar(ultima)) &&
+      this.get(`tab-${ultima}`)
+    ) {
+      this.abrirAba(ultima);
+      return;
+    }
 
-  const primeiraPermitida = document.querySelector(".menu button:not([style*='display: none'])");
+    const primeiraPermitida = Array.from(document.querySelectorAll(".menu button"))
+      .find(btn => {
+        const visivel = btn.style.display !== "none";
+        const aba = btn.dataset.tab;
+        const permitido = !window.authModule?.podeAcessar || authModule.podeAcessar(aba);
+        return visivel && aba && permitido && this.get(`tab-${aba}`);
+      });
 
-  if (primeiraPermitida) {
-    this.abrirAba(primeiraPermitida.dataset.tab);
-    return;
-  }
+    if (primeiraPermitida) {
+      this.abrirAba(primeiraPermitida.dataset.tab);
+      return;
+    }
 
-  console.warn("Nenhuma aba permitida encontrada.");
-}
-
-  // ======================================================
-  // LOAD MÓDULOS
-  // ======================================================
+    console.warn("Nenhuma aba permitida encontrada.");
+  },
 
   async carregarModulo(nomeAba) {
-
     try {
-
       switch (nomeAba) {
-
         case "dashboard":
-
-          if (
-            window.dashboardModule?.carregar
-          ) {
-
-            await dashboardModule.carregar();
-          }
-
+          if (window.dashboardModule?.carregar) await dashboardModule.carregar();
           break;
 
         case "contas-pagar":
-
-          if (
-            window.contasPagarModule?.carregar
-          ) {
-
-            await contasPagarModule.carregar();
-          }
-
+          if (window.contasPagarModule?.carregar) await contasPagarModule.carregar();
           break;
 
         case "contas-pagas":
-
-          if (
-            window.contasPagasModule?.carregar
-          ) {
-
-            await contasPagasModule.carregar();
-          }
-
+          if (window.contasPagasModule?.carregar) await contasPagasModule.carregar();
           break;
 
         case "contas-receber":
-
-          if (
-            window.contasReceberModule?.carregar
-          ) {
-
-            await contasReceberModule.carregar();
-          }
-
+          if (window.contasReceberModule?.carregar) await contasReceberModule.carregar();
           break;
 
         case "planejamento":
-
-          if (
-            window.planejamentoModule?.carregar
-          ) {
-
-            await planejamentoModule.carregar();
-          }
-
+          if (window.planejamentoModule?.carregar) await planejamentoModule.carregar();
           break;
 
         case "inserir-dados":
-
-          if (
-            window.inserirDadosModule?.carregar
-          ) {
-
-            await inserirDadosModule.carregar();
-          }
-
+          if (window.inserirDadosModule?.carregar) await inserirDadosModule.carregar();
           break;
 
         default:
-
-          console.warn(
-            "Nenhum módulo encontrado para:",
-            nomeAba
-          );
+          console.warn("Nenhum módulo encontrado para:", nomeAba);
       }
-
     } catch (erro) {
-
-      console.error(
-        "Erro ao carregar módulo:",
-        nomeAba,
-        erro
-      );
+      console.error("Erro ao carregar módulo:", nomeAba, erro);
     }
   },
 
-  // ======================================================
-  // RELOAD
-  // ======================================================
-
   async recarregarAbaAtual() {
-
     try {
-
-      await this.carregarModulo(
-        this.abaAtual
-      );
-
+      await this.carregarModulo(this.abaAtual);
     } catch (erro) {
-
-      console.error(
-        "Erro ao recarregar aba:",
-        erro
-      );
+      console.error("Erro ao recarregar aba:", erro);
     }
   }
 };
-
-// ======================================================
-// FUNÇÕES GLOBAIS
-// ======================================================
 
 window.abrirAba = function(nomeAba) {
   app.abrirAba(nomeAba);
 };
 
-// ======================================================
-// START
-// ======================================================
-
-document.addEventListener(
-  "DOMContentLoaded",
-  async () => {
-
-    try {
-
-      // AUTH
-      if (
-        window.authModule?.iniciar
-      ) {
-
-        await authModule.iniciar();
-
-        return;
-      }
-
-      // SEM AUTH
-      app.iniciar();
-
-    } catch (erro) {
-
-      console.error(
-        "Erro ao iniciar sistema:",
-        erro
-      );
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    if (window.authModule?.iniciar) {
+      authModule.iniciar();
+      return;
     }
-  }
-);
-document.addEventListener("DOMContentLoaded", async () => {
-  if (window.authModule?.iniciar) {
-    await authModule.iniciar();
-    return;
-  }
 
-  app.iniciar();
+    app.iniciar();
+  } catch (erro) {
+    console.error("Erro ao iniciar sistema:", erro);
+  }
 });
