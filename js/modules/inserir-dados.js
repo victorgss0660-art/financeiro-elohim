@@ -3,6 +3,10 @@ window.inserirDadosModule = {
   metas: [],
   faturamentos: [],
 
+  // ======================================================
+  // HELPERS
+  // ======================================================
+
   get(id) {
     return document.getElementById(id);
   },
@@ -21,22 +25,24 @@ window.inserirDadosModule = {
       return 0;
     }
 
-    let txt = String(valor).trim();
-
-    if (!txt) return 0;
-
-    txt = txt
+    let txt = String(valor)
+      .trim()
       .replace(/R\$/gi, "")
       .replace(/\s/g, "")
       .replace(/[^\d,.-]/g, "");
 
     // 1.234,56
     if (txt.includes(".") && txt.includes(",")) {
-      txt = txt.replace(/\./g, "").replace(",", ".");
+
+      txt = txt
+        .replace(/\./g, "")
+        .replace(",", ".");
+
     }
 
     // 1234,56
     else if (txt.includes(",")) {
+
       txt = txt.replace(",", ".");
     }
 
@@ -46,29 +52,50 @@ window.inserirDadosModule = {
   },
 
   moeda(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    }).format(this.numero(valor));
+
+    return new Intl.NumberFormat(
+      "pt-BR",
+      {
+        style: "currency",
+        currency: "BRL"
+      }
+    ).format(
+      this.numero(valor)
+    );
   },
 
   normalizarTexto(texto) {
+
     return String(texto || "")
       .trim()
       .toUpperCase();
   },
 
+  // ======================================================
+  // INIT
+  // ======================================================
+
   async carregar() {
 
-    await Promise.all([
-      this.listarMetas(),
-      this.listarFaturamento(),
-      this.carregarCategoriasMeta()
-    ]);
+    try {
+
+      await Promise.all([
+        this.listarMetas(),
+        this.listarFaturamento(),
+        this.carregarCategoriasMeta()
+      ]);
+
+    } catch (erro) {
+
+      console.error(
+        "Erro ao iniciar inserir dados:",
+        erro
+      );
+    }
   },
 
   // ======================================================
-  // CATEGORIAS DINÂMICAS
+  // CATEGORIAS
   // ======================================================
 
   async carregarCategoriasMeta() {
@@ -81,31 +108,48 @@ window.inserirDadosModule = {
       );
 
       const categorias = [
+
         ...new Set(
+
           (dados || [])
+
             .map(item =>
-              this.normalizarTexto(item.categoria)
+              this.normalizarTexto(
+                item.categoria
+              )
             )
+
             .filter(Boolean)
         )
+
       ].sort();
 
-      const select = this.get("metaCategoria");
+      const select =
+        this.get("metaCategoria");
 
       if (!select) return;
 
       select.innerHTML = `
-        <option value="">Selecione</option>
+
+        <option value="">
+          Selecione
+        </option>
 
         ${categorias.map(cat => `
+
           <option value="${cat}">
             ${cat}
           </option>
+
         `).join("")}
       `;
 
     } catch (erro) {
-      console.error("Erro ao carregar categorias:", erro);
+
+      console.error(
+        "Erro categorias:",
+        erro
+      );
     }
   },
 
@@ -117,28 +161,44 @@ window.inserirDadosModule = {
 
     try {
 
-      const mes = this.valor("metaMes");
-      const ano = String(this.valor("metaAno"));
+      const mes =
+        this.valor("metaMes");
 
-      const categoria = this.normalizarTexto(
-        this.valor("metaCategoria")
-      );
+      const ano =
+        String(this.valor("metaAno"));
 
-      const percentual_meta = this.numero(
-        this.valor("metaPercentual")
-      );
+      const categoria =
+        this.normalizarTexto(
+          this.valor("metaCategoria")
+        );
 
-      if (!mes || !ano || !categoria || !percentual_meta) {
-        alert("Preencha mês, ano, categoria e percentual.");
+      const percentual_meta =
+        this.numero(
+          this.valor("metaPercentual")
+        );
+
+      if (
+        !mes ||
+        !ano ||
+        !categoria ||
+        !percentual_meta
+      ) {
+
+        alert(
+          "Preencha todos os campos."
+        );
+
         return;
       }
 
-      const existentes = await api.restGet(
-        "metas",
-        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&categoria=eq.${encodeURIComponent(categoria)}`
-      );
+      const existentes =
+        await api.restGet(
+          "metas",
+          `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&categoria=eq.${encodeURIComponent(categoria)}`
+        );
 
       const payload = {
+
         mes,
         ano,
         categoria,
@@ -146,12 +206,6 @@ window.inserirDadosModule = {
       };
 
       if (existentes?.length) {
-
-        const confirmar = confirm(
-          `Já existe meta para ${categoria} em ${mes}/${ano}.\n\nDeseja atualizar?`
-        );
-
-        if (!confirmar) return;
 
         await api.update(
           "metas",
@@ -171,12 +225,18 @@ window.inserirDadosModule = {
 
       await this.listarMetas();
 
-      alert("Meta salva com sucesso.");
+      alert("Meta salva.");
 
     } catch (erro) {
 
-      console.error("Erro ao salvar meta:", erro);
-      alert("Erro ao salvar meta.");
+      console.error(
+        "Erro meta:",
+        erro
+      );
+
+      alert(
+        "Erro ao salvar meta."
+      );
     }
   },
 
@@ -184,77 +244,84 @@ window.inserirDadosModule = {
 
     try {
 
-      const dados = await api.restGet(
-        "metas",
-        "select=*&order=ano.desc,mes.asc,categoria.asc"
-      );
+      const dados =
+        await api.restGet(
+          "metas",
+          "select=*&order=ano.desc,mes.asc"
+        );
 
-      this.metas = Array.isArray(dados)
+      this.metas =
+        Array.isArray(dados)
         ? dados
         : [];
 
-      const tbody = this.get("tabelaMetasMensais");
+      const tbody =
+        this.get("tabelaMetasMensais");
 
       if (!tbody) return;
 
       if (!this.metas.length) {
 
         tbody.innerHTML = `
+
           <tr>
             <td colspan="5" class="muted">
               Nenhuma meta cadastrada.
             </td>
           </tr>
+
         `;
 
         return;
       }
 
-      tbody.innerHTML = this.metas.map(item => `
+      tbody.innerHTML =
+        this.metas.map(item => `
 
-        <tr>
+          <tr>
 
-          <td>${item.mes || "-"}</td>
+            <td>${item.mes}</td>
 
-          <td>${item.ano || "-"}</td>
+            <td>${item.ano}</td>
 
-          <td>
-            <strong>
-              ${item.categoria || "-"}
-            </strong>
-          </td>
+            <td>
+              <strong>
+                ${item.categoria}
+              </strong>
+            </td>
 
-          <td>
-            <strong>
+            <td>
               ${this.numero(item.percentual_meta)}%
-            </strong>
-          </td>
+            </td>
 
-          <td>
-            <button
-              class="btn-excluir"
-              onclick="inserirDadosModule.excluirMeta(${Number(item.id)})"
-            >
-              Excluir
-            </button>
-          </td>
+            <td>
 
-        </tr>
+              <button
+                class="btn-excluir"
+                onclick="inserirDadosModule.excluirMeta(${item.id})"
+              >
+                Excluir
+              </button>
 
-      `).join("");
+            </td>
+
+          </tr>
+
+        `).join("");
 
     } catch (erro) {
 
-      console.error("Erro ao carregar metas:", erro);
-      alert("Erro ao carregar metas.");
+      console.error(
+        "Erro listar metas:",
+        erro
+      );
     }
   },
 
   async excluirMeta(id) {
 
-    const confirmar = confirm(
-      "Excluir esta meta?"
-    );
+    const confirmar =
+      confirm("Excluir meta?");
 
     if (!confirmar) return;
 
@@ -270,8 +337,10 @@ window.inserirDadosModule = {
 
     } catch (erro) {
 
-      console.error("Erro ao excluir meta:", erro);
-      alert("Erro ao excluir meta.");
+      console.error(
+        "Erro excluir meta:",
+        erro
+      );
     }
   },
 
@@ -283,34 +352,40 @@ window.inserirDadosModule = {
 
     try {
 
-      const mes = this.valor("fatMes");
-      const ano = String(this.valor("fatAno"));
+      const mes =
+        this.valor("fatMes");
+
+      const ano =
+        String(this.valor("fatAno"));
 
       const payload = {
+
         mes,
         ano,
-        faturamento: this.numero(this.valor("fatValor")),
-        faturado: this.numero(this.valor("fatFaturado")),
-        a_faturar: this.numero(this.valor("fatAFaturar"))
+
+        faturamento:
+          this.numero(
+            this.valor("fatValor")
+          ),
+
+        faturado:
+          this.numero(
+            this.valor("fatFaturado")
+          ),
+
+        a_faturar:
+          this.numero(
+            this.valor("fatAFaturar")
+          )
       };
 
-      if (!mes || !ano) {
-        alert("Informe mês e ano.");
-        return;
-      }
-
-      const existentes = await api.restGet(
-        "meses",
-        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-      );
-
-      if (existentes?.length) {
-
-        const confirmar = confirm(
-          `Já existe faturamento para ${mes}/${ano}.\n\nDeseja atualizar?`
+      const existentes =
+        await api.restGet(
+          "meses",
+          `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
         );
 
-        if (!confirmar) return;
+      if (existentes?.length) {
 
         await api.update(
           "meses",
@@ -332,12 +407,18 @@ window.inserirDadosModule = {
 
       await this.listarFaturamento();
 
-      alert("Faturamento salvo com sucesso.");
+      alert("Faturamento salvo.");
 
     } catch (erro) {
 
-      console.error("Erro ao salvar faturamento:", erro);
-      alert("Erro ao salvar faturamento.");
+      console.error(
+        "Erro faturamento:",
+        erro
+      );
+
+      alert(
+        "Erro ao salvar faturamento."
+      );
     }
   },
 
@@ -345,81 +426,88 @@ window.inserirDadosModule = {
 
     try {
 
-      const dados = await api.restGet(
-        "meses",
-        "select=*&order=ano.desc,mes.asc"
-      );
+      const dados =
+        await api.restGet(
+          "meses",
+          "select=*&order=ano.desc,mes.asc"
+        );
 
-      this.faturamentos = Array.isArray(dados)
+      this.faturamentos =
+        Array.isArray(dados)
         ? dados
         : [];
 
-      const tbody = this.get(
-        "tabelaFaturamentoMensal"
-      );
+      const tbody =
+        this.get(
+          "tabelaFaturamentoMensal"
+        );
 
       if (!tbody) return;
 
       if (!this.faturamentos.length) {
 
         tbody.innerHTML = `
+
           <tr>
             <td colspan="6" class="muted">
-              Nenhum faturamento cadastrado.
+              Nenhum faturamento.
             </td>
           </tr>
+
         `;
 
         return;
       }
 
-      tbody.innerHTML = this.faturamentos.map(item => `
+      tbody.innerHTML =
+        this.faturamentos.map(item => `
 
-        <tr>
+          <tr>
 
-          <td>${item.mes || "-"}</td>
+            <td>${item.mes}</td>
 
-          <td>${item.ano || "-"}</td>
+            <td>${item.ano}</td>
 
-          <td>
-            <strong>
+            <td>
               ${this.moeda(item.faturamento)}
-            </strong>
-          </td>
+            </td>
 
-          <td>
-            ${this.moeda(item.faturado)}
-          </td>
+            <td>
+              ${this.moeda(item.faturado)}
+            </td>
 
-          <td>
-            ${this.moeda(item.a_faturar)}
-          </td>
+            <td>
+              ${this.moeda(item.a_faturar)}
+            </td>
 
-          <td>
-            <button
-              class="btn-excluir"
-              onclick="inserirDadosModule.excluirFaturamento(${Number(item.id)})"
-            >
-              Excluir
-            </button>
-          </td>
+            <td>
 
-        </tr>
+              <button
+                class="btn-excluir"
+                onclick="inserirDadosModule.excluirFaturamento(${item.id})"
+              >
+                Excluir
+              </button>
 
-      `).join("");
+            </td>
+
+          </tr>
+
+        `).join("");
 
     } catch (erro) {
 
-      console.error("Erro ao carregar faturamento:", erro);
-      alert("Erro ao carregar faturamento.");
+      console.error(
+        "Erro listar faturamento:",
+        erro
+      );
     }
   },
 
   async excluirFaturamento(id) {
 
-    const confirmar = confirm(
-      "Excluir este faturamento?"
-    );
+    const confirmar =
+      confirm("Excluir faturamento?");
 
     if (!confirmar) return;
 
@@ -435,269 +523,307 @@ window.inserirDadosModule = {
 
     } catch (erro) {
 
-      console.error("Erro ao excluir faturamento:", erro);
-      alert("Erro ao excluir faturamento.");
+      console.error(
+        "Erro excluir faturamento:",
+        erro
+      );
     }
   },
 
   // ======================================================
-  // IMPORTAR GASTOS
+  // IMPORTAÇÃO
   // ======================================================
 
-async importarContasPagas() {
+  async importarContasPagas() {
 
-  try {
+    try {
 
-    const arquivo =
-      this.get("importArquivo")?.files?.[0];
+      const arquivo =
+        this.get("importArquivo")
+        ?.files?.[0];
 
-    if (!arquivo) {
-      alert("Selecione uma planilha.");
-      return;
-    }
+      if (!arquivo) {
 
-    const mes =
-      this.valor("importMes");
+        alert(
+          "Selecione uma planilha."
+        );
 
-    const ano =
-      String(this.valor("importAno"));
-
-    // =========================================
-    // REMOVER IMPORTAÇÃO ANTIGA
-    // =========================================
-
-    const antigos = await api.restGet(
-      "gastos",
-      `select=id&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-    );
-
-    if (antigos?.length) {
-
-      const confirmar = confirm(
-        `Já existem ${antigos.length} registros para ${mes}/${ano}.\n\nDeseja substituir?`
-      );
-
-      if (!confirmar) return;
-
-      await api.request(
-        `gastos?mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`,
-        "",
-        "DELETE"
-      );
-    }
-
-    // =========================================
-    // LEITURA XLSX
-    // =========================================
-
-    const buffer =
-      await arquivo.arrayBuffer();
-
-    const workbook =
-      XLSX.read(buffer, {
-        type: "array"
-      });
-
-    const primeiraAba =
-      workbook.SheetNames[0];
-
-    const sheet =
-      workbook.Sheets[primeiraAba];
-
-    const linhas =
-      XLSX.utils.sheet_to_json(sheet, {
-        defval: "",
-        raw: false
-      });
-
-    if (!linhas.length) {
-
-      alert("Planilha vazia.");
-      return;
-    }
-
-    // =========================================
-    // NORMALIZAR
-    // =========================================
-
-    const registros = [];
-
-    for (const linha of linhas) {
-
-      const obj = {};
-
-      Object.keys(linha).forEach(chave => {
-
-        const limpa = String(chave)
-          .trim()
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .replace(/\s/g, "");
-
-        obj[limpa] = linha[chave];
-      });
-
-      // =====================================
-      // CATEGORIA
-      // =====================================
-
-      let categoria =
-
-        obj.categoria ||
-        obj.grupo ||
-        obj.tipo ||
-        obj.classe ||
-        obj.conta ||
-        obj.classificacao ||
-        obj.centrocusto ||
-        obj.descricao ||
-        "";
-
-      categoria = String(categoria)
-        .trim()
-        .toUpperCase();
-
-      // =====================================
-      // VALOR
-      // =====================================
-
-      let valor =
-
-        obj.valor ||
-        obj.valortotal ||
-        obj.valorpago ||
-        obj.valorliquido ||
-        obj.valorbruto ||
-        obj.total ||
-        obj.debito ||
-        obj.credito ||
-        obj.saida ||
-        obj.vlr ||
-        0;
-
-      valor = this.numero(valor);
-
-      // =====================================
-      // IGNORAR INVÁLIDOS
-      // =====================================
-
-      if (!categoria) continue;
-
-      if (isNaN(valor)) continue;
-
-      if (valor === 0) continue;
-
-      // =====================================
-      // IGNORAR SUBTOTAIS
-      // =====================================
-
-      const textoCategoria =
-        categoria.toUpperCase();
-
-      if (
-        textoCategoria.includes("TOTAL")
-        ||
-        textoCategoria.includes("SUBTOTAL")
-        ||
-        textoCategoria.includes("SALDO")
-      ) {
-        continue;
+        return;
       }
 
-      registros.push({
+      const mes =
+        this.valor("importMes");
 
-        mes,
-        ano,
+      const ano =
+        String(
+          this.valor("importAno")
+        );
 
-        categoria,
+      // =====================================
+      // APAGAR IMPORTAÇÃO ANTIGA
+      // =====================================
 
-        valor
-      });
-    }
+      const antigos =
+        await api.restGet(
+          "gastos",
+          `select=id&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
+        );
 
-    // =========================================
-    // VALIDAÇÃO
-    // =========================================
+      if (antigos?.length) {
 
-    if (!registros.length) {
+        const confirmar =
+          confirm(
+            `Já existem ${antigos.length} registros para ${mes}/${ano}.\n\nDeseja substituir?`
+          );
 
-      console.log(linhas);
+        if (!confirmar) return;
+
+        await api.request(
+          `gastos?mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`,
+          "",
+          "DELETE"
+        );
+      }
+
+      // =====================================
+      // XLSX
+      // =====================================
+
+      const buffer =
+        await arquivo.arrayBuffer();
+
+      const workbook =
+        XLSX.read(buffer, {
+          type: "array"
+        });
+
+      const primeiraAba =
+        workbook.SheetNames[0];
+
+      const sheet =
+        workbook.Sheets[primeiraAba];
+
+      const linhas =
+        XLSX.utils.sheet_to_json(
+          sheet,
+          {
+            defval: "",
+            raw: false
+          }
+        );
+
+      if (!linhas.length) {
+
+        alert(
+          "Planilha vazia."
+        );
+
+        return;
+      }
+
+      // =====================================
+      // NORMALIZAÇÃO
+      // =====================================
+
+      const registros = [];
+
+      for (const linha of linhas) {
+
+        const obj = {};
+
+        Object.keys(linha).forEach(chave => {
+
+          const limpa =
+            String(chave)
+
+              .trim()
+
+              .toLowerCase()
+
+              .normalize("NFD")
+
+              .replace(/[\u0300-\u036f]/g, "")
+
+              .replace(/\s/g, "");
+
+          obj[limpa] =
+            linha[chave];
+        });
+
+        // =================================
+        // CATEGORIA
+        // =================================
+
+        let categoria =
+
+          obj.categoria ||
+          obj.grupo ||
+          obj.tipo ||
+          obj.classe ||
+          obj.conta ||
+          obj.classificacao ||
+          obj.centrocusto ||
+          obj.descricao ||
+          "";
+
+        categoria =
+          this.normalizarTexto(
+            categoria
+          );
+
+        // =================================
+        // VALOR
+        // =================================
+
+        let valor =
+
+          obj.valor ||
+          obj.valorpago ||
+          obj.valortotal ||
+          obj.valorliquido ||
+          obj.valorbruto ||
+          obj.total ||
+          obj.debito ||
+          obj.saida ||
+          obj.vlr ||
+          0;
+
+        valor =
+          this.numero(valor);
+
+        // =================================
+        // IGNORAR INVÁLIDOS
+        // =================================
+
+        if (!categoria) continue;
+
+        if (!valor) continue;
+
+        if (isNaN(valor)) continue;
+
+        // =================================
+        // IGNORAR SUBTOTAL
+        // =================================
+
+        const txt =
+          categoria.toUpperCase();
+
+        if (
+
+          txt.includes("TOTAL")
+          ||
+          txt.includes("SUBTOTAL")
+          ||
+          txt.includes("SALDO")
+
+        ) {
+          continue;
+        }
+
+        registros.push({
+
+          mes,
+          ano,
+
+          categoria,
+
+          valor
+        });
+      }
+
+      console.log(
+        "REGISTROS:",
+        registros
+      );
+
+      if (!registros.length) {
+
+        alert(
+          "Nenhum registro válido."
+        );
+
+        return;
+      }
+
+      // =====================================
+      // INSERT
+      // =====================================
+
+      for (const item of registros) {
+
+        await api.insert(
+          "gastos",
+          item
+        );
+      }
+
+      this.get(
+        "importArquivo"
+      ).value = "";
+
+      await this.carregarCategoriasMeta();
 
       alert(
-        "Nenhum registro válido encontrado."
+        `${registros.length} registros importados.`
       );
 
-      return;
-    }
+      if (window.dashboardModule?.carregar) {
 
-    console.log(
-      "REGISTROS IMPORTADOS:",
-      registros
-    );
+        await dashboardModule.carregar();
+      }
 
-    // =========================================
-    // INSERT
-    // =========================================
+    } catch (erro) {
 
-    for (const item of registros) {
+      console.error(
+        "Erro importação:",
+        erro
+      );
 
-      await api.insert(
-        "gastos",
-        item
+      alert(
+        "Erro ao importar planilha."
       );
     }
-
-    this.get("importArquivo").value = "";
-
-    alert(
-      `${registros.length} registros importados com sucesso.`
-    );
-
-    if (window.dashboardModule?.carregar) {
-
-      await dashboardModule.carregar();
-    }
-
-  } catch (erro) {
-
-    console.error(
-      "Erro importação:",
-      erro
-    );
-
-    alert(
-      "Erro ao importar planilha."
-    );
   }
-}
+};
+
 // ======================================================
 // TABS INTERNAS
 // ======================================================
 
-window.inserirDadosUI = function(tipo, botao) {
+window.inserirDadosUI = function(tipo, botao){
 
   document
-    .querySelectorAll("#tab-inserir-dados .input-section")
+    .querySelectorAll(
+      "#tab-inserir-dados .input-section"
+    )
+
     .forEach(secao => {
+
       secao.style.display = "none";
     });
 
   document
-    .querySelectorAll("#tab-inserir-dados .input-tab")
+    .querySelectorAll(
+      "#tab-inserir-dados .input-tab"
+    )
+
     .forEach(btn => {
+
       btn.classList.remove("active");
     });
 
-  const alvo = document.querySelector(
-    `#tab-inserir-dados .input-section[data-section="${tipo}"]`
-  );
+  const alvo =
+    document.querySelector(
+      `#tab-inserir-dados .input-section[data-section="${tipo}"]`
+    );
 
   if (alvo) {
+
     alvo.style.display = "block";
   }
 
   if (botao) {
+
     botao.classList.add("active");
   }
 };
@@ -707,5 +833,6 @@ window.inserirDadosUI = function(tipo, botao) {
 // ======================================================
 
 window.carregarInserirDados = () => {
+
   inserirDadosModule.carregar();
 };
