@@ -40,23 +40,18 @@ window.authModule = {
     if (app) app.style.display = "none";
   },
 
-  abrirSistema() {
+abrirSistema() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("appSistema").style.display = "block";
 
-    const login =
-      document.getElementById("loginScreen");
+  this.aplicarPermissoes();
 
-    const app =
-      document.getElementById("appSistema");
+  localStorage.removeItem("abaAtualFinanceiro");
 
-    if (login) login.style.display = "none";
-    if (app) app.style.display = "block";
-
-    this.aplicarPermissoes();
-
-    if (window.app?.iniciar) {
-      app.iniciar();
-    }
-  },
+  if (window.app?.iniciar) {
+    app.iniciar();
+  }
+}
 
   async login() {
 
