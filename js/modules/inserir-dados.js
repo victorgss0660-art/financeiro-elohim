@@ -3,10 +3,6 @@ window.inserirDadosModule = {
   metas: [],
   faturamentos: [],
 
-  // ======================================================
-  // HELPERS
-  // ======================================================
-
   get(id) {
     return document.getElementById(id);
   },
@@ -25,26 +21,15 @@ window.inserirDadosModule = {
       return 0;
     }
 
-    let txt = String(valor)
-      .trim()
+    let txt = String(valor).trim();
+
+    if (!txt) return 0;
+
+    txt = txt
       .replace(/R\$/gi, "")
       .replace(/\s/g, "")
-      .replace(/[^\d,.-]/g, "");
-
-    // 1.234,56
-    if (txt.includes(".") && txt.includes(",")) {
-
-      txt = txt
-        .replace(/\./g, "")
-        .replace(",", ".");
-
-    }
-
-    // 1234,56
-    else if (txt.includes(",")) {
-
-      txt = txt.replace(",", ".");
-    }
+      .replace(/\./g, "")
+      .replace(",", ".");
 
     const n = parseFloat(txt);
 
@@ -52,46 +37,25 @@ window.inserirDadosModule = {
   },
 
   moeda(valor) {
-
-    return new Intl.NumberFormat(
-      "pt-BR",
-      {
-        style: "currency",
-        currency: "BRL"
-      }
-    ).format(
-      this.numero(valor)
-    );
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    }).format(this.numero(valor));
   },
 
   normalizarTexto(texto) {
-
     return String(texto || "")
       .trim()
       .toUpperCase();
   },
 
-  // ======================================================
-  // INIT
-  // ======================================================
-
   async carregar() {
 
-    try {
-
-      await Promise.all([
-        this.listarMetas(),
-        this.listarFaturamento(),
-        this.carregarCategoriasMeta()
-      ]);
-
-    } catch (erro) {
-
-      console.error(
-        "Erro ao iniciar inserir dados:",
-        erro
-      );
-    }
+    await Promise.all([
+      this.listarMetas(),
+      this.listarFaturamento(),
+      this.carregarCategoriasMeta()
+    ]);
   },
 
   // ======================================================
@@ -108,46 +72,33 @@ window.inserirDadosModule = {
       );
 
       const categorias = [
-
         ...new Set(
-
           (dados || [])
-
             .map(item =>
-              this.normalizarTexto(
-                item.categoria
-              )
+              this.normalizarTexto(item.categoria)
             )
-
             .filter(Boolean)
         )
-
       ].sort();
 
-      const select =
-        this.get("metaCategoria");
+      const select = this.get("metaCategoria");
 
       if (!select) return;
 
       select.innerHTML = `
-
-        <option value="">
-          Selecione
-        </option>
+        <option value="">Selecione</option>
 
         ${categorias.map(cat => `
-
           <option value="${cat}">
             ${cat}
           </option>
-
         `).join("")}
       `;
 
     } catch (erro) {
 
       console.error(
-        "Erro categorias:",
+        "Erro ao carregar categorias:",
         erro
       );
     }
@@ -161,44 +112,32 @@ window.inserirDadosModule = {
 
     try {
 
-      const mes =
-        this.valor("metaMes");
+      const mes = this.valor("metaMes");
+      const ano = String(this.valor("metaAno"));
 
-      const ano =
-        String(this.valor("metaAno"));
+      const categoria = this.normalizarTexto(
+        this.valor("metaCategoria")
+      );
 
-      const categoria =
-        this.normalizarTexto(
-          this.valor("metaCategoria")
-        );
+      const percentual_meta = this.numero(
+        this.valor("metaPercentual")
+      );
 
-      const percentual_meta =
-        this.numero(
-          this.valor("metaPercentual")
-        );
-
-      if (
-        !mes ||
-        !ano ||
-        !categoria ||
-        !percentual_meta
-      ) {
+      if (!mes || !ano || !categoria || !percentual_meta) {
 
         alert(
-          "Preencha todos os campos."
+          "Preencha mês, ano, categoria e percentual."
         );
 
         return;
       }
 
-      const existentes =
-        await api.restGet(
-          "metas",
-          `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&categoria=eq.${encodeURIComponent(categoria)}`
-        );
+      const existentes = await api.restGet(
+        "metas",
+        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&categoria=eq.${encodeURIComponent(categoria)}`
+      );
 
       const payload = {
-
         mes,
         ano,
         categoria,
@@ -225,18 +164,16 @@ window.inserirDadosModule = {
 
       await this.listarMetas();
 
-      alert("Meta salva.");
+      alert("Meta salva com sucesso.");
 
     } catch (erro) {
 
       console.error(
-        "Erro meta:",
+        "Erro ao salvar meta:",
         erro
       );
 
-      alert(
-        "Erro ao salvar meta."
-      );
+      alert("Erro ao salvar meta.");
     }
   },
 
@@ -244,14 +181,12 @@ window.inserirDadosModule = {
 
     try {
 
-      const dados =
-        await api.restGet(
-          "metas",
-          "select=*&order=ano.desc,mes.asc"
-        );
+      const dados = await api.restGet(
+        "metas",
+        "select=*&order=ano.desc,mes.asc,categoria.asc"
+      );
 
-      this.metas =
-        Array.isArray(dados)
+      this.metas = Array.isArray(dados)
         ? dados
         : [];
 
@@ -263,56 +198,49 @@ window.inserirDadosModule = {
       if (!this.metas.length) {
 
         tbody.innerHTML = `
-
           <tr>
             <td colspan="5" class="muted">
               Nenhuma meta cadastrada.
             </td>
           </tr>
-
         `;
 
         return;
       }
 
-      tbody.innerHTML =
-        this.metas.map(item => `
+      tbody.innerHTML = this.metas.map(item => `
 
-          <tr>
+        <tr>
 
-            <td>${item.mes}</td>
+          <td>${item.mes}</td>
 
-            <td>${item.ano}</td>
+          <td>${item.ano}</td>
 
-            <td>
-              <strong>
-                ${item.categoria}
-              </strong>
-            </td>
+          <td>
+            <strong>${item.categoria}</strong>
+          </td>
 
-            <td>
-              ${this.numero(item.percentual_meta)}%
-            </td>
+          <td>
+            ${this.numero(item.percentual_meta)}%
+          </td>
 
-            <td>
+          <td>
+            <button
+              class="btn-excluir"
+              onclick="inserirDadosModule.excluirMeta(${item.id})"
+            >
+              Excluir
+            </button>
+          </td>
 
-              <button
-                class="btn-excluir"
-                onclick="inserirDadosModule.excluirMeta(${item.id})"
-              >
-                Excluir
-              </button>
+        </tr>
 
-            </td>
-
-          </tr>
-
-        `).join("");
+      `).join("");
 
     } catch (erro) {
 
       console.error(
-        "Erro listar metas:",
+        "Erro ao listar metas:",
         erro
       );
     }
@@ -320,8 +248,9 @@ window.inserirDadosModule = {
 
   async excluirMeta(id) {
 
-    const confirmar =
-      confirm("Excluir meta?");
+    const confirmar = confirm(
+      "Excluir esta meta?"
+    );
 
     if (!confirmar) return;
 
@@ -338,7 +267,7 @@ window.inserirDadosModule = {
     } catch (erro) {
 
       console.error(
-        "Erro excluir meta:",
+        "Erro ao excluir meta:",
         erro
       );
     }
@@ -352,38 +281,37 @@ window.inserirDadosModule = {
 
     try {
 
-      const mes =
-        this.valor("fatMes");
+      const mes = this.valor("fatMes");
+      const ano = String(this.valor("fatAno"));
 
-      const ano =
-        String(this.valor("fatAno"));
+      if (!mes || !ano) {
+
+        alert("Informe mês e ano.");
+        return;
+      }
 
       const payload = {
 
         mes,
         ano,
 
-        faturamento:
-          this.numero(
-            this.valor("fatValor")
-          ),
+        faturamento: this.numero(
+          this.valor("fatValor")
+        ),
 
-        faturado:
-          this.numero(
-            this.valor("fatFaturado")
-          ),
+        faturado: this.numero(
+          this.valor("fatFaturado")
+        ),
 
-        a_faturar:
-          this.numero(
-            this.valor("fatAFaturar")
-          )
+        a_faturar: this.numero(
+          this.valor("fatAFaturar")
+        )
       };
 
-      const existentes =
-        await api.restGet(
-          "meses",
-          `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-        );
+      const existentes = await api.restGet(
+        "meses",
+        `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
+      );
 
       if (existentes?.length) {
 
@@ -407,12 +335,14 @@ window.inserirDadosModule = {
 
       await this.listarFaturamento();
 
-      alert("Faturamento salvo.");
+      alert(
+        "Faturamento salvo com sucesso."
+      );
 
     } catch (erro) {
 
       console.error(
-        "Erro faturamento:",
+        "Erro ao salvar faturamento:",
         erro
       );
 
@@ -426,34 +356,29 @@ window.inserirDadosModule = {
 
     try {
 
-      const dados =
-        await api.restGet(
-          "meses",
-          "select=*&order=ano.desc,mes.asc"
-        );
+      const dados = await api.restGet(
+        "meses",
+        "select=*&order=ano.desc"
+      );
 
       this.faturamentos =
         Array.isArray(dados)
-        ? dados
-        : [];
+          ? dados
+          : [];
 
       const tbody =
-        this.get(
-          "tabelaFaturamentoMensal"
-        );
+        this.get("tabelaFaturamentoMensal");
 
       if (!tbody) return;
 
       if (!this.faturamentos.length) {
 
         tbody.innerHTML = `
-
           <tr>
             <td colspan="6" class="muted">
-              Nenhum faturamento.
+              Nenhum faturamento cadastrado.
             </td>
           </tr>
-
         `;
 
         return;
@@ -481,14 +406,12 @@ window.inserirDadosModule = {
             </td>
 
             <td>
-
               <button
                 class="btn-excluir"
                 onclick="inserirDadosModule.excluirFaturamento(${item.id})"
               >
                 Excluir
               </button>
-
             </td>
 
           </tr>
@@ -498,7 +421,7 @@ window.inserirDadosModule = {
     } catch (erro) {
 
       console.error(
-        "Erro listar faturamento:",
+        "Erro ao listar faturamento:",
         erro
       );
     }
@@ -506,8 +429,9 @@ window.inserirDadosModule = {
 
   async excluirFaturamento(id) {
 
-    const confirmar =
-      confirm("Excluir faturamento?");
+    const confirmar = confirm(
+      "Excluir este faturamento?"
+    );
 
     if (!confirmar) return;
 
@@ -524,14 +448,14 @@ window.inserirDadosModule = {
     } catch (erro) {
 
       console.error(
-        "Erro excluir faturamento:",
+        "Erro ao excluir faturamento:",
         erro
       );
     }
   },
 
   // ======================================================
-  // IMPORTAÇÃO
+  // IMPORTAR GASTOS
   // ======================================================
 
   async importarContasPagas() {
@@ -540,41 +464,39 @@ window.inserirDadosModule = {
 
       const arquivo =
         this.get("importArquivo")
-        ?.files?.[0];
+          ?.files?.[0];
 
       if (!arquivo) {
 
-        alert(
-          "Selecione uma planilha."
-        );
-
+        alert("Selecione uma planilha.");
         return;
       }
 
-      const mes =
-        this.valor("importMes");
+      if (typeof XLSX === "undefined") {
 
-      const ano =
-        String(
-          this.valor("importAno")
-        );
+        alert("XLSX não carregado.");
+        return;
+      }
 
-      // =====================================
-      // APAGAR IMPORTAÇÃO ANTIGA
-      // =====================================
+      const mes = this.valor("importMes");
+      const ano = String(
+        this.valor("importAno")
+      );
 
-      const antigos =
-        await api.restGet(
-          "gastos",
-          `select=id&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-        );
+      // ======================================================
+      // APAGAR ANTIGOS
+      // ======================================================
+
+      const antigos = await api.restGet(
+        "gastos",
+        `select=id&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
+      );
 
       if (antigos?.length) {
 
-        const confirmar =
-          confirm(
-            `Já existem ${antigos.length} registros para ${mes}/${ano}.\n\nDeseja substituir?`
-          );
+        const confirmar = confirm(
+          `Já existem ${antigos.length} registros em ${mes}/${ano}.\n\nDeseja substituir tudo?`
+        );
 
         if (!confirmar) return;
 
@@ -585,9 +507,9 @@ window.inserirDadosModule = {
         );
       }
 
-      // =====================================
-      // XLSX
-      // =====================================
+      // ======================================================
+      // LEITURA XLSX
+      // ======================================================
 
       const buffer =
         await arquivo.arrayBuffer();
@@ -597,11 +519,11 @@ window.inserirDadosModule = {
           type: "array"
         });
 
-      const primeiraAba =
+      const aba =
         workbook.SheetNames[0];
 
       const sheet =
-        workbook.Sheets[primeiraAba];
+        workbook.Sheets[aba];
 
       const linhas =
         XLSX.utils.sheet_to_json(
@@ -614,122 +536,61 @@ window.inserirDadosModule = {
 
       if (!linhas.length) {
 
-        alert(
-          "Planilha vazia."
-        );
-
+        alert("Planilha vazia.");
         return;
       }
 
-      // =====================================
-      // NORMALIZAÇÃO
-      // =====================================
+      // ======================================================
+      // CONVERSÃO
+      // ======================================================
 
-      const registros = [];
+      const registros = linhas.map(linha => {
 
-      for (const linha of linhas) {
+        const categoria =
 
-        const obj = {};
-
-        Object.keys(linha).forEach(chave => {
-
-          const limpa =
-            String(chave)
-
-              .trim()
-
-              .toLowerCase()
-
-              .normalize("NFD")
-
-              .replace(/[\u0300-\u036f]/g, "")
-
-              .replace(/\s/g, "");
-
-          obj[limpa] =
-            linha[chave];
-        });
-
-        // =================================
-        // CATEGORIA
-        // =================================
-
-        let categoria =
-
-          obj.categoria ||
-          obj.grupo ||
-          obj.tipo ||
-          obj.classe ||
-          obj.conta ||
-          obj.classificacao ||
-          obj.centrocusto ||
-          obj.descricao ||
+          linha["CATEGORIA"] ||
+          linha["Categoria"] ||
+          linha["categoria"] ||
           "";
 
-        categoria =
-          this.normalizarTexto(
-            categoria
-          );
+        const valorOriginal =
 
-        // =================================
-        // VALOR
-        // =================================
-
-        let valor =
-
-          obj.valor ||
-          obj.valorpago ||
-          obj.valortotal ||
-          obj.valorliquido ||
-          obj.valorbruto ||
-          obj.total ||
-          obj.debito ||
-          obj.saida ||
-          obj.vlr ||
+          linha["VALOR"] ||
+          linha["Valor"] ||
+          linha["valor"] ||
           0;
 
-        valor =
-          this.numero(valor);
+        let valorTexto = String(
+          valorOriginal
+        )
+          .replace(/R\$/g, "")
+          .replace(/\s/g, "")
+          .replace(/\./g, "")
+          .replace(",", ".");
 
-        // =================================
-        // IGNORAR INVÁLIDOS
-        // =================================
+        const valor =
+          parseFloat(valorTexto) || 0;
 
-        if (!categoria) continue;
-
-        if (!valor) continue;
-
-        if (isNaN(valor)) continue;
-
-        // =================================
-        // IGNORAR SUBTOTAL
-        // =================================
-
-        const txt =
-          categoria.toUpperCase();
-
-        if (
-
-          txt.includes("TOTAL")
-          ||
-          txt.includes("SUBTOTAL")
-          ||
-          txt.includes("SALDO")
-
-        ) {
-          continue;
-        }
-
-        registros.push({
+        return {
 
           mes,
           ano,
 
-          categoria,
+          categoria:
+            this.normalizarTexto(
+              categoria
+            ),
 
           valor
-        });
-      }
+        };
+
+      }).filter(item => {
+
+        return (
+          item.categoria &&
+          item.valor > 0
+        );
+      });
 
       console.log(
         "REGISTROS:",
@@ -739,15 +600,21 @@ window.inserirDadosModule = {
       if (!registros.length) {
 
         alert(
-          "Nenhum registro válido."
+          "Nenhum registro válido encontrado."
         );
 
         return;
       }
 
-      // =====================================
+      const confirmar = confirm(
+        `Importar ${registros.length} registros?`
+      );
+
+      if (!confirmar) return;
+
+      // ======================================================
       // INSERT
-      // =====================================
+      // ======================================================
 
       for (const item of registros) {
 
@@ -757,14 +624,12 @@ window.inserirDadosModule = {
         );
       }
 
-      this.get(
-        "importArquivo"
-      ).value = "";
+      this.get("importArquivo").value = "";
 
       await this.carregarCategoriasMeta();
 
       alert(
-        `${registros.length} registros importados.`
+        `${registros.length} registros importados com sucesso.`
       );
 
       if (window.dashboardModule?.carregar) {
@@ -775,7 +640,7 @@ window.inserirDadosModule = {
     } catch (erro) {
 
       console.error(
-        "Erro importação:",
+        "Erro ao importar planilha:",
         erro
       );
 
@@ -790,15 +655,13 @@ window.inserirDadosModule = {
 // TABS INTERNAS
 // ======================================================
 
-window.inserirDadosUI = function(tipo, botao){
+window.inserirDadosUI = function(tipo, botao) {
 
   document
     .querySelectorAll(
       "#tab-inserir-dados .input-section"
     )
-
     .forEach(secao => {
-
       secao.style.display = "none";
     });
 
@@ -806,24 +669,19 @@ window.inserirDadosUI = function(tipo, botao){
     .querySelectorAll(
       "#tab-inserir-dados .input-tab"
     )
-
     .forEach(btn => {
-
       btn.classList.remove("active");
     });
 
-  const alvo =
-    document.querySelector(
-      `#tab-inserir-dados .input-section[data-section="${tipo}"]`
-    );
+  const alvo = document.querySelector(
+    `#tab-inserir-dados .input-section[data-section="${tipo}"]`
+  );
 
   if (alvo) {
-
     alvo.style.display = "block";
   }
 
   if (botao) {
-
     botao.classList.add("active");
   }
 };
@@ -833,6 +691,5 @@ window.inserirDadosUI = function(tipo, botao){
 // ======================================================
 
 window.carregarInserirDados = () => {
-
   inserirDadosModule.carregar();
 };
