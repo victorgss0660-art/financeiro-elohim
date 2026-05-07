@@ -176,8 +176,4 @@ window.authModule = {
   }
 };
 
-document.addEventListener("DOMContentLoaded", () => {
 
-  authModule.iniciar();
-
-});
