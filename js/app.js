@@ -386,3 +386,11 @@ document.addEventListener(
     }
   }
 );
+document.addEventListener("DOMContentLoaded", async () => {
+  if (window.authModule?.iniciar) {
+    await authModule.iniciar();
+    return;
+  }
+
+  app.iniciar();
+});
