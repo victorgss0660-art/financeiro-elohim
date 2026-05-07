@@ -127,30 +127,33 @@ window.authModule = {
     location.reload();
   },
 
-  aplicarPermissoes() {
+aplicarPermissoes(usuario) {
 
-    const permissoes =
-      this.usuario?.permissoes || [];
+  const permissoes =
+    Array.isArray(usuario.permissoes)
+      ? usuario.permissoes
+      : [];
 
-    document
-      .querySelectorAll(".menu button")
-      .forEach(btn => {
+  document
+    .querySelectorAll(".menu button")
+    .forEach(botao => {
 
-        const aba = btn.dataset.tab;
+      const aba = botao.dataset.tab;
 
-        if (
-          permissoes.includes("*") ||
-          permissoes.includes(aba)
-        ) {
+      // ADMIN vê tudo
+      if (usuario.tipo === "admin") {
+        botao.style.display = "flex";
+        return;
+      }
 
-          btn.style.display = "flex";
-
-        } else {
-
-          btn.style.display = "none";
-        }
-      });
-  },
+      // usuário comum
+      if (permissoes.includes(aba)) {
+        botao.style.display = "flex";
+      } else {
+        botao.style.display = "none";
+      }
+    });
+}
 
   podeAcessar(aba) {
 
