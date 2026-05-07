@@ -38,7 +38,7 @@ window.authModule = {
     }
   },
 
- async login() {
+async login() {
 
   try {
 
@@ -104,7 +104,7 @@ window.authModule = {
 
     alert("Erro ao realizar login.");
   }
-},
+}
   
   logout() {
 
