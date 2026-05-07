@@ -9,15 +9,45 @@ window.planejamentoModule = {
     return document.getElementById(id);
   },
 
-  numero(v) {
-    if (!v) return 0;
+numero(v) {
 
-    return parseFloat(
-      String(v)
-        .replace(/\./g, "")
-        .replace(",", ".")
-    ) || 0;
-  },
+  if (v === null || v === undefined || v === "") {
+    return 0;
+  }
+
+  // já é número
+  if (typeof v === "number") {
+    return v;
+  }
+
+  let txt = String(v).trim();
+
+  // remove R$
+  txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
+
+  // formato BR: 1.234,56
+  if (txt.includes(",") && txt.includes(".")) {
+
+    txt = txt
+      .replace(/\./g, "")
+      .replace(",", ".");
+
+  }
+
+  // formato BR simples: 1234,56
+  else if (txt.includes(",")) {
+
+    txt = txt.replace(",", ".");
+
+  }
+
+  // formato US: 1234.56
+  // não faz nada
+
+  const n = parseFloat(txt);
+
+  return isNaN(n) ? 0 : n;
+}
 
   moeda(v) {
     return new Intl.NumberFormat("pt-BR", {
