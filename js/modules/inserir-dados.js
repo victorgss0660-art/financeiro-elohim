@@ -444,207 +444,233 @@ window.inserirDadosModule = {
   // IMPORTAR GASTOS
   // ======================================================
 
-  async importarContasPagas() {
+async importarContasPagas() {
 
-    try {
+  try {
 
-      const arquivo = this.get("importArquivo")?.files?.[0];
+    const arquivo =
+      this.get("importArquivo")?.files?.[0];
 
-      if (!arquivo) {
-        alert("Selecione uma planilha.");
-        return;
-      }
+    if (!arquivo) {
+      alert("Selecione uma planilha.");
+      return;
+    }
 
-      if (typeof XLSX === "undefined") {
-        alert("XLSX não carregado.");
-        return;
-      }
+    const mes =
+      this.valor("importMes");
 
-      const mes = this.valor("importMes");
-      const ano = String(this.valor("importAno"));
+    const ano =
+      String(this.valor("importAno"));
 
-      // =========================
-      // APAGAR IMPORTAÇÃO ANTIGA
-      // =========================
+    // =========================================
+    // REMOVER IMPORTAÇÃO ANTIGA
+    // =========================================
 
-      const antigos = await api.restGet(
-        "gastos",
-        `select=id&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
-      );
+    const antigos = await api.restGet(
+      "gastos",
+      `select=id&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`
+    );
 
-      if (antigos?.length) {
-
-        const confirmar = confirm(
-          `Já existem ${antigos.length} registros para ${mes}/${ano}.\n\nDeseja substituir?`
-        );
-
-        if (!confirmar) return;
-
-        await api.request(
-          `gastos?mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`,
-          "",
-          "DELETE"
-        );
-      }
-
-      // =========================
-      // LEITURA XLSX
-      // =========================
-
-      const buffer = await arquivo.arrayBuffer();
-
-      const workbook = XLSX.read(buffer, {
-        type: "array"
-      });
-
-      const aba = workbook.SheetNames[0];
-
-      const sheet = workbook.Sheets[aba];
-
-      const linhas = XLSX.utils.sheet_to_json(
-        sheet,
-        {
-          defval: "",
-          raw: false
-        }
-      );
-
-      if (!linhas.length) {
-        alert("Planilha vazia.");
-        return;
-      }
-
-      // =========================
-      // NORMALIZAÇÃO
-      // =========================
-
-      const registros = linhas.map(linha => {
-
-        const obj = {};
-
-        Object.keys(linha).forEach(chave => {
-
-          const limpa = String(chave)
-            .trim()
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/\s/g, "");
-
-          obj[limpa] = linha[chave];
-        });
-
-        const categoria =
-
-          obj.categoria ||
-          obj.categorias ||
-          obj.tipo ||
-          obj.grupo ||
-          obj.classe ||
-          obj.classificacao ||
-          obj.centrocusto ||
-          obj.conta ||
-          obj.descricao ||
-          "";
-
-        const valor =
-
-          obj.valor ||
-          obj.valorpago ||
-          obj.valortotal ||
-          obj.valorliquido ||
-          obj.valorbruto ||
-          obj.total ||
-          obj.pago ||
-          obj.pagamento ||
-          obj.vlr ||
-          obj.debito ||
-          obj.saida ||
-          0;
-
-        const registro = {
-
-          mes,
-          ano,
-
-          categoria: this.normalizarTexto(
-            categoria
-          ),
-
-          valor: this.numero(valor)
-        };
-
-        return registro;
-
-      }).filter(item => {
-
-        if (!item.categoria) {
-          console.warn("SEM CATEGORIA:", item);
-          return false;
-        }
-
-        if (item.valor <= 0 || isNaN(item.valor)) {
-          console.warn("VALOR INVÁLIDO:", item);
-          return false;
-        }
-
-        return true;
-      });
-
-      console.log(
-        "REGISTROS VÁLIDOS:",
-        registros
-      );
-
-      if (!registros.length) {
-        alert("Nenhum registro válido encontrado.");
-        return;
-      }
+    if (antigos?.length) {
 
       const confirmar = confirm(
-        `Importar ${registros.length} registros para ${mes}/${ano}?`
+        `Já existem ${antigos.length} registros para ${mes}/${ano}.\n\nDeseja substituir?`
       );
 
       if (!confirmar) return;
 
-      // =========================
-      // INSERT
-      // =========================
-
-      for (const item of registros) {
-
-        await api.insert(
-          "gastos",
-          item
-        );
-      }
-
-      this.get("importArquivo").value = "";
-
-      await this.carregarCategoriasMeta();
-
-      alert(
-        `Importação concluída.\n\n${registros.length} registros importados.`
-      );
-
-      if (window.dashboardModule?.carregar) {
-        dashboardModule.carregar();
-      }
-
-    } catch (erro) {
-
-      console.error(
-        "Erro ao importar planilha:",
-        erro
-      );
-
-      alert(
-        "Erro ao importar planilha."
+      await api.request(
+        `gastos?mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}`,
+        "",
+        "DELETE"
       );
     }
-  }
-};
 
+    // =========================================
+    // LEITURA XLSX
+    // =========================================
+
+    const buffer =
+      await arquivo.arrayBuffer();
+
+    const workbook =
+      XLSX.read(buffer, {
+        type: "array"
+      });
+
+    const primeiraAba =
+      workbook.SheetNames[0];
+
+    const sheet =
+      workbook.Sheets[primeiraAba];
+
+    const linhas =
+      XLSX.utils.sheet_to_json(sheet, {
+        defval: "",
+        raw: false
+      });
+
+    if (!linhas.length) {
+
+      alert("Planilha vazia.");
+      return;
+    }
+
+    // =========================================
+    // NORMALIZAR
+    // =========================================
+
+    const registros = [];
+
+    for (const linha of linhas) {
+
+      const obj = {};
+
+      Object.keys(linha).forEach(chave => {
+
+        const limpa = String(chave)
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s/g, "");
+
+        obj[limpa] = linha[chave];
+      });
+
+      // =====================================
+      // CATEGORIA
+      // =====================================
+
+      let categoria =
+
+        obj.categoria ||
+        obj.grupo ||
+        obj.tipo ||
+        obj.classe ||
+        obj.conta ||
+        obj.classificacao ||
+        obj.centrocusto ||
+        obj.descricao ||
+        "";
+
+      categoria = String(categoria)
+        .trim()
+        .toUpperCase();
+
+      // =====================================
+      // VALOR
+      // =====================================
+
+      let valor =
+
+        obj.valor ||
+        obj.valortotal ||
+        obj.valorpago ||
+        obj.valorliquido ||
+        obj.valorbruto ||
+        obj.total ||
+        obj.debito ||
+        obj.credito ||
+        obj.saida ||
+        obj.vlr ||
+        0;
+
+      valor = this.numero(valor);
+
+      // =====================================
+      // IGNORAR INVÁLIDOS
+      // =====================================
+
+      if (!categoria) continue;
+
+      if (isNaN(valor)) continue;
+
+      if (valor === 0) continue;
+
+      // =====================================
+      // IGNORAR SUBTOTAIS
+      // =====================================
+
+      const textoCategoria =
+        categoria.toUpperCase();
+
+      if (
+        textoCategoria.includes("TOTAL")
+        ||
+        textoCategoria.includes("SUBTOTAL")
+        ||
+        textoCategoria.includes("SALDO")
+      ) {
+        continue;
+      }
+
+      registros.push({
+
+        mes,
+        ano,
+
+        categoria,
+
+        valor
+      });
+    }
+
+    // =========================================
+    // VALIDAÇÃO
+    // =========================================
+
+    if (!registros.length) {
+
+      console.log(linhas);
+
+      alert(
+        "Nenhum registro válido encontrado."
+      );
+
+      return;
+    }
+
+    console.log(
+      "REGISTROS IMPORTADOS:",
+      registros
+    );
+
+    // =========================================
+    // INSERT
+    // =========================================
+
+    for (const item of registros) {
+
+      await api.insert(
+        "gastos",
+        item
+      );
+    }
+
+    this.get("importArquivo").value = "";
+
+    alert(
+      `${registros.length} registros importados com sucesso.`
+    );
+
+    if (window.dashboardModule?.carregar) {
+
+      await dashboardModule.carregar();
+    }
+
+  } catch (erro) {
+
+    console.error(
+      "Erro importação:",
+      erro
+    );
+
+    alert(
+      "Erro ao importar planilha."
+    );
+  }
+}
 // ======================================================
 // TABS INTERNAS
 // ======================================================
