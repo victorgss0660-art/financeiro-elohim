@@ -1,327 +1,809 @@
 window.dashboardModule = {
+
   gastos: [],
+
   meses: [],
+
   metas: [],
 
   chartMeta: null,
+
   chartDistribuicao: null,
+
   chartEvolucao: null,
 
   async carregar() {
-    try {
-      const gastos = await api.restGet("gastos", "select=*");
-      const meses = await api.restGet("meses", "select=*");
-      const metas = await api.restGet("metas", "select=*");
 
-      this.gastos = Array.isArray(gastos) ? gastos : [];
-      this.meses = Array.isArray(meses) ? meses : [];
-      this.metas = Array.isArray(metas) ? metas : [];
+    try {
+
+      this.gastos = await api.restGet(
+
+        "gastos",
+
+        "select=*"
+
+      ) || [];
+
+      this.meses = await api.restGet(
+
+        "meses",
+
+        "select=*"
+
+      ) || [];
+
+      this.metas = await api.restGet(
+
+        "metas",
+
+        "select=*"
+
+      ) || [];
 
       this.renderizar();
+
     } catch (erro) {
-      console.error("Erro ao carregar dashboard:", erro);
+
+      console.error(
+
+        "Erro dashboard:",
+
+        erro
+
+      );
+
       alert("Erro ao carregar dashboard.");
+
     }
+
   },
 
-  get(id) {
+  // ======================================================
+
+  // HELPERS
+
+  // ======================================================
+
+  get(id){
+
     return document.getElementById(id);
+
   },
 
-  set(id, valor) {
+  set(id, valor){
+
     const el = this.get(id);
-    if (el) el.textContent = valor;
+
+    if(el){
+
+      el.textContent = valor;
+
+    }
+
   },
 
-  numero(valor) {
-    if (typeof valor === "number") return valor;
-    if (valor === null || valor === undefined || valor === "") return 0;
+  numero(valor){
 
-    let txt = String(valor).trim();
-    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
+    if(typeof valor === "number"){
 
-    if (txt.includes(",") && txt.includes(".")) {
-      txt = txt.replace(/\./g, "").replace(",", ".");
-    } else if (txt.includes(",")) {
+      return isNaN(valor) ? 0 : valor;
+
+    }
+
+    if(!valor) return 0;
+
+    let txt = String(valor)
+
+      .replace(/\s/g,"")
+
+      .replace(/R\$/g,"");
+
+    // 1.234,56
+
+    if(txt.includes(".") && txt.includes(",")){
+
+      txt = txt
+
+        .replace(/\./g,"")
+
+        .replace(",", ".");
+
+    } else if(txt.includes(",")) {
+
       txt = txt.replace(",", ".");
+
     }
 
     const n = parseFloat(txt);
+
     return isNaN(n) ? 0 : n;
+
   },
 
-  moeda(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    }).format(this.numero(valor));
-  },
+  moeda(valor){
 
-  mesSelecionado() {
-    const el = this.get("mesSelect");
-    return el?.value || "Abril";
-  },
+    return new Intl.NumberFormat(
 
-  anoSelecionado() {
-    const el = this.get("anoSelect");
-    return String(el?.value || new Date().getFullYear());
-  },
+      "pt-BR",
 
-  mesmoMesAno(item, mes, ano) {
-    return (
-      String(item.mes || "").toLowerCase() === String(mes).toLowerCase() &&
-      String(item.ano || "") === String(ano)
+      {
+
+        style:"currency",
+
+        currency:"BRL"
+
+      }
+
+    ).format(
+
+      this.numero(valor)
+
     );
+
   },
 
-  agruparCategorias(lista) {
+  normalizar(texto){
+
+    return String(texto || "")
+
+      .trim()
+
+      .toUpperCase();
+
+  },
+
+  mesSelecionado(){
+
+    return this.get("mesSelect")?.value || "";
+
+  },
+
+  anoSelecionado(){
+
+    return String(
+
+      this.get("anoSelect")?.value || ""
+
+    );
+
+  },
+
+  // ======================================================
+
+  // RENDER
+
+  // ======================================================
+
+  renderizar(){
+
+    const mes = this.mesSelecionado();
+
+    const ano = this.anoSelecionado();
+
+    const gastosMes = this.gastos.filter(item =>
+
+      this.normalizar(item.mes) === this.normalizar(mes)
+
+      &&
+
+      String(item.ano) === String(ano)
+
+    );
+
+    const faturamentoMes = this.meses.find(item =>
+
+      this.normalizar(item.mes) === this.normalizar(mes)
+
+      &&
+
+      String(item.ano) === String(ano)
+
+    );
+
+    const metasMes = this.metas.filter(item =>
+
+      this.normalizar(item.mes) === this.normalizar(mes)
+
+      &&
+
+      String(item.ano) === String(ano)
+
+    );
+
+    // ======================================================
+
+    // KPIS
+
+    // ======================================================
+
+    const totalGastos = gastosMes.reduce(
+
+      (t,item)=> t + this.numero(item.valor),
+
+      0
+
+    );
+
+    const faturamento =
+
+      this.numero(
+
+        faturamentoMes?.faturamento
+
+      );
+
+    const faturado =
+
+      this.numero(
+
+        faturamentoMes?.faturado
+
+      );
+
+    const aFaturar =
+
+      this.numero(
+
+        faturamentoMes?.a_faturar
+
+      );
+
+    const lucro =
+
+      faturamento - totalGastos;
+
+    const margem =
+
+      faturamento > 0
+
+      ? (lucro / faturamento) * 100
+
+      : 0;
+
+    this.set(
+
+      "dashFaturamento",
+
+      this.moeda(faturamento)
+
+    );
+
+    this.set(
+
+      "dashGastos",
+
+      this.moeda(totalGastos)
+
+    );
+
+    this.set(
+
+      "dashLucro",
+
+      this.moeda(lucro)
+
+    );
+
+    this.set(
+
+      "dashMargem",
+
+      margem.toFixed(1) + "%"
+
+    );
+
+    // ======================================================
+
+    // STATUS
+
+    // ======================================================
+
+    let status = "SAUDÁVEL";
+
+    let descricao = "Operação dentro do esperado.";
+
+    if(faturamento <= 0){
+
+      status = "SEM DADOS";
+
+      descricao = "Nenhum faturamento encontrado.";
+
+    } else if(lucro < 0){
+
+      status = "CRÍTICO";
+
+      descricao = "Os gastos estão acima do faturamento.";
+
+    } else if(margem < 10){
+
+      status = "ATENÇÃO";
+
+      descricao = "Margem abaixo do ideal.";
+
+    }
+
+    this.set("dashStatus", status);
+
+    this.set("dashStatusDesc", descricao);
+
+    // ======================================================
+
+    // GRÁFICOS
+
+    // ======================================================
+
+    this.graficoDistribuicao(
+
+      gastosMes
+
+    );
+
+    this.graficoMeta(
+
+      gastosMes,
+
+      metasMes,
+
+      faturamento
+
+    );
+
+    this.graficoEvolucao(
+
+      ano
+
+    );
+
+    this.tabelaCategorias(
+
+      gastosMes
+
+    );
+
+  },
+
+  // ======================================================
+
+  // AGRUPAR
+
+  // ======================================================
+
+  agruparCategorias(lista){
+
     const mapa = {};
 
-    lista.forEach((item) => {
-      const categoria = String(item.categoria || "OUTROS").trim().toUpperCase();
-      mapa[categoria] = (mapa[categoria] || 0) + this.numero(item.valor);
+    lista.forEach(item => {
+
+      const categoria =
+
+        this.normalizar(item.categoria);
+
+      mapa[categoria] =
+
+        (mapa[categoria] || 0)
+
+        +
+
+        this.numero(item.valor);
+
     });
 
     return mapa;
+
   },
 
-  renderizar() {
-    const mes = this.mesSelecionado();
-    const ano = this.anoSelecionado();
+  // ======================================================
 
-    const gastosMes = this.gastos.filter((item) => this.mesmoMesAno(item, mes, ano));
-    const mesesMes = this.meses.filter((item) => this.mesmoMesAno(item, mes, ano));
-    const metasMes = this.metas.filter((item) => this.mesmoMesAno(item, mes, ano));
+  // META
 
-    const totalGastos = gastosMes.reduce((acc, item) => acc + this.numero(item.valor), 0);
-    const faturamento = mesesMes.reduce((acc, item) => acc + this.numero(item.faturamento), 0);
-    const faturado = mesesMes.reduce((acc, item) => acc + this.numero(item.faturado), 0);
-    const aFaturar = mesesMes.reduce((acc, item) => acc + this.numero(item.a_faturar), 0);
+  // ======================================================
 
-    const lucro = faturamento - totalGastos;
-    const margem = faturamento > 0 ? (lucro / faturamento) * 100 : 0;
+  graficoMeta(gastos, metas, faturamento){
 
-    this.set("dashFaturamento", this.moeda(faturamento));
-    this.set("dashGastos", this.moeda(totalGastos));
-    this.set("dashLucro", this.moeda(lucro));
-    this.set("dashMargem", `${margem.toFixed(1)}%`);
+    const ctx =
 
-    this.set("dashStatus", this.statusTexto(faturamento, lucro, margem));
-    this.set("dashStatusDesc", this.statusDescricao(faturamento, lucro, margem));
+      this.get("chartMetaCategoria");
 
-    this.set("dashCEORecebidoMes", this.moeda(faturado));
-    this.set("dashCEOVencidas", this.moeda(aFaturar));
+    if(!ctx || typeof Chart === "undefined"){
 
-    this.graficoMeta(gastosMes, metasMes, faturamento);
-    this.graficoDistribuicao(gastosMes);
-    this.graficoEvolucao(ano);
-    this.tabelaCategorias(gastosMes);
-  },
+      return;
 
-  statusTexto(faturamento, lucro, margem) {
-    if (faturamento <= 0) return "SEM DADOS";
-    if (lucro < 0) return "CRÍTICO";
-    if (margem < 10) return "ATENÇÃO";
-    return "SAUDÁVEL";
-  },
-
-  statusDescricao(faturamento, lucro, margem) {
-    if (faturamento <= 0) return "Insira o faturamento do mês.";
-    if (lucro < 0) return "Os gastos estão acima do faturamento.";
-    if (margem < 10) return "Margem baixa. Revise as categorias de gasto.";
-    return "Operação dentro do controle esperado.";
-  },
-
-  graficoMeta(gastos, metas, faturamento) {
-    const ctx = this.get("chartMetaCategoria");
-    if (!ctx || typeof Chart === "undefined") return;
-
-    const gastosMap = this.agruparCategorias(gastos);
-
-    let categorias = [];
-    let metaValores = [];
-    let realValores = [];
-
-    if (metas.length) {
-      categorias = metas.map((m) => String(m.categoria || "").toUpperCase());
-
-      metaValores = metas.map((m) => {
-        const percentual = this.numero(m.percentual_meta);
-        return (faturamento * percentual) / 100;
-      });
-
-      realValores = categorias.map((categoria) => gastosMap[categoria] || 0);
-    } else {
-      categorias = Object.keys(gastosMap);
-      realValores = Object.values(gastosMap);
-      metaValores = categorias.map(() => 0);
     }
 
-    if (!categorias.length) {
-      categorias = ["Sem dados"];
-      realValores = [0];
-      metaValores = [0];
+    if(this.chartMeta){
+
+      this.chartMeta.destroy();
+
     }
 
-    if (this.chartMeta) this.chartMeta.destroy();
+    const gastosMap =
+
+      this.agruparCategorias(gastos);
+
+    const categorias =
+
+      [...new Set([
+
+        ...Object.keys(gastosMap),
+
+        ...metas.map(m =>
+
+          this.normalizar(m.categoria)
+
+        )
+
+      ])];
+
+    const real = [];
+
+    const meta = [];
+
+    categorias.forEach(cat => {
+
+      real.push(
+
+        gastosMap[cat] || 0
+
+      );
+
+      const metaItem =
+
+        metas.find(m =>
+
+          this.normalizar(m.categoria) === cat
+
+        );
+
+      const percentual =
+
+        this.numero(
+
+          metaItem?.percentual_meta
+
+        );
+
+      meta.push(
+
+        (faturamento * percentual) / 100
+
+      );
+
+    });
 
     this.chartMeta = new Chart(ctx, {
-      data: {
-        labels: categorias,
-        datasets: [
+
+      data:{
+
+        labels:categorias,
+
+        datasets:[
+
           {
-            type: "bar",
-            label: "Gasto Real",
-            data: realValores,
-            backgroundColor: "#dc2626"
+
+            type:"bar",
+
+            label:"Real",
+
+            data:real,
+
+            backgroundColor:"#ef4444"
+
           },
+
           {
-            type: "line",
-            label: "Meta",
-            data: metaValores,
-            borderColor: "#16a34a",
-            backgroundColor: "#16a34a",
-            borderWidth: 3,
-            tension: 0.3,
-            pointRadius: 4
+
+            type:"line",
+
+            label:"Meta",
+
+            data:meta,
+
+            borderColor:"#22c55e",
+
+            borderWidth:3,
+
+            tension:0.4
+
           }
+
         ]
+
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
+
+      options:{
+
+        responsive:true,
+
+        maintainAspectRatio:false
+
       }
+
     });
+
   },
 
-  graficoDistribuicao(gastos) {
-    const ctx = this.get("chartDistribuicao");
-    if (!ctx || typeof Chart === "undefined") return;
+  // ======================================================
 
-    const mapa = this.agruparCategorias(gastos);
-    let labels = Object.keys(mapa);
-    let valores = Object.values(mapa);
+  // DISTRIBUIÇÃO
 
-    if (!labels.length) {
-      labels = ["Sem dados"];
-      valores = [1];
+  // ======================================================
+
+  graficoDistribuicao(gastos){
+
+    const ctx =
+
+      this.get("chartDistribuicao");
+
+    if(!ctx || typeof Chart === "undefined"){
+
+      return;
+
     }
 
-    if (this.chartDistribuicao) this.chartDistribuicao.destroy();
+    if(this.chartDistribuicao){
+
+      this.chartDistribuicao.destroy();
+
+    }
+
+    const mapa =
+
+      this.agruparCategorias(gastos);
 
     this.chartDistribuicao = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels,
-        datasets: [
+
+      type:"doughnut",
+
+      data:{
+
+        labels:Object.keys(mapa),
+
+        datasets:[
+
           {
-            data: valores
+
+            data:Object.values(mapa)
+
           }
+
         ]
+
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
+
+      options:{
+
+        responsive:true,
+
+        maintainAspectRatio:false
+
       }
+
     });
+
   },
 
-graficoEvolucao(ano) {
-  const ctx = this.get("chartEvolucao");
-  if (!ctx || typeof Chart === "undefined") return;
+  // ======================================================
 
-  const mesesNome = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-  ];
+  // EVOLUÇÃO
 
-  const mesesCurto = [
-    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-  ];
+  // ======================================================
 
-  const faturamentoArr = [];
-  const gastosArr = [];
-  const lucroArr = [];
+  graficoEvolucao(ano){
 
-  mesesNome.forEach((mes) => {
-    const gastosMes = this.gastos.filter((item) => this.mesmoMesAno(item, mes, ano));
-    const mesesMes = this.meses.filter((item) => this.mesmoMesAno(item, mes, ano));
+    const ctx =
 
-    const gastos = gastosMes.reduce((acc, item) => acc + this.numero(item.valor), 0);
-    const faturamento = mesesMes.reduce((acc, item) => acc + this.numero(item.faturamento), 0);
+      this.get("chartEvolucao");
 
-    faturamentoArr.push(faturamento);
-    gastosArr.push(gastos);
-    lucroArr.push(faturamento - gastos);
-  });
+    if(!ctx || typeof Chart === "undefined"){
 
-  if (this.chartEvolucao) this.chartEvolucao.destroy();
-
-  this.chartEvolucao = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: mesesCurto,
-      datasets: [
-        {
-          label: "Faturamento",
-          data: faturamentoArr,
-          borderColor: "#16a34a",
-          backgroundColor: "#16a34a",
-          borderWidth: 3,
-          tension: 0.35,
-          pointRadius: 4
-        },
-        {
-          label: "Gastos",
-          data: gastosArr,
-          borderColor: "#dc2626",
-          backgroundColor: "#dc2626",
-          borderWidth: 3,
-          tension: 0.35,
-          pointRadius: 4
-        },
-        {
-          label: "Lucro",
-          data: lucroArr,
-          borderColor: "#2563eb",
-          backgroundColor: "#2563eb",
-          borderWidth: 3,
-          tension: 0.35,
-          pointRadius: 4
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
-    }
-  });
-},
-
-  tabelaCategorias(gastos) {
-    const tbody = this.get("tabelaTopCategorias");
-    if (!tbody) return;
-
-    const mapa = this.agruparCategorias(gastos);
-    const lista = Object.entries(mapa).sort((a, b) => b[1] - a[1]);
-
-    if (!lista.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="2" class="muted">Nenhum gasto importado neste mês.</td>
-        </tr>
-      `;
       return;
+
     }
 
-    tbody.innerHTML = lista.map(([categoria, valor]) => `
+    if(this.chartEvolucao){
+
+      this.chartEvolucao.destroy();
+
+    }
+
+    const meses = [
+
+      "Janeiro","Fevereiro","Março","Abril",
+
+      "Maio","Junho","Julho","Agosto",
+
+      "Setembro","Outubro","Novembro","Dezembro"
+
+    ];
+
+    const faturamento = [];
+
+    const gastos = [];
+
+    const lucro = [];
+
+    meses.forEach(mes => {
+
+      const fat =
+
+        this.meses.find(item =>
+
+          this.normalizar(item.mes)
+
+          ===
+
+          this.normalizar(mes)
+
+          &&
+
+          String(item.ano)
+
+          ===
+
+          String(ano)
+
+        );
+
+      const gastosMes =
+
+        this.gastos.filter(item =>
+
+          this.normalizar(item.mes)
+
+          ===
+
+          this.normalizar(mes)
+
+          &&
+
+          String(item.ano)
+
+          ===
+
+          String(ano)
+
+        );
+
+      const valorFat =
+
+        this.numero(fat?.faturamento);
+
+      const valorGastos =
+
+        gastosMes.reduce(
+
+          (t,item)=>t+this.numero(item.valor),
+
+          0
+
+        );
+
+      faturamento.push(valorFat);
+
+      gastos.push(valorGastos);
+
+      lucro.push(valorFat - valorGastos);
+
+    });
+
+    this.chartEvolucao = new Chart(ctx, {
+
+      type:"line",
+
+      data:{
+
+        labels:[
+
+          "Jan","Fev","Mar","Abr","Mai","Jun",
+
+          "Jul","Ago","Set","Out","Nov","Dez"
+
+        ],
+
+        datasets:[
+
+          {
+
+            label:"Faturamento",
+
+            data:faturamento,
+
+            borderColor:"#22c55e",
+
+            tension:0.4
+
+          },
+
+          {
+
+            label:"Gastos",
+
+            data:gastos,
+
+            borderColor:"#ef4444",
+
+            tension:0.4
+
+          },
+
+          {
+
+            label:"Lucro",
+
+            data:lucro,
+
+            borderColor:"#3b82f6",
+
+            tension:0.4
+
+          }
+
+        ]
+
+      },
+
+      options:{
+
+        responsive:true,
+
+        maintainAspectRatio:false
+
+      }
+
+    });
+
+  },
+
+  // ======================================================
+
+  // TABELA
+
+  // ======================================================
+
+  tabelaCategorias(gastos){
+
+    const tbody =
+
+      this.get("tabelaTopCategorias");
+
+    if(!tbody) return;
+
+    const mapa =
+
+      this.agruparCategorias(gastos);
+
+    const lista =
+
+      Object.entries(mapa)
+
+      .sort((a,b)=>b[1]-a[1]);
+
+    tbody.innerHTML = lista.map(item => `
+
       <tr>
-        <td><strong>${categoria}</strong></td>
-        <td>${this.moeda(valor)}</td>
+
+        <td>
+
+          <strong>${item[0]}</strong>
+
+        </td>
+
+        <td>
+
+          ${this.moeda(item[1])}
+
+        </td>
+
       </tr>
+
     `).join("");
+
   }
+
 };
 
-window.carregarDashboard = () => dashboardModule.carregar();
+window.carregarDashboard = () => {
+
+  dashboardModule.carregar();
+
+};
