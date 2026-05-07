@@ -47,7 +47,7 @@ numero(v) {
   const n = parseFloat(txt);
 
   return isNaN(n) ? 0 : n;
-}
+},
 
   moeda(v) {
     return new Intl.NumberFormat("pt-BR", {
