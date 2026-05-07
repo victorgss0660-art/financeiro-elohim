@@ -151,14 +151,19 @@ aplicarPermissoes(usuario) {
       }
     });
 }
-  podeAcessar(aba) {
+  
+podeAcessar(aba) {
 
-    const permissoes =
-      this.usuario?.permissoes || [];
+  if (!this.usuario) return false;
 
-    return (
-      permissoes.includes("*") ||
-      permissoes.includes(aba)
-    );
-  }
-};
+  const permissoes = {
+    "dashboard": this.usuario.dashboard,
+    "contas-pagar": this.usuario.contas_pagar,
+    "contas-pagas": this.usuario.contas_pagas,
+    "contas-receber": this.usuario.contas_receber,
+    "planejamento": this.usuario.planejamento,
+    "inserir-dados": this.usuario.inserir_dados
+  };
+
+  return !!permissoes[aba];
+}
