@@ -560,14 +560,51 @@ window.inserirDadosModule = {
           linha["valor"] ||
           0;
 
-        let valorTexto = String(
-          valorOriginal
-        )
-          .replace(/R\$/g, "")
-          .replace(/\s/g, "")
-          .replace(/\./g, "")
-          .replace(",", ".");
+let valor = 0;
 
+// ======================================================
+// SE JÁ FOR NÚMERO
+// ======================================================
+
+if (typeof valorOriginal === "number") {
+
+  valor = valorOriginal;
+
+}
+
+// ======================================================
+// SE FOR TEXTO
+// ======================================================
+
+else {
+
+  let valorTexto = String(valorOriginal)
+    .replace(/R\$/g, "")
+    .replace(/\s/g, "");
+
+  // FORMATO BR
+  // 1.234,56
+
+  if (
+    valorTexto.includes(".") &&
+    valorTexto.includes(",")
+  ) {
+
+    valorTexto = valorTexto
+      .replace(/\./g, "")
+      .replace(",", ".");
+  }
+
+  // 1234,56
+
+  else if (valorTexto.includes(",")) {
+
+    valorTexto = valorTexto
+      .replace(",", ".");
+  }
+
+  valor = parseFloat(valorTexto) || 0;
+}
         const valor =
           parseFloat(valorTexto) || 0;
 
