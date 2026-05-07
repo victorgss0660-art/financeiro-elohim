@@ -15,14 +15,14 @@ window.authModule = {
 
         this.abrirSistema();
 
-        return;
-      }
+      } else {
 
-      this.mostrarLogin();
+        this.mostrarLogin();
+      }
 
     } catch (erro) {
 
-      console.error("Erro iniciar auth:", erro);
+      console.error("Erro auth:", erro);
 
       this.mostrarLogin();
     }
@@ -40,18 +40,23 @@ window.authModule = {
     if (app) app.style.display = "none";
   },
 
-abrirSistema() {
-  document.getElementById("loginScreen").style.display = "none";
-  document.getElementById("appSistema").style.display = "block";
+  abrirSistema() {
 
-  this.aplicarPermissoes();
+    const login =
+      document.getElementById("loginScreen");
 
-  localStorage.removeItem("abaAtualFinanceiro");
+    const app =
+      document.getElementById("appSistema");
 
-  if (window.app?.iniciar) {
-    app.iniciar();
-  }
-}
+    if (login) login.style.display = "none";
+    if (app) app.style.display = "block";
+
+    this.aplicarPermissoes();
+
+    if (window.app?.iniciar) {
+      window.app.iniciar();
+    }
+  },
 
   async login() {
 
@@ -75,15 +80,11 @@ abrirSistema() {
         return;
       }
 
-      console.log("Tentando login:", email);
-
       const usuarios =
         await api.restGet(
           "usuarios_permissoes",
           "select=*"
         );
-
-      console.log("Usuarios:", usuarios);
 
       const usuario =
         usuarios.find(u =>
@@ -113,7 +114,7 @@ abrirSistema() {
 
     } catch (erro) {
 
-      console.error("ERRO LOGIN:", erro);
+      console.error("Erro login:", erro);
 
       alert("Erro ao realizar login.");
     }
@@ -128,35 +129,27 @@ abrirSistema() {
 
   aplicarPermissoes() {
 
-    try {
+    const permissoes =
+      this.usuario?.permissoes || [];
 
-      const permissoes =
-        this.usuario?.permissoes || [];
+    document
+      .querySelectorAll(".menu button")
+      .forEach(btn => {
 
-      document
-        .querySelectorAll(".menu button")
-        .forEach(btn => {
+        const aba = btn.dataset.tab;
 
-          const aba =
-            btn.dataset.tab;
+        if (
+          permissoes.includes("*") ||
+          permissoes.includes(aba)
+        ) {
 
-          if (
-            permissoes.includes("*") ||
-            permissoes.includes(aba)
-          ) {
+          btn.style.display = "flex";
 
-            btn.style.display = "flex";
+        } else {
 
-          } else {
-
-            btn.style.display = "none";
-          }
-        });
-
-    } catch (erro) {
-
-      console.error("Erro permissões:", erro);
-    }
+          btn.style.display = "none";
+        }
+      });
   },
 
   podeAcessar(aba) {
@@ -170,5 +163,3 @@ abrirSistema() {
     );
   }
 };
-
-
