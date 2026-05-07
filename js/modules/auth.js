@@ -150,8 +150,8 @@ aplicarPermissoes(usuario) {
         botao.style.display = "none";
       }
     });
-}
-  
+},
+
 podeAcessar(aba) {
 
   if (!this.usuario) return false;
@@ -166,4 +166,4 @@ podeAcessar(aba) {
   };
 
   return !!permissoes[aba];
-}
+},
