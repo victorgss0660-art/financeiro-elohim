@@ -209,22 +209,26 @@ window.app = {
     }
   },
 
-  restaurarUltimaAba() {
+restaurarUltimaAba() {
+  const ultima = localStorage.getItem("abaAtualFinanceiro");
 
-    const ultima =
-      localStorage.getItem(
-        "abaAtualFinanceiro"
-      );
-
-    if (!ultima) {
-
-      this.abrirAba("dashboard");
-
-      return;
-    }
-
+  if (
+    ultima &&
+    (!window.authModule?.podeAcessar || authModule.podeAcessar(ultima))
+  ) {
     this.abrirAba(ultima);
-  },
+    return;
+  }
+
+  const primeiraPermitida = document.querySelector(".menu button:not([style*='display: none'])");
+
+  if (primeiraPermitida) {
+    this.abrirAba(primeiraPermitida.dataset.tab);
+    return;
+  }
+
+  console.warn("Nenhuma aba permitida encontrada.");
+}
 
   // ======================================================
   // LOAD MÓDULOS
