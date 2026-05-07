@@ -129,10 +129,14 @@ window.authModule = {
 
 aplicarPermissoes(usuario) {
 
-  const permissoes =
-    Array.isArray(usuario.permissoes)
-      ? usuario.permissoes
-      : [];
+  const mapaPermissoes = {
+    "dashboard": usuario.dashboard,
+    "contas-pagar": usuario.contas_pagar,
+    "contas-pagas": usuario.contas_pagas,
+    "contas-receber": usuario.contas_receber,
+    "planejamento": usuario.planejamento,
+    "inserir-dados": usuario.inserir_dados
+  };
 
   document
     .querySelectorAll(".menu button")
@@ -140,21 +144,13 @@ aplicarPermissoes(usuario) {
 
       const aba = botao.dataset.tab;
 
-      // ADMIN vê tudo
-      if (usuario.tipo === "admin") {
-        botao.style.display = "flex";
-        return;
-      }
-
-      // usuário comum
-      if (permissoes.includes(aba)) {
+      if (mapaPermissoes[aba]) {
         botao.style.display = "flex";
       } else {
         botao.style.display = "none";
       }
     });
 }
-
   podeAcessar(aba) {
 
     const permissoes =
