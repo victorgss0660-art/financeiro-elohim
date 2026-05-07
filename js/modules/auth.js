@@ -27,16 +27,18 @@ window.authModule = {
     document.getElementById("appSistema").style.display = "none";
   },
 
-  abrirSistema() {
+abrirSistema() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("appSistema").style.display = "block";
 
-    document.getElementById("loginScreen").style.display = "none";
+  this.aplicarPermissoes();
 
-    document.getElementById("appSistema").style.display = "block";
+  localStorage.removeItem("abaAtualFinanceiro");
 
-    if (window.app?.iniciar) {
-      app.iniciar();
-    }
-  },
+  if (window.app?.iniciar) {
+    app.iniciar();
+  }
+}
 
 async login() {
 
