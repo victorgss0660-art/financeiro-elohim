@@ -196,180 +196,307 @@ window.dashboardModule = {
     this.tabelaCategorias(gastosMes);
   },
 
-  graficoMeta(gastos, metas, faturamento){
+graficoMeta(gastos, metas, faturamento){
 
-    const ctx = this.get("chartMetaCategoria");
-    if(!ctx || typeof Chart === "undefined") return;
+  const ctx = this.get("chartMetaCategoria");
+  if(!ctx || typeof Chart === "undefined") return;
 
-    if(this.chartMeta){
-      this.chartMeta.destroy();
-    }
+  if(this.chartMeta){
+    this.chartMeta.destroy();
+  }
 
-    const gastosMap = this.agruparCategorias(gastos);
+  const gastosMap = this.agruparCategorias(gastos);
 
-    const categorias = [
-      ...new Set([
-        ...Object.keys(gastosMap),
-        ...(metas || []).map(m => this.normalizar(m.categoria))
-      ])
-    ];
+  const categorias = [
+    ...new Set([
+      ...Object.keys(gastosMap),
+      ...(metas || []).map(m => this.normalizar(m.categoria))
+    ])
+  ];
 
-    if (!categorias.length) {
-      categorias.push("SEM DADOS");
-    }
+  if (!categorias.length) {
+    categorias.push("SEM DADOS");
+  }
 
-    const real = [];
-    const meta = [];
+  const real = [];
+  const meta = [];
 
-    categorias.forEach(cat => {
+  categorias.forEach(cat => {
 
-      real.push(gastosMap[cat] || 0);
+    real.push(gastosMap[cat] || 0);
 
-      const metaItem = metas.find(m =>
-        this.normalizar(m.categoria) === cat
-      );
+    const metaItem = metas.find(m =>
+      this.normalizar(m.categoria) === cat
+    );
 
-      const percentual =
-        this.numero(metaItem?.percentual_meta);
+    const percentual =
+      this.numero(metaItem?.percentual_meta);
 
-      meta.push(
-        (faturamento * percentual) / 100
-      );
-    });
+    meta.push(
+      (faturamento * percentual) / 100
+    );
+  });
 
-    this.chartMeta = new Chart(ctx,{
-      data:{
-        labels: categorias,
-        datasets:[
-          {
-            type:"bar",
-            label:"Real",
-            data:real,
-            backgroundColor:"#ef4444"
-          },
-          {
-            type:"line",
-            label:"Meta",
-            data:meta,
-            borderColor:"#22c55e",
-            borderWidth:3,
-            tension:0.4
+  this.chartMeta = new Chart(ctx,{
+    data:{
+      labels: categorias,
+      datasets:[
+        {
+          type:"bar",
+          label:"Gasto Real",
+          data:real,
+          backgroundColor:"rgba(239,68,68,0.85)",
+          borderRadius:10,
+          borderSkipped:false
+        },
+        {
+          type:"line",
+          label:"Meta Permitida",
+          data:meta,
+          borderColor:"#22c55e",
+          backgroundColor:"#22c55e",
+          borderWidth:4,
+          tension:0.35,
+          pointRadius:5,
+          pointHoverRadius:7
+        }
+      ]
+    },
+
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+
+      plugins:{
+        legend:{
+          position:"top",
+          labels:{
+            usePointStyle:true,
+            padding:18,
+            font:{
+              weight:"bold"
+            }
           }
-        ]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false
-      }
-    });
-  },
+        },
 
-  graficoDistribuicao(gastos){
-
-    const ctx = this.get("chartDistribuicao");
-    if(!ctx || typeof Chart === "undefined") return;
-
-    if(this.chartDistribuicao){
-      this.chartDistribuicao.destroy();
-    }
-
-    const mapa = this.agruparCategorias(gastos);
-
-    const labels = Object.keys(mapa);
-    const valores = Object.values(mapa);
-
-    this.chartDistribuicao = new Chart(ctx,{
-      type:"doughnut",
-      data:{
-        labels: labels.length ? labels : ["SEM DADOS"],
-        datasets:[
-          {
-            data: valores.length ? valores : [1]
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>{
+              return `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`;
+            }
           }
-        ]
+        }
       },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false
+
+      scales:{
+        y:{
+          ticks:{
+            callback:(value)=> this.moeda(value)
+          },
+          grid:{
+            color:"rgba(148,163,184,0.15)"
+          }
+        },
+
+        x:{
+          grid:{
+            display:false
+          }
+        }
       }
-    });
-  },
-
-  graficoEvolucao(ano){
-
-    const ctx = this.get("chartEvolucao");
-    if(!ctx || typeof Chart === "undefined") return;
-
-    if(this.chartEvolucao){
-      this.chartEvolucao.destroy();
     }
+  });
+},
 
-    const faturamento = [];
-    const gastos = [];
-    const lucro = [];
+graficoDistribuicao(gastos){
 
-    this.mesesLista.forEach(mes => {
+  const ctx = this.get("chartDistribuicao");
+  if(!ctx || typeof Chart === "undefined") return;
 
-      const fat = this.meses.find(item =>
-        this.normalizar(item.mes) === this.normalizar(mes)
-        &&
-        String(item.ano) === String(ano)
+  if(this.chartDistribuicao){
+    this.chartDistribuicao.destroy();
+  }
+
+  const mapa = this.agruparCategorias(gastos);
+
+  const labels = Object.keys(mapa);
+  const valores = Object.values(mapa);
+
+  this.chartDistribuicao = new Chart(ctx,{
+    type:"doughnut",
+
+    data:{
+      labels: labels.length ? labels : ["SEM DADOS"],
+
+      datasets:[
+        {
+          data: valores.length ? valores : [1],
+
+          borderWidth:3,
+          hoverOffset:18
+        }
+      ]
+    },
+
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      cutout:"62%",
+
+      plugins:{
+        legend:{
+          position:"bottom",
+          labels:{
+            usePointStyle:true,
+            padding:16,
+            font:{
+              weight:"600"
+            }
+          }
+        },
+
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>{
+              return `${ctx.label}: ${this.moeda(ctx.raw)}`;
+            }
+          }
+        }
+      }
+    }
+  });
+},
+  
+graficoEvolucao(ano){
+
+  const ctx = this.get("chartEvolucao");
+  if(!ctx || typeof Chart === "undefined") return;
+
+  if(this.chartEvolucao){
+    this.chartEvolucao.destroy();
+  }
+
+  const faturamento = [];
+  const gastos = [];
+  const lucro = [];
+
+  this.mesesLista.forEach(mes => {
+
+    const fat = this.meses.find(item =>
+      this.normalizar(item.mes) === this.normalizar(mes)
+      &&
+      String(item.ano) === String(ano)
+    );
+
+    const gastosMes = this.gastosAno.filter(item =>
+      this.normalizar(item.mes) === this.normalizar(mes)
+      &&
+      String(item.ano) === String(ano)
+    );
+
+    const valorFat =
+      this.numero(fat?.faturamento);
+
+    const valorGastos =
+      gastosMes.reduce(
+        (t,item)=>t+this.numero(item.valor),
+        0
       );
 
-      const gastosMes = this.gastosAno.filter(item =>
-        this.normalizar(item.mes) === this.normalizar(mes)
-        &&
-        String(item.ano) === String(ano)
-      );
+    faturamento.push(valorFat);
+    gastos.push(valorGastos);
+    lucro.push(valorFat - valorGastos);
+  });
 
-      const valorFat =
-        this.numero(fat?.faturamento);
+  this.chartEvolucao = new Chart(ctx,{
+    type:"line",
 
-      const valorGastos =
-        gastosMes.reduce(
-          (t,item)=>t+this.numero(item.valor),
-          0
-        );
+    data:{
+      labels:[
+        "Jan","Fev","Mar","Abr","Mai","Jun",
+        "Jul","Ago","Set","Out","Nov","Dez"
+      ],
 
-      faturamento.push(valorFat);
-      gastos.push(valorGastos);
-      lucro.push(valorFat - valorGastos);
-    });
+      datasets:[
+        {
+          label:"Faturamento",
+          data:faturamento,
+          borderColor:"#22c55e",
+          backgroundColor:"#22c55e",
+          borderWidth:4,
+          tension:0.35,
+          pointRadius:4,
+          pointHoverRadius:7
+        },
 
-    this.chartEvolucao = new Chart(ctx,{
-      type:"line",
-      data:{
-        labels:[
-          "Jan","Fev","Mar","Abr","Mai","Jun",
-          "Jul","Ago","Set","Out","Nov","Dez"
-        ],
-        datasets:[
-          {
-            label:"Faturamento",
-            data:faturamento,
-            borderColor:"#22c55e",
-            tension:0.4
-          },
-          {
-            label:"Gastos",
-            data:gastos,
-            borderColor:"#ef4444",
-            tension:0.4
-          },
-          {
-            label:"Lucro",
-            data:lucro,
-            borderColor:"#3b82f6",
-            tension:0.4
+        {
+          label:"Gastos",
+          data:gastos,
+          borderColor:"#ef4444",
+          backgroundColor:"#ef4444",
+          borderWidth:4,
+          tension:0.35,
+          pointRadius:4,
+          pointHoverRadius:7
+        },
+
+        {
+          label:"Lucro",
+          data:lucro,
+          borderColor:"#3b82f6",
+          backgroundColor:"#3b82f6",
+          borderWidth:5,
+          tension:0.35,
+          pointRadius:5,
+          pointHoverRadius:8
+        }
+      ]
+    },
+
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+
+      plugins:{
+        legend:{
+          position:"top",
+          labels:{
+            usePointStyle:true,
+            padding:20,
+            font:{
+              weight:"bold"
+            }
           }
-        ]
+        },
+
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>{
+              return `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`;
+            }
+          }
+        }
       },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false
+
+      scales:{
+        y:{
+          ticks:{
+            callback:(value)=> this.moeda(value)
+          },
+          grid:{
+            color:"rgba(148,163,184,0.12)"
+          }
+        },
+
+        x:{
+          grid:{
+            display:false
+          }
+        }
       }
-    });
-  },
+    }
+  });
+},
 
   tabelaCategorias(gastos){
 
