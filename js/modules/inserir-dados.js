@@ -1058,15 +1058,23 @@ window.inserirDadosModule = {
 
         if (
 
-          registro.categoria &&
+const categoriaValida =
+  registro.categoria &&
+  registro.categoria !== "-" &&
+  registro.categoria !== "NULL";
 
-          registro.valor > 0
+const valorValido =
+  !isNaN(registro.valor);
 
-        ) {
+if (categoriaValida && valorValido) {
 
-          registros.push(registro);
-
-        }
+  registros.push({
+    mes: registro.mes,
+    ano: registro.ano,
+    categoria: registro.categoria,
+    valor: Number(registro.valor)
+  });
+}
 
       });
 
