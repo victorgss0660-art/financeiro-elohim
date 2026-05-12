@@ -245,7 +245,7 @@ graficoMeta(gastos, metas, faturamento){
           type:"bar",
           label:"Gasto Real",
           data:real,
-          backgroundColor:"rgba(239,68,68,0.85)",
+          backgroundColor:"#ff2d55",
           borderRadius:10,
           borderSkipped:false
         },
@@ -253,8 +253,8 @@ graficoMeta(gastos, metas, faturamento){
           type:"line",
           label:"Meta Permitida",
           data:meta,
-          borderColor:"#22c55e",
-          backgroundColor:"#22c55e",
+          borderColor:"#f59e0b",
+          backgroundColor:"#f59e0b",
           borderWidth:4,
           tension:0.35,
           pointRadius:5,
@@ -331,7 +331,16 @@ graficoDistribuicao(gastos){
       datasets:[
         {
           data: valores.length ? valores : [1],
-
+          backgroundColor:[
+            "#ff2d55",
+            "#dc2626",
+            "#ff4d6d",
+            "#991b1b",
+            "#f59e0b",
+            "#38bdf8",
+            "#8b5cf6",
+            "#1f2937"
+           ],  
           borderWidth:3,
           hoverOffset:18
         }
