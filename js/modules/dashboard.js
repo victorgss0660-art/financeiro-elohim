@@ -274,8 +274,10 @@ graficoMeta(gastos, metas, faturamento){
             usePointStyle:true,
             padding:18,
             font:{
-              weight:"bold"
-            }
+              weight:"900",
+              size:13
+            },
+            color:"#111827"
           }
         },
 
@@ -430,8 +432,8 @@ graficoEvolucao(ano){
         {
           label:"Faturamento",
           data:faturamento,
-          borderColor:"#22c55e",
-          backgroundColor:"#22c55e",
+          borderColor:"#ff4d6d",
+          backgroundColor:"#ff4d6d",
           borderWidth:4,
           tension:0.35,
           pointRadius:4,
@@ -441,8 +443,8 @@ graficoEvolucao(ano){
         {
           label:"Gastos",
           data:gastos,
-          borderColor:"#ef4444",
-          backgroundColor:"#ef4444",
+          borderColor:"#dc2626",
+          backgroundColor:"#dc2626",
           borderWidth:4,
           tension:0.35,
           pointRadius:4,
@@ -452,8 +454,8 @@ graficoEvolucao(ano){
         {
           label:"Lucro",
           data:lucro,
-          borderColor:"#3b82f6",
-          backgroundColor:"#3b82f6",
+          borderColor:"#38bdf8",
+          backgroundColor:"#38bdf8",
           borderWidth:5,
           tension:0.35,
           pointRadius:5,
@@ -493,7 +495,7 @@ graficoEvolucao(ano){
             callback:(value)=> this.moeda(value)
           },
           grid:{
-            color:"rgba(148,163,184,0.12)"
+            color:"rgba(255,255,255,0.06)"
           }
         },
 
