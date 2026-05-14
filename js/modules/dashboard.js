@@ -538,6 +538,64 @@ graficoEvolucao(ano){
     `).join("");
   }
 };
+mediaMensalCategorias(){
+
+  const tbody = this.get("tabelaMediaCategorias");
+  if (!tbody) return;
+
+  const mapa = {};
+
+  this.gastosAno.forEach(item => {
+
+    const categoria = this.normalizar(item.categoria);
+    const chaveMes = `${item.mes}-${item.ano}`;
+
+    if (!mapa[categoria]) {
+      mapa[categoria] = {
+        total: 0,
+        meses: new Set()
+      };
+    }
+
+    mapa[categoria].total += this.numero(item.valor);
+    mapa[categoria].meses.add(chaveMes);
+  });
+
+  const lista = Object.entries(mapa)
+    .map(([categoria, dados]) => {
+
+      const qtdMeses = dados.meses.size || 1;
+      const media = dados.total / qtdMeses;
+
+      return {
+        categoria,
+        total: dados.total,
+        meses: qtdMeses,
+        media
+      };
+    })
+    .sort((a,b) => b.media - a.media);
+
+  if (!lista.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="muted">
+          Nenhum histórico encontrado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(item => `
+    <tr>
+      <td><strong>${item.categoria}</strong></td>
+      <td>${this.moeda(item.media)}</td>
+      <td>${this.moeda(item.total)}</td>
+      <td>${item.meses}</td>
+    </tr>
+  `).join("");
+},
 
 window.carregarDashboard = () => {
   dashboardModule.carregar();
