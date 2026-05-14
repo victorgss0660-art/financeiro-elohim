@@ -118,200 +118,193 @@
 
         <!-- DASHBOARD -->
 
-        <section id="tab-dashboard" class="tab-section active">
+<section id="tab-dashboard" class="tab-section active">
+
+  <!-- HERO -->
+  <div class="dashboard-hero">
+
+    <div class="dashboard-hero-left">
+      <span>Painel Executivo</span>
+      <h2>Dashboard Financeiro</h2>
+      <p>Visão estratégica da operação, metas, gastos e faturamento.</p>
+    </div>
+
+    <div class="dashboard-filters">
+      <select id="mesSelect"></select>
+
+      <input
+        id="anoSelect"
+        type="number"
+        value="2026"
+      />
+
+      <button
+        type="button"
+        onclick="app.recarregarAbaAtual()"
+      >
+        Atualizar
+      </button>
+    </div>
 
-          <div class="dashboard-hero">
-
-            <div class="dashboard-hero-left">
-
-              <span>Painel Executivo</span>
-
-              <h2>Dashboard Financeiro</h2>
-
-              <p>Visão estratégica da operação, metas, gastos e faturamento.</p>
-
-            </div>
-
-            <div class="dashboard-filters">
-
-              <select id="mesSelect"></select>
-
-              <input id="anoSelect" type="number" value="2026" />
-
-              <button type="button" onclick="app.recarregarAbaAtual()">Atualizar</button>
-
-            </div>
-
-          </div>
-
-          <div class="page-head">
-
-            <h2>Dashboard Executivo</h2>
-
-            <p>Visão financeira estratégica da operação</p>
-
-          </div>
-
-          <section class="cards-grid">
-
-            <div class="card">
-
-              <span>Faturamento</span>
-
-              <strong id="dashFaturamento">R$ 0,00</strong>
-
-            </div>
-
-            <div class="card">
-
-              <span>Gastos</span>
-
-              <strong id="dashGastos">R$ 0,00</strong>
-
-            </div>
-
-            <div class="card">
-
-              <span>Lucro</span>
-
-              <strong id="dashLucro">R$ 0,00</strong>
-
-            </div>
-
-            <div class="card">
-
-              <span>Margem</span>
-
-              <strong id="dashMargem">0%</strong>
-
-            </div>
-
-          </section>
-
-          <div class="panel">
-
-            <div class="panel-head">
-
-              <h3>Status Financeiro</h3>
-
-            </div>
-
-            <div class="status-box">
-
-              <h2 id="dashStatus">—</h2>
-
-              <p id="dashStatusDesc"></p>
-
-            </div>
-
-          </div>
-
-          <div class="grid-2">
-
-            <div class="panel">
-
-              <div class="panel-head">
-
-                <h3>Gastos x Meta por Categoria</h3>
-
-              </div>
-
-              <div class="chart-box">
-
-                <canvas id="chartMetaCategoria"></canvas>
-
-              </div>
-
-            </div>
-
-            <div class="panel">
-
-              <div class="panel-head">
-
-                <h3>Distribuição de Gastos</h3>
-
-              </div>
-
-              <div class="chart-box">
-
-                <canvas id="chartDistribuicao"></canvas>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <div class="panel">
-
-            <div class="panel-head">
-
-              <h3>Evolução Anual</h3>
-
-            </div>
-
-            <div class="chart-box chart-box-lg">
-
-              <canvas id="chartEvolucao"></canvas>
-
-            </div>
-
-          </div>
-
-          <div class="panel">
-
-            <div class="panel-head">
-
-              <h3>Top Categorias</h3>
-
-            </div>
-
-            <div class="table-wrap">
-
-              <table>
-
-                <thead>
-
-                  <tr>
-
-                    <th>Categoria</th>
-
-                    <th>Valor</th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody id="tabelaTopCategorias"></tbody>
-
-              </table>
-
-            </div>
-            <div class="panel">
-  <div class="panel-head">
-    <h3>Média Mensal por Categoria</h3>
-    <span class="muted">Histórico consolidado de gastos</span>
   </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Categoria</th>
-          <th>Média Mensal</th>
-          <th>Total Histórico</th>
-          <th>Meses Considerados</th>
-        </tr>
-      </thead>
-
-      <tbody id="tabelaMediaCategorias"></tbody>
-    </table>
+  <!-- TITULO -->
+  <div class="page-head">
+    <h2>Dashboard Executivo</h2>
+    <p>Visão financeira estratégica da operação</p>
   </div>
-</div>
 
-          </div>
+  <!-- KPIS -->
+  <section class="cards-grid">
 
-        </section>
+    <div class="card">
+      <span>Faturamento</span>
+      <strong id="dashFaturamento">R$ 0,00</strong>
+    </div>
+
+    <div class="card">
+      <span>Gastos</span>
+      <strong id="dashGastos">R$ 0,00</strong>
+    </div>
+
+    <div class="card">
+      <span>Lucro</span>
+      <strong id="dashLucro">R$ 0,00</strong>
+    </div>
+
+    <div class="card">
+      <span>Margem</span>
+      <strong id="dashMargem">0%</strong>
+    </div>
+
+  </section>
+
+  <!-- STATUS -->
+  <div class="panel">
+
+    <div class="panel-head">
+      <h3>Status Financeiro</h3>
+    </div>
+
+    <div class="status-box">
+      <h2 id="dashStatus">—</h2>
+      <p id="dashStatusDesc"></p>
+    </div>
+
+  </div>
+
+  <!-- GRAFICOS SUPERIORES -->
+  <div class="grid-2">
+
+    <div class="panel">
+
+      <div class="panel-head">
+        <h3>Gastos x Meta por Categoria</h3>
+      </div>
+
+      <div class="chart-box">
+        <canvas id="chartMetaCategoria"></canvas>
+      </div>
+
+    </div>
+
+    <div class="panel">
+
+      <div class="panel-head">
+        <h3>Distribuição de Gastos</h3>
+      </div>
+
+      <div class="chart-box">
+        <canvas id="chartDistribuicao"></canvas>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- EVOLUÇÃO -->
+  <div class="panel">
+
+    <div class="panel-head">
+      <h3>Evolução Anual</h3>
+    </div>
+
+    <div class="chart-box chart-box-lg">
+      <canvas id="chartEvolucao"></canvas>
+    </div>
+
+  </div>
+
+  <!-- TABELAS -->
+  <div class="grid-2">
+
+    <!-- TOP CATEGORIAS -->
+    <div class="panel">
+
+      <div class="panel-head">
+        <h3>Top Categorias</h3>
+        <span class="muted">Maiores gastos do mês selecionado</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaTopCategorias">
+            <tr>
+              <td colspan="2" class="muted">
+                Nenhum dado carregado.
+              </td>
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+
+    <!-- MÉDIA MENSAL -->
+    <div class="panel">
+
+      <div class="panel-head">
+        <h3>Média Mensal por Categoria</h3>
+        <span class="muted">Histórico consolidado do ano</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Média</th>
+              <th>Total</th>
+              <th>Meses</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelaMediaCategorias">
+            <tr>
+              <td colspan="4" class="muted">
+                Nenhum histórico carregado.
+              </td>
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
 
         <!-- CONTAS A PAGAR -->
 
