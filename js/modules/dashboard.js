@@ -194,6 +194,7 @@ window.dashboardModule = {
     this.graficoMeta(gastosMes, metasMes, faturamento);
     this.graficoEvolucao(ano);
     this.tabelaCategorias(gastosMes);
+    this.mediaMensalCategorias();
   },
 
 graficoMeta(gastos, metas, faturamento){
