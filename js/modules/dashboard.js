@@ -1,6 +1,6 @@
 window.dashboardModule = {
-
   gastos: [],
+  gastosAno: [],
   meses: [],
   metas: [],
 
@@ -9,28 +9,42 @@ window.dashboardModule = {
   chartEvolucao: null,
 
   mesesLista: [
-    "Janeiro","Fevereiro","Março","Abril",
-    "Maio","Junho","Julho","Agosto",
-    "Setembro","Outubro","Novembro","Dezembro"
+    "Janeiro", "Fevereiro", "Março", "Abril",
+    "Maio", "Junho", "Julho", "Agosto",
+    "Setembro", "Outubro", "Novembro", "Dezembro"
   ],
 
-  get(id){
+  cores: [
+    "#ff2d55",
+    "#dc2626",
+    "#ff4d6d",
+    "#991b1b",
+    "#f59e0b",
+    "#38bdf8",
+    "#8b5cf6",
+    "#1f2937",
+    "#fb7185",
+    "#ef4444",
+    "#f97316",
+    "#0f172a"
+  ],
+
+  get(id) {
     return document.getElementById(id);
   },
 
-  set(id, valor){
+  set(id, valor) {
     const el = this.get(id);
-    if(el) el.textContent = valor;
+    if (el) el.textContent = valor;
   },
 
-  normalizar(texto){
+  normalizar(texto) {
     return String(texto || "")
       .trim()
       .toUpperCase();
   },
 
-  numero(valor){
-
+  numero(valor) {
     if (typeof valor === "number") {
       return isNaN(valor) ? 0 : valor;
     }
@@ -52,36 +66,30 @@ window.dashboardModule = {
     }
 
     const n = parseFloat(txt);
-
     return isNaN(n) ? 0 : n;
   },
 
-  moeda(valor){
+  moeda(valor) {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL"
     }).format(this.numero(valor));
   },
 
-  mesSelecionado(){
+  mesSelecionado() {
     return this.get("mesSelect")?.value || "Janeiro";
   },
 
-  anoSelecionado(){
-    return String(
-      this.get("anoSelect")?.value || new Date().getFullYear()
-    );
+  anoSelecionado() {
+    return String(this.get("anoSelect")?.value || new Date().getFullYear());
   },
 
-  async carregar(){
-
+  async carregar() {
     try {
-
       const mes = this.mesSelecionado();
       const ano = this.anoSelecionado();
 
       const [gastos, meses, metas, gastosAno] = await Promise.all([
-
         api.restGet(
           "gastos",
           `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=10000`
@@ -109,62 +117,47 @@ window.dashboardModule = {
       this.metas = Array.isArray(metas) ? metas : [];
 
       this.renderizar();
-
     } catch (erro) {
-
       console.error("Erro dashboard:", erro);
       alert("Erro ao carregar dashboard.");
     }
   },
 
-  agruparCategorias(lista){
-
+  agruparCategorias(lista) {
     const mapa = {};
 
     (lista || []).forEach(item => {
-
-      const categoria =
-        this.normalizar(item.categoria || "SEM CATEGORIA");
+      const categoria = this.normalizar(item.categoria || "SEM CATEGORIA");
 
       mapa[categoria] =
-        (mapa[categoria] || 0)
-        +
+        (mapa[categoria] || 0) +
         this.numero(item.valor);
     });
 
     return mapa;
   },
 
-  renderizar(){
-
+  renderizar() {
     const mes = this.mesSelecionado();
     const ano = this.anoSelecionado();
 
     const gastosMes = this.gastos;
 
     const faturamentoMes = this.meses.find(item =>
-      this.normalizar(item.mes) === this.normalizar(mes)
-      &&
+      this.normalizar(item.mes) === this.normalizar(mes) &&
       String(item.ano) === String(ano)
     );
 
     const metasMes = this.metas;
 
     const totalGastos = gastosMes.reduce(
-      (t,item)=> t + this.numero(item.valor),
+      (t, item) => t + this.numero(item.valor),
       0
     );
 
-    const faturamento =
-      this.numero(faturamentoMes?.faturamento);
-
-    const lucro =
-      faturamento - totalGastos;
-
-    const margem =
-      faturamento > 0
-        ? (lucro / faturamento) * 100
-        : 0;
+    const faturamento = this.numero(faturamentoMes?.faturamento);
+    const lucro = faturamento - totalGastos;
+    const margem = faturamento > 0 ? (lucro / faturamento) * 100 : 0;
 
     this.set("dashFaturamento", this.moeda(faturamento));
     this.set("dashGastos", this.moeda(totalGastos));
@@ -177,12 +170,10 @@ window.dashboardModule = {
     if (faturamento <= 0) {
       status = "SEM DADOS";
       descricao = "Nenhum faturamento encontrado.";
-    }
-    else if (lucro < 0) {
+    } else if (lucro < 0) {
       status = "CRÍTICO";
       descricao = "Os gastos estão acima do faturamento.";
-    }
-    else if (margem < 10) {
+    } else if (margem < 10) {
       status = "ATENÇÃO";
       descricao = "Margem abaixo do ideal.";
     }
@@ -197,328 +188,280 @@ window.dashboardModule = {
     this.mediaMensalCategorias();
   },
 
-graficoMeta(gastos, metas, faturamento){
+  graficoMeta(gastos, metas, faturamento) {
+    const ctx = this.get("chartMetaCategoria");
+    if (!ctx || typeof Chart === "undefined") return;
 
-  const ctx = this.get("chartMetaCategoria");
-  if(!ctx || typeof Chart === "undefined") return;
+    if (this.chartMeta) {
+      this.chartMeta.destroy();
+    }
 
-  if(this.chartMeta){
-    this.chartMeta.destroy();
-  }
+    const gastosMap = this.agruparCategorias(gastos);
 
-  const gastosMap = this.agruparCategorias(gastos);
+    const categorias = [
+      ...new Set([
+        ...Object.keys(gastosMap),
+        ...(metas || []).map(m => this.normalizar(m.categoria))
+      ])
+    ];
 
-  const categorias = [
-    ...new Set([
-      ...Object.keys(gastosMap),
-      ...(metas || []).map(m => this.normalizar(m.categoria))
-    ])
-  ];
+    if (!categorias.length) {
+      categorias.push("SEM DADOS");
+    }
 
-  if (!categorias.length) {
-    categorias.push("SEM DADOS");
-  }
+    const real = [];
+    const meta = [];
 
-  const real = [];
-  const meta = [];
+    categorias.forEach(cat => {
+      real.push(gastosMap[cat] || 0);
 
-  categorias.forEach(cat => {
+      const metaItem = (metas || []).find(m =>
+        this.normalizar(m.categoria) === cat
+      );
 
-    real.push(gastosMap[cat] || 0);
+      const percentual = this.numero(metaItem?.percentual_meta);
 
-    const metaItem = metas.find(m =>
-      this.normalizar(m.categoria) === cat
-    );
+      meta.push((faturamento * percentual) / 100);
+    });
 
-    const percentual =
-      this.numero(metaItem?.percentual_meta);
-
-    meta.push(
-      (faturamento * percentual) / 100
-    );
-  });
-
-  this.chartMeta = new Chart(ctx,{
-    data:{
-      labels: categorias,
-      datasets:[
-        {
-          type:"bar",
-          label:"Gasto Real",
-          data:real,
-          backgroundColor:"#ff2d55",
-          borderRadius:10,
-          borderSkipped:false
-        },
-        {
-          type:"line",
-          label:"Meta Permitida",
-          data:meta,
-          borderColor:"#f59e0b",
-          backgroundColor:"#f59e0b",
-          borderWidth:4,
-          tension:0.35,
-          pointRadius:5,
-          pointHoverRadius:7
-        }
-      ]
-    },
-
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-
-      plugins:{
-        legend:{
-          position:"top",
-          labels:{
-            usePointStyle:true,
-            padding:18,
-            font:{
-              weight:"900",
-              size:13
-            },
-            color:"#111827"
-          }
-        },
-
-        tooltip:{
-          callbacks:{
-            label:(ctx)=>{
-              return `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`;
-            }
-          }
-        }
-      },
-
-      scales:{
-        y:{
-          ticks:{
-            callback:(value)=> this.moeda(value)
+    this.chartMeta = new Chart(ctx, {
+      data: {
+        labels: categorias,
+        datasets: [
+          {
+            type: "bar",
+            label: "Gasto Real",
+            data: real,
+            backgroundColor: "#ff2d55",
+            borderRadius: 10,
+            borderSkipped: false
           },
-          grid:{
-            color:"rgba(148,163,184,0.15)"
+          {
+            type: "line",
+            label: "Meta Permitida",
+            data: meta,
+            borderColor: "#f59e0b",
+            backgroundColor: "#f59e0b",
+            borderWidth: 4,
+            tension: 0.35,
+            pointRadius: 5,
+            pointHoverRadius: 7
           }
-        },
-
-        x:{
-          grid:{
-            display:false
-          }
-        }
-      }
-    }
-  });
-},
-
-graficoDistribuicao(gastos){
-
-  const ctx = this.get("chartDistribuicao");
-  if(!ctx || typeof Chart === "undefined") return;
-
-  if(this.chartDistribuicao){
-    this.chartDistribuicao.destroy();
-  }
-
-  const mapa = this.agruparCategorias(gastos);
-
-  const labels = Object.keys(mapa);
-  const valores = Object.values(mapa);
-
-  this.chartDistribuicao = new Chart(ctx,{
-    type:"doughnut",
-
-    data:{
-      labels: labels.length ? labels : ["SEM DADOS"],
-
-      datasets:[
-        {
-          data: valores.length ? valores : [1],
-          backgroundColor:[
-            "#ff2d55",
-            "#dc2626",
-            "#ff4d6d",
-            "#991b1b",
-            "#f59e0b",
-            "#38bdf8",
-            "#8b5cf6",
-            "#1f2937"
-           ],  
-          borderWidth:3,
-          hoverOffset:18
-        }
-      ]
-    },
-
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      cutout:"62%",
-
-      plugins:{
-        legend:{
-          position:"bottom",
-          labels:{
-            usePointStyle:true,
-            padding:16,
-            font:{
-              weight:"600"
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+            labels: {
+              usePointStyle: true,
+              padding: 18,
+              font: {
+                weight: "900",
+                size: 13
+              },
+              color: "#111827"
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`
             }
           }
         },
-
-        tooltip:{
-          callbacks:{
-            label:(ctx)=>{
-              return `${ctx.label}: ${this.moeda(ctx.raw)}`;
+        scales: {
+          y: {
+            ticks: {
+              callback: value => this.moeda(value)
+            },
+            grid: {
+              color: "rgba(148,163,184,0.15)"
+            }
+          },
+          x: {
+            grid: {
+              display: false
             }
           }
         }
       }
+    });
+  },
+
+  graficoDistribuicao(gastos) {
+    const ctx = this.get("chartDistribuicao");
+    if (!ctx || typeof Chart === "undefined") return;
+
+    if (this.chartDistribuicao) {
+      this.chartDistribuicao.destroy();
     }
-  });
-},
-  
-graficoEvolucao(ano){
 
-  const ctx = this.get("chartEvolucao");
-  if(!ctx || typeof Chart === "undefined") return;
+    const mapa = this.agruparCategorias(gastos);
+    const labels = Object.keys(mapa);
+    const valores = Object.values(mapa);
 
-  if(this.chartEvolucao){
-    this.chartEvolucao.destroy();
-  }
+    this.chartDistribuicao = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: labels.length ? labels : ["SEM DADOS"],
+        datasets: [
+          {
+            data: valores.length ? valores : [1],
+            backgroundColor: this.cores,
+            borderWidth: 3,
+            hoverOffset: 18
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "62%",
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              usePointStyle: true,
+              padding: 16,
+              font: {
+                weight: "600"
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.label}: ${this.moeda(ctx.raw)}`
+            }
+          }
+        }
+      }
+    });
+  },
 
-  const faturamento = [];
-  const gastos = [];
-  const lucro = [];
+  graficoEvolucao(ano) {
+    const ctx = this.get("chartEvolucao");
+    if (!ctx || typeof Chart === "undefined") return;
 
-  this.mesesLista.forEach(mes => {
+    if (this.chartEvolucao) {
+      this.chartEvolucao.destroy();
+    }
 
-    const fat = this.meses.find(item =>
-      this.normalizar(item.mes) === this.normalizar(mes)
-      &&
-      String(item.ano) === String(ano)
-    );
+    const faturamento = [];
+    const gastos = [];
+    const lucro = [];
 
-    const gastosMes = this.gastosAno.filter(item =>
-      this.normalizar(item.mes) === this.normalizar(mes)
-      &&
-      String(item.ano) === String(ano)
-    );
+    this.mesesLista.forEach(mes => {
+      const fat = this.meses.find(item =>
+        this.normalizar(item.mes) === this.normalizar(mes) &&
+        String(item.ano) === String(ano)
+      );
 
-    const valorFat =
-      this.numero(fat?.faturamento);
+      const gastosMes = this.gastosAno.filter(item =>
+        this.normalizar(item.mes) === this.normalizar(mes) &&
+        String(item.ano) === String(ano)
+      );
 
-    const valorGastos =
-      gastosMes.reduce(
-        (t,item)=>t+this.numero(item.valor),
+      const valorFat = this.numero(fat?.faturamento);
+
+      const valorGastos = gastosMes.reduce(
+        (t, item) => t + this.numero(item.valor),
         0
       );
 
-    faturamento.push(valorFat);
-    gastos.push(valorGastos);
-    lucro.push(valorFat - valorGastos);
-  });
+      faturamento.push(valorFat);
+      gastos.push(valorGastos);
+      lucro.push(valorFat - valorGastos);
+    });
 
-  this.chartEvolucao = new Chart(ctx,{
-    type:"line",
-
-    data:{
-      labels:[
-        "Jan","Fev","Mar","Abr","Mai","Jun",
-        "Jul","Ago","Set","Out","Nov","Dez"
-      ],
-
-      datasets:[
-        {
-          label:"Faturamento",
-          data:faturamento,
-          borderColor:"#ff4d6d",
-          backgroundColor:"#ff4d6d",
-          borderWidth:4,
-          tension:0.35,
-          pointRadius:4,
-          pointHoverRadius:7
-        },
-
-        {
-          label:"Gastos",
-          data:gastos,
-          borderColor:"#dc2626",
-          backgroundColor:"#dc2626",
-          borderWidth:4,
-          tension:0.35,
-          pointRadius:4,
-          pointHoverRadius:7
-        },
-
-        {
-          label:"Lucro",
-          data:lucro,
-          borderColor:"#38bdf8",
-          backgroundColor:"#38bdf8",
-          borderWidth:5,
-          tension:0.35,
-          pointRadius:5,
-          pointHoverRadius:8
-        }
-      ]
-    },
-
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-
-      plugins:{
-        legend:{
-          position:"top",
-          labels:{
-            usePointStyle:true,
-            padding:20,
-            font:{
-              weight:"bold"
-            }
-          }
-        },
-
-        tooltip:{
-          callbacks:{
-            label:(ctx)=>{
-              return `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`;
-            }
-          }
-        }
-      },
-
-      scales:{
-        y:{
-          ticks:{
-            callback:(value)=> this.moeda(value)
+    this.chartEvolucao = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [
+          "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+          "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+        ],
+        datasets: [
+          {
+            label: "Faturamento",
+            data: faturamento,
+            borderColor: "#ff4d6d",
+            backgroundColor: "#ff4d6d",
+            borderWidth: 4,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 7
           },
-          grid:{
-            color:"rgba(255,255,255,0.06)"
+          {
+            label: "Gastos",
+            data: gastos,
+            borderColor: "#dc2626",
+            backgroundColor: "#dc2626",
+            borderWidth: 4,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 7
+          },
+          {
+            label: "Lucro",
+            data: lucro,
+            borderColor: "#38bdf8",
+            backgroundColor: "#38bdf8",
+            borderWidth: 5,
+            tension: 0.35,
+            pointRadius: 5,
+            pointHoverRadius: 8
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+            labels: {
+              usePointStyle: true,
+              padding: 20,
+              font: {
+                weight: "bold"
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`
+            }
           }
         },
-
-        x:{
-          grid:{
-            display:false
+        scales: {
+          y: {
+            ticks: {
+              callback: value => this.moeda(value)
+            },
+            grid: {
+              color: "rgba(255,255,255,0.06)"
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
           }
         }
       }
-    }
-  });
-},
+    });
+  },
 
-  tabelaCategorias(gastos){
-
+  tabelaCategorias(gastos) {
     const tbody = this.get("tabelaTopCategorias");
-    if(!tbody) return;
+    if (!tbody) return;
 
     const mapa = this.agruparCategorias(gastos);
 
     const lista = Object.entries(mapa)
-      .sort((a,b)=>b[1]-a[1]);
+      .sort((a, b) => b[1] - a[1]);
 
     if (!lista.length) {
       tbody.innerHTML = `
@@ -537,66 +480,72 @@ graficoEvolucao(ano){
         <td>${this.moeda(item[1])}</td>
       </tr>
     `).join("");
-  }
-};
-mediaMensalCategorias(){
+  },
 
-  const tbody = this.get("tabelaMediaCategorias");
-  if (!tbody) return;
+  mediaMensalCategorias() {
+    const tbody = this.get("tabelaMediaCategorias");
+    if (!tbody) return;
 
-  const mapa = {};
+    const mapa = {};
 
-  this.gastosAno.forEach(item => {
+    (this.gastosAno || []).forEach(item => {
+      const categoria = this.normalizar(item.categoria || "SEM CATEGORIA");
+      const mes = this.normalizar(item.mes);
+      const ano = String(item.ano || "");
 
-    const categoria = this.normalizar(item.categoria);
-    const chaveMes = `${item.mes}-${item.ano}`;
+      if (!categoria || !mes || !ano) return;
 
-    if (!mapa[categoria]) {
-      mapa[categoria] = {
-        total: 0,
-        meses: new Set()
-      };
+      const chaveMes = `${mes}-${ano}`;
+
+      if (!mapa[categoria]) {
+        mapa[categoria] = {
+          total: 0,
+          meses: new Set()
+        };
+      }
+
+      mapa[categoria].total += this.numero(item.valor);
+      mapa[categoria].meses.add(chaveMes);
+    });
+
+    const lista = Object.entries(mapa)
+      .map(([categoria, dados]) => {
+        const qtdMeses = dados.meses.size || 1;
+        const media = dados.total / qtdMeses;
+
+        return {
+          categoria,
+          total: dados.total,
+          meses: qtdMeses,
+          media
+        };
+      })
+      .sort((a, b) => b.media - a.media);
+
+    if (!lista.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="muted">
+            Nenhum histórico encontrado.
+          </td>
+        </tr>
+      `;
+      return;
     }
 
-    mapa[categoria].total += this.numero(item.valor);
-    mapa[categoria].meses.add(chaveMes);
-  });
-
-  const lista = Object.entries(mapa)
-    .map(([categoria, dados]) => {
-
-      const qtdMeses = dados.meses.size || 1;
-      const media = dados.total / qtdMeses;
-
-      return {
-        categoria,
-        total: dados.total,
-        meses: qtdMeses,
-        media
-      };
-    })
-    .sort((a,b) => b.media - a.media);
-
-  if (!lista.length) {
-    tbody.innerHTML = `
+    tbody.innerHTML = lista.map((item, index) => `
       <tr>
-        <td colspan="4" class="muted">
-          Nenhum histórico encontrado.
+        <td>
+          <strong>${item.categoria}</strong>
+          ${index < 5 ? `<span class="badge-risk">Top ${index + 1}</span>` : ""}
         </td>
+        <td>${this.moeda(item.media)}</td>
+        <td>${this.moeda(item.total)}</td>
+        <td>${item.meses}</td>
       </tr>
-    `;
-    return;
+    `).join("");
   }
-
-  tbody.innerHTML = lista.map(item => `
-    <tr>
-      <td><strong>${item.categoria}</strong></td>
-      <td>${this.moeda(item.media)}</td>
-      <td>${this.moeda(item.total)}</td>
-      <td>${item.meses}</td>
-    </tr>
-  `).join("");
-},
+};
 
 window.carregarDashboard = () => {
   dashboardModule.carregar();
