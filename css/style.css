@@ -69,124 +69,124 @@ main {
   display: block !important;
 }
 
-/* ======================================================
-   SIDEBAR PREMIUM EXATA
-====================================================== */
+/* ===== SIDEBAR ULTRA PREMIUM CORPORATIVA ===== */
 
 .sidebar {
-  width: 300px !important;
+  width: 250px;
   min-height: 100vh;
-  flex-shrink: 0;
 
   background:
-    radial-gradient(circle at top left, rgba(220, 38, 38, 0.22), transparent 34%),
-    linear-gradient(180deg, #070a12 0%, #111827 52%, #0f172a 100%);
+    radial-gradient(circle at top left, rgba(220,38,38,.12), transparent 28%),
+    linear-gradient(180deg, #09090b 0%, #111827 100%);
 
-  color: #ffffff;
-  padding: 34px 28px;
-  border-right: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 18px 0 45px rgba(2, 6, 23, 0.35);
+  border-right: 1px solid rgba(255,255,255,.06);
+
+  padding: 22px 18px;
+
+  box-shadow:
+    12px 0 40px rgba(0,0,0,.35);
 }
 
-/* Logo / Brand */
+/* LOGO */
+
 .brand {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
 
-  padding: 0;
-  margin-bottom: 38px;
+  padding: 14px;
+  margin-bottom: 24px;
 
-  background: transparent;
-  border: none;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
 }
 
 .brand-img {
-  width: 72px;
-  height: 72px;
+  width: 54px;
+  height: 54px;
   object-fit: contain;
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 7px;
-  box-shadow: 0 14px 30px rgba(0,0,0,0.32);
+
+  background: white;
+  border-radius: 14px;
+  padding: 5px;
 }
 
 .brand h2 {
-  color: #ffffff;
-  font-size: 24px;
-  font-weight: 950;
-  margin: 0 0 6px 0;
-  letter-spacing: -0.4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: white;
+  margin: 0;
 }
 
 .brand span {
-  color: #d1d5db;
-  font-size: 15px;
-  font-weight: 650;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
 }
 
-/* Menu */
-.sidebar-nav,
-.menu {
+/* MENU */
+
+.sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  width: 100%;
+  gap: 10px;
 }
 
-/* Botão do menu */
-.sidebar-nav .nav-btn,
-.menu button {
+/* BOTÕES */
+
+.nav-btn {
   width: 100%;
-  height: 86px;
+  height: 58px;
 
-  border-radius: 24px;
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 18px;
 
-  background: rgba(255,255,255,0.025);
-  color: #ffffff;
+  background: rgba(255,255,255,.025);
 
-  display: grid !important;
-  grid-template-columns: 56px 1fr 56px;
+  display: flex;
   align-items: center;
+  gap: 14px;
 
-  padding: 0 18px !important;
+  padding: 0 16px;
 
   cursor: pointer;
-  transition: all 0.25s ease;
-
-  font-size: 16px;
-  font-weight: 850;
-  text-align: center;
-
-  overflow: hidden;
+  transition: all 0.22s ease;
 }
 
-.sidebar-nav .nav-btn:hover,
-.menu button:hover {
-  background: rgba(255,255,255,0.055);
-  transform: translateY(-1px);
-  border-color: rgba(255,255,255,0.12);
+/* HOVER */
+
+.nav-btn:hover {
+  background: rgba(255,255,255,.045);
+  border-color: rgba(255,255,255,.10);
+  transform: translateX(3px);
 }
 
-.sidebar-nav .nav-btn.active,
-.menu button.active {
-  background: linear-gradient(135deg, #ff2d2d 0%, #dc2626 100%);
-  border-color: transparent;
-  color: #ffffff;
+/* ATIVO */
+
+.nav-btn.active {
+  background: linear-gradient(
+    135deg,
+    #ff3b3b 0%,
+    #dc2626 100%
+  );
+
+  border: none;
 
   box-shadow:
-    0 16px 38px rgba(220, 38, 38, 0.38),
-    inset 0 1px 0 rgba(255,255,255,0.18);
+    0 10px 24px rgba(220,38,38,.28);
 }
 
-/* Ícone dentro do quadrado */
-.nav-icon-box {
-  width: 46px;
-  height: 46px;
+/* ÍCONE */
 
-  border-radius: 15px;
-  background: rgba(0,0,0,0.26);
+.nav-icon-box {
+  width: 34px;
+  height: 34px;
+
+  border-radius: 12px;
+
+  background: rgba(0,0,0,.22);
 
   display: flex;
   align-items: center;
@@ -196,28 +196,27 @@ main {
 }
 
 .nav-icon {
-  position: static !important;
-  width: auto;
-  min-width: auto;
-  height: auto;
-
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 21px;
+  font-size: 16px;
   line-height: 1;
 }
 
-/* Texto centralizado */
+/* TEXTO */
+
 .nav-label {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 850;
-  line-height: 1.1;
-  text-align: center;
-  white-space: nowrap;
-  justify-self: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.2px;
+}
+
+/* ATIVO */
+
+.nav-btn.active .nav-icon-box {
+  background: rgba(255,255,255,.18);
+}
+
+.nav-btn.active .nav-label {
+  color: white;
 }
 
 /* ======================================================
