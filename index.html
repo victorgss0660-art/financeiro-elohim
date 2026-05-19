@@ -84,42 +84,72 @@
 
 <nav class="sidebar-nav">
 
-  <button class="nav-btn active" onclick="app.abrirAba('dashboard', this)">
+  <button
+    class="nav-btn active"
+    data-tab="dashboard"
+    onclick="app.abrirAba('dashboard')"
+    type="button"
+  >
     <div class="nav-icon-box">
       <span class="nav-icon">📊</span>
     </div>
     <span class="nav-label">Dashboard</span>
   </button>
 
-  <button class="nav-btn" onclick="app.abrirAba('contas-pagar', this)">
+  <button
+    class="nav-btn"
+    data-tab="contas-pagar"
+    onclick="app.abrirAba('contas-pagar')"
+    type="button"
+  >
     <div class="nav-icon-box">
       <span class="nav-icon">📄</span>
     </div>
     <span class="nav-label">Contas a Pagar</span>
   </button>
 
-  <button class="nav-btn" onclick="app.abrirAba('contas-pagas', this)">
+  <button
+    class="nav-btn"
+    data-tab="contas-pagas"
+    onclick="app.abrirAba('contas-pagas')"
+    type="button"
+  >
     <div class="nav-icon-box">
       <span class="nav-icon">✅</span>
     </div>
     <span class="nav-label">Contas Pagas</span>
   </button>
 
-  <button class="nav-btn" onclick="app.abrirAba('contas-receber', this)">
+  <button
+    class="nav-btn"
+    data-tab="contas-receber"
+    onclick="app.abrirAba('contas-receber')"
+    type="button"
+  >
     <div class="nav-icon-box">
       <span class="nav-icon">💰</span>
     </div>
     <span class="nav-label">Contas a Receber</span>
   </button>
 
-  <button class="nav-btn" onclick="app.abrirAba('planejamento', this)">
+  <button
+    class="nav-btn"
+    data-tab="planejamento"
+    onclick="app.abrirAba('planejamento')"
+    type="button"
+  >
     <div class="nav-icon-box">
       <span class="nav-icon">🗓️</span>
     </div>
     <span class="nav-label">Planejamento</span>
   </button>
 
-  <button class="nav-btn" onclick="app.abrirAba('inserir-dados', this)">
+  <button
+    class="nav-btn"
+    data-tab="inserir-dados"
+    onclick="app.abrirAba('inserir-dados')"
+    type="button"
+  >
     <div class="nav-icon-box">
       <span class="nav-icon">➕</span>
     </div>
@@ -127,7 +157,6 @@
   </button>
 
 </nav>
-
       </aside>
 
       <!-- MAIN -->
