@@ -1240,6 +1240,32 @@ window.inserirDadosUI = function(
 
 // ======================================================
 
+window.inserirDadosUI = function(tipo, botao) {
+  document
+    .querySelectorAll("#tab-inserir-dados .input-section")
+    .forEach(secao => {
+      secao.style.display = "none";
+    });
+
+  document
+    .querySelectorAll("#tab-inserir-dados .input-tab")
+    .forEach(btn => {
+      btn.classList.remove("active");
+    });
+
+  const secaoAtiva = document.querySelector(
+    `#tab-inserir-dados .input-section[data-section="${tipo}"]`
+  );
+
+  if (secaoAtiva) {
+    secaoAtiva.style.display = "block";
+  }
+
+  if (botao) {
+    botao.classList.add("active");
+  }
+};
+
 window.carregarInserirDados = () => {
 
   inserirDadosModule.carregar();
