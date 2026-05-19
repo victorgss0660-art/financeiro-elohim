@@ -20,6 +20,7 @@ window.app = {
   iniciar() {
     try {
       if (this.iniciado) return;
+
       this.iniciado = true;
 
       this.preencherFiltros();
@@ -33,6 +34,10 @@ window.app = {
   get(id) {
     return document.getElementById(id);
   },
+
+  // ======================================================
+  // FILTROS
+  // ======================================================
 
   preencherFiltros() {
     const mesSelect = this.get("mesSelect");
@@ -54,16 +59,55 @@ window.app = {
     }
   },
 
+  // ======================================================
+  // MENU
+  // ======================================================
+
   configurarMenu() {
-    const botoes = document.querySelectorAll(".menu button");
+    const botoes = document.querySelectorAll(
+      ".menu button, .sidebar-nav .nav-btn"
+    );
 
     botoes.forEach(botao => {
       botao.onclick = () => {
         const aba = botao.dataset.tab;
-        if (aba) this.abrirAba(aba);
+
+        if (!aba) {
+          console.warn("Botão sem data-tab:", botao);
+          return;
+        }
+
+        this.abrirAba(aba);
       };
     });
   },
+
+  atualizarBotaoAtivo(nomeAba) {
+    document
+      .querySelectorAll(".menu button, .sidebar-nav .nav-btn")
+      .forEach(botao => {
+        botao.classList.remove("active");
+      });
+
+    const botaoAtivo = document.querySelector(
+      `.menu button[data-tab="${nomeAba}"], .sidebar-nav .nav-btn[data-tab="${nomeAba}"]`
+    );
+
+    if (botaoAtivo) {
+      botaoAtivo.classList.add("active");
+    }
+  },
+
+  esconderAbas() {
+    document.querySelectorAll(".tab-section").forEach(secao => {
+      secao.classList.remove("active");
+      secao.style.display = "none";
+    });
+  },
+
+  // ======================================================
+  // ABAS
+  // ======================================================
 
   abrirAba(nomeAba) {
     try {
@@ -84,22 +128,18 @@ window.app = {
       }
 
       this.abaAtual = nomeAba;
-      localStorage.setItem("abaAtualFinanceiro", nomeAba);
 
-      document.querySelectorAll(".tab-section").forEach(secao => {
-        secao.classList.remove("active");
-        secao.style.display = "none";
-      });
+      localStorage.setItem(
+        "abaAtualFinanceiro",
+        nomeAba
+      );
+
+      this.esconderAbas();
 
       secaoAtiva.style.display = "block";
       secaoAtiva.classList.add("active");
 
-      document.querySelectorAll(".menu button").forEach(botao => {
-        botao.classList.remove("active");
-      });
-
-      const botaoAtivo = document.querySelector(`.menu button[data-tab="${nomeAba}"]`);
-      if (botaoAtivo) botaoAtivo.classList.add("active");
+      this.atualizarBotaoAtivo(nomeAba);
 
       this.carregarModulo(nomeAba);
     } catch (erro) {
@@ -112,19 +152,31 @@ window.app = {
 
     if (
       ultima &&
-      (!window.authModule?.podeAcessar || authModule.podeAcessar(ultima)) &&
-      this.get(`tab-${ultima}`)
+      this.get(`tab-${ultima}`) &&
+      (!window.authModule?.podeAcessar || authModule.podeAcessar(ultima))
     ) {
       this.abrirAba(ultima);
       return;
     }
 
-    const primeiraPermitida = Array.from(document.querySelectorAll(".menu button"))
+    const primeiraPermitida = Array
+      .from(
+        document.querySelectorAll(".menu button, .sidebar-nav .nav-btn")
+      )
       .find(btn => {
-        const visivel = btn.style.display !== "none";
         const aba = btn.dataset.tab;
-        const permitido = !window.authModule?.podeAcessar || authModule.podeAcessar(aba);
-        return visivel && aba && permitido && this.get(`tab-${aba}`);
+        const visivel = btn.style.display !== "none";
+
+        const permitido =
+          !window.authModule?.podeAcessar ||
+          authModule.podeAcessar(aba);
+
+        return (
+          visivel &&
+          aba &&
+          permitido &&
+          this.get(`tab-${aba}`)
+        );
       });
 
     if (primeiraPermitida) {
@@ -135,31 +187,47 @@ window.app = {
     console.warn("Nenhuma aba permitida encontrada.");
   },
 
+  // ======================================================
+  // MÓDULOS
+  // ======================================================
+
   async carregarModulo(nomeAba) {
     try {
       switch (nomeAba) {
         case "dashboard":
-          if (window.dashboardModule?.carregar) await dashboardModule.carregar();
+          if (window.dashboardModule?.carregar) {
+            await dashboardModule.carregar();
+          }
           break;
 
         case "contas-pagar":
-          if (window.contasPagarModule?.carregar) await contasPagarModule.carregar();
+          if (window.contasPagarModule?.carregar) {
+            await contasPagarModule.carregar();
+          }
           break;
 
         case "contas-pagas":
-          if (window.contasPagasModule?.carregar) await contasPagasModule.carregar();
+          if (window.contasPagasModule?.carregar) {
+            await contasPagasModule.carregar();
+          }
           break;
 
         case "contas-receber":
-          if (window.contasReceberModule?.carregar) await contasReceberModule.carregar();
+          if (window.contasReceberModule?.carregar) {
+            await contasReceberModule.carregar();
+          }
           break;
 
         case "planejamento":
-          if (window.planejamentoModule?.carregar) await planejamentoModule.carregar();
+          if (window.planejamentoModule?.carregar) {
+            await planejamentoModule.carregar();
+          }
           break;
 
         case "inserir-dados":
-          if (window.inserirDadosModule?.carregar) await inserirDadosModule.carregar();
+          if (window.inserirDadosModule?.carregar) {
+            await inserirDadosModule.carregar();
+          }
           break;
 
         default:
@@ -179,9 +247,17 @@ window.app = {
   }
 };
 
+// ======================================================
+// FUNÇÕES GLOBAIS
+// ======================================================
+
 window.abrirAba = function(nomeAba) {
   app.abrirAba(nomeAba);
 };
+
+// ======================================================
+// START
+// ======================================================
 
 document.addEventListener("DOMContentLoaded", () => {
   try {
