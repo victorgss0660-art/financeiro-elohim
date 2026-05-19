@@ -82,21 +82,39 @@
 
         </div>
 
-        <nav class="menu">
+<nav class="sidebar-nav">
 
-          <button data-tab="dashboard" class="active">Dashboard</button>
+  <button class="nav-btn active" onclick="app.abrirAba('dashboard')">
+    <span class="nav-icon">📊</span>
+    <span>Dashboard</span>
+  </button>
 
-          <button data-tab="contas-pagar">Contas a Pagar</button>
+  <button class="nav-btn" onclick="app.abrirAba('contas-pagar')">
+    <span class="nav-icon">📄</span>
+    <span>Contas a Pagar</span>
+  </button>
 
-          <button data-tab="contas-pagas">Contas Pagas</button>
+  <button class="nav-btn" onclick="app.abrirAba('contas-pagas')">
+    <span class="nav-icon">✅</span>
+    <span>Contas Pagas</span>
+  </button>
 
-          <button data-tab="contas-receber">Contas a Receber</button>
+  <button class="nav-btn" onclick="app.abrirAba('contas-receber')">
+    <span class="nav-icon">💰</span>
+    <span>Contas a Receber</span>
+  </button>
 
-          <button data-tab="planejamento">Planejamento</button>
+  <button class="nav-btn" onclick="app.abrirAba('planejamento')">
+    <span class="nav-icon">📅</span>
+    <span>Planejamento</span>
+  </button>
 
-          <button data-tab="inserir-dados">Inserir Dados</button>
+  <button class="nav-btn" onclick="app.abrirAba('inserir-dados')">
+    <span class="nav-icon">➕</span>
+    <span>Inserir Dados</span>
+  </button>
 
-        </nav>
+</nav>
 
       </aside>
 
