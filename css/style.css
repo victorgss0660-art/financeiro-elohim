@@ -2003,3 +2003,70 @@ main {
   align-items: center;
   line-height: 1;
 }
+/* ===== SIDEBAR MENU PREMIUM CORRIGIDO ===== */
+
+.sidebar .menu,
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.sidebar .menu button,
+.sidebar-nav .nav-btn {
+  width: 100%;
+  min-height: 62px;
+
+  display: grid !important;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+
+  padding: 0 22px !important;
+  border: none;
+  border-radius: 18px;
+
+  background: transparent;
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 900;
+  text-align: left;
+
+  cursor: pointer;
+  overflow: visible;
+
+  transition: all 0.25s ease;
+}
+
+.sidebar .menu button.active,
+.sidebar-nav .nav-btn.active {
+  background: linear-gradient(135deg, #ff4d4d 0%, #dc2626 100%);
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(220, 38, 38, 0.35);
+}
+
+.sidebar .menu button:hover,
+.sidebar-nav .nav-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-icon {
+  position: static !important;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 22px;
+  line-height: 1;
+}
+
+.nav-label {
+  display: block;
+  line-height: 1.1;
+  white-space: nowrap;
+}
