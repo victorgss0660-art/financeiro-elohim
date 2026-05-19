@@ -1893,3 +1893,55 @@ main {
   font-size: 11px;
   font-weight: 900;
 }
+.sidebar nav button,
+.nav-btn {
+  width: 100%;
+  height: 56px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* CENTRALIZA O TEXTO */
+
+  gap: 12px;
+
+  padding: 0 20px;
+  border: none;
+  border-radius: 18px;
+
+  background: transparent;
+  color: rgba(255,255,255,0.92);
+
+  font-size: 18px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.sidebar nav button.active,
+.nav-btn.active {
+  background: linear-gradient(
+    135deg,
+    #ff2d55 0%,
+    #dc2626 100%
+  );
+
+  color: white;
+
+  box-shadow:
+    0 12px 30px rgba(220, 38, 38, 0.35),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+}
+.sidebar nav button:hover,
+.nav-btn:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateX(4px);
+}
+.nav-btn {
+  position: relative;
+}
+
+.nav-icon {
+  position: absolute;
+  left: 20px;
+  font-size: 18px;
+}
