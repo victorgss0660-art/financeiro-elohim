@@ -47,7 +47,7 @@ main {
   flex: 1 !important;
   width: 100% !important;
   max-width: 100% !important;
-  padding: 30px !important;
+  padding: 28px !important;
   overflow: auto !important;
   background: #f8fafc !important;
 }
@@ -62,29 +62,29 @@ main {
 .tab-section {
   display: none !important;
   width: 100% !important;
-  padding: 20px;
+  padding: 18px;
 }
 
 .tab-section.active {
   display: block !important;
 }
 
-/* ===== SIDEBAR ULTRA PREMIUM CORPORATIVA ===== */
+/* ======================================================
+   SIDEBAR ULTRA PREMIUM CORPORATIVA
+====================================================== */
 
 .sidebar {
   width: 250px;
   min-height: 100vh;
+  flex-shrink: 0;
 
   background:
     radial-gradient(circle at top left, rgba(220,38,38,.12), transparent 28%),
     linear-gradient(180deg, #09090b 0%, #111827 100%);
 
   border-right: 1px solid rgba(255,255,255,.06);
-
   padding: 22px 18px;
-
-  box-shadow:
-    12px 0 40px rgba(0,0,0,.35);
+  box-shadow: 12px 0 40px rgba(0,0,0,.35);
 }
 
 /* LOGO */
@@ -98,7 +98,6 @@ main {
   margin-bottom: 24px;
 
   border-radius: 18px;
-
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.06);
 }
@@ -107,7 +106,6 @@ main {
   width: 54px;
   height: 54px;
   object-fit: contain;
-
   background: white;
   border-radius: 14px;
   padding: 5px;
@@ -134,8 +132,6 @@ main {
   gap: 10px;
 }
 
-/* BOTÕES */
-
 .nav-btn {
   width: 100%;
   height: 58px;
@@ -144,6 +140,7 @@ main {
   border-radius: 18px;
 
   background: rgba(255,255,255,.025);
+  color: #ffffff;
 
   display: flex;
   align-items: center;
@@ -155,37 +152,23 @@ main {
   transition: all 0.22s ease;
 }
 
-/* HOVER */
-
 .nav-btn:hover {
   background: rgba(255,255,255,.045);
   border-color: rgba(255,255,255,.10);
   transform: translateX(3px);
 }
 
-/* ATIVO */
-
 .nav-btn.active {
-  background: linear-gradient(
-    135deg,
-    #ff3b3b 0%,
-    #dc2626 100%
-  );
-
+  background: linear-gradient(135deg, #ff3b3b 0%, #dc2626 100%);
   border: none;
-
-  box-shadow:
-    0 10px 24px rgba(220,38,38,.28);
+  box-shadow: 0 10px 24px rgba(220,38,38,.28);
 }
-
-/* ÍCONE */
 
 .nav-icon-box {
   width: 34px;
   height: 34px;
 
   border-radius: 12px;
-
   background: rgba(0,0,0,.22);
 
   display: flex;
@@ -200,16 +183,12 @@ main {
   line-height: 1;
 }
 
-/* TEXTO */
-
 .nav-label {
   font-size: 14px;
   font-weight: 700;
   color: white;
   letter-spacing: -0.2px;
 }
-
-/* ATIVO */
 
 .nav-btn.active .nav-icon-box {
   background: rgba(255,255,255,.18);
@@ -579,33 +558,28 @@ select:focus {
   font-weight: 900;
 }
 
-/* =======================================================
+/* ======================================================
    CONTAS A PAGAR — LAYOUT PROFISSIONAL ERP
-======================================================= */
+====================================================== */
 
-/* área geral */
 #tab-contas-pagar {
   width: 100%;
 }
 
-/* cards topo */
 #tab-contas-pagar .cards-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
   gap: 18px;
   margin-bottom: 24px;
 }
 
 #tab-contas-pagar .card {
-  min-height: 110px;
+  min-height: 102px;
   border-radius: 20px;
   padding: 22px;
   border: 1px solid #e5e7eb;
   background: #ffffff;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
-
-  display: flex;
-  flex-direction: column;
   justify-content: center;
 }
 
@@ -616,13 +590,12 @@ select:focus {
 }
 
 #tab-contas-pagar .card strong {
-  font-size: 36px;
-  font-weight: 900;
+  font-size: 31px;
+  font-weight: 950;
   color: #111827;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
-/* painéis */
 #tab-contas-pagar .panel {
   border-radius: 24px;
   padding: 28px;
@@ -631,10 +604,19 @@ select:focus {
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
 }
 
-/* formulário lançar conta */
+#tab-contas-pagar .panel-head {
+  margin-bottom: 18px;
+}
+
+#tab-contas-pagar .panel-head h3 {
+  font-size: 17px;
+  font-weight: 950;
+}
+
+/* Formulário lançar conta */
 #tab-contas-pagar .form-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1.15fr 1fr 0.9fr 0.9fr;
   gap: 18px;
   align-items: end;
 }
@@ -643,20 +625,20 @@ select:focus {
   display: block;
   margin-bottom: 8px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 850;
   color: #475569;
 }
 
 #tab-contas-pagar input,
 #tab-contas-pagar select {
   width: 100%;
-  height: 50px;
+  height: 48px;
   border-radius: 14px;
   border: 1px solid #dbe2ea;
   background: #ffffff;
-  padding: 0 16px;
+  padding: 0 15px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 #tab-contas-pagar input:focus,
@@ -666,59 +648,64 @@ select:focus {
   box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
 }
 
-/* toggles */
-.toggle-group {
+/* Toggles */
+#tab-contas-pagar .toggle-group {
   display: flex;
-  gap: 14px;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.toggle-bank {
-  flex: 1;
-  height: 50px;
+#tab-contas-pagar .toggle-bank {
+  width: 100%;
+  height: 48px;
   border-radius: 14px;
   border: 1px solid #dbe2ea;
   background: #f8fafc;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 850;
   color: #475569;
 }
 
-.toggle-bank.active {
+#tab-contas-pagar .toggle-bank.active,
+#tab-contas-pagar .toggle-bank.ativo {
   background: #dc2626;
-  color: #fff;
+  color: #ffffff;
   border-color: #dc2626;
 }
 
-/* botões */
-.actions-row {
+#tab-contas-pagar .toggle-bank.active .toggle-icon,
+#tab-contas-pagar .toggle-bank.ativo .toggle-icon {
+  background: rgba(255,255,255,0.25);
+  color: #ffffff;
+}
+
+/* Botões */
+#tab-contas-pagar .actions-row {
   display: flex;
   gap: 12px;
   margin-top: 20px;
 }
 
-.actions-row button {
-  height: 48px;
-  padding: 0 22px;
+#tab-contas-pagar .actions-row button {
+  height: 46px;
+  padding: 0 20px;
   border-radius: 14px;
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 850;
 }
 
-/* filtros da tabela */
-#tab-contas-pagar .filtros-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1fr auto auto auto auto;
-  gap: 14px;
-  align-items: end;
-  margin-bottom: 22px;
+/* Filtros da tabela */
+#tab-contas-pagar .panel .form-grid + .table-wrap {
+  margin-top: 20px;
 }
 
-#tab-contas-pagar .filtros-grid button {
-  height: 50px;
-  white-space: nowrap;
+#tab-contas-pagar .panel:nth-of-type(2) .form-grid {
+  grid-template-columns: 1.35fr 1fr 1fr 0.9fr 0.9fr;
+  gap: 16px;
+  margin-bottom: 18px;
 }
 
-/* tabela */
+/* Tabela */
 #tab-contas-pagar .table-wrap {
   border-radius: 18px;
   border: 1px solid #e5e7eb;
@@ -728,119 +715,124 @@ select:focus {
 
 #tab-contas-pagar table {
   width: 100%;
-  min-width: 1300px;
+  min-width: 1280px;
 }
 
 #tab-contas-pagar th {
   position: sticky;
   top: 0;
-  background: #f8fafc;
   z-index: 10;
 
-  font-size: 11px;
-  font-weight: 900;
+  background: #f8fafc;
+  font-size: 10.5px;
+  font-weight: 950;
   color: #64748b;
-  padding: 14px 12px;
+  padding: 13px 11px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 #tab-contas-pagar td {
-  padding: 13px 12px;
+  padding: 12px 11px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 650;
   border-top: 1px solid #eef2f7;
+  line-height: 1.25;
+}
+
+#tab-contas-pagar tbody tr {
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 #tab-contas-pagar tbody tr:hover {
   background: #f8fafc;
 }
 
-/* ações */
-#tab-contas-pagar td:last-child {
+#tab-contas-pagar .linha-vermelha td {
+  background: #fff1f2 !important;
+  color: #7f1d1d;
+}
+
+/* Checkbox */
+#tab-contas-pagar input[type="checkbox"] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+#tab-contas-pagar input[type="checkbox"]:hover {
+  border-color: #dc2626;
+}
+
+#tab-contas-pagar input[type="checkbox"]:checked {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+#tab-contas-pagar input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  width: 3px;
+  height: 6px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Ações tabela */
+#tab-contas-pagar td:last-child,
+#tab-contas-pagar td:nth-child(8) {
   white-space: nowrap;
 }
 
+#tab-contas-pagar .doc-status,
 #tab-contas-pagar .btn-editar,
 #tab-contas-pagar .btn-duplicar,
 #tab-contas-pagar .btn-pagar,
 #tab-contas-pagar .btn-excluir {
-  padding: 7px 10px;
-  font-size: 11px;
-  border-radius: 10px;
-  font-weight: 800;
-}
-
-/* responsivo */
-@media (max-width: 1400px) {
-  #tab-contas-pagar .cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  #tab-contas-pagar .form-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  #tab-contas-pagar .filtros-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-/* ======================================================
-   TOGGLE BANK
-====================================================== */
-
-.toggle-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.toggle-bank {
-  height: 42px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #f8fafc;
-  color: #64748b;
+  padding: 6px 9px;
+  font-size: 10.5px;
+  border-radius: 9px;
   font-weight: 900;
-  font-size: 13px;
-  padding: 0 14px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  transition: 0.2s;
+  margin: 1px;
 }
 
-.toggle-bank .toggle-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  color: transparent;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 12px;
+#tab-contas-pagar .doc-status.pendente {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-.toggle-bank:hover {
-  border-color: #94a3b8;
-  background: #ffffff;
-}
-
-.toggle-bank.ativo,
-.toggle-bank.active {
+#tab-contas-pagar .doc-status.ok {
   background: #dcfce7;
   color: #166534;
-  border-color: #86efac;
 }
 
-.toggle-bank.ativo .toggle-icon,
-.toggle-bank.active .toggle-icon {
-  background: #16a34a;
-  color: #ffffff;
+#tab-contas-pagar .btn-editar {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+#tab-contas-pagar .btn-duplicar {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+#tab-contas-pagar .btn-pagar {
+  background: #dcfce7;
+  color: #166534;
+}
+
+#tab-contas-pagar .btn-excluir {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 /* ======================================================
@@ -1005,6 +997,17 @@ select:focus {
    RESPONSIVO
 ====================================================== */
 
+@media (max-width: 1400px) {
+  #tab-contas-pagar .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  #tab-contas-pagar .form-grid,
+  #tab-contas-pagar .panel:nth-of-type(2) .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 1100px) {
   .grid-2 {
     grid-template-columns: 1fr;
@@ -1025,18 +1028,16 @@ select:focus {
   }
 
   .sidebar {
-    width: 270px !important;
-  }
-
-  .sidebar-nav .nav-btn,
-  .menu button {
-    height: 76px;
+    width: 250px !important;
   }
 }
 
 @media (max-width: 768px) {
   .cards-grid,
-  .form-grid {
+  .form-grid,
+  #tab-contas-pagar .cards-grid,
+  #tab-contas-pagar .form-grid,
+  #tab-contas-pagar .panel:nth-of-type(2) .form-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1045,12 +1046,12 @@ select:focus {
   }
 
   .sidebar {
-    width: 240px !important;
-    padding: 24px 18px;
+    width: 230px !important;
+    padding: 20px 14px;
   }
 
   .nav-label {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .dashboard-hero h2 {
