@@ -367,261 +367,258 @@
 
         <!-- CONTAS A PAGAR -->
 
-        <section id="tab-contas-pagar" class="tab-section">
-
-          <div class="page-head">
-
-            <h2>Contas a Pagar</h2>
-
-            <p>Controle de contas pendentes, boletos, notas fiscais e pagamentos.</p>
-
-          </div>
-
-          <section class="cards-grid">
-
-            <div class="card">
-
-              <span>Quantidade</span>
-
-              <strong id="cpQtd">0</strong>
-
-            </div>
-
-            <div class="card">
-
-              <span>Total em aberto</span>
-
-              <strong id="cpTotal">R$ 0,00</strong>
-
-            </div>
-
-            <div class="card">
-
-              <span>Selecionadas</span>
-
-              <strong id="cpSelecionadas">0</strong>
-
-            </div>
-
-            <div class="card">
-
-              <span>Total selecionado</span>
-
-              <strong id="cpTotalSelecionado">R$ 0,00</strong>
-
-            </div>
-
-          </section>
-
-          <div class="panel">
-
-            <div class="panel-head">
-
-              <h3>Lançar Conta</h3>
-
-            </div>
-
-            <div class="form-grid">
-
-              <div>
-
-                <label>Fornecedor</label>
-
-                <input id="cpFornecedor" type="text" />
-
-              </div>
-
-              <div>
-
-                <label>Documento</label>
-
-                <input id="cpDocumento" type="text" />
-
-              </div>
-
-              <div>
-
-                <label>Valor</label>
-
-                <input id="cpValor" type="text" />
-
-              </div>
-
-              <div>
-
-                <label>Vencimento</label>
-
-                <input id="cpVencimento" type="date" />
-
-              </div>
-
-              <div>
-
-                <label>Categoria</label>
-
-                <input id="cpCategoria" type="text" />
-
-              </div>
-
-              <div class="toggle-group">
-
-                <label>NFE recebida</label>
-
-                <button type="button" id="btnNfe" class="toggle-bank" onclick="contasPagarModule.toggleInput('nfe')">
-
-                  <span class="toggle-icon">✓</span>
-
-                  <span class="toggle-text">Não recebida</span>
-
-                </button>
-
-              </div>
-
-              <div class="toggle-group">
-
-                <label>Boleto recebido</label>
-
-                <button type="button" id="btnBoleto" class="toggle-bank" onclick="contasPagarModule.toggleInput('boleto')">
-
-                  <span class="toggle-icon">✓</span>
-
-                  <span class="toggle-text">Não recebido</span>
-
-                </button>
-
-              </div>
-
-              <div>
-
-                <label>Descrição</label>
-
-                <input id="cpDescricao" type="text" />
-
-              </div>
-
-            </div>
-
-            <div class="actions-row">
-
-              <button type="button" onclick="contasPagarModule.salvar()">Salvar conta</button>
-
-              <button type="button" class="secondary-btn" onclick="contasPagarModule.limparFormulario()">Limpar</button>
-
-            </div>
-
-          </div>
-
-          <div class="panel">
-
-            <div class="panel-head">
-
-              <h3>Contas em Aberto</h3>
-
-              <div class="actions-row">
-
-                <button type="button" class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">Selecionar todas</button>
-
-                <button type="button" class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
-
-                <button type="button" onclick="contasPagarModule.pagarSelecionadas()">Pagar selecionadas</button>
-
-                <button type="button" class="secondary-btn" onclick="contasPagarModule.limparFiltros()">Limpar filtros</button>
-
-              </div>
-
-            </div>
-
-            <div class="form-grid">
-
-              <div>
-
-                <label>Buscar</label>
-
-                <input id="cpBusca" type="text" placeholder="Fornecedor, documento, categoria ou descrição" oninput="contasPagarModule.aplicarFiltros()" />
-
-              </div>
-
-              <div>
-
-                <label>Fornecedor</label>
-
-                <input id="cpFiltroFornecedor" type="text" oninput="contasPagarModule.aplicarFiltros()" />
-
-              </div>
-
-              <div>
-
-                <label>Categoria</label>
-
-                <input id="cpFiltroCategoria" type="text" oninput="contasPagarModule.aplicarFiltros()" />
-
-              </div>
-
-              <div>
-
-                <label>Vencimento inicial</label>
-
-                <input id="cpVencimentoInicio" type="date" onchange="contasPagarModule.aplicarFiltros()" />
-
-              </div>
-
-              <div>
-
-                <label>Vencimento final</label>
-
-                <input id="cpVencimentoFim" type="date" onchange="contasPagarModule.aplicarFiltros()" />
-
-              </div>
-
-            </div>
-
-            <div class="table-wrap">
-
-              <table>
-
-                <thead>
-
-                  <tr>
-
-                    <th>Selecionar</th>
-
-                    <th>Fornecedor</th>
-
-                    <th>Documento</th>
-
-                    <th>Valor</th>
-
-                    <th>Vencimento</th>
-
-                    <th>Categoria</th>
-
-                    <th>Descrição</th>
-
-                    <th>NFE / Boleto</th>
-
-                    <th>Ações</th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody id="tabelaContasPagar">
-
-                  <tr>
-
-                    <td colspan="9" class="muted">Nenhuma conta carregada.</td>
-
-                  </tr>
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-          </div>
-
-        </section>
+<!-- CONTAS A PAGAR -->
+<section id="tab-contas-pagar" class="tab-section">
+
+  <div class="page-head">
+    <h2>Contas a Pagar</h2>
+    <p>Controle de contas pendentes, boletos, notas fiscais, importação e pagamentos.</p>
+  </div>
+
+  <!-- CARDS -->
+  <section class="cards-grid">
+
+    <div class="card">
+      <span>Quantidade</span>
+      <strong id="cpQtd">0</strong>
+    </div>
+
+    <div class="card">
+      <span>Total em aberto</span>
+      <strong id="cpTotal">R$ 0,00</strong>
+    </div>
+
+    <div class="card">
+      <span>Selecionadas</span>
+      <strong id="cpSelecionadas">0</strong>
+    </div>
+
+    <div class="card">
+      <span>Total selecionado</span>
+      <strong id="cpTotalSelecionado">R$ 0,00</strong>
+    </div>
+
+  </section>
+
+  <!-- LANÇAR CONTA -->
+  <div class="panel">
+
+    <div class="panel-head">
+      <h3>Lançar Conta</h3>
+      <span class="muted">Cadastro manual de contas a pagar</span>
+    </div>
+
+    <div class="form-grid">
+
+      <div>
+        <label>Fornecedor</label>
+        <input id="cpFornecedor" type="text" placeholder="Nome do fornecedor" />
+      </div>
+
+      <div>
+        <label>Documento</label>
+        <input id="cpDocumento" type="text" placeholder="NF / Pedido / FAT" />
+      </div>
+
+      <div>
+        <label>Valor</label>
+        <input id="cpValor" type="text" placeholder="R$ 0,00" />
+      </div>
+
+      <div>
+        <label>Vencimento</label>
+        <input id="cpVencimento" type="date" />
+      </div>
+
+      <div>
+        <label>Categoria</label>
+        <input id="cpCategoria" type="text" placeholder="Ex: MP, FRETE, DESP" />
+      </div>
+
+      <div class="toggle-group">
+        <label>NFE recebida</label>
+        <button
+          type="button"
+          id="btnNfe"
+          class="toggle-bank"
+          onclick="contasPagarModule.toggleInput('nfe')"
+        >
+          <span class="toggle-icon">✓</span>
+          <span class="toggle-text">Não recebida</span>
+        </button>
+      </div>
+
+      <div class="toggle-group">
+        <label>Boleto recebido</label>
+        <button
+          type="button"
+          id="btnBoleto"
+          class="toggle-bank"
+          onclick="contasPagarModule.toggleInput('boleto')"
+        >
+          <span class="toggle-icon">✓</span>
+          <span class="toggle-text">Não recebido</span>
+        </button>
+      </div>
+
+      <div>
+        <label>Descrição</label>
+        <input id="cpDescricao" type="text" placeholder="Descrição da conta" />
+      </div>
+
+    </div>
+
+    <div class="actions-row">
+      <button type="button" onclick="contasPagarModule.salvar()">Salvar conta</button>
+      <button type="button" class="secondary-btn" onclick="contasPagarModule.limparFormulario()">Limpar</button>
+    </div>
+
+  </div>
+
+  <!-- IMPORTAR / EXPORTAR -->
+  <div class="panel">
+
+    <div class="panel-head">
+      <h3>Importar e Exportar</h3>
+      <span class="muted">Movimente contas por planilha Excel</span>
+    </div>
+
+    <div class="actions-row">
+
+      <label class="import-btn">
+        📥 Importar Excel
+        <input
+          type="file"
+          id="cpImportFile"
+          accept=".xlsx,.xls,.csv"
+          hidden
+          onchange="contasPagarModule.importarExcel(event)"
+        />
+      </label>
+
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="contasPagarModule.exportarExcel()"
+      >
+        📤 Exportar filtradas
+      </button>
+
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="contasPagarModule.baixarModeloImportacao && contasPagarModule.baixarModeloImportacao()"
+      >
+        📄 Baixar modelo
+      </button>
+
+    </div>
+
+    <p class="muted" style="margin-top: 12px;">
+      Colunas recomendadas: Fornecedor, Documento, Valor, Vencimento, Categoria, Descrição, NFE, Boleto.
+    </p>
+
+  </div>
+
+  <!-- CONTAS EM ABERTO -->
+  <div class="panel">
+
+    <div class="panel-head">
+      <h3>Contas em Aberto</h3>
+
+      <div class="actions-row">
+        <button type="button" class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">Selecionar todas</button>
+        <button type="button" class="secondary-btn" onclick="contasPagarModule.limparSelecao()">Limpar seleção</button>
+        <button type="button" onclick="contasPagarModule.pagarSelecionadas()">Pagar selecionadas</button>
+        <button type="button" class="secondary-btn" onclick="contasPagarModule.limparFiltros()">Limpar filtros</button>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="form-grid">
+
+      <div>
+        <label>Buscar</label>
+        <input
+          id="cpBusca"
+          type="text"
+          placeholder="Fornecedor, documento, categoria ou descrição"
+          oninput="contasPagarModule.aplicarFiltros()"
+        />
+      </div>
+
+      <div>
+        <label>Fornecedor</label>
+        <input
+          id="cpFiltroFornecedor"
+          type="text"
+          placeholder="Fornecedor"
+          oninput="contasPagarModule.aplicarFiltros()"
+        />
+      </div>
+
+      <div>
+        <label>Categoria</label>
+        <input
+          id="cpFiltroCategoria"
+          type="text"
+          placeholder="Categoria"
+          oninput="contasPagarModule.aplicarFiltros()"
+        />
+      </div>
+
+      <div>
+        <label>Vencimento inicial</label>
+        <input
+          id="cpVencimentoInicio"
+          type="date"
+          onchange="contasPagarModule.aplicarFiltros()"
+        />
+      </div>
+
+      <div>
+        <label>Vencimento final</label>
+        <input
+          id="cpVencimentoFim"
+          type="date"
+          onchange="contasPagarModule.aplicarFiltros()"
+        />
+      </div>
+
+    </div>
+
+    <!-- TABELA -->
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Selecionar</th>
+            <th>Fornecedor</th>
+            <th>Documento</th>
+            <th>Valor</th>
+            <th>Vencimento</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>NFE / Boleto</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody id="tabelaContasPagar">
+          <tr>
+            <td colspan="9" class="muted">Nenhuma conta carregada.</td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
 
         <!-- CONTAS PAGAS -->
 
