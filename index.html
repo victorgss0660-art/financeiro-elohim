@@ -368,7 +368,7 @@
 <!-- CONTAS A PAGAR -->
 <section id="tab-contas-pagar" class="tab-section">
 
-  <div class="page-head">
+  <div class="page-head cp-head">
     <div>
       <span class="cp-subtitle">GESTÃO FINANCEIRA</span>
       <h2>Contas a Pagar</h2>
@@ -376,38 +376,35 @@
     </div>
   </div>
 
-  <!-- KPI CARDS -->
-  <section class="cards-grid cp-kpis">
-
-    <div class="card cp-card">
+  <!-- KPIs -->
+  <section class="cp-kpis">
+    <div class="cp-card">
       <span>Quantidade</span>
       <strong id="cpQtd">0</strong>
       <small>contas pendentes</small>
     </div>
 
-    <div class="card cp-card destaque">
+    <div class="cp-card destaque">
       <span>Total em aberto</span>
       <strong id="cpTotal">R$ 0,00</strong>
       <small>saldo pendente</small>
     </div>
 
-    <div class="card cp-card">
+    <div class="cp-card">
       <span>Selecionadas</span>
       <strong id="cpSelecionadas">0</strong>
       <small>pagamento em lote</small>
     </div>
 
-    <div class="card cp-card dark">
+    <div class="cp-card dark">
       <span>Total selecionado</span>
       <strong id="cpTotalSelecionado">R$ 0,00</strong>
       <small>valor do lote</small>
     </div>
-
   </section>
 
   <!-- LANÇAR CONTA -->
-  <div class="panel cp-panel">
-
+  <div class="cp-panel">
     <div class="panel-head">
       <div>
         <h3>Lançar Conta</h3>
@@ -415,7 +412,7 @@
       </div>
     </div>
 
-    <div class="form-grid cp-form-grid">
+    <div class="cp-form-grid">
 
       <div>
         <label>Fornecedor</label>
@@ -475,56 +472,64 @@
 
     </div>
 
-    <div class="actions-row cp-actions">
-      <button type="button" onclick="contasPagarModule.salvar()">Salvar conta</button>
-      <button type="button" class="secondary-btn" onclick="contasPagarModule.limparFormulario()">Limpar</button>
-    </div>
+    <div class="cp-actions actions-row">
+      <button type="button" onclick="contasPagarModule.salvar()">
+        Salvar conta
+      </button>
 
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="contasPagarModule.limparFormulario()"
+      >
+        Limpar
+      </button>
+    </div>
   </div>
 
   <!-- CONTAS EM ABERTO -->
-  <div class="panel cp-panel">
+  <div class="cp-panel">
 
-    <div class="panel-head cp-head-actions">
+    <div class="cp-head-actions">
       <div>
         <h3>Contas em Aberto</h3>
         <p>Filtre, selecione e realize pagamentos em lote</p>
       </div>
 
-      <div class="actions-row cp-top-actions">
+      <div class="cp-top-actions">
 
-        <label class="import-file-label">
-          📥 Importar Excel
-          <input
-            type="file"
-            id="cpImportFile"
-            accept=".xlsx,.xls,.csv"
-            hidden
-            onchange="contasPagarModule.importarExcel(event)"
-          />
+        <label for="cpImportExcel" class="import-file-label">
+          Importar Excel
         </label>
+        <input
+          id="cpImportExcel"
+          type="file"
+          accept=".xlsx,.xls"
+          style="display:none"
+          onchange="contasPagarModule.importarExcel(this)"
+        />
 
-        <button
-          type="button"
-          class="secondary-btn"
-          onclick="contasPagarModule.exportarExcel()"
-        >
-          📤 Exportar
+        <button type="button" onclick="contasPagarModule.exportarExcel()">
+          Exportar
+        </button>
+
+        <button type="button" onclick="contasPagarModule.baixarModeloExcel()">
+          Modelo
         </button>
 
         <button
           type="button"
           class="secondary-btn"
-          onclick="contasPagarModule.baixarModeloImportacao()"
+          onclick="contasPagarModule.selecionarTodos()"
         >
-          📄 Modelo
-        </button>
-
-        <button type="button" class="secondary-btn" onclick="contasPagarModule.selecionarTodos()">
           Selecionar todas
         </button>
 
-        <button type="button" class="secondary-btn" onclick="contasPagarModule.limparSelecao()">
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="contasPagarModule.limparSelecao()"
+        >
           Limpar seleção
         </button>
 
@@ -536,7 +541,7 @@
     </div>
 
     <!-- FILTROS -->
-    <div class="form-grid cp-filter-grid">
+    <div class="cp-filter-grid">
 
       <div>
         <label>Busca geral</label>
@@ -553,6 +558,7 @@
         <input
           id="cpFiltroFornecedor"
           type="text"
+          placeholder="Fornecedor"
           oninput="contasPagarModule.aplicarFiltros()"
         />
       </div>
@@ -562,6 +568,7 @@
         <input
           id="cpFiltroCategoria"
           type="text"
+          placeholder="Categoria"
           oninput="contasPagarModule.aplicarFiltros()"
         />
       </div>
@@ -585,6 +592,7 @@
       </div>
 
       <div class="cp-filter-button">
+        <label>&nbsp;</label>
         <button
           type="button"
           class="secondary-btn"
@@ -597,8 +605,7 @@
     </div>
 
     <!-- TABELA -->
-    <div class="table-wrap cp-table">
-
+    <div class="cp-table">
       <table>
         <thead>
           <tr>
@@ -622,7 +629,6 @@
           </tr>
         </tbody>
       </table>
-
     </div>
 
   </div>
