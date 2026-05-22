@@ -1440,21 +1440,48 @@ tbody tr:hover {
     width: calc(100% - 32px);
     padding: 28px;
   }
+/* IMPORTAR / EXPORTAR */
+.cp-import-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: nowrap;
+  align-items: center;
 }
-.import-btn {
-  height: 38px;
-  padding: 0 14px;
-  border-radius: 12px;
-  background: #111827;
-  color: white;
-  font-size: 12px;
-  font-weight: 850;
+
+.cp-import-actions button,
+.cp-import-actions .import-file-label {
+  width: 180px;
+  min-width: 180px;
+  height: 44px;
+
   display: inline-flex;
   align-items: center;
-  cursor: pointer;
+  justify-content: center;
+
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 850;
+  text-align: center;
+
+  padding: 0 16px;
   white-space: nowrap;
 }
 
-.import-btn:hover {
+/* botão importar visual igual */
+.cp-import-actions .import-file-label {
+  background: #111827;
+  color: #ffffff;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease;
+}
+
+.cp-import-actions .import-file-label:hover {
   background: #1f2937;
+  transform: translateY(-1px);
+}
+
+/* esconder input real */
+.cp-import-actions input[type="file"] {
+  display: none;
 }
