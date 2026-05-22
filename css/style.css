@@ -2146,3 +2146,738 @@ tbody tr:hover {
     grid-column: auto;
   }
 }
+/* ======================================================
+
+   CONTAS A PAGAR — LAYOUT IGUAL AO MODELO
+
+====================================================== */
+
+#tab-contas-pagar {
+
+  padding: 22px !important;
+
+  background: #f8fafc;
+
+}
+
+/* CABEÇALHO */
+
+#tab-contas-pagar .cp-head {
+
+  margin-bottom: 22px;
+
+}
+
+#tab-contas-pagar .cp-subtitle {
+
+  display: block;
+
+  font-size: 11px;
+
+  font-weight: 950;
+
+  color: #dc2626;
+
+  letter-spacing: 0.14em;
+
+  text-transform: uppercase;
+
+  margin-bottom: 6px;
+
+}
+
+#tab-contas-pagar .cp-head h2 {
+
+  font-size: 34px;
+
+  font-weight: 950;
+
+  letter-spacing: -0.6px;
+
+}
+
+#tab-contas-pagar .cp-head p {
+
+  color: #475569;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+}
+
+/* KPIS */
+
+#tab-contas-pagar .cp-kpis {
+
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 16px;
+
+  margin-bottom: 18px;
+
+}
+
+#tab-contas-pagar .cp-card {
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 18px;
+
+  padding: 20px;
+
+  min-height: 116px;
+
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+
+}
+
+#tab-contas-pagar .cp-card span {
+
+  font-size: 12px;
+
+  font-weight: 850;
+
+  color: #64748b;
+
+}
+
+#tab-contas-pagar .cp-card strong {
+
+  display: block;
+
+  font-size: 30px;
+
+  font-weight: 950;
+
+  color: #111827;
+
+  margin: 8px 0 4px;
+
+}
+
+#tab-contas-pagar .cp-card small {
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  color: #64748b;
+
+}
+
+#tab-contas-pagar .cp-card.destaque strong {
+
+  color: #111827;
+
+}
+
+#tab-contas-pagar .cp-card.dark {
+
+  background: #ffffff;
+
+  border-color: #e5e7eb;
+
+}
+
+#tab-contas-pagar .cp-card.dark span,
+
+#tab-contas-pagar .cp-card.dark small {
+
+  color: #64748b;
+
+}
+
+#tab-contas-pagar .cp-card.dark strong {
+
+  color: #111827;
+
+}
+
+/* PAINÉIS */
+
+#tab-contas-pagar .cp-panel {
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 20px;
+
+  padding: 20px;
+
+  margin-bottom: 18px;
+
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+
+}
+
+#tab-contas-pagar .cp-panel h3 {
+
+  font-size: 18px;
+
+  font-weight: 950;
+
+  color: #111827;
+
+}
+
+#tab-contas-pagar .cp-panel p {
+
+  color: #64748b;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  margin-top: 3px;
+
+}
+
+/* LANÇAR CONTA */
+
+#tab-contas-pagar .cp-form-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(5, 1fr);
+
+  gap: 14px;
+
+  align-items: end;
+
+  margin-top: 18px;
+
+}
+
+#tab-contas-pagar .cp-form-grid label,
+
+#tab-contas-pagar .cp-filter-grid label {
+
+  display: block;
+
+  font-size: 11px;
+
+  font-weight: 850;
+
+  color: #334155;
+
+  margin-bottom: 6px;
+
+}
+
+#tab-contas-pagar .cp-form-grid input,
+
+#tab-contas-pagar .cp-filter-grid input,
+
+#tab-contas-pagar .cp-form-grid select,
+
+#tab-contas-pagar .cp-filter-grid select {
+
+  width: 100%;
+
+  height: 40px;
+
+  border-radius: 11px;
+
+  border: 1px solid #dbe2ea;
+
+  background: #ffffff;
+
+  padding: 0 12px;
+
+  font-size: 12.5px;
+
+  font-weight: 650;
+
+  color: #111827;
+
+}
+
+#tab-contas-pagar .cp-form-grid input:focus,
+
+#tab-contas-pagar .cp-filter-grid input:focus {
+
+  outline: none;
+
+  border-color: #dc2626;
+
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+
+}
+
+#tab-contas-pagar .cp-descricao {
+
+  grid-column: span 2;
+
+}
+
+/* TOGGLES */
+
+#tab-contas-pagar .toggle-group {
+
+  display: flex;
+
+  flex-direction: column;
+
+}
+
+#tab-contas-pagar .toggle-bank {
+
+  width: 100%;
+
+  height: 40px;
+
+  border-radius: 11px;
+
+  border: 1px solid #dbe2ea;
+
+  background: #f8fafc;
+
+  color: #475569;
+
+  font-size: 12px;
+
+  font-weight: 850;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+}
+
+#tab-contas-pagar .toggle-bank .toggle-icon {
+
+  width: 16px;
+
+  height: 16px;
+
+  border-radius: 999px;
+
+  background: #e5e7eb;
+
+  color: transparent;
+
+}
+
+#tab-contas-pagar .toggle-bank.ativo,
+
+#tab-contas-pagar .toggle-bank.active {
+
+  background: #dc2626;
+
+  color: #ffffff;
+
+  border-color: #dc2626;
+
+}
+
+#tab-contas-pagar .toggle-bank.ativo .toggle-icon,
+
+#tab-contas-pagar .toggle-bank.active .toggle-icon {
+
+  background: rgba(255, 255, 255, 0.25);
+
+  color: #ffffff;
+
+}
+
+/* BOTÕES GERAIS DA ABA */
+
+#tab-contas-pagar button,
+
+#tab-contas-pagar .import-file-label {
+
+  height: 38px;
+
+  min-width: 120px;
+
+  border-radius: 11px;
+
+  padding: 0 14px;
+
+  font-size: 12px;
+
+  font-weight: 850;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  white-space: nowrap;
+
+}
+
+#tab-contas-pagar .import-file-label {
+
+  background: #f1f5f9;
+
+  color: #111827;
+
+  border: 1px solid #e2e8f0;
+
+  cursor: pointer;
+
+}
+
+#tab-contas-pagar .import-file-label:hover,
+
+#tab-contas-pagar .secondary-btn:hover {
+
+  background: #e2e8f0;
+
+}
+
+/* AÇÕES LANÇAR CONTA */
+
+#tab-contas-pagar .cp-actions {
+
+  margin-top: 16px;
+
+  display: flex;
+
+  gap: 10px;
+
+}
+
+/* CONTAS EM ABERTO */
+
+#tab-contas-pagar .cp-head-actions {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 16px;
+
+  margin-bottom: 18px;
+
+}
+
+#tab-contas-pagar .cp-top-actions {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-wrap: nowrap;
+
+}
+
+#tab-contas-pagar .cp-top-actions button,
+
+#tab-contas-pagar .cp-top-actions .import-file-label {
+
+  min-width: 118px;
+
+  height: 36px;
+
+  font-size: 11.5px;
+
+}
+
+/* FILTROS */
+
+#tab-contas-pagar .cp-filter-grid {
+
+  display: grid;
+
+  grid-template-columns:
+
+    minmax(260px, 1.45fr)
+
+    minmax(160px, 0.85fr)
+
+    minmax(150px, 0.8fr)
+
+    minmax(150px, 0.8fr)
+
+    minmax(150px, 0.8fr)
+
+    132px;
+
+  gap: 10px;
+
+  align-items: end;
+
+  margin-bottom: 16px;
+
+}
+
+#tab-contas-pagar .cp-filter-button button {
+
+  width: 100%;
+
+  height: 40px;
+
+}
+
+/* TABELA */
+
+#tab-contas-pagar .cp-table {
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  overflow: auto;
+
+  max-height: 620px;
+
+  background: #ffffff;
+
+}
+
+#tab-contas-pagar .cp-table table {
+
+  width: 100%;
+
+  min-width: 1260px;
+
+  border-collapse: collapse;
+
+}
+
+#tab-contas-pagar .cp-table th {
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 5;
+
+  background: #f8fafc;
+
+  color: #64748b;
+
+  font-size: 10px;
+
+  font-weight: 950;
+
+  text-transform: uppercase;
+
+  padding: 12px 10px;
+
+  border-bottom: 1px solid #e5e7eb;
+
+}
+
+#tab-contas-pagar .cp-table td {
+
+  padding: 10px;
+
+  font-size: 12.5px;
+
+  font-weight: 650;
+
+  border-top: 1px solid #eef2f7;
+
+  color: #111827;
+
+}
+
+#tab-contas-pagar .cp-table tbody tr:hover {
+
+  background: #f8fafc;
+
+}
+
+/* CHECKBOX */
+
+#tab-contas-pagar input[type="checkbox"] {
+
+  appearance: none;
+
+  width: 14px;
+
+  height: 14px;
+
+  border: 1.5px solid #cbd5e1;
+
+  border-radius: 4px;
+
+  cursor: pointer;
+
+  position: relative;
+
+  padding: 0;
+
+}
+
+#tab-contas-pagar input[type="checkbox"]:checked {
+
+  background: #dc2626;
+
+  border-color: #dc2626;
+
+}
+
+#tab-contas-pagar input[type="checkbox"]:checked::after {
+
+  content: "";
+
+  position: absolute;
+
+  top: 2px;
+
+  left: 4px;
+
+  width: 3px;
+
+  height: 6px;
+
+  border: solid #ffffff;
+
+  border-width: 0 2px 2px 0;
+
+  transform: rotate(45deg);
+
+}
+
+/* BOTÕES DA TABELA */
+
+#tab-contas-pagar .doc-status,
+
+#tab-contas-pagar .btn-editar,
+
+#tab-contas-pagar .btn-duplicar,
+
+#tab-contas-pagar .btn-pagar,
+
+#tab-contas-pagar .btn-excluir {
+
+  min-width: auto;
+
+  height: 28px;
+
+  padding: 0 8px;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+  margin: 1px;
+
+}
+
+#tab-contas-pagar .doc-status.pendente {
+
+  background: #fee2e2;
+
+  color: #991b1b;
+
+}
+
+#tab-contas-pagar .doc-status.ok {
+
+  background: #dcfce7;
+
+  color: #166534;
+
+}
+
+#tab-contas-pagar .btn-editar {
+
+  background: #dbeafe;
+
+  color: #1d4ed8;
+
+}
+
+#tab-contas-pagar .btn-duplicar {
+
+  background: #ede9fe;
+
+  color: #5b21b6;
+
+}
+
+#tab-contas-pagar .btn-pagar {
+
+  background: #dcfce7;
+
+  color: #166534;
+
+}
+
+#tab-contas-pagar .btn-excluir {
+
+  background: #fee2e2;
+
+  color: #991b1b;
+
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 1400px) {
+
+  #tab-contas-pagar .cp-kpis {
+
+    grid-template-columns: repeat(2, 1fr);
+
+  }
+
+  #tab-contas-pagar .cp-form-grid {
+
+    grid-template-columns: repeat(3, 1fr);
+
+  }
+
+  #tab-contas-pagar .cp-filter-grid {
+
+    grid-template-columns: repeat(3, 1fr);
+
+  }
+
+  #tab-contas-pagar .cp-head-actions {
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+  }
+
+  #tab-contas-pagar .cp-top-actions {
+
+    flex-wrap: wrap;
+
+  }
+
+  #tab-contas-pagar .cp-descricao {
+
+    grid-column: span 1;
+
+  }
+
+}
+
+@media (max-width: 760px) {
+
+  #tab-contas-pagar .cp-kpis,
+
+  #tab-contas-pagar .cp-form-grid,
+
+  #tab-contas-pagar .cp-filter-grid {
+
+    grid-template-columns: 1fr;
+
+  }
+
+}
