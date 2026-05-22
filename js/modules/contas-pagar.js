@@ -17,14 +17,30 @@ window.contasPagarModule = {
     return this.get(id)?.value || "";
   },
 
+  normalizarTexto(texto) {
+    return String(texto || "").trim().toUpperCase();
+  },
+
+  normalizarChave(chave) {
+    return String(chave || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+  },
+
   numero(valor) {
-    if (typeof valor === "number") return valor;
-    if (!valor) return 0;
+    if (typeof valor === "number") return isNaN(valor) ? 0 : valor;
+    if (valor === null || valor === undefined || valor === "") return 0;
 
-    let txt = String(valor).trim();
-    txt = txt.replace(/R\$/g, "").replace(/\s/g, "");
+    let txt = String(valor)
+      .trim()
+      .replace(/R\$/gi, "")
+      .replace(/\s/g, "")
+      .replace(/[^\d,.-]/g, "");
 
-    if (txt.includes(",") && txt.includes(".")) {
+    if (txt.includes(".") && txt.includes(",")) {
       txt = txt.replace(/\./g, "").replace(",", ".");
     } else if (txt.includes(",")) {
       txt = txt.replace(",", ".");
@@ -48,15 +64,86 @@ window.contasPagarModule = {
     return d.toLocaleDateString("pt-BR");
   },
 
+  dataISO(valor) {
+    if (!valor) return "";
+
+    if (valor instanceof Date && !isNaN(valor.getTime())) {
+      return valor.toISOString().slice(0, 10);
+    }
+
+    const texto = String(valor).trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+      return texto;
+    }
+
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
+      const [dia, mes, ano] = texto.split("/");
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    const d = new Date(texto);
+    if (!isNaN(d.getTime())) {
+      return d.toISOString().slice(0, 10);
+    }
+
+    return "";
+  },
+
+  booleano(valor) {
+    const txt = this.normalizarTexto(valor);
+
+    return [
+      "SIM",
+      "S",
+      "OK",
+      "TRUE",
+      "VERDADEIRO",
+      "RECEBIDO",
+      "RECEBIDA",
+      "1",
+      "X"
+    ].includes(txt);
+  },
+
+  pegarCampo(linha, opcoes) {
+    const mapa = {};
+
+    Object.keys(linha || {}).forEach(chave => {
+      mapa[this.normalizarChave(chave)] = linha[chave];
+    });
+
+    for (const nome of opcoes) {
+      const chave = this.normalizarChave(nome);
+
+      if (
+        mapa[chave] !== undefined &&
+        mapa[chave] !== null &&
+        mapa[chave] !== ""
+      ) {
+        return mapa[chave];
+      }
+    }
+
+    return "";
+  },
+
   async carregar() {
     try {
       const dados = await api.restGet(
         "contas_pagar",
-        "select=*&status=neq.pago&order=vencimento.asc"
+        "select=*&status=neq.pago&order=vencimento.asc&limit=20000"
       );
 
       this.dados = Array.isArray(dados) ? dados : [];
       this.filtrados = [...this.dados];
+
+      this.selecionados.forEach(id => {
+        if (!this.dados.some(item => Number(item.id) === Number(id))) {
+          this.selecionados.delete(id);
+        }
+      });
+
       this.renderizar();
     } catch (erro) {
       console.error("Erro ao carregar contas a pagar:", erro);
@@ -65,6 +152,10 @@ window.contasPagarModule = {
   },
 
   toggleInput(tipo) {
+    if (!this.inputs) {
+      this.inputs = { nfe: false, boleto: false };
+    }
+
     this.inputs[tipo] = !this.inputs[tipo];
     this.atualizarToggleUI();
   },
@@ -74,19 +165,23 @@ window.contasPagarModule = {
     const btnBoleto = this.get("btnBoleto");
 
     if (btnNfe) {
-      btnNfe.classList.toggle("ativo", this.inputs.nfe);
-      btnNfe.classList.toggle("active", this.inputs.nfe);
+      btnNfe.classList.toggle("ativo", !!this.inputs.nfe);
+      btnNfe.classList.toggle("active", !!this.inputs.nfe);
 
       const txt = btnNfe.querySelector(".toggle-text");
-      if (txt) txt.textContent = this.inputs.nfe ? "NFE recebida" : "Não recebida";
+      if (txt) {
+        txt.textContent = this.inputs.nfe ? "NFE recebida" : "Não recebida";
+      }
     }
 
     if (btnBoleto) {
-      btnBoleto.classList.toggle("ativo", this.inputs.boleto);
-      btnBoleto.classList.toggle("active", this.inputs.boleto);
+      btnBoleto.classList.toggle("ativo", !!this.inputs.boleto);
+      btnBoleto.classList.toggle("active", !!this.inputs.boleto);
 
       const txt = btnBoleto.querySelector(".toggle-text");
-      if (txt) txt.textContent = this.inputs.boleto ? "Boleto recebido" : "Não recebido";
+      if (txt) {
+        txt.textContent = this.inputs.boleto ? "Boleto recebido" : "Não recebido";
+      }
     }
   },
 
@@ -106,10 +201,10 @@ window.contasPagarModule = {
         documento: this.valor("cpDocumento").trim(),
         valor: this.numero(this.valor("cpValor")),
         vencimento: this.valor("cpVencimento"),
-        categoria: this.valor("cpCategoria").trim().toUpperCase(),
+        categoria: this.normalizarTexto(this.valor("cpCategoria")),
         descricao: this.valor("cpDescricao").trim(),
-        tem_nfe: this.inputs.nfe,
-        tem_boleto: this.inputs.boleto,
+        tem_nfe: !!this.inputs.nfe,
+        tem_boleto: !!this.inputs.boleto,
         status: "pendente"
       };
 
@@ -151,8 +246,13 @@ window.contasPagarModule = {
     this.editandoId = null;
     this.resetToggles();
 
-    const btnSalvar = document.querySelector("#tab-contas-pagar .actions-row button");
-    if (btnSalvar) btnSalvar.textContent = "Salvar conta";
+    const btnSalvar = document.querySelector(
+      "#tab-contas-pagar .panel:first-of-type .actions-row button"
+    );
+
+    if (btnSalvar) {
+      btnSalvar.textContent = "Salvar conta";
+    }
   },
 
   editar(id) {
@@ -161,19 +261,24 @@ window.contasPagarModule = {
 
     this.editandoId = Number(item.id);
 
-    this.get("cpFornecedor").value = item.fornecedor || "";
-    this.get("cpDocumento").value = item.documento || "";
-    this.get("cpValor").value = item.valor || "";
-    this.get("cpVencimento").value = item.vencimento || "";
-    this.get("cpCategoria").value = item.categoria || "";
-    this.get("cpDescricao").value = item.descricao || "";
+    if (this.get("cpFornecedor")) this.get("cpFornecedor").value = item.fornecedor || "";
+    if (this.get("cpDocumento")) this.get("cpDocumento").value = item.documento || "";
+    if (this.get("cpValor")) this.get("cpValor").value = item.valor || "";
+    if (this.get("cpVencimento")) this.get("cpVencimento").value = item.vencimento || "";
+    if (this.get("cpCategoria")) this.get("cpCategoria").value = item.categoria || "";
+    if (this.get("cpDescricao")) this.get("cpDescricao").value = item.descricao || "";
 
     this.inputs.nfe = !!item.tem_nfe;
     this.inputs.boleto = !!item.tem_boleto;
     this.atualizarToggleUI();
 
-    const btnSalvar = document.querySelector("#tab-contas-pagar .actions-row button");
-    if (btnSalvar) btnSalvar.textContent = "Atualizar conta";
+    const btnSalvar = document.querySelector(
+      "#tab-contas-pagar .panel:first-of-type .actions-row button"
+    );
+
+    if (btnSalvar) {
+      btnSalvar.textContent = "Atualizar conta";
+    }
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   },
@@ -194,10 +299,23 @@ window.contasPagarModule = {
       ].join(" ").toLowerCase();
 
       if (busca && !texto.includes(busca)) return false;
-      if (fornecedor && !String(item.fornecedor || "").toLowerCase().includes(fornecedor)) return false;
-      if (categoria && !String(item.categoria || "").toLowerCase().includes(categoria)) return false;
-      if (inicio && item.vencimento < inicio) return false;
-      if (fim && item.vencimento > fim) return false;
+
+      if (
+        fornecedor &&
+        !String(item.fornecedor || "").toLowerCase().includes(fornecedor)
+      ) {
+        return false;
+      }
+
+      if (
+        categoria &&
+        !String(item.categoria || "").toLowerCase().includes(categoria)
+      ) {
+        return false;
+      }
+
+      if (inicio && String(item.vencimento || "") < inicio) return false;
+      if (fim && String(item.vencimento || "") > fim) return false;
 
       return true;
     });
@@ -249,7 +367,7 @@ window.contasPagarModule = {
   toggleSelecionadoLinha(id, event) {
     const tag = event.target.tagName.toLowerCase();
 
-    if (tag === "button" || tag === "input") return;
+    if (tag === "button" || tag === "input" || tag === "label") return;
 
     id = Number(id);
 
@@ -397,6 +515,257 @@ window.contasPagarModule = {
     }
   },
 
+  async importarExcel(event) {
+    try {
+      const arquivo = event?.target?.files?.[0];
+
+      if (!arquivo) {
+        alert("Selecione uma planilha.");
+        return;
+      }
+
+      if (typeof XLSX === "undefined") {
+        alert("Biblioteca XLSX não carregada.");
+        return;
+      }
+
+      const buffer = await arquivo.arrayBuffer();
+
+      const workbook = XLSX.read(buffer, {
+        type: "array",
+        cellDates: true
+      });
+
+      const aba = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[aba];
+
+      const linhas = XLSX.utils.sheet_to_json(sheet, {
+        defval: "",
+        raw: false
+      });
+
+      if (!linhas.length) {
+        alert("A planilha está vazia.");
+        return;
+      }
+
+      const registros = [];
+      let ignoradas = 0;
+
+      linhas.forEach(linha => {
+        const fornecedor = String(this.pegarCampo(linha, [
+          "FORNECEDOR",
+          "Fornecedor",
+          "fornecedor",
+          "EMPRESA",
+          "CLIENTE",
+          "NOME"
+        ]) || "").trim();
+
+        const documento = String(this.pegarCampo(linha, [
+          "DOCUMENTO",
+          "Documento",
+          "NF",
+          "NFE",
+          "NOTA",
+          "NOTA FISCAL",
+          "PEDIDO",
+          "FAT",
+          "FATURA"
+        ]) || "").trim();
+
+        const valor = this.numero(this.pegarCampo(linha, [
+          "VALOR",
+          "Valor",
+          "TOTAL",
+          "VALOR TOTAL",
+          "VALOR PAGO",
+          "VLR"
+        ]));
+
+        const vencimento = this.dataISO(this.pegarCampo(linha, [
+          "VENCIMENTO",
+          "DATA VENCIMENTO",
+          "DATA DE VENCIMENTO",
+          "VENCE",
+          "DATA"
+        ]));
+
+        const categoria = this.normalizarTexto(this.pegarCampo(linha, [
+          "CATEGORIA",
+          "Categoria",
+          "TIPO",
+          "GRUPO",
+          "CLASSE",
+          "CLASSIFICAÇÃO",
+          "CLASSIFICACAO"
+        ]));
+
+        const descricao = String(this.pegarCampo(linha, [
+          "DESCRICAO",
+          "DESCRIÇÃO",
+          "Descricao",
+          "Descrição",
+          "OBS",
+          "OBSERVACAO",
+          "OBSERVAÇÃO",
+          "HISTORICO",
+          "HISTÓRICO"
+        ]) || "").trim();
+
+        const nfe = this.booleano(this.pegarCampo(linha, [
+          "NFE",
+          "NF-E",
+          "NOTA FISCAL",
+          "TEM NFE",
+          "NFE RECEBIDA"
+        ]));
+
+        const boleto = this.booleano(this.pegarCampo(linha, [
+          "BOLETO",
+          "TEM BOLETO",
+          "BOLETO RECEBIDO"
+        ]));
+
+        if (fornecedor && valor > 0 && vencimento) {
+          registros.push({
+            fornecedor,
+            documento,
+            valor,
+            vencimento,
+            categoria,
+            descricao,
+            tem_nfe: nfe,
+            tem_boleto: boleto,
+            status: "pendente"
+          });
+        } else {
+          ignoradas++;
+        }
+      });
+
+      if (!registros.length) {
+        alert("Nenhuma linha válida encontrada. Verifique fornecedor, valor e vencimento.");
+        return;
+      }
+
+      const confirmar = confirm(
+        `Foram encontradas ${registros.length} contas válidas.\nLinhas ignoradas: ${ignoradas}\n\nDeseja importar agora?`
+      );
+
+      if (!confirmar) return;
+
+      for (const item of registros) {
+        await api.insert("contas_pagar", item);
+      }
+
+      if (event?.target) {
+        event.target.value = "";
+      }
+
+      await this.carregar();
+
+      alert(`${registros.length} contas importadas com sucesso.`);
+    } catch (erro) {
+      console.error("Erro ao importar Excel:", erro);
+      alert("Erro ao importar Excel.");
+    }
+  },
+
+  exportarExcel() {
+    try {
+      if (typeof XLSX === "undefined") {
+        alert("Biblioteca XLSX não carregada.");
+        return;
+      }
+
+      const lista = this.filtrados?.length ? this.filtrados : this.dados;
+
+      if (!lista.length) {
+        alert("Não há dados para exportar.");
+        return;
+      }
+
+      const linhas = lista.map(item => ({
+        FORNECEDOR: item.fornecedor || "",
+        DOCUMENTO: item.documento || "",
+        VALOR: this.numero(item.valor),
+        VENCIMENTO: item.vencimento || "",
+        CATEGORIA: item.categoria || "",
+        DESCRICAO: item.descricao || "",
+        NFE: item.tem_nfe ? "SIM" : "NÃO",
+        BOLETO: item.tem_boleto ? "SIM" : "NÃO",
+        STATUS: item.status || "pendente"
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(linhas);
+
+      ws["!cols"] = [
+        { wch: 28 },
+        { wch: 18 },
+        { wch: 14 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 34 },
+        { wch: 10 },
+        { wch: 12 },
+        { wch: 14 }
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Contas a Pagar");
+
+      const hoje = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `contas-a-pagar-${hoje}.xlsx`);
+    } catch (erro) {
+      console.error("Erro ao exportar Excel:", erro);
+      alert("Erro ao exportar Excel.");
+    }
+  },
+
+  baixarModeloImportacao() {
+    try {
+      if (typeof XLSX === "undefined") {
+        alert("Biblioteca XLSX não carregada.");
+        return;
+      }
+
+      const modelo = [
+        {
+          FORNECEDOR: "Fornecedor Exemplo",
+          DOCUMENTO: "NF 12345",
+          VALOR: 1500.75,
+          VENCIMENTO: "2026-05-30",
+          CATEGORIA: "MP",
+          DESCRICAO: "Compra de material",
+          NFE: "SIM",
+          BOLETO: "SIM"
+        }
+      ];
+
+      const ws = XLSX.utils.json_to_sheet(modelo);
+
+      ws["!cols"] = [
+        { wch: 28 },
+        { wch: 18 },
+        { wch: 14 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 34 },
+        { wch: 10 },
+        { wch: 12 }
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Modelo");
+
+      XLSX.writeFile(wb, "modelo-importacao-contas-a-pagar.xlsx");
+    } catch (erro) {
+      console.error("Erro ao baixar modelo:", erro);
+      alert("Erro ao baixar modelo.");
+    }
+  },
+
   renderizar() {
     const tbody = this.get("tabelaContasPagar");
     if (!tbody) return;
@@ -441,6 +810,7 @@ window.contasPagarModule = {
 
           <td>
             <button
+              type="button"
               class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
               onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})"
             >
@@ -448,6 +818,7 @@ window.contasPagarModule = {
             </button>
 
             <button
+              type="button"
               class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
               onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})"
             >
@@ -456,10 +827,10 @@ window.contasPagarModule = {
           </td>
 
           <td>
-            <button class="btn-editar" onclick="event.stopPropagation(); contasPagarModule.editar(${id})">Editar</button>
-            <button class="btn-duplicar" onclick="event.stopPropagation(); contasPagarModule.duplicar(${id})">Duplicar</button>
-            <button class="btn-pagar" onclick="event.stopPropagation(); contasPagarModule.pagar(${id})">Pagar</button>
-            <button class="btn-excluir" onclick="event.stopPropagation(); contasPagarModule.excluir(${id})">Excluir</button>
+            <button type="button" class="btn-editar" onclick="event.stopPropagation(); contasPagarModule.editar(${id})">Editar</button>
+            <button type="button" class="btn-duplicar" onclick="event.stopPropagation(); contasPagarModule.duplicar(${id})">Duplicar</button>
+            <button type="button" class="btn-pagar" onclick="event.stopPropagation(); contasPagarModule.pagar(${id})">Pagar</button>
+            <button type="button" class="btn-excluir" onclick="event.stopPropagation(); contasPagarModule.excluir(${id})">Excluir</button>
           </td>
         </tr>
       `;
@@ -469,7 +840,10 @@ window.contasPagarModule = {
   },
 
   resumo() {
-    const total = this.filtrados.reduce((acc, item) => acc + this.numero(item.valor), 0);
+    const total = this.filtrados.reduce(
+      (acc, item) => acc + this.numero(item.valor),
+      0
+    );
 
     const selecionadas = this.filtrados.filter(item =>
       this.selecionados.has(Number(item.id))
@@ -486,3 +860,5 @@ window.contasPagarModule = {
     if (this.get("cpTotalSelecionado")) this.get("cpTotalSelecionado").textContent = this.moeda(totalSelecionado);
   }
 };
+
+window.contasPagarModule = contasPagarModule;
