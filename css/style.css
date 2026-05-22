@@ -1441,3 +1441,20 @@ tbody tr:hover {
     padding: 28px;
   }
 }
+.import-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: #111827;
+  color: white;
+  font-size: 12px;
+  font-weight: 850;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.import-btn:hover {
+  background: #1f2937;
+}
