@@ -73,9 +73,7 @@ window.contasPagarModule = {
 
     const texto = String(valor).trim();
 
-    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
-      return texto;
-    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto;
 
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
       const [dia, mes, ano] = texto.split("/");
@@ -83,9 +81,7 @@ window.contasPagarModule = {
     }
 
     const d = new Date(texto);
-    if (!isNaN(d.getTime())) {
-      return d.toISOString().slice(0, 10);
-    }
+    if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
 
     return "";
   },
@@ -145,6 +141,7 @@ window.contasPagarModule = {
       });
 
       this.renderizar();
+      this.atualizarToggleUI();
     } catch (erro) {
       console.error("Erro ao carregar contas a pagar:", erro);
       alert("Erro ao carregar contas a pagar.");
@@ -152,10 +149,6 @@ window.contasPagarModule = {
   },
 
   toggleInput(tipo) {
-    if (!this.inputs) {
-      this.inputs = { nfe: false, boleto: false };
-    }
-
     this.inputs[tipo] = !this.inputs[tipo];
     this.atualizarToggleUI();
   },
@@ -169,9 +162,7 @@ window.contasPagarModule = {
       btnNfe.classList.toggle("active", !!this.inputs.nfe);
 
       const txt = btnNfe.querySelector(".toggle-text");
-      if (txt) {
-        txt.textContent = this.inputs.nfe ? "NFE recebida" : "Não recebida";
-      }
+      if (txt) txt.textContent = this.inputs.nfe ? "NFE recebida" : "Não recebida";
     }
 
     if (btnBoleto) {
@@ -179,9 +170,7 @@ window.contasPagarModule = {
       btnBoleto.classList.toggle("active", !!this.inputs.boleto);
 
       const txt = btnBoleto.querySelector(".toggle-text");
-      if (txt) {
-        txt.textContent = this.inputs.boleto ? "Boleto recebido" : "Não recebido";
-      }
+      if (txt) txt.textContent = this.inputs.boleto ? "Boleto recebido" : "Não recebido";
     }
   },
 
@@ -247,12 +236,10 @@ window.contasPagarModule = {
     this.resetToggles();
 
     const btnSalvar = document.querySelector(
-      "#tab-contas-pagar .panel:first-of-type .actions-row button"
+      "#tab-contas-pagar .cp-form-actions .cp-btn-primary"
     );
 
-    if (btnSalvar) {
-      btnSalvar.textContent = "Salvar conta";
-    }
+    if (btnSalvar) btnSalvar.textContent = "Salvar conta";
   },
 
   editar(id) {
@@ -273,12 +260,10 @@ window.contasPagarModule = {
     this.atualizarToggleUI();
 
     const btnSalvar = document.querySelector(
-      "#tab-contas-pagar .panel:first-of-type .actions-row button"
+      "#tab-contas-pagar .cp-form-actions .cp-btn-primary"
     );
 
-    if (btnSalvar) {
-      btnSalvar.textContent = "Atualizar conta";
-    }
+    if (btnSalvar) btnSalvar.textContent = "Atualizar conta";
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   },
@@ -303,16 +288,12 @@ window.contasPagarModule = {
       if (
         fornecedor &&
         !String(item.fornecedor || "").toLowerCase().includes(fornecedor)
-      ) {
-        return false;
-      }
+      ) return false;
 
       if (
         categoria &&
         !String(item.categoria || "").toLowerCase().includes(categoria)
-      ) {
-        return false;
-      }
+      ) return false;
 
       if (inicio && String(item.vencimento || "") < inicio) return false;
       if (fim && String(item.vencimento || "") > fim) return false;
@@ -367,7 +348,7 @@ window.contasPagarModule = {
   toggleSelecionadoLinha(id, event) {
     const tag = event.target.tagName.toLowerCase();
 
-    if (tag === "button" || tag === "input" || tag === "label") return;
+    if (["button", "input", "label", "span"].includes(tag)) return;
 
     id = Number(id);
 
@@ -382,8 +363,7 @@ window.contasPagarModule = {
 
   async pagar(id) {
     try {
-      const confirmar = confirm("Confirmar pagamento desta conta?");
-      if (!confirmar) return;
+      if (!confirm("Confirmar pagamento desta conta?")) return;
 
       await api.update("contas_pagar", id, {
         status: "pago",
@@ -410,11 +390,9 @@ window.contasPagarModule = {
         return;
       }
 
-      const confirmar = confirm(
-        `Confirmar pagamento de ${this.selecionados.size} conta(s)?`
-      );
-
-      if (!confirmar) return;
+      if (!confirm(`Confirmar pagamento de ${this.selecionados.size} conta(s)?`)) {
+        return;
+      }
 
       const hoje = new Date().toISOString().slice(0, 10);
 
@@ -474,8 +452,7 @@ window.contasPagarModule = {
 
   async excluir(id) {
     try {
-      const confirmar = confirm("Excluir esta conta?");
-      if (!confirmar) return;
+      if (!confirm("Excluir esta conta?")) return;
 
       await api.request(`contas_pagar?id=eq.${id}`, "", "DELETE");
 
@@ -554,77 +531,35 @@ window.contasPagarModule = {
 
       linhas.forEach(linha => {
         const fornecedor = String(this.pegarCampo(linha, [
-          "FORNECEDOR",
-          "Fornecedor",
-          "fornecedor",
-          "EMPRESA",
-          "CLIENTE",
-          "NOME"
+          "FORNECEDOR", "EMPRESA", "NOME"
         ]) || "").trim();
 
         const documento = String(this.pegarCampo(linha, [
-          "DOCUMENTO",
-          "Documento",
-          "NF",
-          "NFE",
-          "NOTA",
-          "NOTA FISCAL",
-          "PEDIDO",
-          "FAT",
-          "FATURA"
+          "DOCUMENTO", "NF", "NFE", "NOTA", "NOTA FISCAL", "PEDIDO", "FAT", "FATURA"
         ]) || "").trim();
 
         const valor = this.numero(this.pegarCampo(linha, [
-          "VALOR",
-          "Valor",
-          "TOTAL",
-          "VALOR TOTAL",
-          "VALOR PAGO",
-          "VLR"
+          "VALOR", "TOTAL", "VALOR TOTAL", "VALOR PAGO", "VLR"
         ]));
 
         const vencimento = this.dataISO(this.pegarCampo(linha, [
-          "VENCIMENTO",
-          "DATA VENCIMENTO",
-          "DATA DE VENCIMENTO",
-          "VENCE",
-          "DATA"
+          "VENCIMENTO", "DATA VENCIMENTO", "DATA DE VENCIMENTO", "VENCE", "DATA"
         ]));
 
         const categoria = this.normalizarTexto(this.pegarCampo(linha, [
-          "CATEGORIA",
-          "Categoria",
-          "TIPO",
-          "GRUPO",
-          "CLASSE",
-          "CLASSIFICAÇÃO",
-          "CLASSIFICACAO"
+          "CATEGORIA", "TIPO", "GRUPO", "CLASSE", "CLASSIFICAÇÃO", "CLASSIFICACAO"
         ]));
 
         const descricao = String(this.pegarCampo(linha, [
-          "DESCRICAO",
-          "DESCRIÇÃO",
-          "Descricao",
-          "Descrição",
-          "OBS",
-          "OBSERVACAO",
-          "OBSERVAÇÃO",
-          "HISTORICO",
-          "HISTÓRICO"
+          "DESCRICAO", "DESCRIÇÃO", "OBS", "OBSERVACAO", "OBSERVAÇÃO", "HISTORICO", "HISTÓRICO"
         ]) || "").trim();
 
         const nfe = this.booleano(this.pegarCampo(linha, [
-          "NFE",
-          "NF-E",
-          "NOTA FISCAL",
-          "TEM NFE",
-          "NFE RECEBIDA"
+          "NFE", "NF-E", "NOTA FISCAL", "TEM NFE", "NFE RECEBIDA"
         ]));
 
         const boleto = this.booleano(this.pegarCampo(linha, [
-          "BOLETO",
-          "TEM BOLETO",
-          "BOLETO RECEBIDO"
+          "BOLETO", "TEM BOLETO", "BOLETO RECEBIDO"
         ]));
 
         if (fornecedor && valor > 0 && vencimento) {
@@ -659,9 +594,7 @@ window.contasPagarModule = {
         await api.insert("contas_pagar", item);
       }
 
-      if (event?.target) {
-        event.target.value = "";
-      }
+      if (event?.target) event.target.value = "";
 
       await this.carregar();
 
@@ -723,7 +656,7 @@ window.contasPagarModule = {
     }
   },
 
-  baixarModeloImportacao() {
+  baixarModelo() {
     try {
       if (typeof XLSX === "undefined") {
         alert("Biblioteca XLSX não carregada.");
@@ -809,19 +742,11 @@ window.contasPagarModule = {
           <td>${item.descricao || "-"}</td>
 
           <td>
-            <button
-              type="button"
-              class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
-              onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})"
-            >
+            <button type="button" class="doc-status ${item.tem_nfe ? "ok" : "pendente"}" onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})">
               ${item.tem_nfe ? "NFE OK" : "NFE"}
             </button>
 
-            <button
-              type="button"
-              class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
-              onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})"
-            >
+            <button type="button" class="doc-status ${item.tem_boleto ? "ok" : "pendente"}" onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})">
               ${item.tem_boleto ? "Boleto OK" : "Boleto"}
             </button>
           </td>
@@ -860,5 +785,3 @@ window.contasPagarModule = {
     if (this.get("cpTotalSelecionado")) this.get("cpTotalSelecionado").textContent = this.moeda(totalSelecionado);
   }
 };
-
-window.contasPagarModule = contasPagarModule;
