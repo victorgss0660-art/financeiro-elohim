@@ -368,44 +368,77 @@
 <!-- CONTAS A PAGAR -->
 <section id="tab-contas-pagar" class="tab-section">
 
-  <div class="page-head cp-head">
-    <div>
-      <span class="cp-subtitle">GESTÃO FINANCEIRA</span>
-      <h2>Contas a Pagar</h2>
-      <p>Controle completo de fornecedores, vencimentos, documentos fiscais e pagamentos.</p>
+  <!-- HERO -->
+  <div class="cp-hero">
+    <div class="cp-hero-top">
+      <div>
+        <span class="cp-tag">GESTÃO FINANCEIRA</span>
+        <h2>Contas a Pagar</h2>
+        <p>Controle completo de fornecedores, vencimentos, documentos fiscais e pagamentos.</p>
+      </div>
+
+      <div class="cp-hero-actions">
+        <label for="cpImportFile" class="cp-btn cp-btn-outline">
+          📥 Importar Excel
+        </label>
+        <input
+          type="file"
+          id="cpImportFile"
+          accept=".xlsx,.xls"
+          style="display:none"
+          onchange="contasPagarModule.importarExcel(event)"
+        >
+
+        <button
+          type="button"
+          class="cp-btn cp-btn-outline"
+          onclick="contasPagarModule.exportarExcel()"
+        >
+          📤 Exportar
+        </button>
+
+        <button
+          type="button"
+          class="cp-btn cp-btn-outline"
+          onclick="contasPagarModule.baixarModelo()"
+        >
+          📄 Modelo
+        </button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="cp-kpis">
+      <div class="cp-kpi">
+        <span>Quantidade</span>
+        <strong id="cpQtd">0</strong>
+        <small>contas pendentes</small>
+      </div>
+
+      <div class="cp-kpi">
+        <span>Total em aberto</span>
+        <strong id="cpTotal">R$ 0,00</strong>
+        <small>saldo pendente</small>
+      </div>
+
+      <div class="cp-kpi">
+        <span>Selecionadas</span>
+        <strong id="cpSelecionadas">0</strong>
+        <small>pagamento em lote</small>
+      </div>
+
+      <div class="cp-kpi">
+        <span>Total selecionado</span>
+        <strong id="cpTotalSelecionado">R$ 0,00</strong>
+        <small>valor do lote</small>
+      </div>
     </div>
   </div>
 
-  <!-- KPIs -->
-  <section class="cp-kpis">
-    <div class="cp-card">
-      <span>Quantidade</span>
-      <strong id="cpQtd">0</strong>
-      <small>contas pendentes</small>
-    </div>
+  <!-- LANÇAMENTO -->
+  <div class="cp-card">
 
-    <div class="cp-card destaque">
-      <span>Total em aberto</span>
-      <strong id="cpTotal">R$ 0,00</strong>
-      <small>saldo pendente</small>
-    </div>
-
-    <div class="cp-card">
-      <span>Selecionadas</span>
-      <strong id="cpSelecionadas">0</strong>
-      <small>pagamento em lote</small>
-    </div>
-
-    <div class="cp-card dark">
-      <span>Total selecionado</span>
-      <strong id="cpTotalSelecionado">R$ 0,00</strong>
-      <small>valor do lote</small>
-    </div>
-  </section>
-
-  <!-- LANÇAR CONTA -->
-  <div class="cp-panel">
-    <div class="panel-head">
+    <div class="cp-card-head">
       <div>
         <h3>Lançar Conta</h3>
         <p>Cadastro manual de contas a pagar</p>
@@ -414,72 +447,99 @@
 
     <div class="cp-form-grid">
 
-      <div>
+      <div class="cp-field">
         <label>Fornecedor</label>
-        <input id="cpFornecedor" type="text" placeholder="Nome do fornecedor" />
+        <input
+          id="cpFornecedor"
+          type="text"
+          placeholder="Nome do fornecedor"
+        >
       </div>
 
-      <div>
+      <div class="cp-field">
         <label>Documento</label>
-        <input id="cpDocumento" type="text" placeholder="NF / Pedido / FAT" />
+        <input
+          id="cpDocumento"
+          type="text"
+          placeholder="NF / Pedido / FAT"
+        >
       </div>
 
-      <div>
+      <div class="cp-field">
         <label>Valor</label>
-        <input id="cpValor" type="text" placeholder="R$ 0,00" />
+        <input
+          id="cpValor"
+          type="text"
+          placeholder="R$ 0,00"
+        >
       </div>
 
-      <div>
+      <div class="cp-field">
         <label>Vencimento</label>
-        <input id="cpVencimento" type="date" />
+        <input
+          id="cpVencimento"
+          type="date"
+        >
       </div>
 
-      <div>
+      <div class="cp-field">
         <label>Categoria</label>
-        <input id="cpCategoria" type="text" placeholder="Ex: MP / FRETE / DESP" />
+        <input
+          id="cpCategoria"
+          type="text"
+          placeholder="Ex: MP / FRETE / DESP"
+        >
       </div>
 
-      <div class="toggle-group">
+      <div class="cp-field">
         <label>NFE recebida</label>
         <button
           type="button"
           id="btnNfe"
-          class="toggle-bank"
+          class="cp-toggle"
           onclick="contasPagarModule.toggleInput('nfe')"
         >
-          <span class="toggle-icon">✓</span>
+          <span class="toggle-dot"></span>
           <span class="toggle-text">Não recebida</span>
         </button>
       </div>
 
-      <div class="toggle-group">
+      <div class="cp-field">
         <label>Boleto recebido</label>
         <button
           type="button"
           id="btnBoleto"
-          class="toggle-bank"
+          class="cp-toggle"
           onclick="contasPagarModule.toggleInput('boleto')"
         >
-          <span class="toggle-icon">✓</span>
+          <span class="toggle-dot"></span>
           <span class="toggle-text">Não recebido</span>
         </button>
       </div>
 
-      <div class="cp-descricao">
+      <div class="cp-field cp-field-wide">
         <label>Descrição</label>
-        <input id="cpDescricao" type="text" placeholder="Descrição da conta" />
+        <input
+          id="cpDescricao"
+          type="text"
+          placeholder="Descrição da conta"
+        >
       </div>
 
     </div>
 
-    <div class="cp-actions actions-row">
-      <button type="button" onclick="contasPagarModule.salvar()">
+    <div class="cp-form-actions">
+      <button
+        type="button"
+        class="cp-btn cp-btn-primary"
+        onclick="contasPagarModule.salvar()"
+      >
         Salvar conta
       </button>
 
       <button
         type="button"
-        class="secondary-btn"
+        class="cp-btn cp-btn-secondary"
         onclick="contasPagarModule.limparFormulario()"
       >
         Limpar
@@ -487,115 +547,85 @@
     </div>
   </div>
 
-  <!-- CONTAS EM ABERTO -->
-  <div class="cp-panel">
+  <!-- LISTAGEM -->
+  <div class="cp-card">
 
-    <div class="cp-head-actions">
+    <div class="cp-card-head cp-card-head-space">
       <div>
         <h3>Contas em Aberto</h3>
         <p>Filtre, selecione e realize pagamentos em lote</p>
       </div>
 
-      <div class="cp-top-actions">
-
-        <label for="cpImportExcel" class="import-file-label">
-          Importar Excel
-        </label>
-        <input
-          id="cpImportExcel"
-          type="file"
-          accept=".xlsx,.xls"
-          style="display:none"
-          onchange="contasPagarModule.importarExcel(this)"
-        />
-
-        <button type="button" onclick="contasPagarModule.exportarExcel()">
-          Exportar
-        </button>
-
-        <button type="button" onclick="contasPagarModule.baixarModeloExcel()">
-          Modelo
-        </button>
-
-        <button
-          type="button"
-          class="secondary-btn"
-          onclick="contasPagarModule.selecionarTodos()"
-        >
+      <div class="cp-table-actions">
+        <button class="cp-btn cp-btn-outline" onclick="contasPagarModule.selecionarTodos()">
           Selecionar todas
         </button>
 
-        <button
-          type="button"
-          class="secondary-btn"
-          onclick="contasPagarModule.limparSelecao()"
-        >
+        <button class="cp-btn cp-btn-outline" onclick="contasPagarModule.limparSelecao()">
           Limpar seleção
         </button>
 
-        <button type="button" onclick="contasPagarModule.pagarSelecionadas()">
+        <button class="cp-btn cp-btn-primary" onclick="contasPagarModule.pagarSelecionadas()">
           Pagar selecionadas
         </button>
-
       </div>
     </div>
 
     <!-- FILTROS -->
     <div class="cp-filter-grid">
 
-      <div>
+      <div class="cp-field">
         <label>Busca geral</label>
         <input
           id="cpBusca"
           type="text"
           placeholder="Fornecedor, documento, categoria ou descrição"
           oninput="contasPagarModule.aplicarFiltros()"
-        />
+        >
       </div>
 
-      <div>
+      <div class="cp-field">
         <label>Fornecedor</label>
         <input
           id="cpFiltroFornecedor"
           type="text"
           placeholder="Fornecedor"
           oninput="contasPagarModule.aplicarFiltros()"
-        />
+        >
       </div>
 
-      <div>
+      <div class="cp-field">
         <label>Categoria</label>
         <input
           id="cpFiltroCategoria"
           type="text"
           placeholder="Categoria"
           oninput="contasPagarModule.aplicarFiltros()"
-        />
+        >
       </div>
 
-      <div>
+      <div class="cp-field">
         <label>Vencimento inicial</label>
         <input
           id="cpVencimentoInicio"
           type="date"
           onchange="contasPagarModule.aplicarFiltros()"
-        />
+        >
       </div>
 
-      <div>
+      <div class="cp-field">
         <label>Vencimento final</label>
         <input
           id="cpVencimentoFim"
           type="date"
           onchange="contasPagarModule.aplicarFiltros()"
-        />
+        >
       </div>
 
-      <div class="cp-filter-button">
-        <label>&nbsp;</label>
+      <div class="cp-filter-action">
         <button
           type="button"
-          class="secondary-btn"
+          class="cp-btn cp-btn-secondary"
           onclick="contasPagarModule.limparFiltros()"
         >
           Limpar filtros
@@ -605,11 +635,11 @@
     </div>
 
     <!-- TABELA -->
-    <div class="cp-table">
-      <table>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
         <thead>
           <tr>
-            <th>Selecionar</th>
+            <th></th>
             <th>Fornecedor</th>
             <th>Documento</th>
             <th>Valor</th>
