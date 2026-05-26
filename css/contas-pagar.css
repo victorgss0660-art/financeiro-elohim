@@ -438,3 +438,55 @@
     font-size: 28px;
   }
 }
+/* =========================================================
+   STATUS POR COR — CONTAS A PAGAR
+========================================================= */
+
+.cp-table tbody tr.linha-ok {
+  background: #f0fdf4;
+}
+
+.cp-table tbody tr.linha-ok:hover {
+  background: #dcfce7;
+}
+
+.cp-table tbody tr.linha-alerta {
+  background: #fffbeb;
+}
+
+.cp-table tbody tr.linha-alerta:hover {
+  background: #fef3c7;
+}
+
+.cp-table tbody tr.linha-vencida {
+  background: #fff1f2;
+}
+
+.cp-table tbody tr.linha-vencida:hover {
+  background: #ffe4e6;
+}
+
+.cp-table tbody tr.linha-selecionada {
+  background: #fee2e2 !important;
+}
+
+.cp-table tbody tr.linha-selecionada td {
+  color: #7f1d1d;
+}
+
+/* Barrinha lateral de status */
+.cp-table tbody tr.linha-ok td:first-child {
+  border-left: 4px solid #16a34a;
+}
+
+.cp-table tbody tr.linha-alerta td:first-child {
+  border-left: 4px solid #f59e0b;
+}
+
+.cp-table tbody tr.linha-vencida td:first-child {
+  border-left: 4px solid #dc2626;
+}
+
+.cp-table tbody tr.linha-selecionada td:first-child {
+  border-left: 4px solid #7f1d1d;
+}
