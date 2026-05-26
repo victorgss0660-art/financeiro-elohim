@@ -691,8 +691,8 @@ if (marcado) {
 return `
   <tr
     class="${classeStatus}"
-          <td>
-            <input
+<td class="cp-check-cell">
+  <input
               type="checkbox"
               ${marcado ? "checked" : ""}
               onclick="event.stopPropagation()"
