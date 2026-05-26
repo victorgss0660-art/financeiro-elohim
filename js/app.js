@@ -35,9 +35,9 @@ window.app = {
     return document.getElementById(id);
   },
 
-  // ======================================================
-  // FILTROS
-  // ======================================================
+  /* ======================================================
+     FILTROS
+  ====================================================== */
 
   preencherFiltros() {
     const mesSelect = this.get("mesSelect");
@@ -59,9 +59,9 @@ window.app = {
     }
   },
 
-  // ======================================================
-  // MENU
-  // ======================================================
+  /* ======================================================
+     MENU
+  ====================================================== */
 
   configurarMenu() {
     const botoes = document.querySelectorAll(
@@ -105,9 +105,56 @@ window.app = {
     });
   },
 
-  // ======================================================
-  // ABAS
-  // ======================================================
+  /* ======================================================
+     MOBILE MENU
+  ====================================================== */
+
+  toggleMenuMobile() {
+    const sidebar = document.querySelector(".sidebar");
+    const overlay = document.getElementById("mobileMenuOverlay");
+
+    if (!sidebar) return;
+
+    sidebar.classList.toggle("mobile-open");
+
+    if (overlay) {
+      overlay.classList.toggle("active");
+    }
+  },
+
+  fecharMenuMobile() {
+    const sidebar = document.querySelector(".sidebar");
+    const overlay = document.getElementById("mobileMenuOverlay");
+
+    if (sidebar) {
+      sidebar.classList.remove("mobile-open");
+    }
+
+    if (overlay) {
+      overlay.classList.remove("active");
+    }
+  },
+
+  atualizarTituloMobile(nomeAba) {
+    const nomes = {
+      dashboard: "Dashboard",
+      "contas-pagar": "Contas a Pagar",
+      "contas-pagas": "Contas Pagas",
+      "contas-receber": "Contas a Receber",
+      planejamento: "Planejamento",
+      "inserir-dados": "Inserir Dados"
+    };
+
+    const el = document.getElementById("mobileAbaAtual");
+
+    if (el) {
+      el.textContent = nomes[nomeAba] || nomeAba;
+    }
+  },
+
+  /* ======================================================
+     ABAS
+  ====================================================== */
 
   abrirAba(nomeAba) {
     try {
@@ -140,13 +187,14 @@ window.app = {
       secaoAtiva.classList.add("active");
 
       this.atualizarBotaoAtivo(nomeAba);
+      this.atualizarTituloMobile(nomeAba);
+      this.fecharMenuMobile();
 
       this.carregarModulo(nomeAba);
+
     } catch (erro) {
       console.error("Erro ao abrir aba:", nomeAba, erro);
     }
-    this.atualizarTituloMobile(nomeAba);
-    this.fecharMenuMobile();
   },
 
   restaurarUltimaAba() {
@@ -189,9 +237,9 @@ window.app = {
     console.warn("Nenhuma aba permitida encontrada.");
   },
 
-  // ======================================================
-  // MÓDULOS
-  // ======================================================
+  /* ======================================================
+     MÓDULOS
+  ====================================================== */
 
   async carregarModulo(nomeAba) {
     try {
@@ -249,17 +297,17 @@ window.app = {
   }
 };
 
-// ======================================================
-// FUNÇÕES GLOBAIS
-// ======================================================
+/* ======================================================
+   GLOBAL
+====================================================== */
 
 window.abrirAba = function(nomeAba) {
   app.abrirAba(nomeAba);
 };
 
-// ======================================================
-// START
-// ======================================================
+/* ======================================================
+   START
+====================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
   try {
@@ -272,46 +320,4 @@ document.addEventListener("DOMContentLoaded", () => {
   } catch (erro) {
     console.error("Erro ao iniciar sistema:", erro);
   }
-    toggleMenuMobile() {
-    const sidebar = document.querySelector(".sidebar");
-    const overlay = document.getElementById("mobileMenuOverlay");
-
-    if (!sidebar) return;
-
-    sidebar.classList.toggle("mobile-open");
-
-    if (overlay) {
-      overlay.classList.toggle("active");
-    }
-  },
-
-  fecharMenuMobile() {
-    const sidebar = document.querySelector(".sidebar");
-    const overlay = document.getElementById("mobileMenuOverlay");
-
-    if (sidebar) {
-      sidebar.classList.remove("mobile-open");
-    }
-
-    if (overlay) {
-      overlay.classList.remove("active");
-    }
-  },
-
-  atualizarTituloMobile(nomeAba) {
-    const nomes = {
-      "dashboard": "Dashboard",
-      "contas-pagar": "Contas a Pagar",
-      "contas-pagas": "Contas Pagas",
-      "contas-receber": "Contas a Receber",
-      "planejamento": "Planejamento",
-      "inserir-dados": "Inserir Dados"
-    };
-
-    const el = document.getElementById("mobileAbaAtual");
-
-    if (el) {
-      el.textContent = nomes[nomeAba] || nomeAba;
-    }
-  },
 });
