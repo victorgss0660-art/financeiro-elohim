@@ -145,6 +145,8 @@ window.app = {
     } catch (erro) {
       console.error("Erro ao abrir aba:", nomeAba, erro);
     }
+    this.atualizarTituloMobile(nomeAba);
+    this.fecharMenuMobile();
   },
 
   restaurarUltimaAba() {
