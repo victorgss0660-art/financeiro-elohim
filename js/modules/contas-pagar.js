@@ -111,12 +111,7 @@ window.contasPagarModule = {
 
     for (const nome of opcoes) {
       const chave = this.normalizarChave(nome);
-
-      if (
-        mapa[chave] !== undefined &&
-        mapa[chave] !== null &&
-        mapa[chave] !== ""
-      ) {
+      if (mapa[chave] !== undefined && mapa[chave] !== null && mapa[chave] !== "") {
         return mapa[chave];
       }
     }
@@ -248,12 +243,12 @@ window.contasPagarModule = {
 
     this.editandoId = Number(item.id);
 
-    if (this.get("cpFornecedor")) this.get("cpFornecedor").value = item.fornecedor || "";
-    if (this.get("cpDocumento")) this.get("cpDocumento").value = item.documento || "";
-    if (this.get("cpValor")) this.get("cpValor").value = item.valor || "";
-    if (this.get("cpVencimento")) this.get("cpVencimento").value = item.vencimento || "";
-    if (this.get("cpCategoria")) this.get("cpCategoria").value = item.categoria || "";
-    if (this.get("cpDescricao")) this.get("cpDescricao").value = item.descricao || "";
+    this.get("cpFornecedor").value = item.fornecedor || "";
+    this.get("cpDocumento").value = item.documento || "";
+    this.get("cpValor").value = item.valor || "";
+    this.get("cpVencimento").value = item.vencimento || "";
+    this.get("cpCategoria").value = item.categoria || "";
+    this.get("cpDescricao").value = item.descricao || "";
 
     this.inputs.nfe = !!item.tem_nfe;
     this.inputs.boleto = !!item.tem_boleto;
@@ -284,17 +279,8 @@ window.contasPagarModule = {
       ].join(" ").toLowerCase();
 
       if (busca && !texto.includes(busca)) return false;
-
-      if (
-        fornecedor &&
-        !String(item.fornecedor || "").toLowerCase().includes(fornecedor)
-      ) return false;
-
-      if (
-        categoria &&
-        !String(item.categoria || "").toLowerCase().includes(categoria)
-      ) return false;
-
+      if (fornecedor && !String(item.fornecedor || "").toLowerCase().includes(fornecedor)) return false;
+      if (categoria && !String(item.categoria || "").toLowerCase().includes(categoria)) return false;
       if (inicio && String(item.vencimento || "") < inicio) return false;
       if (fim && String(item.vencimento || "") > fim) return false;
 
@@ -390,9 +376,7 @@ window.contasPagarModule = {
         return;
       }
 
-      if (!confirm(`Confirmar pagamento de ${this.selecionados.size} conta(s)?`)) {
-        return;
-      }
+      if (!confirm(`Confirmar pagamento de ${this.selecionados.size} conta(s)?`)) return;
 
       const hoje = new Date().toISOString().slice(0, 10);
 
@@ -470,7 +454,7 @@ window.contasPagarModule = {
       const item = this.dados.find(c => Number(c.id) === Number(id));
       if (!item) return;
 
-      const payload = {
+      await api.insert("contas_pagar", {
         fornecedor: item.fornecedor,
         documento: item.documento,
         valor: item.valor,
@@ -480,9 +464,8 @@ window.contasPagarModule = {
         tem_nfe: item.tem_nfe,
         tem_boleto: item.tem_boleto,
         status: "pendente"
-      };
+      });
 
-      await api.insert("contas_pagar", payload);
       await this.carregar();
 
       alert("Conta duplicada com sucesso.");
@@ -521,46 +504,18 @@ window.contasPagarModule = {
         raw: false
       });
 
-      if (!linhas.length) {
-        alert("A planilha está vazia.");
-        return;
-      }
-
       const registros = [];
       let ignoradas = 0;
 
       linhas.forEach(linha => {
-        const fornecedor = String(this.pegarCampo(linha, [
-          "FORNECEDOR", "EMPRESA", "NOME"
-        ]) || "").trim();
-
-        const documento = String(this.pegarCampo(linha, [
-          "DOCUMENTO", "NF", "NFE", "NOTA", "NOTA FISCAL", "PEDIDO", "FAT", "FATURA"
-        ]) || "").trim();
-
-        const valor = this.numero(this.pegarCampo(linha, [
-          "VALOR", "TOTAL", "VALOR TOTAL", "VALOR PAGO", "VLR"
-        ]));
-
-        const vencimento = this.dataISO(this.pegarCampo(linha, [
-          "VENCIMENTO", "DATA VENCIMENTO", "DATA DE VENCIMENTO", "VENCE", "DATA"
-        ]));
-
-        const categoria = this.normalizarTexto(this.pegarCampo(linha, [
-          "CATEGORIA", "TIPO", "GRUPO", "CLASSE", "CLASSIFICAÇÃO", "CLASSIFICACAO"
-        ]));
-
-        const descricao = String(this.pegarCampo(linha, [
-          "DESCRICAO", "DESCRIÇÃO", "OBS", "OBSERVACAO", "OBSERVAÇÃO", "HISTORICO", "HISTÓRICO"
-        ]) || "").trim();
-
-        const nfe = this.booleano(this.pegarCampo(linha, [
-          "NFE", "NF-E", "NOTA FISCAL", "TEM NFE", "NFE RECEBIDA"
-        ]));
-
-        const boleto = this.booleano(this.pegarCampo(linha, [
-          "BOLETO", "TEM BOLETO", "BOLETO RECEBIDO"
-        ]));
+        const fornecedor = String(this.pegarCampo(linha, ["FORNECEDOR", "EMPRESA", "NOME"]) || "").trim();
+        const documento = String(this.pegarCampo(linha, ["DOCUMENTO", "NF", "NFE", "NOTA", "NOTA FISCAL", "PEDIDO", "FAT", "FATURA"]) || "").trim();
+        const valor = this.numero(this.pegarCampo(linha, ["VALOR", "TOTAL", "VALOR TOTAL", "VALOR PAGO", "VLR"]));
+        const vencimento = this.dataISO(this.pegarCampo(linha, ["VENCIMENTO", "DATA VENCIMENTO", "DATA DE VENCIMENTO", "VENCE", "DATA"]));
+        const categoria = this.normalizarTexto(this.pegarCampo(linha, ["CATEGORIA", "TIPO", "GRUPO", "CLASSE", "CLASSIFICAÇÃO", "CLASSIFICACAO"]));
+        const descricao = String(this.pegarCampo(linha, ["DESCRICAO", "DESCRIÇÃO", "OBS", "OBSERVACAO", "OBSERVAÇÃO", "HISTORICO", "HISTÓRICO"]) || "").trim();
+        const nfe = this.booleano(this.pegarCampo(linha, ["NFE", "NF-E", "NOTA FISCAL", "TEM NFE", "NFE RECEBIDA"]));
+        const boleto = this.booleano(this.pegarCampo(linha, ["BOLETO", "TEM BOLETO", "BOLETO RECEBIDO"]));
 
         if (fornecedor && valor > 0 && vencimento) {
           registros.push({
@@ -580,15 +535,11 @@ window.contasPagarModule = {
       });
 
       if (!registros.length) {
-        alert("Nenhuma linha válida encontrada. Verifique fornecedor, valor e vencimento.");
+        alert("Nenhuma linha válida encontrada.");
         return;
       }
 
-      const confirmar = confirm(
-        `Foram encontradas ${registros.length} contas válidas.\nLinhas ignoradas: ${ignoradas}\n\nDeseja importar agora?`
-      );
-
-      if (!confirmar) return;
+      if (!confirm(`Importar ${registros.length} contas?\nLinhas ignoradas: ${ignoradas}`)) return;
 
       for (const item of registros) {
         await api.insert("contas_pagar", item);
@@ -711,7 +662,6 @@ window.contasPagarModule = {
           <td colspan="9" class="muted">Nenhuma conta encontrada.</td>
         </tr>
       `;
-
       this.resumo();
       return;
     }
@@ -721,10 +671,7 @@ window.contasPagarModule = {
       const marcado = this.selecionados.has(id);
 
       return `
-        <tr
-          class="${marcado ? "linha-vermelha" : ""}"
-          onclick="contasPagarModule.toggleSelecionadoLinha(${id}, event)"
-        >
+        <tr class="${marcado ? "linha-vermelha" : ""}" onclick="contasPagarModule.toggleSelecionadoLinha(${id}, event)">
           <td>
             <input
               type="checkbox"
@@ -733,24 +680,20 @@ window.contasPagarModule = {
               onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
             >
           </td>
-
           <td><strong>${item.fornecedor || "-"}</strong></td>
           <td>${item.documento || "-"}</td>
           <td><strong>${this.moeda(item.valor)}</strong></td>
           <td>${this.dataBR(item.vencimento)}</td>
           <td>${item.categoria || "-"}</td>
           <td>${item.descricao || "-"}</td>
-
           <td>
             <button type="button" class="doc-status ${item.tem_nfe ? "ok" : "pendente"}" onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})">
               ${item.tem_nfe ? "NFE OK" : "NFE"}
             </button>
-
             <button type="button" class="doc-status ${item.tem_boleto ? "ok" : "pendente"}" onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})">
               ${item.tem_boleto ? "Boleto OK" : "Boleto"}
             </button>
           </td>
-
           <td>
             <button type="button" class="btn-editar" onclick="event.stopPropagation(); contasPagarModule.editar(${id})">Editar</button>
             <button type="button" class="btn-duplicar" onclick="event.stopPropagation(); contasPagarModule.duplicar(${id})">Duplicar</button>
