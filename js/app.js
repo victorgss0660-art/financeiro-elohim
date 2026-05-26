@@ -270,4 +270,46 @@ document.addEventListener("DOMContentLoaded", () => {
   } catch (erro) {
     console.error("Erro ao iniciar sistema:", erro);
   }
+    toggleMenuMobile() {
+    const sidebar = document.querySelector(".sidebar");
+    const overlay = document.getElementById("mobileMenuOverlay");
+
+    if (!sidebar) return;
+
+    sidebar.classList.toggle("mobile-open");
+
+    if (overlay) {
+      overlay.classList.toggle("active");
+    }
+  },
+
+  fecharMenuMobile() {
+    const sidebar = document.querySelector(".sidebar");
+    const overlay = document.getElementById("mobileMenuOverlay");
+
+    if (sidebar) {
+      sidebar.classList.remove("mobile-open");
+    }
+
+    if (overlay) {
+      overlay.classList.remove("active");
+    }
+  },
+
+  atualizarTituloMobile(nomeAba) {
+    const nomes = {
+      "dashboard": "Dashboard",
+      "contas-pagar": "Contas a Pagar",
+      "contas-pagas": "Contas Pagas",
+      "contas-receber": "Contas a Receber",
+      "planejamento": "Planejamento",
+      "inserir-dados": "Inserir Dados"
+    };
+
+    const el = document.getElementById("mobileAbaAtual");
+
+    if (el) {
+      el.textContent = nomes[nomeAba] || nomeAba;
+    }
+  },
 });
