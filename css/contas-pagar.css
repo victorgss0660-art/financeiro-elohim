@@ -490,3 +490,88 @@
 .cp-table tbody tr.linha-selecionada td:first-child {
   border-left: 4px solid #7f1d1d;
 }
+/* =========================================================
+   CORREÇÃO CHECKBOX + STATUS DA TABELA
+========================================================= */
+
+.cp-table th:first-child,
+.cp-table td.cp-check-cell {
+  width: 54px;
+  min-width: 54px;
+  max-width: 54px;
+  text-align: center;
+  vertical-align: middle;
+  position: relative;
+  padding: 0 !important;
+}
+
+.cp-table td.cp-check-cell {
+  display: table-cell;
+}
+
+.cp-table td.cp-check-cell input[type="checkbox"] {
+  appearance: none;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+  min-height: 16px;
+  margin: 0 auto;
+  padding: 0 !important;
+
+  display: inline-block;
+  vertical-align: middle;
+
+  border: 1.5px solid #94a3b8;
+  border-radius: 4px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.cp-table td.cp-check-cell input[type="checkbox"]:checked {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.cp-table td.cp-check-cell input[type="checkbox"]:checked::after {
+  content: "";
+  position: relative;
+  display: block;
+  width: 4px;
+  height: 8px;
+  margin: 1px auto 0;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* remove barrinha antiga que bugava o checkbox */
+.cp-table tbody tr td:first-child {
+  border-left: none !important;
+}
+
+/* barrinha lateral sem afetar checkbox */
+.cp-table tbody tr td.cp-check-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: 4px 0 0 4px;
+}
+
+.cp-table tbody tr.linha-ok td.cp-check-cell::before {
+  background: #16a34a;
+}
+
+.cp-table tbody tr.linha-alerta td.cp-check-cell::before {
+  background: #f59e0b;
+}
+
+.cp-table tbody tr.linha-vencida td.cp-check-cell::before {
+  background: #dc2626;
+}
+
+.cp-table tbody tr.linha-selecionada td.cp-check-cell::before {
+  background: #7f1d1d;
+}
