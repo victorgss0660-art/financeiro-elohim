@@ -693,12 +693,12 @@ return `
     class="${classeStatus}"
 <td class="cp-check-cell">
   <input
-              type="checkbox"
-              ${marcado ? "checked" : ""}
-              onclick="event.stopPropagation()"
-              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
-            >
-          </td>
+    type="checkbox"
+    ${marcado ? "checked" : ""}
+    onclick="event.stopPropagation()"
+    onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+  >
+</td>
           <td><strong>${item.fornecedor || "-"}</strong></td>
           <td>${item.documento || "-"}</td>
           <td><strong>${this.moeda(item.valor)}</strong></td>
