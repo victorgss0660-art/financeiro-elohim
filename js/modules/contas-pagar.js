@@ -670,8 +670,27 @@ window.contasPagarModule = {
       const id = Number(item.id);
       const marcado = this.selecionados.has(id);
 
-      return `
-        <tr class="${marcado ? "linha-vermelha" : ""}" onclick="contasPagarModule.toggleSelecionadoLinha(${id}, event)">
+const hoje = new Date().toISOString().slice(0, 10);
+const vencida = item.vencimento && item.vencimento < hoje;
+const documentosOk = item.tem_nfe && item.tem_boleto;
+
+let classeStatus = "linha-alerta";
+
+if (documentosOk) {
+  classeStatus = "linha-ok";
+}
+
+if (vencida) {
+  classeStatus = "linha-vencida";
+}
+
+if (marcado) {
+  classeStatus = "linha-selecionada";
+}
+
+return `
+  <tr
+    class="${classeStatus}"
           <td>
             <input
               type="checkbox"
