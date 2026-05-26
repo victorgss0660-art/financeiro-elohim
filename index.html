@@ -381,13 +381,14 @@
         <label for="cpImportFile" class="cp-btn cp-btn-outline">
           📥 Importar Excel
         </label>
+
         <input
           type="file"
           id="cpImportFile"
-          accept=".xlsx,.xls"
+          accept=".xlsx,.xls,.csv"
           style="display:none"
           onchange="contasPagarModule.importarExcel(event)"
-        >
+        />
 
         <button
           type="button"
@@ -448,47 +449,47 @@
     <div class="cp-form-grid">
 
       <div class="cp-field">
-        <label>Fornecedor</label>
+        <label for="cpFornecedor">Fornecedor</label>
         <input
           id="cpFornecedor"
           type="text"
           placeholder="Nome do fornecedor"
-        >
+        />
       </div>
 
       <div class="cp-field">
-        <label>Documento</label>
+        <label for="cpDocumento">Documento</label>
         <input
           id="cpDocumento"
           type="text"
           placeholder="NF / Pedido / FAT"
-        >
+        />
       </div>
 
       <div class="cp-field">
-        <label>Valor</label>
+        <label for="cpValor">Valor</label>
         <input
           id="cpValor"
           type="text"
           placeholder="R$ 0,00"
-        >
+        />
       </div>
 
       <div class="cp-field">
-        <label>Vencimento</label>
+        <label for="cpVencimento">Vencimento</label>
         <input
           id="cpVencimento"
           type="date"
-        >
+        />
       </div>
 
       <div class="cp-field">
-        <label>Categoria</label>
+        <label for="cpCategoria">Categoria</label>
         <input
           id="cpCategoria"
           type="text"
           placeholder="Ex: MP / FRETE / DESP"
-        >
+        />
       </div>
 
       <div class="cp-field">
@@ -518,12 +519,12 @@
       </div>
 
       <div class="cp-field cp-field-wide">
-        <label>Descrição</label>
+        <label for="cpDescricao">Descrição</label>
         <input
           id="cpDescricao"
           type="text"
           placeholder="Descrição da conta"
-        >
+        />
       </div>
 
     </div>
@@ -557,15 +558,27 @@
       </div>
 
       <div class="cp-table-actions">
-        <button class="cp-btn cp-btn-outline" onclick="contasPagarModule.selecionarTodos()">
+        <button
+          type="button"
+          class="cp-btn cp-btn-outline"
+          onclick="contasPagarModule.selecionarTodos()"
+        >
           Selecionar todas
         </button>
 
-        <button class="cp-btn cp-btn-outline" onclick="contasPagarModule.limparSelecao()">
+        <button
+          type="button"
+          class="cp-btn cp-btn-outline"
+          onclick="contasPagarModule.limparSelecao()"
+        >
           Limpar seleção
         </button>
 
-        <button class="cp-btn cp-btn-primary" onclick="contasPagarModule.pagarSelecionadas()">
+        <button
+          type="button"
+          class="cp-btn cp-btn-primary"
+          onclick="contasPagarModule.pagarSelecionadas()"
+        >
           Pagar selecionadas
         </button>
       </div>
@@ -575,51 +588,51 @@
     <div class="cp-filter-grid">
 
       <div class="cp-field">
-        <label>Busca geral</label>
+        <label for="cpBusca">Busca geral</label>
         <input
           id="cpBusca"
           type="text"
           placeholder="Fornecedor, documento, categoria ou descrição"
           oninput="contasPagarModule.aplicarFiltros()"
-        >
+        />
       </div>
 
       <div class="cp-field">
-        <label>Fornecedor</label>
+        <label for="cpFiltroFornecedor">Fornecedor</label>
         <input
           id="cpFiltroFornecedor"
           type="text"
           placeholder="Fornecedor"
           oninput="contasPagarModule.aplicarFiltros()"
-        >
+        />
       </div>
 
       <div class="cp-field">
-        <label>Categoria</label>
+        <label for="cpFiltroCategoria">Categoria</label>
         <input
           id="cpFiltroCategoria"
           type="text"
           placeholder="Categoria"
           oninput="contasPagarModule.aplicarFiltros()"
-        >
+        />
       </div>
 
       <div class="cp-field">
-        <label>Vencimento inicial</label>
+        <label for="cpVencimentoInicio">Vencimento inicial</label>
         <input
           id="cpVencimentoInicio"
           type="date"
           onchange="contasPagarModule.aplicarFiltros()"
-        >
+        />
       </div>
 
       <div class="cp-field">
-        <label>Vencimento final</label>
+        <label for="cpVencimentoFim">Vencimento final</label>
         <input
           id="cpVencimentoFim"
           type="date"
           onchange="contasPagarModule.aplicarFiltros()"
-        >
+        />
       </div>
 
       <div class="cp-filter-action">
