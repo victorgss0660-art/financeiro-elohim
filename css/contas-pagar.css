@@ -6,7 +6,9 @@
   padding: 0;
 }
 
-/* HERO */
+/* =========================================================
+   HERO
+========================================================= */
 
 .cp-hero {
   margin-bottom: 24px;
@@ -28,7 +30,7 @@
   color: #dc2626;
   font-size: 11px;
   font-weight: 900;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   margin-bottom: 12px;
 }
 
@@ -45,8 +47,6 @@
   font-weight: 500;
 }
 
-/* HERO ACTIONS */
-
 .cp-hero-actions {
   display: flex;
   gap: 10px;
@@ -54,7 +54,9 @@
   align-items: center;
 }
 
-/* BOTÕES */
+/* =========================================================
+   BOTÕES
+========================================================= */
 
 .cp-btn {
   height: 44px;
@@ -64,17 +66,19 @@
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+
   transition: 0.2s ease;
   white-space: nowrap;
 }
 
 .cp-btn-primary {
   background: linear-gradient(135deg, #dc2626, #b91c1c);
-  color: white;
+  color: #ffffff;
   box-shadow: 0 10px 20px rgba(220, 38, 38, 0.18);
 }
 
@@ -88,16 +92,19 @@
 }
 
 .cp-btn-outline {
-  background: white;
+  background: #ffffff;
   border: 1px solid #dbe2ea;
   color: #334155;
 }
 
-.cp-btn-outline:hover {
+.cp-btn-outline:hover,
+.cp-btn-secondary:hover {
   background: #f8fafc;
 }
 
-/* KPIs */
+/* =========================================================
+   KPIs
+========================================================= */
 
 .cp-kpis {
   display: grid;
@@ -106,7 +113,7 @@
 }
 
 .cp-kpi {
-  background: white;
+  background: #ffffff;
   border-radius: 20px;
   padding: 22px;
   border: 1px solid #e5e7eb;
@@ -136,10 +143,12 @@
   font-weight: 700;
 }
 
-/* CARDS */
+/* =========================================================
+   CARDS
+========================================================= */
 
 .cp-card {
-  background: white;
+  background: #ffffff;
   border-radius: 24px;
   padding: 26px;
   border: 1px solid #e5e7eb;
@@ -170,7 +179,9 @@
   color: #64748b;
 }
 
-/* FORM */
+/* =========================================================
+   FORMULÁRIOS
+========================================================= */
 
 .cp-form-grid {
   display: grid;
@@ -195,7 +206,8 @@
   margin-bottom: 6px;
 }
 
-.cp-field input {
+.cp-field input,
+.cp-field select {
   width: 100%;
   height: 44px;
   border-radius: 14px;
@@ -203,16 +215,19 @@
   padding: 0 14px;
   font-size: 13px;
   font-weight: 600;
-  background: white;
+  background: #ffffff;
 }
 
-.cp-field input:focus {
+.cp-field input:focus,
+.cp-field select:focus {
   outline: none;
   border-color: #dc2626;
-  box-shadow: 0 0 0 4px rgba(220,38,38,.08);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
 }
 
-/* TOGGLES */
+/* =========================================================
+   TOGGLES
+========================================================= */
 
 .cp-toggle {
   width: 100%;
@@ -220,9 +235,11 @@
   border-radius: 14px;
   border: 1px solid #dbe2ea;
   background: #f8fafc;
+
   display: flex;
   align-items: center;
   gap: 10px;
+
   padding: 0 14px;
   font-size: 13px;
   font-weight: 800;
@@ -233,7 +250,7 @@
 .cp-toggle.ativo {
   background: #dc2626;
   border-color: #dc2626;
-  color: white;
+  color: #ffffff;
 }
 
 .toggle-dot {
@@ -245,10 +262,12 @@
 
 .cp-toggle.active .toggle-dot,
 .cp-toggle.ativo .toggle-dot {
-  background: white;
+  background: #ffffff;
 }
 
-/* FORM ACTIONS */
+/* =========================================================
+   AÇÕES
+========================================================= */
 
 .cp-form-actions {
   display: flex;
@@ -256,15 +275,15 @@
   margin-top: 20px;
 }
 
-/* TABLE ACTIONS */
-
 .cp-table-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-/* FILTERS */
+/* =========================================================
+   FILTROS
+========================================================= */
 
 .cp-filter-grid {
   display: grid;
@@ -282,7 +301,9 @@
   width: 100%;
 }
 
-/* TABLE */
+/* =========================================================
+   TABELA
+========================================================= */
 
 .cp-table-wrap {
   border-radius: 18px;
@@ -302,6 +323,7 @@
   top: 0;
   background: #f8fafc;
   z-index: 5;
+
   padding: 14px 12px;
   font-size: 10px;
   font-weight: 950;
@@ -321,19 +343,113 @@
   background: #f8fafc;
 }
 
-.cp-table tbody tr.linha-vermelha {
+/* =========================================================
+   STATUS POR COR
+========================================================= */
+
+.cp-table tbody tr.linha-ok {
+  background: #f0fdf4;
+}
+
+.cp-table tbody tr.linha-ok:hover {
+  background: #dcfce7;
+}
+
+.cp-table tbody tr.linha-alerta {
+  background: #fffbeb;
+}
+
+.cp-table tbody tr.linha-alerta:hover {
+  background: #fef3c7;
+}
+
+.cp-table tbody tr.linha-vencida {
   background: #fff1f2;
 }
 
-/* CHECKBOX */
-
-.cp-table input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+.cp-table tbody tr.linha-vencida:hover {
+  background: #ffe4e6;
 }
 
-/* STATUS */
+.cp-table tbody tr.linha-selecionada {
+  background: #fee2e2 !important;
+}
+
+.cp-table tbody tr.linha-selecionada td {
+  color: #7f1d1d;
+}
+
+/* =========================================================
+   CHECKBOX CENTRALIZADO DEFINITIVO
+========================================================= */
+
+.cp-table th:first-child,
+.cp-table td.cp-check-cell {
+  width: 56px !important;
+  min-width: 56px !important;
+  max-width: 56px !important;
+  padding: 0 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  position: relative;
+}
+
+.cp-table td.cp-check-cell {
+  display: table-cell !important;
+}
+
+.cp-table td.cp-check-cell input[type="checkbox"] {
+  appearance: auto !important;
+
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+
+  transform: translate(-50%, -50%) !important;
+
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  cursor: pointer;
+  z-index: 10;
+}
+
+.cp-table td.cp-check-cell::after {
+  display: none !important;
+}
+
+/* barrinha lateral sem deslocar checkbox */
+.cp-table tbody tr td.cp-check-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  width: 4px;
+  height: 100%;
+}
+
+.cp-table tbody tr.linha-ok td.cp-check-cell::before {
+  background: #16a34a;
+}
+
+.cp-table tbody tr.linha-alerta td.cp-check-cell::before {
+  background: #f59e0b;
+}
+
+.cp-table tbody tr.linha-vencida td.cp-check-cell::before {
+  background: #dc2626;
+}
+
+.cp-table tbody tr.linha-selecionada td.cp-check-cell::before {
+  background: #7f1d1d;
+}
+
+/* =========================================================
+   STATUS / BOTÕES DA TABELA
+========================================================= */
 
 .doc-status {
   padding: 6px 10px;
@@ -352,8 +468,6 @@
   background: #fee2e2;
   color: #991b1b;
 }
-
-/* ACTION BUTTONS */
 
 .btn-editar,
 .btn-duplicar,
@@ -386,7 +500,9 @@
   color: #991b1b;
 }
 
-/* RESPONSIVO */
+/* =========================================================
+   RESPONSIVO
+========================================================= */
 
 @media (max-width: 1600px) {
   .cp-form-grid {
@@ -437,121 +553,13 @@
   .cp-hero h2 {
     font-size: 28px;
   }
-}
-/* =========================================================
-   STATUS POR COR — CONTAS A PAGAR
-========================================================= */
 
-.cp-table tbody tr.linha-ok {
-  background: #f0fdf4;
-}
+  .cp-card {
+    padding: 18px;
+    border-radius: 20px;
+  }
 
-.cp-table tbody tr.linha-ok:hover {
-  background: #dcfce7;
-}
-
-.cp-table tbody tr.linha-alerta {
-  background: #fffbeb;
-}
-
-.cp-table tbody tr.linha-alerta:hover {
-  background: #fef3c7;
-}
-
-.cp-table tbody tr.linha-vencida {
-  background: #fff1f2;
-}
-
-.cp-table tbody tr.linha-vencida:hover {
-  background: #ffe4e6;
-}
-
-.cp-table tbody tr.linha-selecionada {
-  background: #fee2e2 !important;
-}
-
-.cp-table tbody tr.linha-selecionada td {
-  color: #7f1d1d;
-}
-
-/* Barrinha lateral de status */
-.cp-table tbody tr.linha-ok td:first-child {
-  border-left: 4px solid #16a34a;
-}
-
-.cp-table tbody tr.linha-alerta td:first-child {
-  border-left: 4px solid #f59e0b;
-}
-
-.cp-table tbody tr.linha-vencida td:first-child {
-  border-left: 4px solid #dc2626;
-}
-
-.cp-table tbody tr.linha-selecionada td:first-child {
-  border-left: 4px solid #7f1d1d;
-}
-/* CHECKBOX CENTRALIZADO DEFINITIVO */
-
-.cp-table td.cp-check-cell,
-.cp-table th:first-child {
-  width: 56px !important;
-  min-width: 56px !important;
-  max-width: 56px !important;
-  padding: 0 !important;
-  text-align: center !important;
-  vertical-align: middle !important;
-  position: relative;
-}
-
-.cp-table td.cp-check-cell {
-  display: table-cell !important;
-}
-
-.cp-table td.cp-check-cell input[type="checkbox"] {
-  appearance: auto !important;
-
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-
-  transform: translate(-50%, -50%) !important;
-
-  width: 16px !important;
-  height: 16px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-
-  cursor: pointer;
-  z-index: 10;
-}
-
-/* remove qualquer pseudo elemento quebrando layout */
-.cp-table td.cp-check-cell::after {
-  display: none !important;
-}
-
-/* barrinha lateral */
-.cp-table tbody tr td.cp-check-cell::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 4px;
-  height: 100%;
-}
-
-.cp-table tbody tr.linha-vencida td.cp-check-cell::before {
-  background: #dc2626;
-}
-
-.cp-table tbody tr.linha-alerta td.cp-check-cell::before {
-  background: #f59e0b;
-}
-
-.cp-table tbody tr.linha-ok td.cp-check-cell::before {
-  background: #16a34a;
-}
-
-.cp-table tbody tr.linha-selecionada td.cp-check-cell::before {
-  background: #7f1d1d;
+  .cp-table {
+    min-width: 1050px;
+  }
 }
