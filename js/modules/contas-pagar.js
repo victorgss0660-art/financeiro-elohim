@@ -650,7 +650,6 @@ window.contasPagarModule = {
     }
   },
 
-  renderizar() {
 renderizar() {
   const tbody = this.get("tabelaContasPagar");
   if (!tbody) return;
