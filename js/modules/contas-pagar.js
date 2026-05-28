@@ -111,7 +111,12 @@ window.contasPagarModule = {
 
     for (const nome of opcoes) {
       const chave = this.normalizarChave(nome);
-      if (mapa[chave] !== undefined && mapa[chave] !== null && mapa[chave] !== "") {
+
+      if (
+        mapa[chave] !== undefined &&
+        mapa[chave] !== null &&
+        mapa[chave] !== ""
+      ) {
         return mapa[chave];
       }
     }
@@ -650,97 +655,89 @@ window.contasPagarModule = {
     }
   },
 
-renderizar() {
-  const tbody = this.get("tabelaContasPagar");
-  if (!tbody) return;
+  renderizar() {
+    const tbody = this.get("tabelaContasPagar");
+    if (!tbody) return;
 
-  const lista = this.filtrados || [];
+    const lista = this.filtrados || [];
 
-  if (!lista.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="9" class="muted">Nenhuma conta encontrada.</td>
-      </tr>
-    `;
+    if (!lista.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="muted">Nenhuma conta encontrada.</td>
+        </tr>
+      `;
+      this.resumo();
+      return;
+    }
+
+    const hoje = new Date().toISOString().slice(0, 10);
+
+    tbody.innerHTML = lista.map(item => {
+      const id = Number(item.id);
+      const marcado = this.selecionados.has(id);
+
+      const vencida = item.vencimento && String(item.vencimento) < hoje;
+      const documentosOk = !!item.tem_nfe && !!item.tem_boleto;
+
+      let classeStatus = "linha-alerta";
+
+      if (documentosOk) classeStatus = "linha-ok";
+      if (vencida) classeStatus = "linha-vencida";
+      if (marcado) classeStatus = "linha-selecionada";
+
+      return `
+        <tr
+          class="${classeStatus}"
+          onclick="contasPagarModule.toggleSelecionadoLinha(${id}, event)"
+        >
+          <td class="cp-check-cell">
+            <input
+              type="checkbox"
+              ${marcado ? "checked" : ""}
+              onclick="event.stopPropagation()"
+              onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+            >
+          </td>
+
+          <td><strong>${item.fornecedor || "-"}</strong></td>
+          <td>${item.documento || "-"}</td>
+          <td><strong>${this.moeda(item.valor)}</strong></td>
+          <td>${this.dataBR(item.vencimento)}</td>
+          <td>${item.categoria || "-"}</td>
+          <td>${item.descricao || "-"}</td>
+
+          <td>
+            <button
+              type="button"
+              class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
+              onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})"
+            >
+              ${item.tem_nfe ? "NFE OK" : "NFE"}
+            </button>
+
+            <button
+              type="button"
+              class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
+              onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})"
+            >
+              ${item.tem_boleto ? "Boleto OK" : "Boleto"}
+            </button>
+          </td>
+
+          <td>
+            <button type="button" class="btn-editar" onclick="event.stopPropagation(); contasPagarModule.editar(${id})">Editar</button>
+            <button type="button" class="btn-duplicar" onclick="event.stopPropagation(); contasPagarModule.duplicar(${id})">Duplicar</button>
+            <button type="button" class="btn-pagar" onclick="event.stopPropagation(); contasPagarModule.pagar(${id})">Pagar</button>
+            <button type="button" class="btn-excluir" onclick="event.stopPropagation(); contasPagarModule.excluir(${id})">Excluir</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
     this.resumo();
-    return;
-  }
+  },
 
-  const hoje = new Date().toISOString().slice(0, 10);
-
-  tbody.innerHTML = lista.map(item => {
-    const id = Number(item.id);
-    const marcado = this.selecionados.has(id);
-
-    const vencida = item.vencimento && String(item.vencimento) < hoje;
-    const documentosOk = !!item.tem_nfe && !!item.tem_boleto;
-
-    let classeStatus = "linha-alerta";
-
-    if (documentosOk) {
-      classeStatus = "linha-ok";
-    }
-
-    if (vencida) {
-      classeStatus = "linha-vencida";
-    }
-
-    if (marcado) {
-      classeStatus = "linha-selecionada";
-    }
-
-    return `
-      <tr
-        class="${classeStatus}"
-        onclick="contasPagarModule.toggleSelecionadoLinha(${id}, event)"
-      >
-        <td class="cp-check-cell">
-          <input
-            type="checkbox"
-            ${marcado ? "checked" : ""}
-            onclick="event.stopPropagation()"
-            onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
-          >
-        </td>
-
-        <td><strong>${item.fornecedor || "-"}</strong></td>
-        <td>${item.documento || "-"}</td>
-        <td><strong>${this.moeda(item.valor)}</strong></td>
-        <td>${this.dataBR(item.vencimento)}</td>
-        <td>${item.categoria || "-"}</td>
-        <td>${item.descricao || "-"}</td>
-
-        <td>
-          <button
-            type="button"
-            class="doc-status ${item.tem_nfe ? "ok" : "pendente"}"
-            onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})"
-          >
-            ${item.tem_nfe ? "NFE OK" : "NFE"}
-          </button>
-
-          <button
-            type="button"
-            class="doc-status ${item.tem_boleto ? "ok" : "pendente"}"
-            onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})"
-          >
-            ${item.tem_boleto ? "Boleto OK" : "Boleto"}
-          </button>
-        </td>
-
-        <td>
-          <button type="button" class="btn-editar" onclick="event.stopPropagation(); contasPagarModule.editar(${id})">Editar</button>
-          <button type="button" class="btn-duplicar" onclick="event.stopPropagation(); contasPagarModule.duplicar(${id})">Duplicar</button>
-          <button type="button" class="btn-pagar" onclick="event.stopPropagation(); contasPagarModule.pagar(${id})">Pagar</button>
-          <button type="button" class="btn-excluir" onclick="event.stopPropagation(); contasPagarModule.excluir(${id})">Excluir</button>
-        </td>
-      </tr>
-    `;
-  }).join("");
-
-  this.resumo();
-},
-  
   resumo() {
     const total = this.filtrados.reduce(
       (acc, item) => acc + this.numero(item.valor),
