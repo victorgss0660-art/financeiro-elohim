@@ -19,32 +19,42 @@ window.inserirDadosModule = {
       return isNaN(valor) ? 0 : valor;
     }
 
-    if (valor === null || valor === undefined) {
+    if (valor === null || valor === undefined || valor === "") {
       return 0;
     }
 
-    let txt = String(valor).trim();
-
-    if (!txt) return 0;
-
-    txt = txt
+    let txt = String(valor)
+      .trim()
       .replace(/R\$/gi, "")
       .replace(/\s/g, "")
       .replace(/[^\d,.-]/g, "");
 
-    // formato BR: 1.234,56
+    if (!txt) return 0;
+
+    // negativo contábil: (1.000,00)
+    const negativoPorParenteses =
+      String(valor).includes("(") && String(valor).includes(")");
+
+    // formato BR completo: 1.000,00 / 10.864,02 / 1.234.567,89
     if (txt.includes(".") && txt.includes(",")) {
       txt = txt.replace(/\./g, "").replace(",", ".");
     }
 
-    // formato BR: 1234,56
+    // formato BR sem milhar: 1000,00 / 958,66
     else if (txt.includes(",")) {
       txt = txt.replace(",", ".");
     }
 
-    const n = parseFloat(txt);
+    // formato com ponto de milhar: 1.000 / 10.000 / 100.000
+    else if (/^-?\d{1,3}(\.\d{3})+$/.test(txt)) {
+      txt = txt.replace(/\./g, "");
+    }
 
-    return isNaN(n) ? 0 : n;
+    const n = Number(txt);
+
+    if (isNaN(n)) return 0;
+
+    return negativoPorParenteses ? Math.abs(n) : n;
   },
 
   moeda(valor) {
@@ -167,6 +177,10 @@ window.inserirDadosModule = {
       if (percentualInput) percentualInput.value = "";
 
       await this.listarMetas();
+
+      if (window.dashboardModule?.carregar) {
+        await dashboardModule.carregar();
+      }
 
       alert("Meta salva com sucesso.");
     } catch (erro) {
@@ -442,7 +456,7 @@ window.inserirDadosModule = {
 
       const linhas = XLSX.utils.sheet_to_json(sheet, {
         defval: "",
-        raw: false
+        raw: true
       });
 
       if (!linhas.length) {
