@@ -480,137 +480,502 @@ window.contasPagarModule = {
     }
   },
 
-  async importarExcel(event) {
-    try {
-      const arquivo = event?.target?.files?.[0];
+async importarExcel(event) {
+  try {
+    const arquivo = event?.target?.files?.[0];
 
-      if (!arquivo) {
-        alert("Selecione uma planilha.");
-        return;
+    if (!arquivo) {
+      alert("Selecione uma planilha.");
+      return;
+    }
+
+    if (typeof XLSX === "undefined") {
+      alert("Biblioteca XLSX não carregada.");
+      return;
+    }
+
+    const buffer = await arquivo.arrayBuffer();
+
+    const workbook = XLSX.read(buffer, {
+      type: "array",
+      cellDates: true
+    });
+
+    const aba = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[aba];
+
+    const linhas = XLSX.utils.sheet_to_json(sheet, {
+      defval: "",
+      raw: true
+    });
+
+    if (!linhas.length) {
+      alert("A planilha está vazia.");
+      return;
+    }
+
+    const operacoes = [];
+    let ignoradas = 0;
+
+    linhas.forEach((linha, indice) => {
+      const numeroLinha = indice + 2;
+
+      const idOriginal = this.pegarCampo(linha, [
+        "ID",
+        "CODIGO",
+        "CÓDIGO"
+      ]);
+
+      const id = Number(idOriginal) || null;
+
+      let acao = this.normalizarTexto(
+        this.pegarCampo(linha, [
+          "ACAO",
+          "AÇÃO",
+          "OPERACAO",
+          "OPERAÇÃO"
+        ])
+      );
+
+      const fornecedor = String(
+        this.pegarCampo(linha, [
+          "FORNECEDOR",
+          "EMPRESA",
+          "NOME"
+        ]) || ""
+      ).trim();
+
+      const documento = String(
+        this.pegarCampo(linha, [
+          "DOCUMENTO",
+          "NF",
+          "NFE",
+          "NOTA",
+          "NOTA FISCAL",
+          "PEDIDO",
+          "FAT",
+          "FATURA"
+        ]) || ""
+      ).trim();
+
+      const valor = this.numero(
+        this.pegarCampo(linha, [
+          "VALOR",
+          "TOTAL",
+          "VALOR TOTAL",
+          "VALOR PAGO",
+          "VLR"
+        ])
+      );
+
+      const vencimento = this.dataISO(
+        this.pegarCampo(linha, [
+          "VENCIMENTO",
+          "DATA VENCIMENTO",
+          "DATA DE VENCIMENTO",
+          "VENCE",
+          "DATA"
+        ])
+      );
+
+      const categoria = this.normalizarTexto(
+        this.pegarCampo(linha, [
+          "CATEGORIA",
+          "TIPO",
+          "GRUPO",
+          "CLASSE",
+          "CLASSIFICAÇÃO",
+          "CLASSIFICACAO"
+        ])
+      );
+
+      const descricao = String(
+        this.pegarCampo(linha, [
+          "DESCRICAO",
+          "DESCRIÇÃO",
+          "OBS",
+          "OBSERVACAO",
+          "OBSERVAÇÃO",
+          "HISTORICO",
+          "HISTÓRICO"
+        ]) || ""
+      ).trim();
+
+      const tem_nfe = this.booleano(
+        this.pegarCampo(linha, [
+          "NFE",
+          "NF-E",
+          "TEM NFE",
+          "NFE RECEBIDA"
+        ])
+      );
+
+      const tem_boleto = this.booleano(
+        this.pegarCampo(linha, [
+          "BOLETO",
+          "TEM BOLETO",
+          "BOLETO RECEBIDO"
+        ])
+      );
+
+      const statusInformado = this.normalizarTexto(
+        this.pegarCampo(linha, ["STATUS"])
+      ).toLowerCase();
+
+      const status = statusInformado || "pendente";
+
+      if (!acao) {
+        acao = id ? "ALTERAR" : "NOVO";
       }
 
-      if (typeof XLSX === "undefined") {
-        alert("Biblioteca XLSX não carregada.");
-        return;
+      if (["ATUALIZAR", "EDITAR", "UPDATE"].includes(acao)) {
+        acao = "ALTERAR";
       }
 
-      const buffer = await arquivo.arrayBuffer();
+      if (["INSERIR", "CRIAR", "ADICIONAR", "INSERT"].includes(acao)) {
+        acao = "NOVO";
+      }
 
-      const workbook = XLSX.read(buffer, {
-        type: "array",
-        cellDates: true
-      });
+      if (["DELETAR", "APAGAR", "DELETE"].includes(acao)) {
+        acao = "EXCLUIR";
+      }
 
-      const aba = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[aba];
-
-      const linhas = XLSX.utils.sheet_to_json(sheet, {
-        defval: "",
-        raw: false
-      });
-
-      const registros = [];
-      let ignoradas = 0;
-
-      linhas.forEach(linha => {
-        const fornecedor = String(this.pegarCampo(linha, ["FORNECEDOR", "EMPRESA", "NOME"]) || "").trim();
-        const documento = String(this.pegarCampo(linha, ["DOCUMENTO", "NF", "NFE", "NOTA", "NOTA FISCAL", "PEDIDO", "FAT", "FATURA"]) || "").trim();
-        const valor = this.numero(this.pegarCampo(linha, ["VALOR", "TOTAL", "VALOR TOTAL", "VALOR PAGO", "VLR"]));
-        const vencimento = this.dataISO(this.pegarCampo(linha, ["VENCIMENTO", "DATA VENCIMENTO", "DATA DE VENCIMENTO", "VENCE", "DATA"]));
-        const categoria = this.normalizarTexto(this.pegarCampo(linha, ["CATEGORIA", "TIPO", "GRUPO", "CLASSE", "CLASSIFICAÇÃO", "CLASSIFICACAO"]));
-        const descricao = String(this.pegarCampo(linha, ["DESCRICAO", "DESCRIÇÃO", "OBS", "OBSERVACAO", "OBSERVAÇÃO", "HISTORICO", "HISTÓRICO"]) || "").trim();
-        const nfe = this.booleano(this.pegarCampo(linha, ["NFE", "NF-E", "NOTA FISCAL", "TEM NFE", "NFE RECEBIDA"]));
-        const boleto = this.booleano(this.pegarCampo(linha, ["BOLETO", "TEM BOLETO", "BOLETO RECEBIDO"]));
-
-        if (fornecedor && valor > 0 && vencimento) {
-          registros.push({
-            fornecedor,
-            documento,
-            valor,
-            vencimento,
-            categoria,
-            descricao,
-            tem_nfe: nfe,
-            tem_boleto: boleto,
-            status: "pendente"
-          });
-        } else {
+      if (acao === "EXCLUIR") {
+        if (!id) {
           ignoradas++;
+          console.warn(`Linha ${numeroLinha}: exclusão sem ID.`);
+          return;
         }
-      });
 
-      if (!registros.length) {
-        alert("Nenhuma linha válida encontrada.");
+        operacoes.push({
+          tipo: "excluir",
+          id,
+          numeroLinha
+        });
+
         return;
       }
 
-      if (!confirm(`Importar ${registros.length} contas?\nLinhas ignoradas: ${ignoradas}`)) return;
-
-      for (const item of registros) {
-        await api.insert("contas_pagar", item);
+      if (!fornecedor || valor <= 0 || !vencimento) {
+        ignoradas++;
+        console.warn(
+          `Linha ${numeroLinha} ignorada: fornecedor, valor ou vencimento inválido.`
+        );
+        return;
       }
+
+      const payload = {
+        fornecedor,
+        documento,
+        valor,
+        vencimento,
+        categoria,
+        descricao,
+        tem_nfe,
+        tem_boleto,
+        status
+      };
+
+      if (acao === "ALTERAR") {
+        if (!id) {
+          ignoradas++;
+          console.warn(`Linha ${numeroLinha}: alteração sem ID.`);
+          return;
+        }
+
+        operacoes.push({
+          tipo: "alterar",
+          id,
+          payload,
+          numeroLinha
+        });
+
+        return;
+      }
+
+      if (acao === "NOVO") {
+        operacoes.push({
+          tipo: "novo",
+          payload: {
+            ...payload,
+            status: status || "pendente"
+          },
+          numeroLinha
+        });
+
+        return;
+      }
+
+      ignoradas++;
+      console.warn(`Linha ${numeroLinha}: ação inválida "${acao}".`);
+    });
+
+    if (!operacoes.length) {
+      alert(
+        `Nenhuma operação válida encontrada.\n\nLinhas ignoradas: ${ignoradas}`
+      );
 
       if (event?.target) event.target.value = "";
-
-      await this.carregar();
-
-      alert(`${registros.length} contas importadas com sucesso.`);
-    } catch (erro) {
-      console.error("Erro ao importar Excel:", erro);
-      alert("Erro ao importar Excel.");
+      return;
     }
-  },
 
-  exportarExcel() {
-    try {
-      if (typeof XLSX === "undefined") {
-        alert("Biblioteca XLSX não carregada.");
-        return;
-      }
+    const qtdAlterar = operacoes.filter(op => op.tipo === "alterar").length;
+    const qtdNovas = operacoes.filter(op => op.tipo === "novo").length;
+    const qtdExcluir = operacoes.filter(op => op.tipo === "excluir").length;
 
-      const lista = this.filtrados?.length ? this.filtrados : this.dados;
+    const confirmar = confirm(
+      `Resumo da importação:\n\n` +
+      `Atualizar: ${qtdAlterar}\n` +
+      `Criar novas: ${qtdNovas}\n` +
+      `Excluir: ${qtdExcluir}\n` +
+      `Ignoradas: ${ignoradas}\n\n` +
+      `Deseja continuar?`
+    );
 
-      if (!lista.length) {
-        alert("Não há dados para exportar.");
-        return;
-      }
-
-      const linhas = lista.map(item => ({
-        FORNECEDOR: item.fornecedor || "",
-        DOCUMENTO: item.documento || "",
-        VALOR: this.numero(item.valor),
-        VENCIMENTO: item.vencimento || "",
-        CATEGORIA: item.categoria || "",
-        DESCRICAO: item.descricao || "",
-        NFE: item.tem_nfe ? "SIM" : "NÃO",
-        BOLETO: item.tem_boleto ? "SIM" : "NÃO",
-        STATUS: item.status || "pendente"
-      }));
-
-      const ws = XLSX.utils.json_to_sheet(linhas);
-
-      ws["!cols"] = [
-        { wch: 28 },
-        { wch: 18 },
-        { wch: 14 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 34 },
-        { wch: 10 },
-        { wch: 12 },
-        { wch: 14 }
-      ];
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Contas a Pagar");
-
-      const hoje = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `contas-a-pagar-${hoje}.xlsx`);
-    } catch (erro) {
-      console.error("Erro ao exportar Excel:", erro);
-      alert("Erro ao exportar Excel.");
+    if (!confirmar) {
+      if (event?.target) event.target.value = "";
+      return;
     }
-  },
+
+    let atualizadas = 0;
+    let novas = 0;
+    let excluidas = 0;
+    let erros = 0;
+
+    for (const operacao of operacoes) {
+      try {
+        if (operacao.tipo === "alterar") {
+          const existe = this.dados.some(
+            item => Number(item.id) === Number(operacao.id)
+          );
+
+          if (!existe) {
+            console.warn(
+              `Linha ${operacao.numeroLinha}: ID ${operacao.id} não encontrado nas contas em aberto.`
+            );
+            erros++;
+            continue;
+          }
+
+          await api.update(
+            "contas_pagar",
+            operacao.id,
+            operacao.payload
+          );
+
+          atualizadas++;
+          continue;
+        }
+
+        if (operacao.tipo === "novo") {
+          await api.insert(
+            "contas_pagar",
+            operacao.payload
+          );
+
+          novas++;
+          continue;
+        }
+
+        if (operacao.tipo === "excluir") {
+          const existe = this.dados.some(
+            item => Number(item.id) === Number(operacao.id)
+          );
+
+          if (!existe) {
+            console.warn(
+              `Linha ${operacao.numeroLinha}: ID ${operacao.id} não encontrado para exclusão.`
+            );
+            erros++;
+            continue;
+          }
+
+          await api.request(
+            `contas_pagar?id=eq.${operacao.id}`,
+            "",
+            "DELETE"
+          );
+
+          this.selecionados.delete(Number(operacao.id));
+          excluidas++;
+        }
+      } catch (erroOperacao) {
+        erros++;
+
+        console.error(
+          `Erro na linha ${operacao.numeroLinha}:`,
+          erroOperacao
+        );
+      }
+    }
+
+    if (event?.target) {
+      event.target.value = "";
+    }
+
+    await this.carregar();
+
+    alert(
+      `Importação concluída.\n\n` +
+      `Atualizadas: ${atualizadas}\n` +
+      `Novas: ${novas}\n` +
+      `Excluídas: ${excluidas}\n` +
+      `Ignoradas: ${ignoradas}\n` +
+      `Erros: ${erros}`
+    );
+  } catch (erro) {
+    console.error("Erro ao importar Excel:", erro);
+    alert("Erro ao importar Excel.");
+  }
+},
+
+exportarExcel() {
+  try {
+    if (typeof XLSX === "undefined") {
+      alert("Biblioteca XLSX não carregada.");
+      return;
+    }
+
+    const lista =
+      Array.isArray(this.filtrados) && this.filtrados.length
+        ? this.filtrados
+        : this.dados;
+
+    if (!lista.length) {
+      alert("Não há dados para exportar.");
+      return;
+    }
+
+    const linhas = lista.map(item => ({
+      ID: Number(item.id),
+      ACAO: "ALTERAR",
+      FORNECEDOR: item.fornecedor || "",
+      DOCUMENTO: item.documento || "",
+      VALOR: this.numero(item.valor),
+      VENCIMENTO: item.vencimento || "",
+      CATEGORIA: item.categoria || "",
+      DESCRICAO: item.descricao || "",
+      NFE: item.tem_nfe ? "SIM" : "NÃO",
+      BOLETO: item.tem_boleto ? "SIM" : "NÃO",
+      STATUS: item.status || "pendente"
+    }));
+
+    // Linha em branco preparada para uma nova conta.
+    linhas.push({
+      ID: "",
+      ACAO: "NOVO",
+      FORNECEDOR: "",
+      DOCUMENTO: "",
+      VALOR: "",
+      VENCIMENTO: "",
+      CATEGORIA: "",
+      DESCRICAO: "",
+      NFE: "NÃO",
+      BOLETO: "NÃO",
+      STATUS: "pendente"
+    });
+
+    const ws = XLSX.utils.json_to_sheet(linhas);
+
+    ws["!cols"] = [
+      { wch: 10 }, // ID
+      { wch: 13 }, // AÇÃO
+      { wch: 30 }, // FORNECEDOR
+      { wch: 20 }, // DOCUMENTO
+      { wch: 15 }, // VALOR
+      { wch: 16 }, // VENCIMENTO
+      { wch: 18 }, // CATEGORIA
+      { wch: 38 }, // DESCRIÇÃO
+      { wch: 10 }, // NFE
+      { wch: 12 }, // BOLETO
+      { wch: 14 }  // STATUS
+    ];
+
+    // Formatação monetária da coluna VALOR.
+    const intervalo = XLSX.utils.decode_range(ws["!ref"]);
+
+    for (
+      let linha = intervalo.s.r + 1;
+      linha <= intervalo.e.r;
+      linha++
+    ) {
+      const endereco = XLSX.utils.encode_cell({
+        r: linha,
+        c: 4
+      });
+
+      if (ws[endereco] && typeof ws[endereco].v === "number") {
+        ws[endereco].z = '#,##0.00';
+      }
+    }
+
+    const instrucoes = [
+      {
+        CAMPO: "ACAO",
+        PREENCHIMENTO: "ALTERAR",
+        EXPLICACAO: "Atualiza a conta correspondente ao ID."
+      },
+      {
+        CAMPO: "ACAO",
+        PREENCHIMENTO: "NOVO",
+        EXPLICACAO: "Cria uma nova conta. Deixe o ID vazio."
+      },
+      {
+        CAMPO: "ACAO",
+        PREENCHIMENTO: "EXCLUIR",
+        EXPLICACAO: "Exclui definitivamente a conta correspondente ao ID."
+      },
+      {
+        CAMPO: "ID",
+        PREENCHIMENTO: "NÃO ALTERAR",
+        EXPLICACAO: "Identificador usado pelo sistema para localizar a conta."
+      },
+      {
+        CAMPO: "VENCIMENTO",
+        PREENCHIMENTO: "AAAA-MM-DD",
+        EXPLICACAO: "Exemplo: 2026-07-31."
+      },
+      {
+        CAMPO: "NFE / BOLETO",
+        PREENCHIMENTO: "SIM ou NÃO",
+        EXPLICACAO: "Indica se os documentos já foram recebidos."
+      }
+    ];
+
+    const wsInstrucoes =
+      XLSX.utils.json_to_sheet(instrucoes);
+
+    wsInstrucoes["!cols"] = [
+      { wch: 18 },
+      { wch: 22 },
+      { wch: 65 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      "Contas a Pagar"
+    );
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      wsInstrucoes,
+      "Instruções"
+    );
+
+    const hoje = new Date().toISOString().slice(0, 10);
+
+    XLSX.writeFile(
+      wb,
+      `contas-a-pagar-edicao-${hoje}.xlsx`
+    );
+  } catch (erro) {
+    console.error("Erro ao exportar Excel:", erro);
+    alert("Erro ao exportar Excel.");
+  }
+},
 
   baixarModelo() {
     try {
