@@ -1,17 +1,28 @@
 window.dashboardModule = {
+
   gastos: [],
   gastosAno: [],
   meses: [],
   metas: [],
+  categorias: [],
 
   chartMeta: null,
   chartDistribuicao: null,
   chartEvolucao: null,
 
   mesesLista: [
-    "Janeiro", "Fevereiro", "Março", "Abril",
-    "Maio", "Junho", "Julho", "Agosto",
-    "Setembro", "Outubro", "Novembro", "Dezembro"
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro"
   ],
 
   cores: [
@@ -26,30 +37,64 @@ window.dashboardModule = {
     "#fb7185",
     "#ef4444",
     "#f97316",
-    "#0f172a"
+    "#0f172a",
+    "#14b8a6",
+    "#6366f1",
+    "#84cc16",
+    "#a855f7",
+    "#06b6d4",
+    "#eab308",
+    "#64748b"
   ],
+
+  // ======================================================
+  // HELPERS
+  // ======================================================
 
   get(id) {
     return document.getElementById(id);
   },
 
   set(id, valor) {
+
     const el = this.get(id);
-    if (el) el.textContent = valor;
+
+    if (el) {
+      el.textContent = valor;
+    }
   },
 
   normalizar(texto) {
+
     return String(texto || "")
       .trim()
       .toUpperCase();
   },
 
+  escaparHtml(valor) {
+
+    return String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  },
+
   numero(valor) {
+
     if (typeof valor === "number") {
-      return isNaN(valor) ? 0 : valor;
+
+      return Number.isFinite(valor)
+        ? valor
+        : 0;
     }
 
-    if (valor === null || valor === undefined || valor === "") {
+    if (
+      valor === null ||
+      valor === undefined ||
+      valor === ""
+    ) {
       return 0;
     }
 
@@ -59,37 +104,130 @@ window.dashboardModule = {
       .replace(/\s/g, "")
       .replace(/[^\d,.-]/g, "");
 
-    if (txt.includes(".") && txt.includes(",")) {
-      txt = txt.replace(/\./g, "").replace(",", ".");
-    } else if (txt.includes(",")) {
+    if (!txt) {
+      return 0;
+    }
+
+    // Brasileiro: 1.234,56
+    if (
+      txt.includes(".") &&
+      txt.includes(",")
+    ) {
+
+      txt = txt
+        .replace(/\./g, "")
+        .replace(",", ".");
+    }
+
+    // Brasileiro: 1234,56
+    else if (txt.includes(",")) {
+
       txt = txt.replace(",", ".");
     }
 
-    const n = parseFloat(txt);
-    return isNaN(n) ? 0 : n;
+    /*
+     * IMPORTANTE:
+     * Valores vindos do Supabase normalmente usam
+     * ponto como decimal:
+     *
+     * 1234.56
+     *
+     * Portanto não transformamos automaticamente
+     * "1.000" em "1000" aqui.
+     */
+
+    const n = Number(txt);
+
+    return Number.isFinite(n)
+      ? n
+      : 0;
   },
 
   moeda(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    }).format(this.numero(valor));
+
+    return new Intl.NumberFormat(
+      "pt-BR",
+      {
+        style: "currency",
+        currency: "BRL"
+      }
+    ).format(
+      this.numero(valor)
+    );
   },
 
   mesSelecionado() {
-    return this.get("mesSelect")?.value || "Janeiro";
+
+    return (
+      this.get("mesSelect")?.value ||
+      "Janeiro"
+    );
   },
 
   anoSelecionado() {
-    return String(this.get("anoSelect")?.value || new Date().getFullYear());
+
+    return String(
+      this.get("anoSelect")?.value ||
+      new Date().getFullYear()
+    );
   },
 
-  async carregar() {
-    try {
-      const mes = this.mesSelecionado();
-      const ano = this.anoSelecionado();
+  // ======================================================
+  // CATEGORIAS
+  // ======================================================
 
-      const [gastos, meses, metas, gastosAno] = await Promise.all([
+  nomeCategoria(sigla) {
+
+    const codigo =
+      this.normalizar(sigla);
+
+    const categoria =
+      this.categorias.find(
+        item =>
+          this.normalizar(
+            item.sigla
+          ) === codigo
+      );
+
+    return categoria?.nome || "";
+  },
+
+  categoriaAtiva(sigla) {
+
+    const codigo =
+      this.normalizar(sigla);
+
+    return this.categorias.some(
+      item =>
+        this.normalizar(
+          item.sigla
+        ) === codigo &&
+        item.ativo !== false
+    );
+  },
+
+  // ======================================================
+  // CARREGAMENTO
+  // ======================================================
+
+  async carregar() {
+
+    try {
+
+      const mes =
+        this.mesSelecionado();
+
+      const ano =
+        this.anoSelecionado();
+
+      const [
+        gastos,
+        meses,
+        metas,
+        gastosAno,
+        categorias
+      ] = await Promise.all([
+
         api.restGet(
           "gastos",
           `select=*&mes=eq.${encodeURIComponent(mes)}&ano=eq.${encodeURIComponent(ano)}&limit=10000`
@@ -108,362 +246,936 @@ window.dashboardModule = {
         api.restGet(
           "gastos",
           `select=*&ano=eq.${encodeURIComponent(ano)}&limit=20000`
+        ),
+
+        api.restGet(
+          "categorias_gastos",
+          "select=*&order=sigla.asc&limit=1000"
         )
+
       ]);
 
-      this.gastos = Array.isArray(gastos) ? gastos : [];
-      this.gastosAno = Array.isArray(gastosAno) ? gastosAno : [];
-      this.meses = Array.isArray(meses) ? meses : [];
-      this.metas = Array.isArray(metas) ? metas : [];
+      this.gastos =
+        Array.isArray(gastos)
+          ? gastos
+          : [];
+
+      this.gastosAno =
+        Array.isArray(gastosAno)
+          ? gastosAno
+          : [];
+
+      this.meses =
+        Array.isArray(meses)
+          ? meses
+          : [];
+
+      this.metas =
+        Array.isArray(metas)
+          ? metas
+          : [];
+
+      this.categorias =
+        Array.isArray(categorias)
+          ? categorias
+          : [];
 
       this.renderizar();
+
     } catch (erro) {
-      console.error("Erro dashboard:", erro);
-      alert("Erro ao carregar dashboard.");
+
+      console.error(
+        "Erro dashboard:",
+        erro
+      );
+
+      alert(
+        "Erro ao carregar dashboard."
+      );
     }
   },
 
+  // ======================================================
+  // AGRUPAMENTO DE CATEGORIAS
+  // ======================================================
+
   agruparCategorias(lista) {
+
     const mapa = {};
 
-    (lista || []).forEach(item => {
-      const categoria = this.normalizar(item.categoria || "SEM CATEGORIA");
+    (lista || []).forEach(
+      item => {
 
-      mapa[categoria] =
-        (mapa[categoria] || 0) +
-        this.numero(item.valor);
-    });
+        const categoria =
+          this.normalizar(
+            item.categoria ||
+            "SEM CATEGORIA"
+          );
+
+        mapa[categoria] =
+          (mapa[categoria] || 0) +
+          this.numero(
+            item.valor
+          );
+      }
+    );
 
     return mapa;
   },
 
+  // ======================================================
+  // RENDER PRINCIPAL
+  // ======================================================
+
   renderizar() {
-    const mes = this.mesSelecionado();
-    const ano = this.anoSelecionado();
 
-    const gastosMes = this.gastos;
+    const mes =
+      this.mesSelecionado();
 
-    const faturamentoMes = this.meses.find(item =>
-      this.normalizar(item.mes) === this.normalizar(mes) &&
-      String(item.ano) === String(ano)
+    const ano =
+      this.anoSelecionado();
+
+    const gastosMes =
+      this.gastos;
+
+    const faturamentoMes =
+      this.meses.find(
+        item =>
+          this.normalizar(
+            item.mes
+          ) ===
+            this.normalizar(mes) &&
+
+          String(item.ano) ===
+            String(ano)
+      );
+
+    const metasMes =
+      this.metas;
+
+    const totalGastos =
+      gastosMes.reduce(
+        (total, item) =>
+          total +
+          this.numero(
+            item.valor
+          ),
+        0
+      );
+
+    const faturamento =
+      this.numero(
+        faturamentoMes?.faturamento
+      );
+
+    const lucro =
+      faturamento -
+      totalGastos;
+
+    const margem =
+      faturamento > 0
+        ? (
+            lucro /
+            faturamento
+          ) * 100
+        : 0;
+
+    this.set(
+      "dashFaturamento",
+      this.moeda(faturamento)
     );
 
-    const metasMes = this.metas;
-
-    const totalGastos = gastosMes.reduce(
-      (t, item) => t + this.numero(item.valor),
-      0
+    this.set(
+      "dashGastos",
+      this.moeda(totalGastos)
     );
 
-    const faturamento = this.numero(faturamentoMes?.faturamento);
-    const lucro = faturamento - totalGastos;
-    const margem = faturamento > 0 ? (lucro / faturamento) * 100 : 0;
+    this.set(
+      "dashLucro",
+      this.moeda(lucro)
+    );
 
-    this.set("dashFaturamento", this.moeda(faturamento));
-    this.set("dashGastos", this.moeda(totalGastos));
-    this.set("dashLucro", this.moeda(lucro));
-    this.set("dashMargem", margem.toFixed(1) + "%");
+    this.set(
+      "dashMargem",
+      margem.toFixed(1) + "%"
+    );
 
-    let status = "SAUDÁVEL";
-    let descricao = "Operação dentro do esperado.";
+    // ====================================================
+    // STATUS
+    // ====================================================
+
+    let status =
+      "SAUDÁVEL";
+
+    let descricao =
+      "Operação dentro do esperado.";
 
     if (faturamento <= 0) {
-      status = "SEM DADOS";
-      descricao = "Nenhum faturamento encontrado.";
+
+      status =
+        "SEM DADOS";
+
+      descricao =
+        "Nenhum faturamento encontrado.";
+
     } else if (lucro < 0) {
-      status = "CRÍTICO";
-      descricao = "Os gastos estão acima do faturamento.";
+
+      status =
+        "CRÍTICO";
+
+      descricao =
+        "Os gastos estão acima do faturamento.";
+
     } else if (margem < 10) {
-      status = "ATENÇÃO";
-      descricao = "Margem abaixo do ideal.";
+
+      status =
+        "ATENÇÃO";
+
+      descricao =
+        "Margem abaixo do ideal.";
     }
 
-    this.set("dashStatus", status);
-    this.set("dashStatusDesc", descricao);
+    this.set(
+      "dashStatus",
+      status
+    );
 
-    this.graficoDistribuicao(gastosMes);
-    this.graficoMeta(gastosMes, metasMes, faturamento);
-    this.graficoEvolucao(ano);
-    this.tabelaCategorias(gastosMes);
+    this.set(
+      "dashStatusDesc",
+      descricao
+    );
+
+    // ====================================================
+    // COMPONENTES
+    // ====================================================
+
+    this.graficoDistribuicao(
+      gastosMes
+    );
+
+    this.graficoMeta(
+      gastosMes,
+      metasMes,
+      faturamento
+    );
+
+    this.graficoEvolucao(
+      ano
+    );
+
+    this.tabelaCategorias(
+      gastosMes
+    );
+
     this.mediaMensalCategorias();
   },
 
-  graficoMeta(gastos, metas, faturamento) {
-    const ctx = this.get("chartMetaCategoria");
-    if (!ctx || typeof Chart === "undefined") return;
+  // ======================================================
+  // GRÁFICO META X REAL
+  // ======================================================
+
+  graficoMeta(
+    gastos,
+    metas,
+    faturamento
+  ) {
+
+    const ctx =
+      this.get(
+        "chartMetaCategoria"
+      );
+
+    if (
+      !ctx ||
+      typeof Chart ===
+        "undefined"
+    ) {
+      return;
+    }
 
     if (this.chartMeta) {
+
       this.chartMeta.destroy();
     }
 
-    const gastosMap = this.agruparCategorias(gastos);
+    const gastosMap =
+      this.agruparCategorias(
+        gastos
+      );
 
-    const categorias = [
-      ...new Set([
-        ...Object.keys(gastosMap),
-        ...(metas || []).map(m => this.normalizar(m.categoria))
-      ])
-    ];
+    /*
+     * Categorias que aparecem:
+     *
+     * 1. categorias com gastos
+     * 2. categorias com metas
+     * 3. categorias oficiais cadastradas
+     *
+     * Portanto BLQ aparece corretamente quando
+     * houver gasto ou meta vinculada a ela.
+     */
+
+    const categoriasComMovimento =
+      Object.keys(
+        gastosMap
+      );
+
+    const categoriasComMeta =
+      (metas || [])
+        .map(
+          item =>
+            this.normalizar(
+              item.categoria
+            )
+        )
+        .filter(Boolean);
+
+    const categorias =
+      [
+        ...new Set([
+          ...categoriasComMovimento,
+          ...categoriasComMeta
+        ])
+      ];
 
     if (!categorias.length) {
-      categorias.push("SEM DADOS");
+
+      categorias.push(
+        "SEM DADOS"
+      );
     }
 
     const real = [];
     const meta = [];
 
-    categorias.forEach(cat => {
-      real.push(gastosMap[cat] || 0);
+    categorias.forEach(
+      cat => {
 
-      const metaItem = (metas || []).find(m =>
-        this.normalizar(m.categoria) === cat
-      );
+        real.push(
+          gastosMap[cat] || 0
+        );
 
-      const percentual = this.numero(metaItem?.percentual_meta);
+        const metaItem =
+          (metas || []).find(
+            item =>
+              this.normalizar(
+                item.categoria
+              ) === cat
+          );
 
-      meta.push((faturamento * percentual) / 100);
-    });
+        const percentual =
+          this.numero(
+            metaItem
+              ?.percentual_meta
+          );
 
-    this.chartMeta = new Chart(ctx, {
-      data: {
-        labels: categorias,
-        datasets: [
-          {
-            type: "bar",
-            label: "Gasto Real",
-            data: real,
-            backgroundColor: "#ff2d55",
-            borderRadius: 10,
-            borderSkipped: false
-          },
-          {
-            type: "line",
-            label: "Meta Permitida",
-            data: meta,
-            borderColor: "#f59e0b",
-            backgroundColor: "#f59e0b",
-            borderWidth: 4,
-            tension: 0.35,
-            pointRadius: 5,
-            pointHoverRadius: 7
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: "top",
-            labels: {
-              usePointStyle: true,
-              padding: 18,
-              font: {
-                weight: "900",
-                size: 13
-              },
-              color: "#111827"
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`
-            }
-          }
-        },
-        scales: {
-          y: {
-            ticks: {
-              callback: value => this.moeda(value)
-            },
-            grid: {
-              color: "rgba(148,163,184,0.15)"
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
-          }
-        }
+        meta.push(
+          (
+            faturamento *
+            percentual
+          ) / 100
+        );
       }
-    });
-  },
+    );
 
-  graficoDistribuicao(gastos) {
-    const ctx = this.get("chartDistribuicao");
-    if (!ctx || typeof Chart === "undefined") return;
+    this.chartMeta =
+      new Chart(
+        ctx,
+        {
 
-    if (this.chartDistribuicao) {
-      this.chartDistribuicao.destroy();
-    }
+          data: {
 
-    const mapa = this.agruparCategorias(gastos);
-    const labels = Object.keys(mapa);
-    const valores = Object.values(mapa);
+            labels:
+              categorias,
 
-    this.chartDistribuicao = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: labels.length ? labels : ["SEM DADOS"],
-        datasets: [
-          {
-            data: valores.length ? valores : [1],
-            backgroundColor: this.cores,
-            borderWidth: 3,
-            hoverOffset: 18
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "62%",
-        plugins: {
-          legend: {
-            position: "bottom",
-            labels: {
-              usePointStyle: true,
-              padding: 16,
-              font: {
-                weight: "600"
+            datasets: [
+
+              {
+                type: "bar",
+
+                label:
+                  "Gasto Real",
+
+                data:
+                  real,
+
+                backgroundColor:
+                  "#ff2d55",
+
+                borderRadius:
+                  10,
+
+                borderSkipped:
+                  false
+              },
+
+              {
+                type: "line",
+
+                label:
+                  "Meta Permitida",
+
+                data:
+                  meta,
+
+                borderColor:
+                  "#f59e0b",
+
+                backgroundColor:
+                  "#f59e0b",
+
+                borderWidth:
+                  4,
+
+                tension:
+                  0.35,
+
+                pointRadius:
+                  5,
+
+                pointHoverRadius:
+                  7
+              }
+
+            ]
+          },
+
+          options: {
+
+            responsive:
+              true,
+
+            maintainAspectRatio:
+              false,
+
+            plugins: {
+
+              legend: {
+
+                position:
+                  "top",
+
+                labels: {
+
+                  usePointStyle:
+                    true,
+
+                  padding:
+                    18,
+
+                  font: {
+                    weight:
+                      "900",
+                    size:
+                      13
+                  },
+
+                  color:
+                    "#111827"
+                }
+              },
+
+              tooltip: {
+
+                callbacks: {
+
+                  label:
+                    ctx =>
+                      `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`
+                }
+              }
+            },
+
+            scales: {
+
+              y: {
+
+                ticks: {
+
+                  callback:
+                    value =>
+                      this.moeda(
+                        value
+                      )
+                },
+
+                grid: {
+
+                  color:
+                    "rgba(148,163,184,0.15)"
+                }
+              },
+
+              x: {
+
+                grid: {
+                  display:
+                    false
+                }
               }
             }
+          }
+        }
+      );
+  },
+
+  // ======================================================
+  // DISTRIBUIÇÃO DE GASTOS
+  // ======================================================
+
+  graficoDistribuicao(
+    gastos
+  ) {
+
+    const ctx =
+      this.get(
+        "chartDistribuicao"
+      );
+
+    if (
+      !ctx ||
+      typeof Chart ===
+        "undefined"
+    ) {
+      return;
+    }
+
+    if (
+      this.chartDistribuicao
+    ) {
+
+      this.chartDistribuicao
+        .destroy();
+    }
+
+    const mapa =
+      this.agruparCategorias(
+        gastos
+      );
+
+    const labels =
+      Object.keys(mapa);
+
+    const valores =
+      Object.values(mapa);
+
+    this.chartDistribuicao =
+      new Chart(
+        ctx,
+        {
+
+          type:
+            "doughnut",
+
+          data: {
+
+            labels:
+              labels.length
+                ? labels
+                : ["SEM DADOS"],
+
+            datasets: [
+              {
+                data:
+                  valores.length
+                    ? valores
+                    : [1],
+
+                backgroundColor:
+                  this.cores,
+
+                borderWidth:
+                  3,
+
+                hoverOffset:
+                  18
+              }
+            ]
           },
-          tooltip: {
-            callbacks: {
-              label: ctx => `${ctx.label}: ${this.moeda(ctx.raw)}`
+
+          options: {
+
+            responsive:
+              true,
+
+            maintainAspectRatio:
+              false,
+
+            cutout:
+              "62%",
+
+            plugins: {
+
+              legend: {
+
+                position:
+                  "bottom",
+
+                labels: {
+
+                  usePointStyle:
+                    true,
+
+                  padding:
+                    16,
+
+                  font: {
+                    weight:
+                      "600"
+                  }
+                }
+              },
+
+              tooltip: {
+
+                callbacks: {
+
+                  title:
+                    items => {
+
+                      if (
+                        !items?.length
+                      ) {
+                        return "";
+                      }
+
+                      const sigla =
+                        items[0].label;
+
+                      const nome =
+                        this.nomeCategoria(
+                          sigla
+                        );
+
+                      return nome
+                        ? `${sigla} — ${nome}`
+                        : sigla;
+                    },
+
+                  label:
+                    ctx =>
+                      this.moeda(
+                        ctx.raw
+                      )
+                }
+              }
             }
           }
         }
-      }
-    });
+      );
   },
 
-  graficoEvolucao(ano) {
-    const ctx = this.get("chartEvolucao");
-    if (!ctx || typeof Chart === "undefined") return;
+  // ======================================================
+  // EVOLUÇÃO ANUAL
+  // ======================================================
 
-    if (this.chartEvolucao) {
-      this.chartEvolucao.destroy();
+  graficoEvolucao(
+    ano
+  ) {
+
+    const ctx =
+      this.get(
+        "chartEvolucao"
+      );
+
+    if (
+      !ctx ||
+      typeof Chart ===
+        "undefined"
+    ) {
+      return;
+    }
+
+    if (
+      this.chartEvolucao
+    ) {
+
+      this.chartEvolucao
+        .destroy();
     }
 
     const faturamento = [];
     const gastos = [];
     const lucro = [];
 
-    this.mesesLista.forEach(mes => {
-      const fat = this.meses.find(item =>
-        this.normalizar(item.mes) === this.normalizar(mes) &&
-        String(item.ano) === String(ano)
-      );
+    this.mesesLista.forEach(
+      mes => {
 
-      const gastosMes = this.gastosAno.filter(item =>
-        this.normalizar(item.mes) === this.normalizar(mes) &&
-        String(item.ano) === String(ano)
-      );
+        const fat =
+          this.meses.find(
+            item =>
+              this.normalizar(
+                item.mes
+              ) ===
+                this.normalizar(
+                  mes
+                ) &&
 
-      const valorFat = this.numero(fat?.faturamento);
+              String(
+                item.ano
+              ) ===
+                String(ano)
+          );
 
-      const valorGastos = gastosMes.reduce(
-        (t, item) => t + this.numero(item.valor),
-        0
-      );
+        const gastosMes =
+          this.gastosAno.filter(
+            item =>
+              this.normalizar(
+                item.mes
+              ) ===
+                this.normalizar(
+                  mes
+                ) &&
 
-      faturamento.push(valorFat);
-      gastos.push(valorGastos);
-      lucro.push(valorFat - valorGastos);
-    });
+              String(
+                item.ano
+              ) ===
+                String(ano)
+          );
 
-    this.chartEvolucao = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: [
-          "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-          "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-        ],
-        datasets: [
-          {
-            label: "Faturamento",
-            data: faturamento,
-            borderColor: "#ff4d6d",
-            backgroundColor: "#ff4d6d",
-            borderWidth: 4,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 7
-          },
-          {
-            label: "Gastos",
-            data: gastos,
-            borderColor: "#dc2626",
-            backgroundColor: "#dc2626",
-            borderWidth: 4,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 7
-          },
-          {
-            label: "Lucro",
-            data: lucro,
-            borderColor: "#38bdf8",
-            backgroundColor: "#38bdf8",
-            borderWidth: 5,
-            tension: 0.35,
-            pointRadius: 5,
-            pointHoverRadius: 8
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: "top",
-            labels: {
-              usePointStyle: true,
-              padding: 20,
-              font: {
-                weight: "bold"
+        const valorFat =
+          this.numero(
+            fat?.faturamento
+          );
+
+        const valorGastos =
+          gastosMes.reduce(
+            (
+              total,
+              item
+            ) =>
+              total +
+              this.numero(
+                item.valor
+              ),
+            0
+          );
+
+        faturamento.push(
+          valorFat
+        );
+
+        gastos.push(
+          valorGastos
+        );
+
+        lucro.push(
+          valorFat -
+          valorGastos
+        );
+      }
+    );
+
+    this.chartEvolucao =
+      new Chart(
+        ctx,
+        {
+
+          type:
+            "line",
+
+          data: {
+
+            labels: [
+              "Jan",
+              "Fev",
+              "Mar",
+              "Abr",
+              "Mai",
+              "Jun",
+              "Jul",
+              "Ago",
+              "Set",
+              "Out",
+              "Nov",
+              "Dez"
+            ],
+
+            datasets: [
+
+              {
+                label:
+                  "Faturamento",
+
+                data:
+                  faturamento,
+
+                borderColor:
+                  "#ff4d6d",
+
+                backgroundColor:
+                  "#ff4d6d",
+
+                borderWidth:
+                  4,
+
+                tension:
+                  0.35,
+
+                pointRadius:
+                  4,
+
+                pointHoverRadius:
+                  7
+              },
+
+              {
+                label:
+                  "Gastos",
+
+                data:
+                  gastos,
+
+                borderColor:
+                  "#dc2626",
+
+                backgroundColor:
+                  "#dc2626",
+
+                borderWidth:
+                  4,
+
+                tension:
+                  0.35,
+
+                pointRadius:
+                  4,
+
+                pointHoverRadius:
+                  7
+              },
+
+              {
+                label:
+                  "Lucro",
+
+                data:
+                  lucro,
+
+                borderColor:
+                  "#38bdf8",
+
+                backgroundColor:
+                  "#38bdf8",
+
+                borderWidth:
+                  5,
+
+                tension:
+                  0.35,
+
+                pointRadius:
+                  5,
+
+                pointHoverRadius:
+                  8
               }
-            }
+
+            ]
           },
-          tooltip: {
-            callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`
-            }
-          }
-        },
-        scales: {
-          y: {
-            ticks: {
-              callback: value => this.moeda(value)
+
+          options: {
+
+            responsive:
+              true,
+
+            maintainAspectRatio:
+              false,
+
+            plugins: {
+
+              legend: {
+
+                position:
+                  "top",
+
+                labels: {
+
+                  usePointStyle:
+                    true,
+
+                  padding:
+                    20,
+
+                  font: {
+                    weight:
+                      "bold"
+                  }
+                }
+              },
+
+              tooltip: {
+
+                callbacks: {
+
+                  label:
+                    ctx =>
+                      `${ctx.dataset.label}: ${this.moeda(ctx.raw)}`
+                }
+              }
             },
-            grid: {
-              color: "rgba(255,255,255,0.06)"
-            }
-          },
-          x: {
-            grid: {
-              display: false
+
+            scales: {
+
+              y: {
+
+                ticks: {
+
+                  callback:
+                    value =>
+                      this.moeda(
+                        value
+                      )
+                },
+
+                grid: {
+
+                  color:
+                    "rgba(255,255,255,0.06)"
+                }
+              },
+
+              x: {
+
+                grid: {
+                  display:
+                    false
+                }
+              }
             }
           }
         }
-      }
-    });
+      );
   },
 
-  tabelaCategorias(gastos) {
-    const tbody = this.get("tabelaTopCategorias");
+  // ======================================================
+  // TABELA CATEGORIAS
+  // ======================================================
+
+  tabelaCategorias(
+    gastos
+  ) {
+
+    const tbody =
+      this.get(
+        "tabelaTopCategorias"
+      );
+
     if (!tbody) return;
 
-    const mapa = this.agruparCategorias(gastos);
+    const mapa =
+      this.agruparCategorias(
+        gastos
+      );
 
-    const lista = Object.entries(mapa)
-      .sort((a, b) => b[1] - a[1]);
+    const lista =
+      Object.entries(mapa)
+        .sort(
+          (a, b) =>
+            b[1] - a[1]
+        );
 
     if (!lista.length) {
+
       tbody.innerHTML = `
         <tr>
           <td colspan="2" class="muted">
@@ -471,58 +1183,155 @@ window.dashboardModule = {
           </td>
         </tr>
       `;
+
       return;
     }
 
-    tbody.innerHTML = lista.map(item => `
-      <tr>
-        <td><strong>${item[0]}</strong></td>
-        <td>${this.moeda(item[1])}</td>
-      </tr>
-    `).join("");
+    tbody.innerHTML =
+      lista
+        .map(item => {
+
+          const sigla =
+            item[0];
+
+          const nome =
+            this.nomeCategoria(
+              sigla
+            );
+
+          return `
+            <tr>
+
+              <td>
+                <strong>
+                  ${this.escaparHtml(sigla)}
+                </strong>
+
+                ${
+                  nome
+                    ? `<small style="display:block;opacity:.65;margin-top:3px;">
+                        ${this.escaparHtml(nome)}
+                       </small>`
+                    : ""
+                }
+              </td>
+
+              <td>
+                ${this.moeda(
+                  item[1]
+                )}
+              </td>
+
+            </tr>
+          `;
+        })
+        .join("");
   },
 
+  // ======================================================
+  // MÉDIA MENSAL POR CATEGORIA
+  // ======================================================
+
   mediaMensalCategorias() {
-    const tbody = this.get("tabelaMediaCategorias");
+
+    const tbody =
+      this.get(
+        "tabelaMediaCategorias"
+      );
+
     if (!tbody) return;
 
     const mapa = {};
 
-    (this.gastosAno || []).forEach(item => {
-      const categoria = this.normalizar(item.categoria || "SEM CATEGORIA");
-      const mes = this.normalizar(item.mes);
-      const ano = String(item.ano || "");
+    (
+      this.gastosAno || []
+    ).forEach(
+      item => {
 
-      if (!categoria || !mes || !ano) return;
+        const categoria =
+          this.normalizar(
+            item.categoria ||
+            "SEM CATEGORIA"
+          );
 
-      const chaveMes = `${mes}-${ano}`;
+        const mes =
+          this.normalizar(
+            item.mes
+          );
 
-      if (!mapa[categoria]) {
-        mapa[categoria] = {
-          total: 0,
-          meses: new Set()
-        };
+        const ano =
+          String(
+            item.ano || ""
+          );
+
+        if (
+          !categoria ||
+          !mes ||
+          !ano
+        ) {
+          return;
+        }
+
+        const chaveMes =
+          `${mes}-${ano}`;
+
+        if (
+          !mapa[categoria]
+        ) {
+
+          mapa[categoria] = {
+            total: 0,
+            meses: new Set()
+          };
+        }
+
+        mapa[categoria].total +=
+          this.numero(
+            item.valor
+          );
+
+        mapa[categoria].meses.add(
+          chaveMes
+        );
       }
+    );
 
-      mapa[categoria].total += this.numero(item.valor);
-      mapa[categoria].meses.add(chaveMes);
-    });
+    const lista =
+      Object.entries(mapa)
+        .map(
+          (
+            [
+              categoria,
+              dados
+            ]
+          ) => {
 
-    const lista = Object.entries(mapa)
-      .map(([categoria, dados]) => {
-        const qtdMeses = dados.meses.size || 1;
-        const media = dados.total / qtdMeses;
+            const qtdMeses =
+              dados.meses.size ||
+              1;
 
-        return {
-          categoria,
-          total: dados.total,
-          meses: qtdMeses,
-          media
-        };
-      })
-      .sort((a, b) => b.media - a.media);
+            const media =
+              dados.total /
+              qtdMeses;
+
+            return {
+              categoria,
+              total:
+                dados.total,
+              meses:
+                qtdMeses,
+              media
+            };
+          }
+        )
+        .sort(
+          (a, b) =>
+            b.media -
+            a.media
+        );
 
     if (!lista.length) {
+
       tbody.innerHTML = `
         <tr>
           <td colspan="4" class="muted">
@@ -530,23 +1339,80 @@ window.dashboardModule = {
           </td>
         </tr>
       `;
+
       return;
     }
 
-    tbody.innerHTML = lista.map((item, index) => `
-      <tr>
-        <td>
-          <strong>${item.categoria}</strong>
-          ${index < 5 ? `<span class="badge-risk">Top ${index + 1}</span>` : ""}
-        </td>
-        <td>${this.moeda(item.media)}</td>
-        <td>${this.moeda(item.total)}</td>
-        <td>${item.meses}</td>
-      </tr>
-    `).join("");
+    tbody.innerHTML =
+      lista
+        .map(
+          (
+            item,
+            index
+          ) => {
+
+            const nome =
+              this.nomeCategoria(
+                item.categoria
+              );
+
+            return `
+              <tr>
+
+                <td>
+
+                  <strong>
+                    ${this.escaparHtml(item.categoria)}
+                  </strong>
+
+                  ${
+                    nome
+                      ? `<small style="display:block;opacity:.65;margin-top:3px;">
+                          ${this.escaparHtml(nome)}
+                         </small>`
+                      : ""
+                  }
+
+                  ${
+                    index < 5
+                      ? `<span class="badge-risk">
+                          Top ${index + 1}
+                         </span>`
+                      : ""
+                  }
+
+                </td>
+
+                <td>
+                  ${this.moeda(
+                    item.media
+                  )}
+                </td>
+
+                <td>
+                  ${this.moeda(
+                    item.total
+                  )}
+                </td>
+
+                <td>
+                  ${item.meses}
+                </td>
+
+              </tr>
+            `;
+          }
+        )
+        .join("");
   }
 };
 
-window.carregarDashboard = () => {
-  dashboardModule.carregar();
-};
+
+// ========================================================
+// INIT
+// ========================================================
+
+window.carregarDashboard =
+  () => {
+    dashboardModule.carregar();
+  };
