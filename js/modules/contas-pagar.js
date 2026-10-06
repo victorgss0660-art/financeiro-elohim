@@ -1,6 +1,8 @@
 window.contasPagarModule = {
+
   dados: [],
   filtrados: [],
+  categorias: [],
   selecionados: new Set(),
   editandoId: null,
 
@@ -45,6 +47,7 @@ window.contasPagarModule = {
   },
 
   numero(valor) {
+
     if (typeof valor === "number") {
       return isNaN(valor) ? 0 : valor;
     }
@@ -65,21 +68,32 @@ window.contasPagarModule = {
 
     if (!txt) return 0;
 
-    // Formato brasileiro completo: 1.234,56
-    if (txt.includes(".") && txt.includes(",")) {
+    // Brasileiro completo: 1.234,56
+    if (
+      txt.includes(".") &&
+      txt.includes(",")
+    ) {
+
       txt = txt
         .replace(/\./g, "")
         .replace(",", ".");
+
     }
 
-    // Formato brasileiro sem separador de milhar: 1234,56
+    // Brasileiro: 1234,56
     else if (txt.includes(",")) {
+
       txt = txt.replace(",", ".");
+
     }
 
-    // Formato de milhar sem centavos: 1.000
-    else if (/^-?\d{1,3}(\.\d{3})+$/.test(txt)) {
+    // Milhar brasileiro sem centavos: 1.000
+    else if (
+      /^-?\d{1,3}(\.\d{3})+$/.test(txt)
+    ) {
+
       txt = txt.replace(/\./g, "");
+
     }
 
     const n = Number(txt);
@@ -88,73 +102,141 @@ window.contasPagarModule = {
   },
 
   moeda(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    }).format(this.numero(valor));
+    return new Intl.NumberFormat(
+      "pt-BR",
+      {
+        style: "currency",
+        currency: "BRL"
+      }
+    ).format(this.numero(valor));
   },
 
   dataBR(data) {
+
     if (!data) return "-";
 
-    const d = new Date(`${String(data)}T00:00:00`);
+    const texto =
+      String(data).slice(0, 10);
+
+    const d =
+      new Date(`${texto}T00:00:00`);
 
     if (isNaN(d.getTime())) {
       return String(data);
     }
 
-    return d.toLocaleDateString("pt-BR");
+    return d.toLocaleDateString(
+      "pt-BR"
+    );
   },
 
   dataISO(valor) {
+
     if (!valor) return "";
 
     if (
       valor instanceof Date &&
       !isNaN(valor.getTime())
     ) {
-      return valor.toISOString().slice(0, 10);
+
+      const ano =
+        valor.getFullYear();
+
+      const mes =
+        String(
+          valor.getMonth() + 1
+        ).padStart(2, "0");
+
+      const dia =
+        String(
+          valor.getDate()
+        ).padStart(2, "0");
+
+      return `${ano}-${mes}-${dia}`;
     }
 
-    // Número serial do Excel
+    // Número serial Excel
     if (
       typeof valor === "number" &&
       typeof XLSX !== "undefined" &&
       XLSX.SSF?.parse_date_code
     ) {
-      const dataExcel = XLSX.SSF.parse_date_code(valor);
+
+      const dataExcel =
+        XLSX.SSF.parse_date_code(
+          valor
+        );
 
       if (dataExcel) {
-        const ano = String(dataExcel.y).padStart(4, "0");
-        const mes = String(dataExcel.m).padStart(2, "0");
-        const dia = String(dataExcel.d).padStart(2, "0");
+
+        const ano =
+          String(dataExcel.y)
+            .padStart(4, "0");
+
+        const mes =
+          String(dataExcel.m)
+            .padStart(2, "0");
+
+        const dia =
+          String(dataExcel.d)
+            .padStart(2, "0");
 
         return `${ano}-${mes}-${dia}`;
       }
     }
 
-    const texto = String(valor).trim();
+    const texto =
+      String(valor).trim();
 
-    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
-      return texto;
+    // YYYY-MM-DD ou timestamp iniciado por YYYY-MM-DD
+    const iso =
+      texto.match(
+        /^(\d{4})-(\d{2})-(\d{2})/
+      );
+
+    if (iso) {
+      return `${iso[1]}-${iso[2]}-${iso[3]}`;
     }
 
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
-      const [dia, mes, ano] = texto.split("/");
+    // DD/MM/YYYY
+    if (
+      /^\d{2}\/\d{2}\/\d{4}$/.test(texto)
+    ) {
+
+      const [dia, mes, ano] =
+        texto.split("/");
+
       return `${ano}-${mes}-${dia}`;
     }
 
-    const d = new Date(texto);
+    const d =
+      new Date(texto);
 
     if (!isNaN(d.getTime())) {
-      return d.toISOString().slice(0, 10);
+
+      const ano =
+        d.getFullYear();
+
+      const mes =
+        String(
+          d.getMonth() + 1
+        ).padStart(2, "0");
+
+      const dia =
+        String(
+          d.getDate()
+        ).padStart(2, "0");
+
+      return `${ano}-${mes}-${dia}`;
     }
 
     return "";
   },
 
   booleano(valor) {
-    const txt = this.normalizarTexto(valor);
+
+    const txt =
+      this.normalizarTexto(valor);
 
     return [
       "SIM",
@@ -170,14 +252,23 @@ window.contasPagarModule = {
   },
 
   pegarCampo(linha, opcoes) {
+
     const mapa = {};
 
-    Object.keys(linha || {}).forEach(chave => {
-      mapa[this.normalizarChave(chave)] = linha[chave];
+    Object.keys(
+      linha || {}
+    ).forEach(chave => {
+
+      mapa[
+        this.normalizarChave(chave)
+      ] = linha[chave];
+
     });
 
     for (const nome of opcoes) {
-      const chave = this.normalizarChave(nome);
+
+      const chave =
+        this.normalizarChave(nome);
 
       if (
         mapa[chave] !== undefined &&
@@ -192,7 +283,10 @@ window.contasPagarModule = {
   },
 
   escaparHtml(valor) {
-    return String(valor ?? "")
+
+    return String(
+      valor ?? ""
+    )
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -201,42 +295,235 @@ window.contasPagarModule = {
   },
 
   // ======================================================
+  // CATEGORIAS
+  // ======================================================
+
+  async carregarCategorias() {
+
+    try {
+
+      const categorias =
+        await api.restGet(
+          "categorias_gastos",
+          "select=*&ativo=eq.true&order=sigla.asc&limit=1000"
+        );
+
+      this.categorias =
+        Array.isArray(categorias)
+          ? categorias
+          : [];
+
+    } catch (erro) {
+
+      console.error(
+        "Erro ao carregar categorias:",
+        erro
+      );
+
+      this.categorias = [];
+    }
+
+    this.renderizarCategorias();
+  },
+
+  renderizarCategorias() {
+
+    const campo =
+      this.get("cpCategoria");
+
+    if (!campo) return;
+
+    /*
+     * Mantém compatibilidade caso o HTML ainda esteja
+     * usando <input>. Quando for <select>, carregamos
+     * as opções automaticamente.
+     */
+    if (
+      campo.tagName.toLowerCase() !==
+      "select"
+    ) {
+      return;
+    }
+
+    const valorAtual =
+      this.normalizarTexto(
+        campo.value
+      );
+
+    const opcoes = [
+      `<option value="">Selecione...</option>`
+    ];
+
+    this.categorias.forEach(item => {
+
+      const sigla =
+        this.normalizarTexto(
+          item.sigla
+        );
+
+      const nome =
+        String(
+          item.nome || ""
+        ).trim();
+
+      if (!sigla) return;
+
+      opcoes.push(`
+        <option value="${this.escaparHtml(sigla)}">
+          ${this.escaparHtml(sigla)}${nome ? ` — ${this.escaparHtml(nome)}` : ""}
+        </option>
+      `);
+    });
+
+    campo.innerHTML =
+      opcoes.join("");
+
+    if (valorAtual) {
+
+      const existe =
+        [...campo.options].some(
+          option =>
+            option.value ===
+            valorAtual
+        );
+
+      /*
+       * Se estivermos editando uma conta antiga cuja
+       * categoria ainda não está cadastrada na nova tabela,
+       * não deixamos a categoria desaparecer.
+       */
+      if (!existe) {
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          valorAtual;
+
+        option.textContent =
+          `${valorAtual} — Categoria existente`;
+
+        campo.appendChild(
+          option
+        );
+      }
+
+      campo.value =
+        valorAtual;
+    }
+  },
+
+  categoriaExiste(sigla) {
+
+    const categoria =
+      this.normalizarTexto(
+        sigla
+      );
+
+    if (!categoria) {
+      return true;
+    }
+
+    /*
+     * Enquanto não houver categorias cadastradas,
+     * não bloqueamos o sistema.
+     */
+    if (!this.categorias.length) {
+      return true;
+    }
+
+    return this.categorias.some(
+      item =>
+        this.normalizarTexto(
+          item.sigla
+        ) === categoria
+    );
+  },
+
+  // ======================================================
   // ESTADO DOS FILTROS
   // ======================================================
 
   capturarFiltros() {
+
     this.filtros = {
-      busca: this.valor("cpBusca"),
-      fornecedor: this.valor("cpFiltroFornecedor"),
-      categoria: this.valor("cpFiltroCategoria"),
-      inicio: this.valor("cpVencimentoInicio"),
-      fim: this.valor("cpVencimentoFim")
+
+      busca:
+        this.valor("cpBusca"),
+
+      fornecedor:
+        this.valor(
+          "cpFiltroFornecedor"
+        ),
+
+      categoria:
+        this.valor(
+          "cpFiltroCategoria"
+        ),
+
+      inicio:
+        this.valor(
+          "cpVencimentoInicio"
+        ),
+
+      fim:
+        this.valor(
+          "cpVencimentoFim"
+        )
     };
 
-    return { ...this.filtros };
+    return {
+      ...this.filtros
+    };
   },
 
   preencherCamposFiltros() {
+
     const campos = {
-      cpBusca: this.filtros.busca,
-      cpFiltroFornecedor: this.filtros.fornecedor,
-      cpFiltroCategoria: this.filtros.categoria,
-      cpVencimentoInicio: this.filtros.inicio,
-      cpVencimentoFim: this.filtros.fim
+
+      cpBusca:
+        this.filtros.busca,
+
+      cpFiltroFornecedor:
+        this.filtros.fornecedor,
+
+      cpFiltroCategoria:
+        this.filtros.categoria,
+
+      cpVencimentoInicio:
+        this.filtros.inicio,
+
+      cpVencimentoFim:
+        this.filtros.fim
     };
 
-    Object.entries(campos).forEach(([id, valor]) => {
-      const el = this.get(id);
+    Object.entries(
+      campos
+    ).forEach(
+      ([id, valor]) => {
 
-      if (el) {
-        el.value = valor || "";
+        const el =
+          this.get(id);
+
+        if (el) {
+          el.value =
+            valor || "";
+        }
       }
-    });
+    );
   },
 
   possuiFiltroAtivo() {
-    return Object.values(this.filtros).some(valor =>
-      String(valor || "").trim() !== ""
+
+    return Object.values(
+      this.filtros
+    ).some(
+      valor =>
+        String(
+          valor || ""
+        ).trim() !== ""
     );
   },
 
@@ -245,67 +532,110 @@ window.contasPagarModule = {
   // ======================================================
 
   async carregar() {
+
     try {
-      /*
-       * Antes de atualizar os dados, capturamos os filtros
-       * que ainda estão preenchidos na tela.
-       */
+
       this.capturarFiltros();
 
-      const dados = await api.restGet(
-        "contas_pagar",
-        "select=*&status=neq.pago&order=vencimento.asc&limit=20000"
-      );
+      const [
+        dados,
+        categorias
+      ] = await Promise.all([
 
-      this.dados = Array.isArray(dados)
-        ? dados
-        : [];
+        api.restGet(
+          "contas_pagar",
+          "select=*&status=neq.pago&order=vencimento.asc&limit=20000"
+        ),
 
-      /*
-       * Remove da seleção IDs que deixaram de existir
-       * ou que passaram para contas pagas.
-       */
-      [...this.selecionados].forEach(id => {
-        const existe = this.dados.some(item =>
-          Number(item.id) === Number(id)
-        );
+        api.restGet(
+          "categorias_gastos",
+          "select=*&ativo=eq.true&order=sigla.asc&limit=1000"
+        )
 
-        if (!existe) {
-          this.selecionados.delete(Number(id));
-        }
-      });
+      ]);
+
+      this.dados =
+        Array.isArray(dados)
+          ? dados
+          : [];
+
+      this.categorias =
+        Array.isArray(categorias)
+          ? categorias
+          : [];
+
+      [...this.selecionados]
+        .forEach(id => {
+
+          const existe =
+            this.dados.some(
+              item =>
+                Number(item.id) ===
+                Number(id)
+            );
+
+          if (!existe) {
+
+            this.selecionados.delete(
+              Number(id)
+            );
+          }
+        });
+
+      this.renderizarCategorias();
 
       this.preencherCamposFiltros();
+
       this.aplicarFiltros(false);
+
       this.atualizarToggleUI();
+
     } catch (erro) {
+
       console.error(
         "Erro ao carregar contas a pagar:",
         erro
       );
 
-      alert("Erro ao carregar contas a pagar.");
+      alert(
+        "Erro ao carregar contas a pagar."
+      );
     }
   },
 
   // ======================================================
-  // TOGGLES DO FORMULÁRIO
+  // TOGGLES
   // ======================================================
 
   toggleInput(tipo) {
-    if (!Object.prototype.hasOwnProperty.call(this.inputs, tipo)) {
+
+    if (
+      !Object.prototype
+        .hasOwnProperty
+        .call(
+          this.inputs,
+          tipo
+        )
+    ) {
       return;
     }
 
-    this.inputs[tipo] = !this.inputs[tipo];
+    this.inputs[tipo] =
+      !this.inputs[tipo];
+
     this.atualizarToggleUI();
   },
 
   atualizarToggleUI() {
-    const btnNfe = this.get("btnNfe");
-    const btnBoleto = this.get("btnBoleto");
+
+    const btnNfe =
+      this.get("btnNfe");
+
+    const btnBoleto =
+      this.get("btnBoleto");
 
     if (btnNfe) {
+
       btnNfe.classList.toggle(
         "ativo",
         !!this.inputs.nfe
@@ -316,16 +646,22 @@ window.contasPagarModule = {
         !!this.inputs.nfe
       );
 
-      const texto = btnNfe.querySelector(".toggle-text");
+      const texto =
+        btnNfe.querySelector(
+          ".toggle-text"
+        );
 
       if (texto) {
-        texto.textContent = this.inputs.nfe
-          ? "NFE recebida"
-          : "Não recebida";
+
+        texto.textContent =
+          this.inputs.nfe
+            ? "NFE recebida"
+            : "Não recebida";
       }
     }
 
     if (btnBoleto) {
+
       btnBoleto.classList.toggle(
         "ativo",
         !!this.inputs.boleto
@@ -336,17 +672,23 @@ window.contasPagarModule = {
         !!this.inputs.boleto
       );
 
-      const texto = btnBoleto.querySelector(".toggle-text");
+      const texto =
+        btnBoleto.querySelector(
+          ".toggle-text"
+        );
 
       if (texto) {
-        texto.textContent = this.inputs.boleto
-          ? "Boleto recebido"
-          : "Não recebido";
+
+        texto.textContent =
+          this.inputs.boleto
+            ? "Boleto recebido"
+            : "Não recebido";
       }
     }
   },
 
   resetToggles() {
+
     this.inputs = {
       nfe: false,
       boleto: false
@@ -356,25 +698,61 @@ window.contasPagarModule = {
   },
 
   // ======================================================
-  // SALVAR / EDITAR
+  // SALVAR
   // ======================================================
 
   async salvar() {
+
     try {
+
       this.capturarFiltros();
 
+      const categoria =
+        this.normalizarTexto(
+          this.valor(
+            "cpCategoria"
+          )
+        );
+
       const payload = {
-        fornecedor: this.valor("cpFornecedor").trim(),
-        documento: this.valor("cpDocumento").trim(),
-        valor: this.numero(this.valor("cpValor")),
-        vencimento: this.valor("cpVencimento"),
-        categoria: this.normalizarTexto(
-          this.valor("cpCategoria")
-        ),
-        descricao: this.valor("cpDescricao").trim(),
-        tem_nfe: !!this.inputs.nfe,
-        tem_boleto: !!this.inputs.boleto,
-        status: "pendente"
+
+        fornecedor:
+          this.valor(
+            "cpFornecedor"
+          ).trim(),
+
+        documento:
+          this.valor(
+            "cpDocumento"
+          ).trim(),
+
+        valor:
+          this.numero(
+            this.valor(
+              "cpValor"
+            )
+          ),
+
+        vencimento:
+          this.valor(
+            "cpVencimento"
+          ),
+
+        categoria,
+
+        descricao:
+          this.valor(
+            "cpDescricao"
+          ).trim(),
+
+        tem_nfe:
+          !!this.inputs.nfe,
+
+        tem_boleto:
+          !!this.inputs.boleto,
+
+        status:
+          "pendente"
       };
 
       if (
@@ -382,38 +760,71 @@ window.contasPagarModule = {
         payload.valor <= 0 ||
         !payload.vencimento
       ) {
+
         alert(
           "Preencha fornecedor, valor e vencimento."
         );
+
+        return;
+      }
+
+      if (
+        categoria &&
+        !this.categoriaExiste(
+          categoria
+        )
+      ) {
+
+        alert(
+          `A categoria "${categoria}" não está cadastrada ou está desativada.`
+        );
+
         return;
       }
 
       if (this.editandoId) {
+
         await api.update(
           "contas_pagar",
           this.editandoId,
           payload
         );
 
-        alert("Conta atualizada com sucesso.");
+        alert(
+          "Conta atualizada com sucesso."
+        );
+
       } else {
+
         await api.insert(
           "contas_pagar",
           payload
         );
 
-        alert("Conta lançada com sucesso.");
+        alert(
+          "Conta lançada com sucesso."
+        );
       }
 
       this.limparFormulario();
+
       await this.carregar();
+
     } catch (erro) {
-      console.error("Erro ao salvar conta:", erro);
-      alert("Erro ao salvar conta.");
+
+      console.error(
+        "Erro ao salvar conta:",
+        erro
+      );
+
+      alert(
+        "Erro ao salvar conta."
+      );
     }
   },
 
   limparFormulario() {
+
     [
       "cpFornecedor",
       "cpDocumento",
@@ -422,66 +833,168 @@ window.contasPagarModule = {
       "cpCategoria",
       "cpDescricao"
     ].forEach(id => {
-      const el = this.get(id);
+
+      const el =
+        this.get(id);
 
       if (el) {
         el.value = "";
       }
     });
 
-    this.editandoId = null;
+    this.editandoId =
+      null;
+
     this.resetToggles();
 
-    const btnSalvar = document.querySelector(
-      "#tab-contas-pagar .cp-form-actions .cp-btn-primary"
-    );
+    const btnSalvar =
+      document.querySelector(
+        "#tab-contas-pagar .cp-form-actions .cp-btn-primary"
+      );
 
     if (btnSalvar) {
-      btnSalvar.textContent = "Salvar conta";
+
+      btnSalvar.textContent =
+        "Salvar conta";
     }
   },
 
+  // ======================================================
+  // EDITAR
+  // ======================================================
+
   editar(id) {
-    const item = this.dados.find(conta =>
-      Number(conta.id) === Number(id)
-    );
+
+    const item =
+      this.dados.find(
+        conta =>
+          Number(conta.id) ===
+          Number(id)
+      );
 
     if (!item) {
-      alert("Conta não encontrada.");
+
+      alert(
+        "Conta não encontrada."
+      );
+
       return;
     }
 
     this.capturarFiltros();
-    this.editandoId = Number(item.id);
+
+    this.editandoId =
+      Number(item.id);
+
+    /*
+     * Se for categoria antiga ainda não cadastrada,
+     * criamos temporariamente a opção no select.
+     */
+    const campoCategoria =
+      this.get(
+        "cpCategoria"
+      );
+
+    if (
+      campoCategoria &&
+      campoCategoria.tagName
+        .toLowerCase() ===
+        "select"
+    ) {
+
+      const categoria =
+        this.normalizarTexto(
+          item.categoria
+        );
+
+      if (categoria) {
+
+        const existe =
+          [...campoCategoria.options]
+            .some(
+              option =>
+                option.value ===
+                categoria
+            );
+
+        if (!existe) {
+
+          const option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            categoria;
+
+          option.textContent =
+            `${categoria} — Categoria existente`;
+
+          campoCategoria.appendChild(
+            option
+          );
+        }
+      }
+    }
 
     const campos = {
-      cpFornecedor: item.fornecedor,
-      cpDocumento: item.documento,
-      cpValor: item.valor,
-      cpVencimento: item.vencimento,
-      cpCategoria: item.categoria,
-      cpDescricao: item.descricao
+
+      cpFornecedor:
+        item.fornecedor,
+
+      cpDocumento:
+        item.documento,
+
+      cpValor:
+        item.valor,
+
+      cpVencimento:
+        this.dataISO(
+          item.vencimento
+        ),
+
+      cpCategoria:
+        this.normalizarTexto(
+          item.categoria
+        ),
+
+      cpDescricao:
+        item.descricao
     };
 
-    Object.entries(campos).forEach(([idCampo, valor]) => {
-      const el = this.get(idCampo);
+    Object.entries(
+      campos
+    ).forEach(
+      ([idCampo, valor]) => {
 
-      if (el) {
-        el.value = valor ?? "";
+        const el =
+          this.get(idCampo);
+
+        if (el) {
+
+          el.value =
+            valor ?? "";
+        }
       }
-    });
+    );
 
-    this.inputs.nfe = !!item.tem_nfe;
-    this.inputs.boleto = !!item.tem_boleto;
+    this.inputs.nfe =
+      !!item.tem_nfe;
+
+    this.inputs.boleto =
+      !!item.tem_boleto;
 
     this.atualizarToggleUI();
 
-    const btnSalvar = document.querySelector(
-      "#tab-contas-pagar .cp-form-actions .cp-btn-primary"
-    );
+    const btnSalvar =
+      document.querySelector(
+        "#tab-contas-pagar .cp-form-actions .cp-btn-primary"
+      );
 
     if (btnSalvar) {
-      btnSalvar.textContent = "Atualizar conta";
+
+      btnSalvar.textContent =
+        "Atualizar conta";
     }
 
     window.scrollTo({
@@ -494,91 +1007,125 @@ window.contasPagarModule = {
   // FILTROS
   // ======================================================
 
-  aplicarFiltros(capturar = true) {
+  aplicarFiltros(
+    capturar = true
+  ) {
+
     if (capturar) {
       this.capturarFiltros();
     }
 
-    const busca = String(this.filtros.busca || "")
-      .trim()
-      .toLowerCase();
-
-    const fornecedor = String(
-      this.filtros.fornecedor || ""
-    )
-      .trim()
-      .toLowerCase();
-
-    const categoria = String(
-      this.filtros.categoria || ""
-    )
-      .trim()
-      .toLowerCase();
-
-    const inicio = this.filtros.inicio || "";
-    const fim = this.filtros.fim || "";
-
-    this.filtrados = this.dados.filter(item => {
-      const textoGeral = [
-        item.fornecedor,
-        item.documento,
-        item.categoria,
-        item.descricao
-      ]
-        .map(valor => String(valor || ""))
-        .join(" ")
+    const busca =
+      String(
+        this.filtros.busca || ""
+      )
+        .trim()
         .toLowerCase();
 
-      if (
-        busca &&
-        !textoGeral.includes(busca)
-      ) {
-        return false;
-      }
+    const fornecedor =
+      String(
+        this.filtros.fornecedor ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
 
-      if (
-        fornecedor &&
-        !String(item.fornecedor || "")
-          .toLowerCase()
-          .includes(fornecedor)
-      ) {
-        return false;
-      }
+    const categoria =
+      String(
+        this.filtros.categoria ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
 
-      if (
-        categoria &&
-        !String(item.categoria || "")
-          .toLowerCase()
-          .includes(categoria)
-      ) {
-        return false;
-      }
+    const inicio =
+      this.filtros.inicio || "";
 
-      const vencimento = String(
-        item.vencimento || ""
+    const fim =
+      this.filtros.fim || "";
+
+    this.filtrados =
+      this.dados.filter(
+        item => {
+
+          const textoGeral = [
+            item.fornecedor,
+            item.documento,
+            item.categoria,
+            item.descricao
+          ]
+            .map(
+              valor =>
+                String(
+                  valor || ""
+                )
+            )
+            .join(" ")
+            .toLowerCase();
+
+          if (
+            busca &&
+            !textoGeral.includes(
+              busca
+            )
+          ) {
+            return false;
+          }
+
+          if (
+            fornecedor &&
+            !String(
+              item.fornecedor || ""
+            )
+              .toLowerCase()
+              .includes(
+                fornecedor
+              )
+          ) {
+            return false;
+          }
+
+          if (
+            categoria &&
+            !String(
+              item.categoria || ""
+            )
+              .toLowerCase()
+              .includes(
+                categoria
+              )
+          ) {
+            return false;
+          }
+
+          const vencimento =
+            this.dataISO(
+              item.vencimento
+            );
+
+          if (
+            inicio &&
+            vencimento < inicio
+          ) {
+            return false;
+          }
+
+          if (
+            fim &&
+            vencimento > fim
+          ) {
+            return false;
+          }
+
+          return true;
+        }
       );
-
-      if (
-        inicio &&
-        vencimento < inicio
-      ) {
-        return false;
-      }
-
-      if (
-        fim &&
-        vencimento > fim
-      ) {
-        return false;
-      }
-
-      return true;
-    });
 
     this.renderizar();
   },
 
   limparFiltros() {
+
     this.filtros = {
       busca: "",
       fornecedor: "",
@@ -589,7 +1136,9 @@ window.contasPagarModule = {
 
     this.preencherCamposFiltros();
 
-    this.filtrados = [...this.dados];
+    this.filtrados =
+      [...this.dados];
+
     this.renderizar();
   },
 
@@ -598,32 +1147,56 @@ window.contasPagarModule = {
   // ======================================================
 
   selecionarTodos() {
-    this.filtrados.forEach(item => {
-      this.selecionados.add(Number(item.id));
-    });
+
+    this.filtrados
+      .forEach(item => {
+
+        this.selecionados.add(
+          Number(item.id)
+        );
+      });
 
     this.renderizar();
   },
 
   limparSelecao() {
+
     this.selecionados.clear();
+
     this.renderizar();
   },
 
-  toggleSelecionado(id, marcado) {
-    const contaId = Number(id);
+  toggleSelecionado(
+    id,
+    marcado
+  ) {
+
+    const contaId =
+      Number(id);
 
     if (marcado) {
-      this.selecionados.add(contaId);
+
+      this.selecionados.add(
+        contaId
+      );
+
     } else {
-      this.selecionados.delete(contaId);
+
+      this.selecionados.delete(
+        contaId
+      );
     }
 
     this.renderizar();
   },
 
-  toggleSelecionadoLinha(id, event) {
-    const alvo = event?.target;
+  toggleSelecionadoLinha(
+    id,
+    event
+  ) {
+
+    const alvo =
+      event?.target;
 
     if (!alvo) return;
 
@@ -635,23 +1208,37 @@ window.contasPagarModule = {
       return;
     }
 
-    const contaId = Number(id);
+    const contaId =
+      Number(id);
 
-    if (this.selecionados.has(contaId)) {
-      this.selecionados.delete(contaId);
+    if (
+      this.selecionados.has(
+        contaId
+      )
+    ) {
+
+      this.selecionados.delete(
+        contaId
+      );
+
     } else {
-      this.selecionados.add(contaId);
+
+      this.selecionados.add(
+        contaId
+      );
     }
 
     this.renderizar();
   },
 
   // ======================================================
-  // PAGAMENTOS
+  // PAGAR
   // ======================================================
 
   async pagar(id) {
+
     try {
+
       this.capturarFiltros();
 
       if (
@@ -667,63 +1254,108 @@ window.contasPagarModule = {
         id,
         {
           status: "pago",
+
           data_pagamento:
-            new Date().toISOString().slice(0, 10)
+            new Date()
+              .toISOString()
+              .slice(0, 10)
         }
       );
 
-      this.selecionados.delete(Number(id));
+      this.selecionados.delete(
+        Number(id)
+      );
 
       await this.carregar();
 
-      if (window.contasPagasModule?.carregar) {
-        await contasPagasModule.carregar();
+      if (
+        window.contasPagasModule
+          ?.carregar
+      ) {
+
+        await contasPagasModule
+          .carregar();
       }
+
     } catch (erro) {
-      console.error("Erro ao pagar conta:", erro);
-      alert("Erro ao pagar conta.");
+
+      console.error(
+        "Erro ao pagar conta:",
+        erro
+      );
+
+      alert(
+        "Erro ao pagar conta."
+      );
     }
   },
 
   async pagarSelecionadas() {
+
     try {
+
       this.capturarFiltros();
 
-      if (!this.selecionados.size) {
-        alert("Selecione pelo menos uma conta.");
+      if (
+        !this.selecionados.size
+      ) {
+
+        alert(
+          "Selecione pelo menos uma conta."
+        );
+
         return;
       }
 
-      const idsValidos = [...this.selecionados].filter(id =>
-        this.dados.some(item =>
-          Number(item.id) === Number(id)
-        )
-      );
+      const idsValidos =
+        [...this.selecionados]
+          .filter(
+            id =>
+              this.dados.some(
+                item =>
+                  Number(item.id) ===
+                  Number(id)
+              )
+          );
 
       if (!idsValidos.length) {
-        alert("Nenhuma conta válida selecionada.");
+
+        alert(
+          "Nenhuma conta válida selecionada."
+        );
+
         this.selecionados.clear();
+
         this.renderizar();
+
         return;
       }
 
-      const confirmar = confirm(
-        `Confirmar pagamento de ${idsValidos.length} conta(s)?`
-      );
+      const confirmar =
+        confirm(
+          `Confirmar pagamento de ${idsValidos.length} conta(s)?`
+        );
 
-      if (!confirmar) return;
+      if (!confirmar) {
+        return;
+      }
 
-      const hoje = new Date()
-        .toISOString()
-        .slice(0, 10);
+      const hoje =
+        new Date()
+          .toISOString()
+          .slice(0, 10);
 
-      for (const id of idsValidos) {
+      for (
+        const id of idsValidos
+      ) {
+
         await api.update(
           "contas_pagar",
           id,
           {
             status: "pago",
-            data_pagamento: hoje
+            data_pagamento:
+              hoje
           }
         );
       }
@@ -732,12 +1364,21 @@ window.contasPagarModule = {
 
       await this.carregar();
 
-      if (window.contasPagasModule?.carregar) {
-        await contasPagasModule.carregar();
+      if (
+        window.contasPagasModule
+          ?.carregar
+      ) {
+
+        await contasPagasModule
+          .carregar();
       }
 
-      alert("Contas pagas com sucesso.");
+      alert(
+        "Contas pagas com sucesso."
+      );
+
     } catch (erro) {
+
       console.error(
         "Erro ao pagar selecionadas:",
         erro
@@ -754,12 +1395,17 @@ window.contasPagarModule = {
   // ======================================================
 
   async toggleNfe(id) {
+
     try {
+
       this.capturarFiltros();
 
-      const item = this.dados.find(conta =>
-        Number(conta.id) === Number(id)
-      );
+      const item =
+        this.dados.find(
+          conta =>
+            Number(conta.id) ===
+            Number(id)
+        );
 
       if (!item) return;
 
@@ -767,24 +1413,38 @@ window.contasPagarModule = {
         "contas_pagar",
         id,
         {
-          tem_nfe: !item.tem_nfe
+          tem_nfe:
+            !item.tem_nfe
         }
       );
 
       await this.carregar();
+
     } catch (erro) {
-      console.error("Erro ao alterar NFE:", erro);
-      alert("Erro ao alterar NFE.");
+
+      console.error(
+        "Erro ao alterar NFE:",
+        erro
+      );
+
+      alert(
+        "Erro ao alterar NFE."
+      );
     }
   },
 
   async toggleBoleto(id) {
+
     try {
+
       this.capturarFiltros();
 
-      const item = this.dados.find(conta =>
-        Number(conta.id) === Number(id)
-      );
+      const item =
+        this.dados.find(
+          conta =>
+            Number(conta.id) ===
+            Number(id)
+        );
 
       if (!item) return;
 
@@ -792,31 +1452,40 @@ window.contasPagarModule = {
         "contas_pagar",
         id,
         {
-          tem_boleto: !item.tem_boleto
+          tem_boleto:
+            !item.tem_boleto
         }
       );
 
       await this.carregar();
+
     } catch (erro) {
+
       console.error(
         "Erro ao alterar boleto:",
         erro
       );
 
-      alert("Erro ao alterar boleto.");
+      alert(
+        "Erro ao alterar boleto."
+      );
     }
   },
 
   // ======================================================
-  // EXCLUSÃO / DUPLICAÇÃO
+  // EXCLUSÃO
   // ======================================================
 
   async excluir(id) {
+
     try {
+
       this.capturarFiltros();
 
       if (
-        !confirm("Excluir esta conta?")
+        !confirm(
+          "Excluir esta conta?"
+        )
       ) {
         return;
       }
@@ -827,88 +1496,157 @@ window.contasPagarModule = {
         "DELETE"
       );
 
-      this.selecionados.delete(Number(id));
+      this.selecionados.delete(
+        Number(id)
+      );
 
       await this.carregar();
+
     } catch (erro) {
-      console.error("Erro ao excluir conta:", erro);
-      alert("Erro ao excluir conta.");
+
+      console.error(
+        "Erro ao excluir conta:",
+        erro
+      );
+
+      alert(
+        "Erro ao excluir conta."
+      );
     }
   },
 
+  // ======================================================
+  // DUPLICAR
+  // ======================================================
+
   async duplicar(id) {
+
     try {
+
       this.capturarFiltros();
 
-      const item = this.dados.find(conta =>
-        Number(conta.id) === Number(id)
-      );
+      const item =
+        this.dados.find(
+          conta =>
+            Number(conta.id) ===
+            Number(id)
+        );
 
       if (!item) {
-        alert("Conta não encontrada.");
+
+        alert(
+          "Conta não encontrada."
+        );
+
         return;
       }
 
       await api.insert(
         "contas_pagar",
         {
-          fornecedor: item.fornecedor,
-          documento: item.documento,
-          valor: this.numero(item.valor),
-          vencimento: item.vencimento,
-          categoria: item.categoria,
-          descricao: item.descricao,
-          tem_nfe: !!item.tem_nfe,
-          tem_boleto: !!item.tem_boleto,
-          status: "pendente"
+          fornecedor:
+            item.fornecedor,
+
+          documento:
+            item.documento,
+
+          valor:
+            this.numero(
+              item.valor
+            ),
+
+          vencimento:
+            this.dataISO(
+              item.vencimento
+            ),
+
+          categoria:
+            item.categoria,
+
+          descricao:
+            item.descricao,
+
+          tem_nfe:
+            !!item.tem_nfe,
+
+          tem_boleto:
+            !!item.tem_boleto,
+
+          status:
+            "pendente"
         }
       );
 
       await this.carregar();
 
-      alert("Conta duplicada com sucesso.");
+      alert(
+        "Conta duplicada com sucesso."
+      );
+
     } catch (erro) {
-      console.error("Erro ao duplicar conta:", erro);
-      alert("Erro ao duplicar conta.");
+
+      console.error(
+        "Erro ao duplicar conta:",
+        erro
+      );
+
+      alert(
+        "Erro ao duplicar conta."
+      );
     }
   },
 
   // ======================================================
-  // IMPORTAÇÃO E SINCRONIZAÇÃO POR EXCEL
+  // IMPORTAÇÃO EXCEL
   // ======================================================
 
   async importarExcel(event) {
+
     try {
+
       this.capturarFiltros();
 
       const arquivo =
         event?.target?.files?.[0];
 
       if (!arquivo) {
-        alert("Selecione uma planilha.");
+
+        alert(
+          "Selecione uma planilha."
+        );
+
         return;
       }
 
-      if (typeof XLSX === "undefined") {
+      if (
+        typeof XLSX ===
+        "undefined"
+      ) {
+
         alert(
           "Biblioteca XLSX não carregada."
         );
+
         return;
       }
 
       const buffer =
         await arquivo.arrayBuffer();
 
-      const workbook = XLSX.read(
-        buffer,
-        {
-          type: "array",
-          cellDates: true
-        }
-      );
+      const workbook =
+        XLSX.read(
+          buffer,
+          {
+            type: "array",
+            cellDates: true
+          }
+        );
 
-      const aba = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[aba];
+      const aba =
+        workbook.SheetNames[0];
+
+      const sheet =
+        workbook.Sheets[aba];
 
       const linhas =
         XLSX.utils.sheet_to_json(
@@ -920,7 +1658,10 @@ window.contasPagarModule = {
         );
 
       if (!linhas.length) {
-        alert("A planilha está vazia.");
+
+        alert(
+          "A planilha está vazia."
+        );
 
         if (event?.target) {
           event.target.value = "";
@@ -930,277 +1671,351 @@ window.contasPagarModule = {
       }
 
       const operacoes = [];
+
       let ignoradas = 0;
 
-      linhas.forEach((linha, indice) => {
-        const numeroLinha = indice + 2;
+      linhas.forEach(
+        (linha, indice) => {
 
-        const idOriginal = this.pegarCampo(
-          linha,
-          [
-            "ID",
-            "CODIGO",
-            "CÓDIGO"
-          ]
-        );
+          const numeroLinha =
+            indice + 2;
 
-        const id =
-          Number(idOriginal) || null;
-
-        let acao = this.normalizarTexto(
-          this.pegarCampo(
-            linha,
-            [
-              "ACAO",
-              "AÇÃO",
-              "OPERACAO",
-              "OPERAÇÃO"
-            ]
-          )
-        );
-
-        const fornecedor = String(
-          this.pegarCampo(
-            linha,
-            [
-              "FORNECEDOR",
-              "EMPRESA",
-              "NOME"
-            ]
-          ) || ""
-        ).trim();
-
-        const documento = String(
-          this.pegarCampo(
-            linha,
-            [
-              "DOCUMENTO",
-              "NF",
-              "NFE",
-              "NOTA",
-              "NOTA FISCAL",
-              "PEDIDO",
-              "FAT",
-              "FATURA"
-            ]
-          ) || ""
-        ).trim();
-
-        const valor = this.numero(
-          this.pegarCampo(
-            linha,
-            [
-              "VALOR",
-              "TOTAL",
-              "VALOR TOTAL",
-              "VALOR PAGO",
-              "VLR"
-            ]
-          )
-        );
-
-        const vencimento = this.dataISO(
-          this.pegarCampo(
-            linha,
-            [
-              "VENCIMENTO",
-              "DATA VENCIMENTO",
-              "DATA DE VENCIMENTO",
-              "VENCE",
-              "DATA"
-            ]
-          )
-        );
-
-        const categoria =
-          this.normalizarTexto(
+          const idOriginal =
             this.pegarCampo(
               linha,
               [
-                "CATEGORIA",
-                "TIPO",
-                "GRUPO",
-                "CLASSE",
-                "CLASSIFICAÇÃO",
-                "CLASSIFICACAO"
+                "ID",
+                "CODIGO",
+                "CÓDIGO"
               ]
-            )
-          );
+            );
 
-        const descricao = String(
-          this.pegarCampo(
-            linha,
+          const id =
+            Number(
+              idOriginal
+            ) || null;
+
+          let acao =
+            this.normalizarTexto(
+              this.pegarCampo(
+                linha,
+                [
+                  "ACAO",
+                  "AÇÃO",
+                  "OPERACAO",
+                  "OPERAÇÃO"
+                ]
+              )
+            );
+
+          const fornecedor =
+            String(
+              this.pegarCampo(
+                linha,
+                [
+                  "FORNECEDOR",
+                  "EMPRESA",
+                  "NOME"
+                ]
+              ) || ""
+            ).trim();
+
+          const documento =
+            String(
+              this.pegarCampo(
+                linha,
+                [
+                  "DOCUMENTO",
+                  "NF",
+                  "NOTA",
+                  "NOTA FISCAL",
+                  "PEDIDO",
+                  "FAT",
+                  "FATURA"
+                ]
+              ) || ""
+            ).trim();
+
+          const valor =
+            this.numero(
+              this.pegarCampo(
+                linha,
+                [
+                  "VALOR",
+                  "TOTAL",
+                  "VALOR TOTAL",
+                  "VALOR PAGO",
+                  "VLR"
+                ]
+              )
+            );
+
+          const vencimento =
+            this.dataISO(
+              this.pegarCampo(
+                linha,
+                [
+                  "VENCIMENTO",
+                  "DATA VENCIMENTO",
+                  "DATA DE VENCIMENTO",
+                  "VENCE",
+                  "DATA"
+                ]
+              )
+            );
+
+          const categoria =
+            this.normalizarTexto(
+              this.pegarCampo(
+                linha,
+                [
+                  "CATEGORIA",
+                  "TIPO",
+                  "GRUPO",
+                  "CLASSE",
+                  "CLASSIFICAÇÃO",
+                  "CLASSIFICACAO"
+                ]
+              )
+            );
+
+          const descricao =
+            String(
+              this.pegarCampo(
+                linha,
+                [
+                  "DESCRICAO",
+                  "DESCRIÇÃO",
+                  "OBS",
+                  "OBSERVACAO",
+                  "OBSERVAÇÃO",
+                  "HISTORICO",
+                  "HISTÓRICO"
+                ]
+              ) || ""
+            ).trim();
+
+          const temNfe =
+            this.booleano(
+              this.pegarCampo(
+                linha,
+                [
+                  "NFE",
+                  "NF-E",
+                  "TEM NFE",
+                  "NFE RECEBIDA"
+                ]
+              )
+            );
+
+          const temBoleto =
+            this.booleano(
+              this.pegarCampo(
+                linha,
+                [
+                  "BOLETO",
+                  "TEM BOLETO",
+                  "BOLETO RECEBIDO"
+                ]
+              )
+            );
+
+          const statusOriginal =
+            this.normalizarTexto(
+              this.pegarCampo(
+                linha,
+                ["STATUS"]
+              )
+            ).toLowerCase();
+
+          const status =
+            statusOriginal ||
+            "pendente";
+
+          if (!acao) {
+
+            acao =
+              id
+                ? "ALTERAR"
+                : "NOVO";
+          }
+
+          if (
             [
-              "DESCRICAO",
-              "DESCRIÇÃO",
-              "OBS",
-              "OBSERVACAO",
-              "OBSERVAÇÃO",
-              "HISTORICO",
-              "HISTÓRICO"
-            ]
-          ) || ""
-        ).trim();
+              "ATUALIZAR",
+              "EDITAR",
+              "UPDATE"
+            ].includes(acao)
+          ) {
 
-        const temNfe = this.booleano(
-          this.pegarCampo(
-            linha,
+            acao =
+              "ALTERAR";
+          }
+
+          if (
             [
-              "NFE",
-              "NF-E",
-              "TEM NFE",
-              "NFE RECEBIDA"
-            ]
-          )
-        );
+              "INSERIR",
+              "CRIAR",
+              "ADICIONAR",
+              "INSERT"
+            ].includes(acao)
+          ) {
 
-        const temBoleto = this.booleano(
-          this.pegarCampo(
-            linha,
+            acao =
+              "NOVO";
+          }
+
+          if (
             [
-              "BOLETO",
-              "TEM BOLETO",
-              "BOLETO RECEBIDO"
-            ]
-          )
-        );
+              "DELETAR",
+              "APAGAR",
+              "DELETE"
+            ].includes(acao)
+          ) {
 
-        const statusOriginal =
-          this.normalizarTexto(
-            this.pegarCampo(
-              linha,
-              ["STATUS"]
-            )
-          ).toLowerCase();
+            acao =
+              "EXCLUIR";
+          }
 
-        const status =
-          statusOriginal || "pendente";
+          if (
+            acao ===
+            "EXCLUIR"
+          ) {
 
-        if (!acao) {
-          acao = id
-            ? "ALTERAR"
-            : "NOVO";
-        }
+            if (!id) {
 
-        if (
-          [
-            "ATUALIZAR",
-            "EDITAR",
-            "UPDATE"
-          ].includes(acao)
-        ) {
-          acao = "ALTERAR";
-        }
+              ignoradas++;
 
-        if (
-          [
-            "INSERIR",
-            "CRIAR",
-            "ADICIONAR",
-            "INSERT"
-          ].includes(acao)
-        ) {
-          acao = "NOVO";
-        }
+              console.warn(
+                `Linha ${numeroLinha}: exclusão sem ID.`
+              );
 
-        if (
-          [
-            "DELETAR",
-            "APAGAR",
-            "DELETE"
-          ].includes(acao)
-        ) {
-          acao = "EXCLUIR";
-        }
+              return;
+            }
 
-        if (acao === "EXCLUIR") {
-          if (!id) {
+            operacoes.push({
+              tipo:
+                "excluir",
+              id,
+              numeroLinha
+            });
+
+            return;
+          }
+
+          if (
+            !fornecedor ||
+            valor <= 0 ||
+            !vencimento
+          ) {
+
             ignoradas++;
 
             console.warn(
-              `Linha ${numeroLinha}: exclusão sem ID.`
+              `Linha ${numeroLinha} ignorada: fornecedor, valor ou vencimento inválido.`
             );
 
             return;
           }
 
-          operacoes.push({
-            tipo: "excluir",
-            id,
-            numeroLinha
-          });
+          /*
+           * Se houver cadastro central ativo,
+           * verificamos a categoria.
+           */
+          if (
+            categoria &&
+            this.categorias.length &&
+            !this.categoriaExiste(
+              categoria
+            )
+          ) {
 
-          return;
-        }
+            ignoradas++;
 
-        if (
-          !fornecedor ||
-          valor <= 0 ||
-          !vencimento
-        ) {
+            console.warn(
+              `Linha ${numeroLinha}: categoria "${categoria}" não cadastrada ou desativada.`
+            );
+
+            return;
+          }
+
+          const payload = {
+
+            fornecedor,
+            documento,
+            valor,
+            vencimento,
+            categoria,
+            descricao,
+
+            tem_nfe:
+              temNfe,
+
+            tem_boleto:
+              temBoleto,
+
+            status
+          };
+
+          if (
+            acao ===
+            "ALTERAR"
+          ) {
+
+            if (!id) {
+
+              ignoradas++;
+
+              console.warn(
+                `Linha ${numeroLinha}: alteração sem ID.`
+              );
+
+              return;
+            }
+
+            operacoes.push({
+              tipo:
+                "alterar",
+              id,
+              payload,
+              numeroLinha
+            });
+
+            return;
+          }
+
+          if (
+            acao ===
+            "NOVO"
+          ) {
+
+            operacoes.push({
+              tipo:
+                "novo",
+              payload: {
+                ...payload,
+                status:
+                  status ||
+                  "pendente"
+              },
+              numeroLinha
+            });
+
+            return;
+          }
+
           ignoradas++;
 
           console.warn(
-            `Linha ${numeroLinha} ignorada: fornecedor, valor ou vencimento inválido.`
+            `Linha ${numeroLinha}: ação inválida "${acao}".`
           );
-
-          return;
         }
+      );
 
-        const payload = {
-          fornecedor,
-          documento,
-          valor,
-          vencimento,
-          categoria,
-          descricao,
-          tem_nfe: temNfe,
-          tem_boleto: temBoleto,
-          status
-        };
+      if (
+        !operacoes.length
+      ) {
 
-        if (acao === "ALTERAR") {
-          if (!id) {
-            ignoradas++;
-
-            console.warn(
-              `Linha ${numeroLinha}: alteração sem ID.`
-            );
-
-            return;
-          }
-
-          operacoes.push({
-            tipo: "alterar",
-            id,
-            payload,
-            numeroLinha
-          });
-
-          return;
-        }
-
-        if (acao === "NOVO") {
-          operacoes.push({
-            tipo: "novo",
-            payload: {
-              ...payload,
-              status: status || "pendente"
-            },
-            numeroLinha
-          });
-
-          return;
-        }
-
-        ignoradas++;
-
-        console.warn(
-          `Linha ${numeroLinha}: ação inválida "${acao}".`
-        );
-      });
-
-      if (!operacoes.length) {
         alert(
           `Nenhuma operação válida encontrada.\n\nLinhas ignoradas: ${ignoradas}`
         );
@@ -1215,31 +2030,36 @@ window.contasPagarModule = {
       const qtdAlterar =
         operacoes.filter(
           operacao =>
-            operacao.tipo === "alterar"
+            operacao.tipo ===
+            "alterar"
         ).length;
 
       const qtdNovas =
         operacoes.filter(
           operacao =>
-            operacao.tipo === "novo"
+            operacao.tipo ===
+            "novo"
         ).length;
 
       const qtdExcluir =
         operacoes.filter(
           operacao =>
-            operacao.tipo === "excluir"
+            operacao.tipo ===
+            "excluir"
         ).length;
 
-      const confirmar = confirm(
-        `Resumo da importação:\n\n` +
-        `Atualizar: ${qtdAlterar}\n` +
-        `Criar novas: ${qtdNovas}\n` +
-        `Excluir: ${qtdExcluir}\n` +
-        `Ignoradas: ${ignoradas}\n\n` +
-        `Deseja continuar?`
-      );
+      const confirmar =
+        confirm(
+          `Resumo da importação:\n\n` +
+          `Atualizar: ${qtdAlterar}\n` +
+          `Criar novas: ${qtdNovas}\n` +
+          `Excluir: ${qtdExcluir}\n` +
+          `Ignoradas: ${ignoradas}\n\n` +
+          `Deseja continuar?`
+        );
 
       if (!confirmar) {
+
         if (event?.target) {
           event.target.value = "";
         }
@@ -1252,21 +2072,34 @@ window.contasPagarModule = {
       let excluidas = 0;
       let erros = 0;
 
-      for (const operacao of operacoes) {
+      for (
+        const operacao of operacoes
+      ) {
+
         try {
-          if (operacao.tipo === "alterar") {
-            const existe = this.dados.some(
-              item =>
-                Number(item.id) ===
-                Number(operacao.id)
-            );
+
+          if (
+            operacao.tipo ===
+            "alterar"
+          ) {
+
+            const existe =
+              this.dados.some(
+                item =>
+                  Number(item.id) ===
+                  Number(
+                    operacao.id
+                  )
+              );
 
             if (!existe) {
+
               console.warn(
                 `Linha ${operacao.numeroLinha}: ID ${operacao.id} não encontrado nas contas em aberto.`
               );
 
               erros++;
+
               continue;
             }
 
@@ -1277,32 +2110,47 @@ window.contasPagarModule = {
             );
 
             atualizadas++;
+
             continue;
           }
 
-          if (operacao.tipo === "novo") {
+          if (
+            operacao.tipo ===
+            "novo"
+          ) {
+
             await api.insert(
               "contas_pagar",
               operacao.payload
             );
 
             novas++;
+
             continue;
           }
 
-          if (operacao.tipo === "excluir") {
-            const existe = this.dados.some(
-              item =>
-                Number(item.id) ===
-                Number(operacao.id)
-            );
+          if (
+            operacao.tipo ===
+            "excluir"
+          ) {
+
+            const existe =
+              this.dados.some(
+                item =>
+                  Number(item.id) ===
+                  Number(
+                    operacao.id
+                  )
+              );
 
             if (!existe) {
+
               console.warn(
                 `Linha ${operacao.numeroLinha}: ID ${operacao.id} não encontrado para exclusão.`
               );
 
               erros++;
+
               continue;
             }
 
@@ -1312,13 +2160,20 @@ window.contasPagarModule = {
               "DELETE"
             );
 
-            this.selecionados.delete(
-              Number(operacao.id)
-            );
+            this.selecionados
+              .delete(
+                Number(
+                  operacao.id
+                )
+              );
 
             excluidas++;
           }
-        } catch (erroOperacao) {
+
+        } catch (
+          erroOperacao
+        ) {
+
           erros++;
 
           console.error(
@@ -1342,7 +2197,9 @@ window.contasPagarModule = {
         `Ignoradas: ${ignoradas}\n` +
         `Erros: ${erros}`
       );
+
     } catch (erro) {
+
       console.error(
         "Erro ao importar Excel:",
         erro
@@ -1352,7 +2209,9 @@ window.contasPagarModule = {
         event.target.value = "";
       }
 
-      alert("Erro ao importar Excel.");
+      alert(
+        "Erro ao importar Excel."
+      );
     }
   },
 
@@ -1361,48 +2220,91 @@ window.contasPagarModule = {
   // ======================================================
 
   exportarExcel() {
+
     try {
-      if (typeof XLSX === "undefined") {
+
+      if (
+        typeof XLSX ===
+        "undefined"
+      ) {
+
         alert(
           "Biblioteca XLSX não carregada."
         );
+
         return;
       }
 
       this.capturarFiltros();
 
-      /*
-       * Se existir qualquer filtro ativo, exporta exatamente
-       * o resultado filtrado, mesmo que o resultado seja vazio.
-       */
-      const lista = this.possuiFiltroAtivo()
-        ? this.filtrados
-        : this.dados;
+      const lista =
+        this.possuiFiltroAtivo()
+          ? this.filtrados
+          : this.dados;
 
       if (!lista.length) {
+
         alert(
           "Não há dados para exportar com os filtros atuais."
         );
+
         return;
       }
 
-      const linhas = lista.map(item => ({
-        ID: Number(item.id),
-        ACAO: "ALTERAR",
-        FORNECEDOR: item.fornecedor || "",
-        DOCUMENTO: item.documento || "",
-        VALOR: this.numero(item.valor),
-        VENCIMENTO: item.vencimento || "",
-        CATEGORIA: item.categoria || "",
-        DESCRICAO: item.descricao || "",
-        NFE: item.tem_nfe ? "SIM" : "NÃO",
-        BOLETO: item.tem_boleto
-          ? "SIM"
-          : "NÃO",
-        STATUS: item.status || "pendente"
-      }));
+      const linhas =
+        lista.map(
+          item => ({
+
+            ID:
+              Number(item.id),
+
+            ACAO:
+              "ALTERAR",
+
+            FORNECEDOR:
+              item.fornecedor ||
+              "",
+
+            DOCUMENTO:
+              item.documento ||
+              "",
+
+            VALOR:
+              this.numero(
+                item.valor
+              ),
+
+            VENCIMENTO:
+              this.dataISO(
+                item.vencimento
+              ),
+
+            CATEGORIA:
+              item.categoria ||
+              "",
+
+            DESCRICAO:
+              item.descricao ||
+              "",
+
+            NFE:
+              item.tem_nfe
+                ? "SIM"
+                : "NÃO",
+
+            BOLETO:
+              item.tem_boleto
+                ? "SIM"
+                : "NÃO",
+
+            STATUS:
+              item.status ||
+              "pendente"
+          })
+        );
 
       linhas.push({
+
         ID: "",
         ACAO: "NOVO",
         FORNECEDOR: "",
@@ -1417,7 +2319,10 @@ window.contasPagarModule = {
       });
 
       const planilha =
-        XLSX.utils.json_to_sheet(linhas);
+        XLSX.utils
+          .json_to_sheet(
+            linhas
+          );
 
       planilha["!cols"] = [
         { wch: 10 },
@@ -1433,79 +2338,69 @@ window.contasPagarModule = {
         { wch: 14 }
       ];
 
-      if (planilha["!ref"]) {
-        const intervalo =
-          XLSX.utils.decode_range(
-            planilha["!ref"]
-          );
-
-        for (
-          let linha = intervalo.s.r + 1;
-          linha <= intervalo.e.r;
-          linha++
-        ) {
-          const endereco =
-            XLSX.utils.encode_cell({
-              r: linha,
-              c: 4
-            });
-
-          if (
-            planilha[endereco] &&
-            typeof planilha[endereco].v ===
-              "number"
-          ) {
-            planilha[endereco].z =
-              '#,##0.00';
-          }
-        }
-      }
-
       const instrucoes = [
         {
           CAMPO: "ACAO",
-          PREENCHIMENTO: "ALTERAR",
+          PREENCHIMENTO:
+            "ALTERAR",
           EXPLICACAO:
             "Atualiza a conta correspondente ao ID."
         },
         {
           CAMPO: "ACAO",
-          PREENCHIMENTO: "NOVO",
+          PREENCHIMENTO:
+            "NOVO",
           EXPLICACAO:
             "Cria uma nova conta. Deixe o ID vazio."
         },
         {
           CAMPO: "ACAO",
-          PREENCHIMENTO: "EXCLUIR",
+          PREENCHIMENTO:
+            "EXCLUIR",
           EXPLICACAO:
             "Exclui definitivamente a conta correspondente ao ID."
         },
         {
           CAMPO: "ID",
-          PREENCHIMENTO: "NÃO ALTERAR",
+          PREENCHIMENTO:
+            "NÃO ALTERAR",
           EXPLICACAO:
             "Identificador usado pelo sistema para localizar a conta."
         },
         {
-          CAMPO: "VENCIMENTO",
-          PREENCHIMENTO: "AAAA-MM-DD",
+          CAMPO: "CATEGORIA",
+          PREENCHIMENTO:
+            "SIGLA",
+          EXPLICACAO:
+            "Utilize uma categoria cadastrada no sistema. Exemplo: BLQ."
+        },
+        {
+          CAMPO:
+            "VENCIMENTO",
+          PREENCHIMENTO:
+            "AAAA-MM-DD",
           EXPLICACAO:
             "Exemplo: 2026-07-31."
         },
         {
-          CAMPO: "NFE / BOLETO",
-          PREENCHIMENTO: "SIM ou NÃO",
+          CAMPO:
+            "NFE / BOLETO",
+          PREENCHIMENTO:
+            "SIM ou NÃO",
           EXPLICACAO:
             "Indica se os documentos já foram recebidos."
         }
       ];
 
       const planilhaInstrucoes =
-        XLSX.utils.json_to_sheet(
-          instrucoes
-        );
+        XLSX.utils
+          .json_to_sheet(
+            instrucoes
+          );
 
-      planilhaInstrucoes["!cols"] = [
+      planilhaInstrucoes[
+        "!cols"
+      ] = [
         { wch: 18 },
         { wch: 22 },
         { wch: 65 }
@@ -1514,42 +2409,60 @@ window.contasPagarModule = {
       const workbook =
         XLSX.utils.book_new();
 
-      XLSX.utils.book_append_sheet(
-        workbook,
-        planilha,
-        "Contas a Pagar"
-      );
+      XLSX.utils
+        .book_append_sheet(
+          workbook,
+          planilha,
+          "Contas a Pagar"
+        );
 
-      XLSX.utils.book_append_sheet(
-        workbook,
-        planilhaInstrucoes,
-        "Instruções"
-      );
+      XLSX.utils
+        .book_append_sheet(
+          workbook,
+          planilhaInstrucoes,
+          "Instruções"
+        );
 
-      const hoje = new Date()
-        .toISOString()
-        .slice(0, 10);
+      const hoje =
+        new Date()
+          .toISOString()
+          .slice(0, 10);
 
       XLSX.writeFile(
         workbook,
         `contas-a-pagar-edicao-${hoje}.xlsx`
       );
+
     } catch (erro) {
+
       console.error(
         "Erro ao exportar Excel:",
         erro
       );
 
-      alert("Erro ao exportar Excel.");
+      alert(
+        "Erro ao exportar Excel."
+      );
     }
   },
 
+  // ======================================================
+  // MODELO EXCEL
+  // ======================================================
+
   baixarModelo() {
+
     try {
-      if (typeof XLSX === "undefined") {
+
+      if (
+        typeof XLSX ===
+        "undefined"
+      ) {
+
         alert(
           "Biblioteca XLSX não carregada."
         );
+
         return;
       }
 
@@ -1557,21 +2470,32 @@ window.contasPagarModule = {
         {
           ID: "",
           ACAO: "NOVO",
-          FORNECEDOR: "Fornecedor Exemplo",
-          DOCUMENTO: "NF 12345",
-          VALOR: 1500.75,
-          VENCIMENTO: "2026-07-31",
-          CATEGORIA: "MP",
+          FORNECEDOR:
+            "Fornecedor Exemplo",
+          DOCUMENTO:
+            "NF 12345",
+          VALOR:
+            1500.75,
+          VENCIMENTO:
+            "2026-07-31",
+          CATEGORIA:
+            "BLQ",
           DESCRICAO:
-            "Compra de material",
-          NFE: "SIM",
-          BOLETO: "SIM",
-          STATUS: "pendente"
+            "Bloqueio",
+          NFE:
+            "SIM",
+          BOLETO:
+            "SIM",
+          STATUS:
+            "pendente"
         }
       ];
 
       const planilha =
-        XLSX.utils.json_to_sheet(modelo);
+        XLSX.utils
+          .json_to_sheet(
+            modelo
+          );
 
       planilha["!cols"] = [
         { wch: 10 },
@@ -1590,23 +2514,28 @@ window.contasPagarModule = {
       const workbook =
         XLSX.utils.book_new();
 
-      XLSX.utils.book_append_sheet(
-        workbook,
-        planilha,
-        "Modelo"
-      );
+      XLSX.utils
+        .book_append_sheet(
+          workbook,
+          planilha,
+          "Modelo"
+        );
 
       XLSX.writeFile(
         workbook,
         "modelo-importacao-contas-a-pagar.xlsx"
       );
+
     } catch (erro) {
+
       console.error(
         "Erro ao baixar modelo:",
         erro
       );
 
-      alert("Erro ao baixar modelo.");
+      alert(
+        "Erro ao baixar modelo."
+      );
     }
   },
 
@@ -1615,16 +2544,23 @@ window.contasPagarModule = {
   // ======================================================
 
   renderizar() {
+
     const tbody =
-      this.get("tabelaContasPagar");
+      this.get(
+        "tabelaContasPagar"
+      );
 
     if (!tbody) return;
 
-    const lista = Array.isArray(this.filtrados)
-      ? this.filtrados
-      : [];
+    const lista =
+      Array.isArray(
+        this.filtrados
+      )
+        ? this.filtrados
+        : [];
 
     if (!lista.length) {
+
       tbody.innerHTML = `
         <tr>
           <td colspan="9" class="muted">
@@ -1634,222 +2570,294 @@ window.contasPagarModule = {
       `;
 
       this.resumo();
+
       return;
     }
 
-    const hoje = new Date()
-      .toISOString()
-      .slice(0, 10);
+    const hoje =
+      new Date()
+        .toISOString()
+        .slice(0, 10);
 
-    tbody.innerHTML = lista
-      .map(item => {
-        const id = Number(item.id);
-        const marcado =
-          this.selecionados.has(id);
+    tbody.innerHTML =
+      lista
+        .map(item => {
 
-        const vencida =
-          !!item.vencimento &&
-          String(item.vencimento) < hoje;
+          const id =
+            Number(item.id);
 
-        const documentosOk =
-          !!item.tem_nfe &&
-          !!item.tem_boleto;
+          const marcado =
+            this.selecionados
+              .has(id);
 
-        let classeStatus =
-          "linha-alerta";
+          const vencimento =
+            this.dataISO(
+              item.vencimento
+            );
 
-        if (documentosOk) {
-          classeStatus = "linha-ok";
-        }
+          const vencida =
+            !!vencimento &&
+            vencimento < hoje;
 
-        if (vencida) {
-          classeStatus =
-            "linha-vencida";
-        }
+          const documentosOk =
+            !!item.tem_nfe &&
+            !!item.tem_boleto;
 
-        if (marcado) {
-          classeStatus =
-            "linha-selecionada";
-        }
+          let classeStatus =
+            "linha-alerta";
 
-        const fornecedor =
-          this.escaparHtml(
-            item.fornecedor || "-"
-          );
+          if (documentosOk) {
+            classeStatus =
+              "linha-ok";
+          }
 
-        const documento =
-          this.escaparHtml(
-            item.documento || "-"
-          );
+          if (vencida) {
+            classeStatus =
+              "linha-vencida";
+          }
 
-        const categoria =
-          this.escaparHtml(
-            item.categoria || "-"
-          );
+          if (marcado) {
+            classeStatus =
+              "linha-selecionada";
+          }
 
-        const descricao =
-          this.escaparHtml(
-            item.descricao || "-"
-          );
+          const fornecedor =
+            this.escaparHtml(
+              item.fornecedor ||
+              "-"
+            );
 
-        return `
-          <tr
-            class="${classeStatus}"
-            onclick="contasPagarModule.toggleSelecionadoLinha(${id}, event)"
-          >
-            <td class="cp-check-cell">
-              <input
-                type="checkbox"
-                ${marcado ? "checked" : ""}
-                aria-label="Selecionar conta ${id}"
-                onclick="event.stopPropagation()"
-                onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
-              >
-            </td>
+          const documento =
+            this.escaparHtml(
+              item.documento ||
+              "-"
+            );
 
-            <td>
-              <strong>${fornecedor}</strong>
-            </td>
+          const categoria =
+            this.escaparHtml(
+              item.categoria ||
+              "-"
+            );
 
-            <td>${documento}</td>
+          const descricao =
+            this.escaparHtml(
+              item.descricao ||
+              "-"
+            );
 
-            <td>
-              <strong>
-                ${this.moeda(item.valor)}
-              </strong>
-            </td>
+          return `
+            <tr
+              class="${classeStatus}"
+              onclick="contasPagarModule.toggleSelecionadoLinha(${id}, event)"
+            >
 
-            <td>
-              ${this.dataBR(item.vencimento)}
-            </td>
+              <td class="cp-check-cell">
+                <input
+                  type="checkbox"
+                  ${marcado ? "checked" : ""}
+                  aria-label="Selecionar conta ${id}"
+                  onclick="event.stopPropagation()"
+                  onchange="contasPagarModule.toggleSelecionado(${id}, this.checked)"
+                >
+              </td>
 
-            <td>${categoria}</td>
+              <td>
+                <strong>
+                  ${fornecedor}
+                </strong>
+              </td>
 
-            <td>${descricao}</td>
+              <td>
+                ${documento}
+              </td>
 
-            <td>
-              <button
-                type="button"
-                class="doc-status ${
-                  item.tem_nfe
-                    ? "ok"
-                    : "pendente"
-                }"
-                onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})"
-              >
-                ${
-                  item.tem_nfe
-                    ? "NFE OK"
-                    : "NFE"
-                }
-              </button>
+              <td>
+                <strong>
+                  ${this.moeda(
+                    item.valor
+                  )}
+                </strong>
+              </td>
 
-              <button
-                type="button"
-                class="doc-status ${
-                  item.tem_boleto
-                    ? "ok"
-                    : "pendente"
-                }"
-                onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})"
-              >
-                ${
-                  item.tem_boleto
-                    ? "Boleto OK"
-                    : "Boleto"
-                }
-              </button>
-            </td>
+              <td>
+                ${this.dataBR(
+                  item.vencimento
+                )}
+              </td>
 
-            <td>
-              <button
-                type="button"
-                class="btn-editar"
-                onclick="event.stopPropagation(); contasPagarModule.editar(${id})"
-              >
-                Editar
-              </button>
+              <td>
+                ${categoria}
+              </td>
 
-              <button
-                type="button"
-                class="btn-duplicar"
-                onclick="event.stopPropagation(); contasPagarModule.duplicar(${id})"
-              >
-                Duplicar
-              </button>
+              <td>
+                ${descricao}
+              </td>
 
-              <button
-                type="button"
-                class="btn-pagar"
-                onclick="event.stopPropagation(); contasPagarModule.pagar(${id})"
-              >
-                Pagar
-              </button>
+              <td>
 
-              <button
-                type="button"
-                class="btn-excluir"
-                onclick="event.stopPropagation(); contasPagarModule.excluir(${id})"
-              >
-                Excluir
-              </button>
-            </td>
-          </tr>
-        `;
-      })
-      .join("");
+                <button
+                  type="button"
+                  class="doc-status ${
+                    item.tem_nfe
+                      ? "ok"
+                      : "pendente"
+                  }"
+                  onclick="event.stopPropagation(); contasPagarModule.toggleNfe(${id})"
+                >
+                  ${
+                    item.tem_nfe
+                      ? "NFE OK"
+                      : "NFE"
+                  }
+                </button>
+
+                <button
+                  type="button"
+                  class="doc-status ${
+                    item.tem_boleto
+                      ? "ok"
+                      : "pendente"
+                  }"
+                  onclick="event.stopPropagation(); contasPagarModule.toggleBoleto(${id})"
+                >
+                  ${
+                    item.tem_boleto
+                      ? "Boleto OK"
+                      : "Boleto"
+                  }
+                </button>
+
+              </td>
+
+              <td>
+
+                <button
+                  type="button"
+                  class="btn-editar"
+                  onclick="event.stopPropagation(); contasPagarModule.editar(${id})"
+                >
+                  Editar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-duplicar"
+                  onclick="event.stopPropagation(); contasPagarModule.duplicar(${id})"
+                >
+                  Duplicar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-pagar"
+                  onclick="event.stopPropagation(); contasPagarModule.pagar(${id})"
+                >
+                  Pagar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-excluir"
+                  onclick="event.stopPropagation(); contasPagarModule.excluir(${id})"
+                >
+                  Excluir
+                </button>
+
+              </td>
+
+            </tr>
+          `;
+        })
+        .join("");
 
     this.resumo();
   },
 
+  // ======================================================
+  // RESUMO
+  // ======================================================
+
   resumo() {
-    const total = this.filtrados.reduce(
-      (acumulado, item) =>
-        acumulado +
-        this.numero(item.valor),
-      0
-    );
+
+    const total =
+      this.filtrados.reduce(
+        (
+          acumulado,
+          item
+        ) =>
+          acumulado +
+          this.numero(
+            item.valor
+          ),
+        0
+      );
 
     const selecionadas =
-      this.filtrados.filter(item =>
-        this.selecionados.has(
-          Number(item.id)
-        )
+      this.filtrados.filter(
+        item =>
+          this.selecionados
+            .has(
+              Number(
+                item.id
+              )
+            )
       );
 
     const totalSelecionado =
       selecionadas.reduce(
-        (acumulado, item) =>
+        (
+          acumulado,
+          item
+        ) =>
           acumulado +
-          this.numero(item.valor),
+          this.numero(
+            item.valor
+          ),
         0
       );
 
-    const cpQtd = this.get("cpQtd");
-    const cpTotal = this.get("cpTotal");
+    const cpQtd =
+      this.get("cpQtd");
+
+    const cpTotal =
+      this.get("cpTotal");
+
     const cpSelecionadas =
-      this.get("cpSelecionadas");
+      this.get(
+        "cpSelecionadas"
+      );
+
     const cpTotalSelecionado =
-      this.get("cpTotalSelecionado");
+      this.get(
+        "cpTotalSelecionado"
+      );
 
     if (cpQtd) {
+
       cpQtd.textContent =
         this.filtrados.length;
     }
 
     if (cpTotal) {
+
       cpTotal.textContent =
         this.moeda(total);
     }
 
     if (cpSelecionadas) {
+
       cpSelecionadas.textContent =
         selecionadas.length;
     }
 
-    if (cpTotalSelecionado) {
+    if (
+      cpTotalSelecionado
+    ) {
+
       cpTotalSelecionado.textContent =
-        this.moeda(totalSelecionado);
+        this.moeda(
+          totalSelecionado
+        );
     }
   }
 };
